@@ -36,6 +36,8 @@ The `--model` selector defaults to `legacy`. `checked-components-v1` derives una
 | `--checked-draft` | JSON output path for an available component missing-schema recovery draft |
 | `--force-checked-files` | Deliberately replace requested component report/draft files |
 
+Checked planning refusals print a concise reason, construct/location and next action and exit nonzero. Their JSON reports remain available through `--checked-report`; set `DEBUG=wsdl-tsc` to include the raw error, stack and report details. Ambiguous selections use `service`, `port` and `selectors` in `--checked-config`, rather than separate service/port flags.
+
 Component URL intake follows declared same-origin dependencies automatically. Extra origins need a reusable `sourceOrigins` decision in the checked configuration. Generated snapshots supply offline runtime bookkeeping; optional host/endpoint/trust overrides belong to the runtime configuration. The [trial guide](checked-generation.md) shows complete commands and explains the unchanged direct-runtime compatibility binding.
 
 Checked modes require all three explicit outputs: `--client-dir`, `--openapi-file` and `--gateway-dir`, plus `--gateway-service-name` and `--gateway-version-prefix`. For a runnable checked app, supply `--init-app` and an explicit `--app-dir` containing those outputs; scaffold tests use `--test-dir` with app generation. The legacy one-output minimum below does not apply to checked generation.

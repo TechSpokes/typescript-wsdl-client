@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(cli): explain checked planning refusals and actual selection choices without dumping stacks or reports unless DEBUG=wsdl-tsc is set.
 - chore(validation): separate optional research from product checks while retaining independent reference, installed-consumer and platform coverage.
 - chore(package): ship consumer guides and generation resources without research or contributor archives, and validate installed documentation links.
 - feat(components): generate source-derived application groups with configured names across checked clients and gateways.

@@ -65,9 +65,13 @@ Generated configuration points runtime calls at copied physical snapshots. Keep 
 
 Read the planning report before editing anything. Unsupported source, mapping, binding or security cases refuse with a stage and reason; a refusal does not necessarily mean the vendor schema is invalid.
 
+Checked planning refusals show the construct or source location, the reason and the next action, then exit nonzero without generating artifacts or invoking SOAP. Save the unchanged structured report with `--checked-report`; set the `DEBUG` environment variable to `wsdl-tsc` when you need the raw error, stack and report details.
+
 For a locationless import, `--checked-draft` can write `service-resolution.json` containing a `REQUIRED_SCHEMA_LOCATION` placeholder. Replace that value with the actual permitted schema location, then rerun with `--checked-config service-resolution.json`. This supplies missing source information; it does not waive native checks or reconstruct a type graph by hand.
 
 Multiple service/port/binding candidates require an explicit choice. Partial configuration and operation subsets are supported; see [selection and recovery details](checked-gateway.md#planning-and-missing-schema-recovery). Reports and drafts are preserved by default; use `--force-checked-files` deliberately to replace them on a later run.
+
+The Weather quick-start fixture has multiple ports even though it has one service. Set `service`, `port` and `selectors` in a JSON file supplied through `--checked-config`; the diagnostic lists actual service/port choices and the report lists operation candidates. Legacy mode is a separate generation path with its own support limits, not an automatic fallback after a checked refusal.
 
 ## Configure and invoke an owned SOAP backend
 
