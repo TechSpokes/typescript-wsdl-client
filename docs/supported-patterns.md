@@ -10,7 +10,7 @@ The qualified checked domain includes [keyed mixed, namespace-collision and sour
 
 The rows below are backed by committed conformance fixtures under `test/conformance/fixtures/`. Status means the current product contract, not the full standards surface.
 
-The [S06 research handoff](content-model-s06-research-handoff.md) records separate attribute, derivation, wildcard and calendar evidence.
+The [S06 research handoff](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/docs/content-model-s06-research-handoff.md) records separate attribute, derivation, wildcard and calendar evidence.
 Candidate interpretations and test-only prototypes do not certify production assessment or change these public capability rows.
 
 <!-- support-matrix:start -->
@@ -106,11 +106,11 @@ The compiler scans inline policies for UsernameToken, TransportBinding, and X509
 
 ### xs:group and xs:attributeGroup
 
-The `declared-derivation-boundaries` fixture characterizes the legacy default: its named group elements and attribute-group uses are omitted from the containing compiled type. General group support is therefore unqualified. Internal [reference resolution](content-model-resolution.md) preserves complete group definitions and separate use-site bounds; [companion reuse](content-model-companions.md) carries their required closures. These internal results do not establish public generation support.
+The `declared-derivation-boundaries` fixture characterizes the legacy default: its named group elements and attribute-group uses are omitted from the containing compiled type. General group support is therefore unqualified. Internal [reference resolution](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-resolution.md) preserves complete group definitions and separate use-site bounds; [companion reuse](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-companions.md) carries their required closures. These internal results do not establish public generation support.
 
 ### Extension and restriction
 
-The same executable fixture distinguishes current legacy behavior: extension appends local properties, but restriction also appends them and empty restriction retains base content. A prohibited optional attribute remains in legacy metadata. Faithful restriction, attribute composition and immutable sibling behavior are covered by internal [derivation tests](content-model-composition.md), with full legality assessment assigned to #179. Public faithful derivation support remains unqualified.
+The same executable fixture distinguishes current legacy behavior: extension appends local properties, but restriction also appends them and empty restriction retains base content. A prohibited optional attribute remains in legacy metadata. Faithful restriction, attribute composition and immutable sibling behavior are covered by internal [derivation tests](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-composition.md), with full legality assessment assigned to #179. Public faithful derivation support remains unqualified.
 
 ### xs:list
 

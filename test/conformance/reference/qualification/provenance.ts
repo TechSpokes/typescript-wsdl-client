@@ -1,7 +1,7 @@
 /** Execution identity for the existing qualification producers and recorders. */
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { release } from 'node:os';
 
@@ -28,8 +28,8 @@ const hashes = (paths: readonly string[]): Readonly<Record<string, string>> =>
     Object.fromEntries([...new Set(paths.map(key))].sort().map(path => [path, hashFile(path)]));
 export function referenceSources(includeProduct = false): string[] {
     return execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z',
-        'test/conformance/reference', 'test/research', ...(includeProduct ? ['src'] : [])],
-    { encoding: 'utf8' }).split('\0').filter(path => path.endsWith('.ts'));
+        'test/conformance/reference', ...(includeProduct ? ['src'] : [])],
+    { encoding: 'utf8' }).split('\0').filter(path => path.endsWith('.ts') && existsSync(path));
 }
 export function fixtureInputs(): string[] {
     return execFileSync('git', ['ls-files', '-z', 'test/conformance/fixtures'], { encoding: 'utf8' })

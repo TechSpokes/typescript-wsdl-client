@@ -281,7 +281,7 @@ await app.register(async (scope) => {
 await app.listen({ port: 3000 });
 ```
 
-See [`examples/fastify-gateway`](../examples/fastify-gateway/README.md) for a complete example.
+See [`examples/fastify-gateway`](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/examples/fastify-gateway/README.md) for a complete example.
 
 ## Contract Assumptions
 

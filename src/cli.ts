@@ -861,6 +861,7 @@ if (rawArgs[0] === "pipeline") {
     const controller = new AbortController();
     const cancel = () => controller.abort();
     process.on('SIGINT', cancel);
+    let checkedExitCode = 0;
     try {
       if (pipelineArgv.model === 'checked-components-v1' && (!supplied || typeof supplied !== 'object' || Array.isArray(supplied))) {
         throw new CheckedPlanningError((await prepareCheckedComponentPlan(pipelineArgv['wsdl-source'], supplied)).report);
@@ -880,10 +881,18 @@ if (rawArgs[0] === "pipeline") {
       if (result.planning) writePlan(result.planning);
       console.log(JSON.stringify((result as {checked?: unknown}).checked, null, 2));
     } catch (error) {
-      if (error instanceof CheckedPlanningError) writePlan(error.report);
-      throw error;
+      if (!(error instanceof CheckedPlanningError)) throw error;
+      writePlan(error.report);
+      if (process.env.DEBUG?.split(/[\s,]+/).includes('wsdl-tsc')) console.error(error);
+      else {
+        const {formatCheckedCliRefusal} = await import('./util/checkedCliDiagnostics.js');
+        console.error(formatCheckedCliRefusal(error.report));
+      }
+      // @why Drain diagnostic writes before the CLI's explicit exit, including piped DEBUG reports.
+      await new Promise<void>(resolve => {process.stderr.write('', () => resolve());});
+      checkedExitCode = 1;
     } finally {process.off('SIGINT', cancel);}
-    process.exit(0);
+    process.exit(checkedExitCode);
   }
   if (pipelineArgv['checked-config']) handleCLIError('--checked-config requires --model checked-components-v1');
   if (pipelineArgv['checked-report'] || pipelineArgv['checked-draft'] || pipelineArgv['force-checked-files']) handleCLIError('Planning files require checked-components-v1');

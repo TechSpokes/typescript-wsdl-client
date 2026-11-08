@@ -49,7 +49,7 @@ Contains runtime metadata and helper functions. Includes `unwrapArrayWrappers()`
 
 ### Stream Operations
 
-When `--stream-config` opts an operation into streaming (see [ADR-002](decisions/002-streamable-responses.md)), the client emits additional surfaces alongside the buffered ones. Buffered operations in the same client are unaffected.
+When `--stream-config` opts an operation into streaming (see [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md)), the client emits additional surfaces alongside the buffered ones. Buffered operations in the same client are unaffected.
 
 `operations.ts` gains a `StreamOperationResponse<RecordType>` type that stream methods return instead of the buffered `{ response, headers, responseRaw, requestRaw }` shape:
 

@@ -2,10 +2,18 @@
 
 Internal evidence contracts for the Node tooling migration. See the root [README](../README.md).
 
+## Product and optional research lanes
+
+The product reference launcher runs independent source, schema, scalar, codec and transport observations and verifies its 16 historical method obligations. The separate [research map](../research/reference/migration-map.json) retains 37 experimental obligations; its optional auditor checks the complete 53-method union against unchanged historical source blocks.
+
+Run `npm run test:reference` for the product report and `npm run research:reference` for the exploratory lane. Plain `npm test` includes all product reference tests; local CI invokes the report launcher once and excludes reference files only from its later broad Vitest invocation.
+
+Installed product, process/cancellation and source controls remain covered on Windows and Linux with Node 24 and 26. Historical isolated environment qualification is now manually dispatched through the research-platform workflow; the strict toolchain guard remains in product CI. [ADR-004](decisions/004-product-research-boundary.md) records this separation without changing native acceptance or historical observations.
+
 ## Status
 
 [Epic #239](https://github.com/TechSpokes/typescript-wsdl-client/issues/239) replaces operational Python with strict TypeScript without changing production semantics.
-The [migration map](../test/conformance/reference/migration-map.json) pins every Python method, assertion block and parameterized family at the refreshed main revision.
+The [product migration map](../test/conformance/reference/migration-map.json) and optional research map pin the original methods, assertion blocks and parameterized families in their respective lanes.
 All 53 mapped methods and 13 SOAP consumers have executable replacements. Gate S passed through the maintainer's [NT-CONT-01 acceptance](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195); final platform evidence is recorded in the delivery ledger.
 
 ## Evidence policy
@@ -79,7 +87,7 @@ npm run test:reference:full
 npm run research:re01:measure
 ```
 
-AU01 uses `test/research/s06-au01/probe.ts`; RE01 uses `test/research/re01/witness-probe.ts` and `measure.ts`.
+AU01 uses `research/tests/s06-au01/probe.ts`; RE01 uses `research/tests/re01/witness-probe.ts` and `measure.ts`.
 Their readonly records retain original object identity and exact lexical values.
 Work accounting uses UTF-16 code units, conservatively charging non-BMP input; legacy ASCII measurements retain their counts.
 Fixture syntax identities use explicit sibling indexes, preserving source distinctions without requiring Python XPath spelling.

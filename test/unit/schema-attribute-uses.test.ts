@@ -1,5 +1,5 @@
 /** AU01 C1 and universal source replacement: independent decision tables in
- * docs/content-model-s06-au-01.md and #269 issuecomment-6111697365.
+ * research/docs/content-model-s06-au-01.md and #269 issuecomment-6111697365.
  */
 import path from 'node:path';
 import {describe, expect, it} from 'vitest';

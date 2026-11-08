@@ -11,6 +11,8 @@ await assert.rejects(readFile(process.argv[3]!), {code: 'ERR_ACCESS_DENIED'});
 const example = JSON.parse(await readFile('checked-gateway.example.json', 'utf8')) as Record<string, unknown>;
 assert.equal(example.endpoint, undefined); assert.equal(example.allowedEndpoints, undefined);
 const input = {payload: {name: 'owned & independent'}};
+// @constraints Node's network grant is Boolean; the parent stops metadata listeners before this wire proof.
+const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
 let exchanges = 0;
 for (const scenario of ['declared', 'override', 'allowed', 'empty', 'denied', 'offline-origins', 'offline-snapshots']) {
   const config = {...example, caFile: './test-cert.pem', port: 0,
@@ -19,7 +21,7 @@ for (const scenario of ['declared', 'override', 'allowed', 'empty', 'denied', 'o
       : scenario === 'denied' ? {allowedEndpoints: [override + '/never']} : {}),
     ...(scenario === 'offline-origins' ? {sourceOrigins: []} : scenario === 'offline-snapshots' ? {sourceResources: []} : {})};
   await writeFile('runtime.json', JSON.stringify(config));
-  const child = spawn(process.execPath, ['--permission', '--allow-fs-read=' + root, '--import',
+  const child = spawn(process.execPath, ['--permission', ...network, '--allow-fs-read=' + root, '--import',
     pathToFileURL(path.join(root, 'parent-guard.ts')).href, path.join(root, 'dist/server.js')], {
     cwd: root, env: {...process.env, CHECKED_GATEWAY_CONFIG: path.join(root, 'runtime.json')}, windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],

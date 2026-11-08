@@ -2,7 +2,7 @@
 
 Completed plan for moving `@techspokes/typescript-wsdl-client` from the `0.x` line to the stable `1.0.0` release.
 
-See the root [README.md](../../README.md) for project overview and the [current roadmap](../../ROADMAP.md#active-backlog) for the active backlog and delivery milestones. This document is the historical 1.0 plan; its original version-specific gates are preserved below.
+See the root [README.md](../../README.md) for project overview and the [current roadmap](../../ROADMAP.md#next-deliveries) for the active product direction. This document is the historical 1.0 plan; its original version-specific gates are preserved below.
 
 ## Purpose
 

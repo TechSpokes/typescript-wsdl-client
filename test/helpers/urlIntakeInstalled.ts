@@ -116,7 +116,8 @@ export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, 
     for (const mode of ['cli', 'api', 'recovery']) {
       const project = path.join(consumer, mode + '-relocated'); await rename(path.join(consumer, mode), project);
       const before = calls.length;
-      const result = await run(mode + '-offline-wire', ['--permission', '--allow-child-process', '--allow-fs-read=' + project, '--allow-fs-write=' + project,
+      const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
+      const result = await run(mode + '-offline-wire', ['--permission', '--allow-child-process', ...network, '--allow-fs-read=' + project, '--allow-fs-write=' + project,
         path.join(project, 'wire.ts'), endpoint + '/override', path.join(checkout, 'package.json')], project);
       expect(JSON.parse(result.stdout)).toMatchObject({exchanges: 4, offlineMetadata: true});
       expect(calls.slice(before)).toEqual(['/declared', '/override', '/override', '/declared']);

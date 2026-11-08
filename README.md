@@ -19,10 +19,13 @@ Created from production integration work at [TechSpokes](https://www.techspokes.
 
 See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
-Version 1.1.7 offers [opt-in checked generation](docs/checked-generation.md) for early testing and feedback. Choose legacy generation, the default, or `pipeline --model checked-components-v1`: supported WSDL files or URLs produce typed clients, contracts, OpenAPI, gateways, app scaffolding and tests without authored resource/selector JSON for unambiguous sources. The guide includes a bundled trial, endpoint setup, supported scope and feedback instructions.
-Component calls use the selected WSDL address or explicit endpoint override, with optional restrictions including empty deny-all. Generated snapshots supply offline runtime bookkeeping; host configuration contains optional overrides instead of copied graph records. The shipped v1.1.5 [direct runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remains compatible with existing clients and retains explicit owned-loopback authorization.
+## Two generation modes
 
-This preview does not establish universal WSDL/XSD or production-provider support. See the [checked gateway reference](docs/checked-gateway.md) for configuration and compatibility, and the [roadmap](ROADMAP.md) for the next coverage, JSON and security work.
+Legacy generation is the default. Opt into [checked generation](docs/checked-generation.md) with `pipeline --model checked-components-v1` for native validation of supported contracts across generated clients, OpenAPI, gateways, app scaffolding and tests.
+
+Unambiguous sources select their service and operations automatically; ambiguous sources need an explicit `--checked-config`. Checked mode refuses unsupported or unresolved constructs rather than silently dropping their rules; the [checked gateway guide](docs/checked-gateway.md) explains configuration and scope.
+
+Generated source snapshots support offline runtime use, and calls use the selected WSDL address or an explicit endpoint override with optional restrictions. Existing [direct-runtime clients](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remain compatible; the [product corpus](docs/corpus.md) records representative evidence without claiming universal WSDL/XSD or live-provider support.
 
 Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
 
@@ -209,88 +212,65 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 
 ## Documentation
 
-### Evaluate
+### Using the package
 
 | Guide | Description |
-|-------|-------------|
+|---|---|
 | [Start Here](docs/start-here.md) | What this is, who it is for, choose your path |
 | [Supported Patterns](docs/supported-patterns.md) | WSDL/XSD features handled and current limitations |
-| [Content Model Baseline](docs/content-model-baseline.md) | Reproducible S01 reference evidence and current semantic limits |
-| [Shipped Fix Reconciliation](docs/content-model-shipped-fix.md) | Contributor attribution, delivered occurrence behavior and S02 handoff |
-| [Content Model Contracts (ADR-003)](docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
-| [XML/JSON Mapping Contract](docs/roadmap/v1.0-xml-json-mapping.md) | Selected keyed research forms, namespace roles, nil and production handoffs |
-| [Content Model Decision Register](docs/content-model-decisions.md) | Stable S02 decisions, evidence, owners and prerequisite gates |
-| [SOAP Feasibility Evidence](docs/content-model-soap-feasibility.md) | Local ordered SOAP exchanges, raw transport seams and capability limits |
-| [Gateway Feasibility Evidence](docs/content-model-gateway-feasibility.md) | Non-mutating route validation, dialect boundaries and serialized HTTP bytes |
-| [S02 Handoff](docs/content-model-s02-handoff.md) | Delivery checkpoints, validation, provisional limits and S03 continuation |
-| [Ordered Schema Loading](docs/content-model-loading.md) | Internal ordered syntax, provenance and controlled resolution contracts |
-| [Canonical Schema Graph](docs/content-model-graph.md) | Immutable declarations, use-site particles, references and lexical context |
-| [Canonical Reference Resolution](docs/content-model-resolution.md) | Namespace visibility, complete targets, legal recursion and component-cycle diagnostics |
-| [Canonical Derivation Composition](docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
-| [Structural Companion Catalogs](docs/content-model-companions.md) | Required closures, actual structural equality, provenance and shared semantic dispatch |
-| [Exact Particle Analysis](docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
-| [S06 Attribute Research](docs/content-model-s06-au-01.md) | Repeated attribute-use identities, constraints and interpretation alternatives |
-| [S06 Reordered Derivation Research](docs/content-model-s06-re-01.md) | Constructive witnesses, counterexamples and decision-procedure proof obligations |
-| [S06 RE01 Support Reconstruction](docs/content-model-s06-re-01-support-reconstruction.md) | Conditional member/copy/bundle reductions, value/name palettes and open support bounds |
-| [S06 RE01 Scalar Witness Construction](docs/content-model-s06-re-01-scalar-witnesses.md) | Shared endpoint tuple construction, scalar counterexamples and open materialization gates |
-| [S06 Hypothetical Resolver Specification](docs/content-model-s06-re-01-resolver.md) | Candidate contexts, component identity, validation ownership and implementation tasks |
-| [S06 Research Resolver Implementation](docs/content-model-s06-re-01-resolver-implementation.md) | Resolver guarantees, abstract wildcard properties, verification and the future production seam |
-| [S06 Wildcard Research](docs/content-model-s06-pw-01.md) | Member and whole-group cardinality, original namespace context and authority |
-| [S06 Calendar Research](docs/content-model-s06-dt-01.md) | Exact negative-year calendar alternatives and corrected reference observations |
-| [S06 Research Handoff](docs/content-model-s06-research-handoff.md) | Joint contracts, reproducible evidence, unresolved gates and production ownership |
-| [Semantic Catalog Format 2](docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
-
-### Adopt
-
-| Guide | Description |
-|-------|-------------|
-| [Checked WSDL readiness](docs/content-model-readiness.md) | Measured assessment corpus and bounded P3 implementation packet |
 | [Direct Scalar Values](docs/direct-values.md) | Internal scalar mapping, fresh inverse and bounded bare-root XML codec |
 | [Try Opt-in Checked Generation](docs/checked-generation.md) | Installed component trial, URL intake, endpoint setup, scope, direction and feedback |
 | [Checked Gateway Reference](docs/checked-gateway.md) | Component/direct configuration, project commands, compatibility and bounded HTTP/SOAP evidence |
-| [Checked development checkpoint](docs/content-model-development-checkpoint.md) | Local structured-contract evidence, remaining coverage and safe override boundaries |
-| [Checked consolidation acceptance](docs/checked-consolidation-acceptance.md) | Six-child scope, frozen compatibility, retained coverage and configuration changes |
-| [WSDL-first workflow assessment](docs/content-model-wsdl-first-assessment.md) | Automatic generation, actionable diagnostics and minimal JSON reconciliation |
-| [Direct Structural Matching](docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
 | [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
 | [Working With Generated Code](docs/generated-code.md) | Using clients, types, and operations |
 | [Configuration](docs/configuration.md) | Gateway security, upstream SOAP security, tags, operation overrides |
 | [Migration Playbook](docs/migration-playbook.md) | End-to-end SOAP modernization guide |
-
-### Operate
-
-| Guide | Description |
-|-------|-------------|
 | [Gateway Guide](docs/gateway-guide.md) | Fastify integration, inbound enforcement, and error handling |
 | [Testing Guide](docs/testing.md) | Testing patterns and mock client examples |
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
-| [Release Notes](docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
-| [v1.1.6 Release Notes](docs/releases/v1.1.6.md) | Opt-in checked gateways, WSDL-first planning, automatic URL intake and dependency fixes |
-| [v1.1.7 Release Notes](docs/releases/v1.1.7.md) | Two generation paths, preparation reuse, concise host setup and shipped runtime compatibility |
-| [v1.1.5 Release Notes](docs/releases/v1.1.5.md) | Restricted checked-direct runtime binding, safe local SOAP evidence and explicit caller controls |
-| [v1.1.4 Release Notes](docs/releases/v1.1.4.md) | Named SOAP imports and compiled-client coverage on Node 24 and 26 |
-| [v1.1.3 Release Notes](docs/releases/v1.1.3.md) | Dependency security updates and Node 24 development alignment |
-| [v1.1.2 Release Notes](docs/releases/v1.1.2.md) | Sequence occurrence bounds and singleton SOAP response normalization |
-| [v1.1.1 Release Notes](docs/releases/v1.1.1.md) | Wrapping sequence occurrence bounds and generated array contracts |
-| [v1.1.0 Release Notes](docs/releases/v1.1.0.md) | Automatic generated TypeScript preambles and consumer lint guidance |
-
-### Extend
-
-| Guide | Description |
-|-------|-------------|
 | [Programmatic API](docs/api-reference.md) | TypeScript functions for build tools |
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
-| [Architecture](docs/architecture.md) | Internal pipeline for contributors |
-| [Reference Validation](docs/reference-validation.md) | Internal evidence contract and Node tooling migration inventory |
-| [NOAA NDFD Qualification](docs/noaa-ndfd-qualification.md) | Authentic source provenance and one-operation native refusal |
-| [File Naming And Path Organization](docs/file-naming-and-path-organization.md) | Contributor convention for taxonomy paths and fixture retrieval |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
-| [Current Roadmap](ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
-| [Version 1.0 Roadmap Plan](docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
-| [Streamable Responses (ADR-002)](docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
+| [XML/JSON Mapping Contract](docs/mapping-contract.md) | Checked keyed, namespace, nil and group representations |
+| [Product Corpus](docs/corpus.md) | Representative public inputs and their executable evidence |
+
+### Contributing
+
+| Guide | Description |
+|---|---|
+| [Content Model Baseline](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-baseline.md) | Reproducible S01 reference evidence and current semantic limits |
+| [Shipped Fix Reconciliation](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-shipped-fix.md) | Contributor attribution, delivered occurrence behavior and S02 handoff |
+| [Content Model Decision Register](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-decisions.md) | Stable S02 decisions, evidence, owners and prerequisite gates |
+| [SOAP Feasibility Evidence](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-soap-feasibility.md) | Local ordered SOAP exchanges, raw transport seams and capability limits |
+| [Gateway Feasibility Evidence](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-gateway-feasibility.md) | Non-mutating route validation, dialect boundaries and serialized HTTP bytes |
+| [Ordered Schema Loading](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-loading.md) | Internal ordered syntax, provenance and controlled resolution contracts |
+| [Canonical Schema Graph](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-graph.md) | Immutable declarations, use-site particles, references and lexical context |
+| [Canonical Reference Resolution](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-resolution.md) | Namespace visibility, complete targets, legal recursion and component-cycle diagnostics |
+| [Canonical Derivation Composition](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
+| [Structural Companion Catalogs](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-companions.md) | Required closures, actual structural equality, provenance and shared semantic dispatch |
+| [Exact Particle Analysis](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
+| [Semantic Catalog Format 2](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
+| [Checked WSDL readiness](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-readiness.md) | Measured assessment corpus and bounded P3 implementation packet |
+| [Direct Structural Matching](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
+| [Architecture](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/architecture.md) | Internal pipeline for contributors |
+| [Reference Validation](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/reference-validation.md) | Internal evidence contract and Node tooling migration inventory |
+| [NOAA NDFD Qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) | Authentic source provenance and one-operation native refusal |
+| [File Naming And Path Organization](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/file-naming-and-path-organization.md) | Contributor convention for taxonomy paths and fixture retrieval |
+
+### Decisions and research
+
+| Guide | Description |
+|---|---|
+| [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
+| [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
+| [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
+| [Streamable Responses (ADR-002)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
+| [Product and Research Boundary](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/004-product-research-boundary.md) | Package, validation and delivery responsibilities |
+| [Research Program](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/README.md) | Optional experiments, commands and historical investigation records |
 
 ## Why This Exists
 
@@ -302,20 +282,20 @@ If you are wrapping a vendor SOAP API in a modern service layer, this is the too
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, project structure, and guidelines.
+See [CONTRIBUTING.md](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) for development setup, project structure, and guidelines.
 
 ## License
 
 MIT. See [LICENSE](LICENSE) for full text. Generated artifacts are fully yours with no restrictions or attribution required.
 
-Unmodified NOAA/NWS qualification fixtures are public-domain provider material with separate [attribution and provenance](docs/noaa-ndfd-qualification.md#provenance-and-permission).
+Unmodified NOAA/NWS qualification fixtures are public-domain provider material with separate [attribution and provenance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md#provenance-and-permission).
 
 ## Links
 
 - [npm](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
-- [Changelog](CHANGELOG.md)
-- [Roadmap](ROADMAP.md)
-- [Security](SECURITY.md)
+- [Changelog](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CHANGELOG.md)
+- [Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md)
+- [Security](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/SECURITY.md)
 - [Sponsor](https://github.com/sponsors/TechSpokes)
 
 Built and maintained by [TechSpokes](https://www.techspokes.com). Created by [Serge Liatko](https://github.com/sergeliatko).
@@ -338,4 +318,4 @@ The programmatic `assessSchemaSource(source, {loading: {policy: {fileRoots: [...
 
 The report separates native schema premises, dated-XSD correspondence, execution and per-operation runtime capabilities. Exit 0 requires established native scope and qualified correspondence; 2 means inconclusive, 3 native scope disproved, 4 resource-limit, 5 cancelled and 1 operational failure. Execution failure takes precedence over retained schema facts. An assessment never admits structured generation; legacy defaults and existing commands are unchanged.
 
-See the [checked-product assurance contract](docs/decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) for the sufficient direct correspondence route and remaining downstream obligations.
+See the [checked-product assurance contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) for the sufficient direct correspondence route and remaining downstream obligations.

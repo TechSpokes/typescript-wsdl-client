@@ -1,338 +1,39 @@
 # TypeScript WSDL Client Roadmap
 
-Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
+Product direction for the WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway and application scaffold. See the root [README](README.md) for usage and the documentation index.
 
-## Current delivery and published baseline
+## Product delivery
 
-The [v1.1.7 candidate](docs/releases/v1.1.7.md) consolidates legacy and opt-in checked component generation. At the November 3, 2026 startup check, v1.1.5 was published and v1.1.6 remained an unpublished draft with a consumed immutable tag. [Try Opt-in Checked Generation](docs/checked-generation.md) provides the installed workflow; [published releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) establish availability.
+Deliver working integrations for declared WSDL profiles, with typed generated artifacts, independently expected XML/HTTP exchanges and useful refusals where support is missing. Legacy remains the default; [checked generation](docs/checked-generation.md) is opt-in and retains its separate native validation requirements.
 
-The component preview supports qualified imported/structured document/literal SOAP 1.1 contracts, WSDL-first planning, recursive URL intake, offline source snapshots and endpoint intent with optional restrictions. Generation offers legacy and components; shipped v1.1.5 direct clients retain their runtime binding. Retained Escapia evidence covers 15 Main and two explicitly associated Content operations against owned services; Content delivery is buffered and scoped, without automatic companion discovery or whole-response validation.
+The [public corpus](docs/corpus.md) connects representative source inputs to executable evidence. Successful generation and intentional refusal are separate outcomes; neither a growing example count nor a round trip alone establishes general XSD coverage.
 
-Installed CLI/API, standalone gateways and independent HTTP-to-owned-SOAP expectations substantiate the declared slice, not provider business acceptance or general XSD. The [development checkpoint](docs/content-model-development-checkpoint.md) records complete evidence and remaining limits. The legacy support matrix and this checked profile remain distinct.
+Product changes do not wait for unrelated universal research completion. Each change must still establish the source, scalar, mapping, protocol and security duties it actually consumes; [ADR-003](docs/decisions/003-content-model-contracts.md) and [ADR-004](docs/decisions/004-product-research-boundary.md) retain that boundary.
 
-The selected [#420 mapping contract](docs/roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract) is settled. [#421](https://github.com/TechSpokes/typescript-wsdl-client/issues/421) implements explicit nil through checked component clients and generated gateways, including the nil HTTP schema/serializer slice of [#410](https://github.com/TechSpokes/typescript-wsdl-client/issues/410). Installed HTTP-to-owned-SOAP qualification covers requests, responses, declared fault details, attributes and absent/empty/item/wrapper distinctions; [checked nil values](docs/checked-gateway.md#nil-values) describes the supported boundary. General group generation/default naming [#431](https://github.com/TechSpokes/typescript-wsdl-client/issues/431) and configured aliases [#432](https://github.com/TechSpokes/typescript-wsdl-client/issues/432) remain separate slices.
+## Next deliveries
 
-[#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) implements [keyed mixed/namespace/open values](docs/checked-gateway.md#mixed-namespaced-and-open-values) and their HTTP schema/serialization portion of #410 within the qualified component domain. Native wildcard, scalar, particle, nil and resource checks remain mandatory. Representative unrelated contract qualification stays under [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397); group/naming, contextual scalars, assessed dynamic types and required endpoint/security combinations retain #431/#432/#422/#184/#190/#191. Broad owners remain open.
+Release the already implemented capabilities recorded in [Unreleased](CHANGELOG.md#unreleased) through the existing release process. Package preparation, validated release candidates and maintainer publication remain distinct steps.
 
-The following session history retains its original broad-profile gates. ADR-003 P1-D01 permits independently qualified scoped product deliveries before universal research completion; [#379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379) records the current execution checkpoint.
+Use the existing [working-gateway coverage register](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [product outcome](https://github.com/TechSpokes/typescript-wsdl-client/issues/401) to choose bounded additions by the integrations they unlock. Extend the existing conformance corpus with rights-cleared sources and independent positive, invalid-input and refusal expectations.
 
-Focus: preserve supported generated contracts while completing the evidence and architecture decisions for [content-model correctness, epic #147](https://github.com/TechSpokes/typescript-wsdl-client/issues/147). Its broader architecture remains planned work; merged changes and draft release preparation do not establish published availability.
+Broader work includes protocol and message forms, required authentication/security combinations, source encoding/bootstrap, contextual and dynamic values, and checked streaming. These are separate delivery packets; no single public fixture is required to own cross-cutting security or maintenance work.
 
-The [Version 1.0 Roadmap Plan](docs/roadmap/README.md) records the completed 1.0 implementation and qualification work. Current work is organized in the issue tracker below.
+Keep consumer guides concise, package contents explicit and validation responsibilities visible. Measure package growth and lane duration before setting budgets or moving coverage between PR and release checks.
 
-## Active Backlog
+## Major-release readiness
 
-The [execution index](https://github.com/TechSpokes/typescript-wsdl-client/issues/147#issuecomment-5778987910) owns the session-to-task map, prerequisites, acceptance gates, and handoffs. Epic #147 coordinates 18 sessions and 43 focused implementation tasks through native parent-child and blocking relationships.
+A future default or public-shape activation requires its existing separately approved major-release decision, migration guidance and compatibility evidence. Define the intended supported profile and platform/security requirements explicitly before announcing readiness.
 
-### Next Work
+Use representative corpus exchanges alongside independent native checks, installed consumers, invalid-response tests and migration coverage. Do not equate a finite corpus with universal standards conformance or retire unresolved research by renaming its status.
 
-[Imports maintenance #209](https://github.com/TechSpokes/typescript-wsdl-client/issues/209) is complete through [PR #218](https://github.com/TechSpokes/typescript-wsdl-client/pull/218) and published in v1.1.4. The roadmap refresh tracked by [#217](https://github.com/TechSpokes/typescript-wsdl-client/issues/217) is independent of architecture implementation.
+## Available in the development tree
 
-S01's [bounded baseline](docs/content-model-baseline.md) is delivered through [PR #221](https://github.com/TechSpokes/typescript-wsdl-client/pull/221). The [shipped-fix reconciliation](docs/content-model-shipped-fix.md) records [#167](https://github.com/TechSpokes/typescript-wsdl-client/issues/167)'s contributor attribution, actual client/gateway behavior and remaining owned limits. [S01 #148](https://github.com/TechSpokes/typescript-wsdl-client/issues/148) is complete through PRs #221/#223.
+Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The [S02 handoff](docs/content-model-s02-handoff.md) records [ADR-003](docs/decisions/003-content-model-contracts.md), the decision register and independently reviewed SOAP/gateway feasibility probes in [PR #224](https://github.com/TechSpokes/typescript-wsdl-client/pull/224). #149's joint acceptance and verified merge gate [S03 #150](https://github.com/TechSpokes/typescript-wsdl-client/issues/150), beginning with ordered-input task #171; #172 follows its reviewed adapter. S02 implements no S03 production code.
+The current package version is 1.1.7; [release notes](docs/releases/README.md) and [published releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) establish release availability. Development-tree capabilities and successful tests do not by themselves mean a package has been published.
 
-[Ordered schema loading](docs/content-model-loading.md) now supplies S03's internal syntax/provenance and policy-controlled contextual resolution boundaries through PRs #225/#226.
-#150's combined acceptance gates S04 #151, beginning with immutable graph task #173; S03 does not activate new compiler defaults.
+## Research and historical coordination
 
-S04/S05 and S06's [exact occurrence analysis](docs/content-model-analysis.md) are delivered through PRs #227/#228/#229/#230.
-[Research epic #232](https://github.com/TechSpokes/typescript-wsdl-client/issues/232) investigates four remaining S06 rule gates in the [joint research handoff](docs/content-model-s06-research-handoff.md).
-#179 retains production integration after complete reviewed research acceptance; its existing draft #231 and combined #153 remain unaccepted, so S07/S08 are not Ready.
+The [research program](research/README.md) remains available in this repository, with separate commands and optional automation. Universal derivability, whole-forest erasure and finite-catalogue completeness remain unresolved; product separation changes neither those proof states nor accepted semantic guarantees.
 
-The selected architecture release train is 2.0.0. The 1.x legacy default remains in place; default activation requires integrated S17/S18 qualification and a separately approved major-release activation PR. Open transport/security qualifications block their affected consumers, while the ordered-input/profile/resource contracts for S03 are resolved.
-
-### Delivery Clusters
-
-| Milestone | Scope | Exit outcome |
-|---|---|---|
-| [Maintenance](https://github.com/TechSpokes/typescript-wsdl-client/milestone/1) | #209, #217 | Published imports fix and current roadmap |
-| [Baseline and decisions](https://github.com/TechSpokes/typescript-wsdl-client/milestone/2) | S01-S02 | Independent evidence and approved contracts |
-| [Canonical semantics](https://github.com/TechSpokes/typescript-wsdl-client/milestone/3) | S03-S07 | Ordered graph, exact analysis, verified matching |
-| [Contracts and codec](https://github.com/TechSpokes/typescript-wsdl-client/milestone/4) | S08-S10 | Reversible projections, bundles, XML round trips |
-| [Integration and consumers](https://github.com/TechSpokes/typescript-wsdl-client/milestone/5) | S11-S16 | SOAP, streaming, generators, installed consumers |
-| [Migration and readiness](https://github.com/TechSpokes/typescript-wsdl-client/milestone/6) | S17-S18 | Compatibility, migration, release qualification |
-
-Milestones group outcomes without scheduled dates or an assigned architecture release version. Session entry criteria determine readiness; S14 JSON/OpenAPI work can proceed from S09 contracts without waiting for streaming. A session closes only after its child tasks and combined acceptance gate pass.
-
-### Architecture Boundaries
-
-The planned shared schema model must preserve order, group and choice relationships, occurrence constraints, namespaces, and nil attributes across generated and runtime contracts. Independent reference evidence, XML round trips, real SOAP exchanges, gateway response bytes, and installed consumers must substantiate each applicable claim.
-
-The focused [#141 occurrence fix](https://github.com/TechSpokes/typescript-wsdl-client/issues/141) shipped in v1.1.2; it does not complete epic #147. Current support remains defined by [Supported Patterns](docs/supported-patterns.md), and architecture migration documentation remains assigned to [#205](https://github.com/TechSpokes/typescript-wsdl-client/issues/205).
-
-Existing public behavior stays in place until the S02 compatibility policy permits a change. Architecture completion, release preparation, and maintainer publication are separate steps.
-
-## Recently Shipped
-
-### 1.1.4
-
-[Release notes](docs/releases/v1.1.4.md). Published October 9, 2026.
-
-- Replaced generated SOAP namespace imports with named runtime and explicit type-only imports.
-- Added aliases for generated client names that collide with SOAP imports.
-- Typechecked integration tests and exercised compiled clients in Node 24 and Node 26 CI.
-
-### 1.1.3
-
-[Release notes](docs/releases/v1.1.3.md). Published October 9, 2026.
-
-- Refreshed compatible dependencies to address upstream security advisories.
-- Aligned generated app dependency ranges and the development Node pin with Node 24.
-- Retained TypeScript 6 and existing generated API contracts.
-
-### 1.1.2
-
-[Release notes](docs/releases/v1.1.2.md). Published September 25, 2026.
-
-- Corrected wrapping-sequence occurrence bounds in catalogs and generated types.
-- Normalized singleton SOAP responses to their declared array shape for clients and gateways.
-- Included the correction from the abandoned v1.1.1 candidate and credited the original contributor.
-
-This focused fix adds no finite-array-length or sequence-order validation. The [S01 baseline](docs/content-model-baseline.md) records independently qualified current output and remaining downstream gaps.
-
-### 1.1.0
-
-[Release notes](docs/releases/v1.1.0.md). Published September 22, 2026.
-
-- Added generated TypeScript ESLint preambles and consumer lint guidance.
-- Preserved existing editable scaffolds unless explicitly regenerated.
-
-## Historical Delivery
-
-Earlier implementation milestones are retained below. The [changelog](CHANGELOG.md) records version history and abandoned candidates; the [published releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) establish availability.
-
-### 1.0.0
-
-- Declared the documented client, OpenAPI, gateway, app, and programmatic surfaces stable.
-- Published the 0.x-to-1.0 migration contract and accepted capability limitations.
-- Aligned the packaged consumer agent skill with the Node 24 runtime floor.
-- Completed the contract, compatibility, conformance, Node, package, and release gates.
-- Added immutable abandonment markers that block rejected candidates before draft or package publication.
-
-### 0.40.1
-
-- Added stage-specific conformance commands while preserving the complete release-blocking suite.
-- Documented realistic conformance duration, timeout, and stall-diagnosis expectations.
-- Accepted the remaining partial and terminal capability boundaries for 1.0.
-- Deferred the public WSDL inspector until after 1.0.
-
-### 0.40.0
-
-- Refreshed `fast-xml-parser`, Fastify, Vitest, and Node type dependency minimums while retaining TypeScript 6 compatibility.
-- Updated generated app scaffold pins for Fastify and Node types.
-- Kept the 1.0 roadmap focused on explicit capability decisions and release-candidate gates.
-
-### 0.39.0
-
-- Added scoped TypeScript ownership for tests and generated examples so IDE diagnostics match the NodeNext project layout.
-- Deduplicated generated gateway runtime metadata without changing gateway response behavior.
-- Cleaned release script helpers, inspection suppressions, and documentation wording that affected local IDE quality signals.
-
-### 0.38.0
-
-- Refreshed `js-yaml`, `fastify`, `@types/node`, and `tsx` dependency minimums.
-- Updated generated app scaffold pins so new apps match the maintained dependency floor.
-- Kept the 1.0 roadmap pointed at release-candidate gate work after the dependency refresh.
-
-### 0.37.0
-
-- Replaced post-release full CI in the package publishing workflow with a targeted publish check.
-- Added a release preflight guard that keeps package publishing validation targeted.
-- Aligned 1.0 roadmap status with the `0.36.0` wildcard-bag release.
-
-### 0.36.0
-
-- Added `xs:anyAttribute` wildcard-bag output across TypeScript, OpenAPI, gateway, generated-test, and app evidence.
-- Split fast GitHub hosted checks from the full local release gate.
-- Clarified single-pass release preflight usage.
-
-### 0.35.0
-
-- Expanded baseline WSDL and XSD conformance rows across compile, client, OpenAPI, gateway, generated-test, and app stages.
-- Raised the supported Node.js floor to Node 24 with Node 26 CI coverage.
-- Classified repository-owned temporary outputs under `tmp/` subfolders.
-
-### 0.34.0
-
-- Added release-preflight wiring checks for `test:conformance`, broad Vitest discovery, and CI conformance coverage.
-- Documented focused conformance verification in the testing guide.
-- Moved the conformance plan to release-candidate readiness.
-
-### 0.33.0
-
-- Added generated-test and app scaffold evidence for WSDL capability rows.
-- Fixed generated app scaffold `tsconfig` roots for sibling generated artifacts.
-- Fixed generated mock values for alias-backed request properties.
-
-### 0.32.0
-
-- Added generated gateway type-checking and Fastify runtime evidence for WSDL capability rows.
-- Documented `tmp/conformance/` as the generated conformance project boundary.
-
-### 0.31.0
-
-- Added generated client and OpenAPI evidence for WSDL capability rows.
-- Added diagnostics for abstract types, substitution groups, and MTOM/XOP attachment metadata.
-
-### 0.30.0
-
-- Refreshed dependency floors and generated app scaffold pins.
-- Bumped CI checkout tooling.
-- Shipped no behavioral or API changes.
-
-### 0.29.0
-
-- Refreshed the 1.0 roadmap after the JSON array streaming release.
-- Defined the planned capability conformance framework.
-- Refreshed dependency floors, lockfile security updates, and generated app scaffold pins.
-
-### 0.28.0
-
-- Added `format: "json-array"` streaming for stream-configured operations.
-- Added OpenAPI array schemas and generated Fastify routes for JSON array streams.
-- Preserved NDJSON as the default stream format.
-
-### 0.27.0
-
-- Hardened Fastify schema compatibility probes to avoid reflected request bodies.
-- Kept the 1.0 compatibility test suite suitable for CodeQL review.
-
-### 0.26.0
-
-- Completed opt-in `--client-choice-mode union` across compiler metadata, TypeScript output, OpenAPI constraints, generated mocks, and generated validation tests.
-- Kept default `xs:choice` handling in `all-optional` mode for backward compatibility.
-
-### 0.25.0
-
-- Hardened generated gateway runtime array unwrapping against prototype-sensitive keys.
-- Replaced release-preflight dynamic changelog header matching with literal version matching.
-- Added regression coverage for the reported CodeQL findings.
-
-### 0.24.0
-
-- Added `npm run release:preflight -- vX.Y.Z` for local release verification.
-- Checked release metadata, dependency freshness, generated example drift, CI, and skill packaging before tags.
-- Normalized generated example comparisons to avoid false drift from temporary paths.
-- Removed unused concrete client imports from generated gateway plugin wrappers.
-
-### 0.23.0
-
-- Added portable documentation validation for local Markdown links and TypeScript fenced snippets.
-- Added inbound gateway enforcement documentation for authentication, authorization, logging, and request correlation extension points.
-
-### 0.22.0
-
-- Refreshed root dependency minimums for `@types/node`, `soap`, `tsx`, and `vitest`.
-- Refreshed generated app scaffold dependency minimums for `@types/node`, `soap`, and `tsx`.
-- Improved draft release body rendering and consumer-facing release validation notes.
-
-### 0.21.0
-
-- Added the standalone AI agent skill artifact for consumer projects.
-- Added release validation and packaging for the generated skill artifact.
-
-### 0.20.0
-
-- Added the tag-driven GitHub draft release workflow.
-- Refreshed root and generated app dependency minimums.
-
-### 0.19.0
-
-- Added shared security configuration for OpenAPI gateway security and upstream SOAP runtime security.
-- Added generated app scaffold support for upstream `node-soap` security profiles.
-- Added OpenAPI top-level and per-operation security output from `security.json`.
-- Added runtime `.env.example` and app README entries for upstream SOAP secrets.
-- Cleaned up Markdown links, TypeScript docs snippets, and generated source templates for IDE inspections.
-
-### 0.17.x
-
-- Added opt-in streamable SOAP responses via ADR-002.
-- Added client `StreamOperationResponse<T>` with `AsyncIterable<RecordType>`.
-- Added gateway NDJSON streaming with backpressure.
-- Added OpenAPI `x-wsdl-tsc-stream` extension for record schema discovery.
-- Added companion-catalog shape resolution for opaque `xs:any` wrappers.
-- Added SAX-driven streaming runtime and generated stream-aware tests.
-
-## Product Priorities
-
-### Public Contract Alignment
-
-Choice union mode and JSON array streaming are implemented. The conformance registry gives baseline WSDL and XSD rows explicit supported, partial, diagnostic, or unsupported statuses. Keep docs, generated behavior, and examples aligned while epic #147 establishes and verifies the broader shared contract.
-
-### OpenAPI And Fastify Compatibility
-
-Compatibility research is complete for released choice union schemas and JSON array streaming behavior. [S02 gateway evidence](docs/content-model-gateway-feasibility.md) selects separate OAS 3.1.1 documentation and draft-07 runtime/serializer plans, route-local non-mutating validation and independently validated fallback. #197/#198/#199/#200 implement those contracts; the probe does not migrate production schemas.
-
-### Streaming
-
-`json-array` streaming is implemented and keeps NDJSON as the default format. JSON array clients receive streamed records as one JSON document; terminal upstream errors after streaming starts truncate the response and must be treated as failed streams. S12's shared codec, completion, cancellation, and buffered/streamed parity work remains planned.
-
-### Capability Conformance
-
-The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. Diagnostic and unsupported rows stop with executable compiler errors. `npm test` and `npm run ci` cover conformance through broad Vitest discovery, and release preflight verifies that the focused conformance command and CI discovery remain wired.
-
-Version `0.40.1` added stage-specific maintainer commands for faster feedback while keeping the complete suite release-blocking. The first-binding behavior, external policy limitation, abstract and substitution diagnostics, and MTOM/XOP rejection were accepted 1.0 boundaries. New architecture support claims require their own evidence and the approved S02 profile.
-
-### WSDL Coverage
-
-WSDL coverage is the first conformance domain and the public baseline support registry. The current matrix includes the canonical weather document-literal baseline, reusable sequence and simple-type behavior, simple content attributes, documentation propagation, SOAP binding selection, XSD imports, choice union mode, `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, deeply composed schemas, `xs:anyAttribute`, and MTOM/XOP attachments.
-
-### Gateway Integration
-
-Generated gateway integration documentation must keep inbound authentication, authorization, logging, and request correlation outside generated route files. Security responsibility boundaries must remain explicit in configuration and gateway integration docs.
-
-## Repository Health Priorities
-
-- Keep documentation validation wired into CI and release preflight checks.
-- Keep roadmap, changelog, README, CLI help, examples, and docs configuration pages aligned before each release.
-- Keep generated output deterministic and reviewable through snapshot inventory checks.
-- Keep package provenance and generated output verification in the release workflow.
-- Test Node 24 as the supported Node.js floor and Node 26 as the current line while retaining TypeScript 6.
-
-## Historical 1.0 Release Gates
-
-These completed 1.0 qualification criteria are retained as historical context. Current implementation follows the epic's session gates and [contributor checks](CONTRIBUTING.md); release preparation follows the [current release workflow](.github/copilot-instructions.md#release-workflow) for its selected version.
-
-### Contract Gate
-
-- `--client-choice-mode union` is implemented and documented.
-- `format: "json-array"` has full test-backed behavior.
-- Public CLI docs, API docs, examples, and generated output agree.
-
-### Compatibility Gate
-
-- Choice-union OpenAPI output is compatible with Fastify request validation.
-- Response schemas remain compatible with Fastify serialization limits.
-- Streaming JSON array output has clear media type, schema, and error semantics.
-
-### Conformance Gate
-
-- The automated capability conformance matrix runs through broad Vitest discovery in `npm test` and `npm run ci`.
-- `npm run release:preflight -- v1.0.0` verifies that `test:conformance`, `npm test`, and `npm run ci` still cover conformance.
-- `npm run release:preflight -- v1.0.0` verifies CI still covers Node 24 and Node 26 and release workflows run on Node 24.
-- Every listed capability has a status, fixture, and expected stage behavior.
-- Unsupported features fail with useful diagnostics rather than silent miscompilation.
-
-### Quality Gate
-
-- `npm run docs:validate` passes.
-- `npm test` passes.
-- `npm run smoke:pipeline` passes.
-- `npm run ci` passes.
-- `npm run release:preflight -- v1.0.0` passes during release preparation.
-
-## Goals
-
-### Technical
-
-- Support most real-world WSDL files.
-- Generate clean, strict TypeScript.
-- Keep runtime dependencies minimal.
-- Produce production-ready gateway scaffolds.
-- Preserve end-to-end type safety from WSDL to HTTP response.
-
-### Community
-
-- Provide documentation and examples that match shipped behavior.
-- Keep issues focused on reproducible bugs and discussions focused on design, adoption, and support.
-- Make roadmap items specific enough for contributors to pick up.
+The [content-model epic](https://github.com/TechSpokes/typescript-wsdl-client/issues/147) retains historical ownership and full-profile requirements. The [completed 1.0 plan](docs/roadmap/README.md), [changelog](CHANGELOG.md) and research investigation records preserve the previous execution history without making its chronological session order a blanket product prerequisite.

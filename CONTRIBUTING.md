@@ -22,7 +22,9 @@ npm install
 
 ```bash
 npm run reference:setup
-npm run ci
+npm run build
+npm run test:unit
+npm run smoke:pipeline
 ```
 
 ### Development Commands
@@ -47,7 +49,7 @@ Before contributing code, consider starting a discussion:
 
 ## Reporting Issues
 
-Use [GitHub Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues/new) for confirmed bugs with clear reproduction steps. Use [Discussions Q&A](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) for questions. Follow our [Security Policy](./SECURITY.md) for vulnerabilities.
+Use [GitHub Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues/new) for confirmed bugs with clear reproduction steps. Use [Discussions Q&A](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) for questions. Follow our [Security Policy](SECURITY.md) for vulnerabilities.
 
 ## Code Contributions
 
@@ -138,7 +140,7 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 
 ### Test Commands
 
-- `npm test`: run all Vitest tests
+- `npm test`: run all product Vitest tests, including independent reference and conformance tests
 - `npm run test:unit`: unit tests for utilities and parsers
 - `npm run test:snap`: snapshot tests for generated code
 - `npm run test:integration`: gateway handler integration tests
@@ -146,6 +148,12 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 - `npm run test:conformance:<stage>`: one contracts, compile, client, OpenAPI, gateway, generated-test, or app evidence layer
 - `npm run test:watch`: watch mode during development
 - `npm run smoke:pipeline`: full CLI smoke test
+- `npm run test:corpus`: selected public corpus evidence and installed-package checks
+- `npm run research:ci`: optional research typechecks, documentation and tests
+
+Run `npm run ci` for complete product validation before delivery. It runs the reference launcher once, then excludes those files only from its subsequent broad Vitest command; `npm test` remains complete for the product suite.
+
+Research lives under `research/` and is separate from product checks and release gates. Use the [research guide](research/README.md) for commands and unresolved work; preserve product regression and independent XML/HTTP evidence when changing shared fixtures or compiler internals.
 
 Full conformance generates and validates several consumer-style projects, so it normally takes about three to four minutes on the maintained Windows environment. Allow at least six minutes, check the active process before treating a quiet nested TypeScript or Vitest run as stalled, and use the narrowest stage command while developing.
 
@@ -262,7 +270,7 @@ See [Testing Guide](docs/testing.md) for integration test architecture and mock 
 
 ### Code of Conduct
 
-We are committed to providing a welcoming and inclusive experience for everyone. See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for the full code of conduct.
+We are committed to providing a welcoming and inclusive experience for everyone. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for the full code of conduct.
 
 ### Getting Help
 
@@ -271,7 +279,7 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 
 ## Project Priorities
 
-See [ROADMAP.md](./ROADMAP.md) for current priorities and planned features.
+See [ROADMAP.md](ROADMAP.md) for current priorities and planned features.
 
 ## Recognition
 

@@ -14,6 +14,7 @@
     "checked-gateway.test.ts",
     "w2-intake.test.ts",
     "checked-planning.test.ts",
+    "checked-cli-diagnostics.test.ts",
     "component-soap-source.test.ts",
     "component-codec.test.ts",
     "wsdl-policy-requirements.test.ts",

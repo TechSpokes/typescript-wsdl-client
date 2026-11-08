@@ -162,7 +162,7 @@ Because `records` is single-pass, each response can be iterated once. Headers ca
 
 Streaming requires the `saxes` runtime dependency. The generated app scaffold pins `saxes ^6.0.0` automatically; consumers that integrate the generated client into their own project must install it explicitly.
 
-See [Stream Configuration](configuration.md#stream-configuration) for how to opt specific operations in, and [ADR-002](decisions/002-streamable-responses.md) for the rationale and terminal-error policy.
+See [Stream Configuration](configuration.md#stream-configuration) for how to opt specific operations in, and [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for the rationale and terminal-error policy.
 
 ## Attributes and Text Content
 

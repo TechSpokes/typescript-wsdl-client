@@ -137,7 +137,7 @@ operations not listed in the file.
 - Structural name collisions across catalogs fail the build; structurally
   identical types dedupe silently.
 
-See [ADR-002](decisions/002-streamable-responses.md) for rationale and the
+See [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for rationale and the
 terminal-error policy.
 
 ## Example Files

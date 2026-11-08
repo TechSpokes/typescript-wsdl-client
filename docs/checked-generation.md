@@ -65,9 +65,13 @@ Generated configuration points runtime calls at copied physical snapshots. Keep 
 
 Read the planning report before editing anything. Unsupported source, mapping, binding or security cases refuse with a stage and reason; a refusal does not necessarily mean the vendor schema is invalid.
 
+Checked planning refusals show the construct or source location, the reason and the next action, then exit nonzero without generating artifacts or invoking SOAP. Save the unchanged structured report with `--checked-report`; set the `DEBUG` environment variable to `wsdl-tsc` when you need the raw error, stack and report details.
+
 For a locationless import, `--checked-draft` can write `service-resolution.json` containing a `REQUIRED_SCHEMA_LOCATION` placeholder. Replace that value with the actual permitted schema location, then rerun with `--checked-config service-resolution.json`. This supplies missing source information; it does not waive native checks or reconstruct a type graph by hand.
 
 Multiple service/port/binding candidates require an explicit choice. Partial configuration and operation subsets are supported; see [selection and recovery details](checked-gateway.md#planning-and-missing-schema-recovery). Reports and drafts are preserved by default; use `--force-checked-files` deliberately to replace them on a later run.
+
+The Weather quick-start fixture has multiple ports even though it has one service. Set `service`, `port` and `selectors` in a JSON file supplied through `--checked-config`; the diagnostic lists actual service/port choices and the report lists operation candidates. Legacy mode is a separate generation path with its own support limits, not an automatic fallback after a checked refusal.
 
 ## Configure and invoke an owned SOAP backend
 
@@ -129,7 +133,7 @@ The qualified component fragment includes imported schemas, nested/repeated and 
 
 General XSD, SOAP 1.2/RPC-encoded, broader authentication/security, arbitrary wildcard conversion and checked incremental streaming remain outside this preview. OpenAPI describes the JSON shape but does not express every native scalar/order/wildcard rule. Required declarations and strict wildcard failures cannot become successful unchecked replies.
 
-[#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) supplies the bounded mixed/namespace/open mapping and its schema/serialization slice of [#410](https://github.com/TechSpokes/typescript-wsdl-client/issues/410). Representative unrelated contract qualification remains under [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397); broader HTTP translation, source, scalar, group/naming, security and streaming work retains its existing owners. Legacy defaults and full-profile activation remain unchanged. See the [roadmap](../ROADMAP.md) for direction and [development checkpoint](content-model-development-checkpoint.md) for detailed evidence.
+[#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) supplies the bounded mixed/namespace/open mapping and its schema/serialization slice of [#410](https://github.com/TechSpokes/typescript-wsdl-client/issues/410). Representative unrelated contract qualification remains under [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397); broader HTTP translation, source, scalar, group/naming, security and streaming work retains its existing owners. Legacy defaults and full-profile activation remain unchanged. See the [roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) for direction and [development checkpoint](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/docs/content-model-development-checkpoint.md) for detailed evidence.
 
 ## Send useful feedback
 

@@ -15,7 +15,21 @@
           "bytes": 27397
         }
       ],
-      "originRevision": "Primary provider metadata response 2026-10-31T08:49:58Z"
+      "originRevision": "Primary provider metadata response 2026-10-31T08:49:58Z",
+      "product": [
+        {
+          "mode": "checked",
+          "outcome": "refused",
+          "stages": [
+            "original source encoding refusal",
+            "zero SOAP dispatch"
+          ],
+          "tests": [
+            "test/integration/noaa-ndfd-qualification.test.ts"
+          ],
+          "commands": []
+        }
+      ]
     },
     {
       "id": "weather",
@@ -31,7 +45,26 @@
           "bytes": 21204
         }
       ],
-      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9",
+      "product": [
+        {
+          "mode": "legacy",
+          "outcome": "supported",
+          "stages": [
+            "generate",
+            "typecheck",
+            "OpenAPI",
+            "gateway mock",
+            "installed package"
+          ],
+          "tests": [
+            "test/integration/gateway-routes.test.ts"
+          ],
+          "commands": [
+            "package:smoke"
+          ]
+        }
+      ]
     },
     {
       "id": "import",
@@ -137,7 +170,56 @@
           "bytes": 2456
         }
       ],
-      "originRevision": "P2 runner commit recorded in inventory evidence"
+      "originRevision": "P2 runner commit recorded in inventory evidence",
+      "product": [
+        {
+          "mode": "checked",
+          "outcome": "supported",
+          "stages": [
+            "generate",
+            "install",
+            "typecheck",
+            "HTTP/SOAP success and faults"
+          ],
+          "tests": [
+            "test/integration/checked-gateway-installed.test.ts"
+          ],
+          "commands": []
+        }
+      ]
+    },
+    {
+      "id": "application-groups",
+      "tier": "synthetic",
+      "source": "test/conformance/fixtures/assessment/application-groups.wsdl",
+      "origin": "Repository-authored checked application-group acceptance service",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "Named choice alternatives, repeated groups and configured names with independent wire and installed-variant evidence",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/assessment/application-groups.wsdl",
+          "sha256": "e37256684c25c2d45582ca5003da2ab90bb03c5ed1c0128988669f805b33344b",
+          "bytes": 4830
+        }
+      ],
+      "originRevision": "29f2d10",
+      "product": [
+        {
+          "mode": "checked",
+          "outcome": "supported",
+          "stages": [
+            "generate",
+            "native SOAP",
+            "OpenAPI",
+            "installed HTTP/SOAP variant"
+          ],
+          "tests": [
+            "test/integration/checked-application-groups.test.ts",
+            "test/integration/checked-gateway-installed.test.ts"
+          ],
+          "commands": []
+        }
+      ]
     }
   ],
   "unavailable": [],

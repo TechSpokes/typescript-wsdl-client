@@ -123,7 +123,8 @@ The project uses Vitest for three layers of testing: unit tests (pure functions)
 ### Test commands
 
 Inspect `"scripts"` in `package.json` for the full list. Key commands:
-- `npm test`: all Vitest tests.
+- `npm test`: all product Vitest tests, including independent reference and conformance evidence.
+- `npm run research:ci`: optional research typechecks, documentation and tests under `research/`.
 - `npm run test:unit`: unit tests only.
 - `npm run test:snap`: snapshot tests only.
 - `npm run test:integration`: integration tests only.
@@ -155,6 +156,10 @@ Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and o
 When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
 
 Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. GitHub push and PR CI intentionally uses `npm run ci:github`; release preflight owns the single final full local gate.
+
+Follow `docs/decisions/004-product-research-boundary.md` when classifying validation or package contents. Product checks must not import experimental implementations or audit research manifests; research may import product internals and shared fixtures. Preserve shipped-behavior regressions and independent XML/HTTP evidence regardless of historical filenames, and run the optional `research:ci` lane when changing research.
+
+Local `ci` runs the reference launcher once and excludes reference files only from its subsequent broad Vitest invocation. Plain `npm test` remains complete for product tests; hosted installed-product and platform checks retain Linux/Windows and Node 24/26 coverage. Keep current contracts in `docs/` and historical investigation/handoff material in `research/docs/`; no fixed document length or universal research-completion target is a release gate.
 
 Full conformance generates consumer-style projects and launches nested TypeScript and Vitest processes. Allow at least six minutes on Windows; a normal run currently takes about three to four minutes and can be quiet during a nested process. Use the narrowest stage script while developing, inspect the active process before diagnosing a stall, and keep `test:conformance` as the complete release-relevant command.
 
