@@ -15,7 +15,7 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 3. Install `soap` as a runtime dependency.
 4. Prefer `npx wsdl-tsc pipeline` for full SOAP-to-REST adoption.
 5. Use `client`, `openapi`, `gateway`, `app`, or `compile` only when the task needs that narrower stage.
-6. Regenerate generated output from the WSDL source or `catalog.json` instead of editing generated files by hand.
+6. Regenerate generator-owned artifacts from the WSDL source or applicable legacy `catalog.json` instead of editing them by hand.
 7. Validate generated output with the consumer project's TypeScript build and tests.
 
 For testing setup, load `references/testing.md` and choose legacy mock-route tests or checked app scaffold checks. Use consumer scripts and configuration; this package does not install the generator repository's test commands, Vitest projects or verification lock. Generated checks do not replace independent SOAP wire and provider/business acceptance.
@@ -35,7 +35,7 @@ npm install soap
 
 ## Generated Output Rule
 
-Treat generated `client/`, `gateway/`, and `app/` output as replaceable artifacts. Make persistent changes in WSDL inputs, configuration files, wrapper code, middleware, tests, or generator options.
+Treat generator-owned client, gateway, OpenAPI and checked source/capsule artifacts as replaceable output; change their inputs or generator options and regenerate. App and test scaffolds are consumer-owned starting points: preserve adopted server, package/configuration and test customizations, and review them before deliberately selecting `--force-init` or `--force-test`. An app directory can contain both kinds of files; do not discard the whole directory to regenerate its artifacts.
 
 ## Reference Loading
 

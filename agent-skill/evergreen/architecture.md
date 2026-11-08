@@ -44,7 +44,7 @@ Gateway routes are generated artifacts. Customize authentication, authorization,
 
 The app scaffold is a runnable Fastify project that wires the generated client and gateway plugin together. Use it for quick adoption, smoke testing, or a starting point for a service wrapper.
 
-Regenerate the app from configuration instead of patching scaffold internals when the change belongs to generated structure.
+App server, package/configuration and README files are editable scaffolds, preserved unless app force regeneration is selected. Adopt and maintain these files according to consumer conventions; keep them outside disposable or globally ignored output when they become maintained source.
 
 ## Tests
 
@@ -52,5 +52,5 @@ Legacy generated tests use the operations interface to avoid live SOAP calls. Ch
 
 ## Regeneration Boundary
 
-Never treat generated `client/`, `gateway/`, or `app/` files as the durable customization layer. Durable changes belong in WSDL inputs, generator configuration, wrapper code, middleware, or tests.
+Regenerate generator-owned client, gateway, OpenAPI and checked source/capsule artifacts from inputs and configuration instead of patching them. Preserve consumer-owned app/test scaffolds and deliberately merge changes when refreshing them. Classify files by ownership rather than their parent directory: a checked app contains both replaceable artifacts and maintained scaffolds.
 
