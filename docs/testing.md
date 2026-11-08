@@ -2,7 +2,7 @@
 
 Guide to running and writing tests for wsdl-tsc development and for testing generated code in consumer projects.
 
-See [README](../README.md) for quick start and [CONTRIBUTING](../CONTRIBUTING.md) for development setup.
+See [README](../README.md) for quick start and [CONTRIBUTING](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) for development setup.
 
 Generated test files receive an [editable scaffold preamble](generated-code.md#generated-preambles-and-eslint). Remove its ESLint suppression when adopting the tests as maintained source; existing files are preserved unless `--force-test` is used. Full local CI includes `package:smoke`, which installs a tarball outside the checkout and validates generation, consumer compilation, and generated tests.
 

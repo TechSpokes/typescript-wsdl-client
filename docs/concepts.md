@@ -60,7 +60,7 @@ An OpenAPI property must use the exact JSON key accepted by the mapper, validato
 
 Reuse a shared name constant or source-owned mapping description where code and schemas need the same key. Keep independently authored test inputs literal so they can expose drift instead of reproducing the implementation's mistake. When terminology or a key changes, update its inventory entry, code, schemas, examples, errors and tests together; record any compatibility handling explicitly rather than silently accepting a synonym.
 
-This convention does not create another architecture layer, public mode or mandatory vocabulary migration. Existing mismatches remain visible review work, not templates for introducing more synonyms. File and directory names continue to follow [file naming and path organization](file-naming-and-path-organization.md).
+This convention does not create another architecture layer, public mode or mandatory vocabulary migration. Existing mismatches remain visible review work, not templates for introducing more synonyms. File and directory names continue to follow [file naming and path organization](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/file-naming-and-path-organization.md).
 
 ### Choice groups and named alternatives
 
@@ -122,7 +122,7 @@ This convention applies recursively to synthetic mapping properties, including m
 
 ### Mapping-key inventory and status
 
-The inventory distinguishes existing behavior from the [selected mapping contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice, and opt-in application groups implement the bounded reconstructible grammar above. Research-only dynamic-type forms remain handoffs rather than production capability claims.
+The inventory distinguishes existing behavior from the [selected mapping contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice, and opt-in application groups implement the bounded reconstructible grammar above. Research-only dynamic-type forms remain handoffs rather than production capability claims.
 
 | Key | Meaning and scope | Status |
 |---|---|---|
@@ -367,7 +367,7 @@ details:
 
 ### Streaming Bypass
 
-Operations opted into streaming with `--stream-config` bypass the success envelope on the `200` response path. The OpenAPI response content is declared as the configured stream media type, and the gateway writes raw NDJSON lines or one streamed JSON array straight to the response body. Error responses (400, 502, and the rest) still use the normal envelope so clients always see structured failures before the first record. See [ADR-002](decisions/002-streamable-responses.md) for the full rationale.
+Operations opted into streaming with `--stream-config` bypass the success envelope on the `200` response path. The OpenAPI response content is declared as the configured stream media type, and the gateway writes raw NDJSON lines or one streamed JSON array straight to the response body. Error responses (400, 502, and the rest) still use the normal envelope so clients always see structured failures before the first record. See [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for the full rationale.
 
 ### Envelope Naming
 

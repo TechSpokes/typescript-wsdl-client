@@ -7,7 +7,8 @@ This directory contains human-maintained reference documentation for `@techspoke
 ## Must-follow rules
 
 - Maintain cross-references between documents; when a doc mentions a related topic, link to the relevant file.
-- Use relative links for all internal references (e.g. `[CLI Reference](cli-reference.md)`, `[root README](../README.md)`).
+- Use relative links for packaged internal references (e.g. `[CLI Reference](cli-reference.md)`).
+- Use canonical repository URLs when packaged consumer guides link to repository-only contributor or research material.
 - Each document must open with an H1 title, a one-line description, and a cross-reference to the root [README.md](../README.md).
 - When adding, renaming, or removing a document, update the Documentation table in the root [README.md](../README.md) — that table is the single source of truth for this directory's contents.
 - Do not duplicate content from root-level files (README.md, CONTRIBUTING.md, CHANGELOG.md); link to them instead.

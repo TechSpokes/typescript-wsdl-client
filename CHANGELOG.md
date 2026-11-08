@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(package): ship consumer guides and generation resources without research or contributor archives, and validate installed documentation links.
 - feat(components): generate source-derived application groups with configured names across checked clients and gateways.
 - feat(components): carry native facets, restricted lists and primitive-string unions through checked gateways.
 - feat(components): preserve keyed mixed, namespaced and source-permitted open values through checked gateways.

@@ -25,7 +25,7 @@ describe("repository tmp workspace paths", () => {
 
   it("keeps npm cache under tmp/cache/npm", () => {
     const depsScript = readFileSync("scripts/lib/deps.mjs", "utf-8");
-    const packageScript = readFileSync("scripts/validate-npm-package.mjs", "utf-8");
+    const packageScript = readFileSync("scripts/validate-npm-package.ts", "utf-8");
 
     expect(depsScript).toContain("tmp\", \"cache\", \"npm");
     expect(packageScript).toContain("--cache tmp/cache/npm");

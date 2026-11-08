@@ -102,7 +102,7 @@ Stream operations return `StreamOperationResponse<RecordType>` on the client (`r
 
 Set `"format": "json-array"` in the stream config when downstream clients need one `application/json` array document instead of NDJSON lines.
 
-Next: [ADR-002: Streamable Responses](decisions/002-streamable-responses.md) for rationale and terminal-error policy, then [Stream Configuration](configuration.md#stream-configuration) for the full file reference.
+Next: [ADR-002: Streamable Responses](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for rationale and terminal-error policy, then [Stream Configuration](configuration.md#stream-configuration) for the full file reference.
 
 ### I want an AI agent to help in my project
 
@@ -126,5 +126,5 @@ For more on scope boundaries, see the "When NOT to Use This" section of the [REA
 | Plan a full SOAP-to-REST migration | [Migration Playbook](migration-playbook.md) |
 | Set up testing for generated code | [Testing Guide](testing.md) |
 | Review all CLI flags | [CLI Reference](cli-reference.md) |
-| Opt specific operations into response streaming | [ADR-002](decisions/002-streamable-responses.md) and [Stream Configuration](configuration.md#stream-configuration) |
+| Opt specific operations into response streaming | [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) and [Stream Configuration](configuration.md#stream-configuration) |
 | Install package-specific agent guidance | [Agent Skill Artifact](agent-skill.md) |

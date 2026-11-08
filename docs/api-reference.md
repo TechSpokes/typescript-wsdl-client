@@ -44,7 +44,7 @@ declare function compileWsdlToProject(input: {
 }): Promise<void>;
 ```
 
-`streamConfigFile` points at a JSON file parsed by `loadStreamConfigFile`. `streamConfig` accepts an already-parsed value; `streamConfigFile` takes precedence when both are set. Buffered generation is unchanged when both are omitted. See [Stream Configuration](configuration.md#stream-configuration) for the file format and [ADR-002](decisions/002-streamable-responses.md) for rationale.
+`streamConfigFile` points at a JSON file parsed by `loadStreamConfigFile`. `streamConfig` accepts an already-parsed value; `streamConfigFile` takes precedence when both are set. Buffered generation is unchanged when both are omitted. See [Stream Configuration](configuration.md#stream-configuration) for the file format and [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for rationale.
 
 ### CompilerOptions
 

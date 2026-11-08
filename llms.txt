@@ -6,7 +6,7 @@
 ## Quick Facts
 
 - CLI binary: wsdl-tsc
-- Node.js >= 20.0.0
+- Node.js >= 24.0.0
 - Runtime dependency: soap
 - Output: TypeScript client + OpenAPI 3.1 + Fastify gateway
 - All output is deterministic and diff-friendly
@@ -43,11 +43,11 @@ npx wsdl-tsc pipeline \
 
 ## Documentation
 
-- AGENTS.md: agent instructions (universal, tool-agnostic)
-- README.md: project overview and quick start
-- CONTRIBUTING.md: development setup, project structure, testing strategy
-- docs/migration.md: upgrade paths between versions
-- .github/copilot-instructions.md: authoritative detailed agent instructions (referenced by AGENTS.md)
-- docs/README.md: documentation directory index and conventions
+- [README.md](README.md): project overview and quick start
+- [Checked generation](docs/checked-generation.md): opt-in checked client and gateway workflow
+- [Migration](docs/migration.md): upgrade paths between versions
+- [Agent skill](docs/agent-skill.md): consumer-project generation guidance
+- [Contributor guide](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md): repository setup and tests
+- [Agent instructions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/AGENTS.md): repository working rules
 - npm: https://www.npmjs.com/package/@techspokes/typescript-wsdl-client
 - GitHub: https://github.com/TechSpokes/typescript-wsdl-client

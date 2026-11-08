@@ -657,7 +657,7 @@ cat ./debug/catalog.json | jq '.operations'
 
 ## assess
 
-Inspect source schema evidence without generating artifacts or dispatching SOAP. The [assurance contract](decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) defines the native scope and qualified correspondence route.
+Inspect source schema evidence without generating artifacts or dispatching SOAP. The [assurance contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) defines the native scope and qualified correspondence route.
 
 ```bash
 npx wsdl-tsc assess --wsdl-source examples/minimal/weather.wsdl --report .generated/assessment.json

@@ -1,69 +1,19 @@
 # Documentation
 
-Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. The root [README.md](../README.md) Documentation section is the authoritative index with descriptions; the list below is a quick local reference organized by reader intent.
+Consumer and contributor guidance for `@techspokes/typescript-wsdl-client`. Use the root [README](../README.md#documentation) as the authoritative documentation index.
 
-The [S06 research handoff](content-model-s06-research-handoff.md) links the four rule investigations and their unresolved acceptance gates.
+## Using the package
 
-## Evaluate
+Start with [Start Here](start-here.md), then choose the [CLI reference](cli-reference.md) or the [checked generation guide](checked-generation.md). Consult [Supported Patterns](supported-patterns.md) and the checked guide's separate scope before selecting a generation mode.
 
-- [start-here.md](start-here.md): what this is, who it is for, choose your path
-- [supported-patterns.md](supported-patterns.md): WSDL/XSD features handled and current limitations
-- [output-anatomy.md](output-anatomy.md): what gets generated and how to use it
+Use [Troubleshooting](troubleshooting.md) for failures and [Migration](migration.md) when upgrading generated projects. The [agent skill guide](agent-skill.md) describes the separately distributed consumer-project skill.
 
-## Adopt
+## Contributing
 
-- [cli-reference.md](cli-reference.md): all 6 commands with flags and examples
-- [generated-code.md](generated-code.md): using clients, types, and operations
-- [configuration.md](configuration.md): gateway security, upstream SOAP security, tags, operations config files
-- [migration-playbook.md](migration-playbook.md): end-to-end SOAP modernization guide
+Use the [contributor guide](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) for repository setup and validation. Contributor architecture, research and release archives remain in the repository rather than the npm package.
 
-## Operate
+Follow the [documentation conventions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/AGENTS.md) when editing guides. Run `npm run docs:validate` to check repository links and TypeScript examples.
 
-- [gateway-guide.md](gateway-guide.md): Fastify integration and error handling
-- [testing.md](testing.md): testing patterns and mock client examples
-- [production.md](production.md): CI/CD, validation, logging
-- [troubleshooting.md](troubleshooting.md): common issues and debugging
-- [releases/README.md](releases/README.md): per-version GitHub release notes used by the draft release workflow
+## Decisions
 
-## Extend
-
-- [api-reference.md](api-reference.md): programmatic TypeScript API
-- [concepts.md](concepts.md): flattening, `$value`, primitives, determinism
-- [architecture.md](architecture.md): internal pipeline for contributors
-- [file-naming-and-path-organization.md](file-naming-and-path-organization.md): contributor convention for taxonomy paths and fixture retrieval
-- [agent-skill.md](agent-skill.md): release ZIP for consumer-project AI agents
-- [Current roadmap](../ROADMAP.md): published baseline and active backlog
-- [roadmap/README.md](roadmap/README.md): historical completed 1.0 implementation and qualification plan
-- [decisions/002-streamable-responses.md](decisions/002-streamable-responses.md): opt-in streaming design (client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` OpenAPI extension); shipped in 0.17.0 and extended in 0.28.0
-- [migration.md](migration.md): upgrading between package versions
-
-## Conventions
-
-- Each document opens with an H1 title and a one-line description.
-- Cross-reference related documents and the root README where relevant.
-- Use fenced code blocks for CLI examples; format flags as inline code (`` `--flag-name` ``).
-- Use `bash` fences for portable command examples; reserve `powershell` fences for Windows-specific commands.
-- Run `npm run docs:validate` to check local links and TypeScript fenced snippets.
-- Keep language direct and task-oriented; architecture.md targets contributors, all others target users.
-
-## Related
-
-- [S02 handoff](content-model-s02-handoff.md): architecture decisions, feasibility evidence and S03 entry contracts
-- [Ordered schema loading](content-model-loading.md): internal syntax, provenance and controlled resolution contracts
-- [Canonical schema graph](content-model-graph.md): immutable declarations, use sites and lexical reference context
-- [Semantic catalog format 2](content-model-catalog.md): deterministic persistence, validation and compatibility routing
-- [RE01 research resolver implementation](content-model-s06-re-01-resolver-implementation.md): supplied-candidate and abstract wildcard checks, qualification limits and the future production adapter
-- [RE01 support reconstruction](content-model-s06-re-01-support-reconstruction.md): conditional copy/bundle reductions, value/name palettes and open bounds
-- [RE01 scalar witness construction](content-model-s06-re-01-scalar-witnesses.md): shared endpoint tuples and open materialization gates
-
-- [Direct scalar values](direct-values.md): internal source mapping, fresh inverse and codec handoff.
-
-- [Root README](../README.md): project overview, quick start, and authoritative Documentation section
-- [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow
-- [CHANGELOG.md](../CHANGELOG.md): version history
-- [examples](../examples/README.md): sample WSDL files and generated output
-
-## Not Here
-
-- Generated code samples live in `examples/generated-output/`, not in `docs/`.
-- Installation and dev setup belong in the root README and CONTRIBUTING.md respectively.
+Read the [content-model contracts](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) for correctness and compatibility requirements. The [streaming decision](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) records the opt-in streaming contract.
