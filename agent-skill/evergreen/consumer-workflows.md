@@ -51,7 +51,7 @@ Generate the gateway from the OpenAPI file and point it at the generated client 
 
 Use `app` or `pipeline --init-app` when the project wants a runnable service wrapper quickly.
 
-Treat the scaffold as generated output. Put long-lived service behavior in application-owned modules, middleware, configuration, and deployment files.
+App files are editable consumer-owned scaffolds, preserved on regeneration unless app force replacement is selected. Keep long-lived service behavior in maintained server modules, middleware, configuration and deployment files; preserve those customizations when refreshing the scaffold. Regenerate embedded client/gateway artifacts separately according to their ownership, without deleting the app directory.
 
 ## Catalog Debugging
 

@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(agents): preserve consumer-owned app scaffolds and keep the documentation index authoritative.
 - docs(testing): separate maintainer verification from legacy and checked consumer testing guidance.
 - test: separate fast checks from bounded workflows and prevent competing verification runs with retained attempt logs.
 - fix(components): decode declared Latin1 and BOM-marked UTF-16 metadata per resource while preserving original source bytes.

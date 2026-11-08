@@ -35,7 +35,7 @@ npm install soap
 
 ## Generated Output Rule
 
-Treat generated `client/`, `gateway/`, and `app/` output as replaceable artifacts. Make persistent changes in WSDL inputs, configuration files, wrapper code, middleware, tests, or generator options.
+Treat generator-owned client, gateway, OpenAPI and checked source/capsule artifacts as replaceable output; change their inputs or generator options and regenerate. App and test scaffolds are consumer-owned starting points: preserve adopted server, package/configuration and test customizations, and review them before deliberately selecting `--force-init` or `--force-test`. An app directory can contain both kinds of files; do not discard the whole directory to regenerate its artifacts.
 
 ## Reference Loading
 

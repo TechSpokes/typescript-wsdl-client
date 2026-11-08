@@ -31,7 +31,7 @@ This directory contains human-maintained reference documentation for `@techspoke
 
 1. Create the file in `docs/` with an H1 title and description.
 2. Add a row to the Documentation table in the root README.md.
-3. Add a bullet to the Contents list in `docs/README.md`.
+3. Keep `docs/README.md` pointing to the root table rather than adding a duplicate Contents list.
 4. Cross-reference from related existing documents where appropriate.
 
 ### Editing existing documents
