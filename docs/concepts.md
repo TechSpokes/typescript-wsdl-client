@@ -52,7 +52,7 @@ Use one term for one concept across source analysis, internal code, generated ty
 
 A choice is a rule, an alternative is a permitted branch, and a selection is an instance's use of a branch. They are not interchangeable glossary terms. The research now uses `$choice` for a choice site; source occurrence bounds determine whether its value is one object or an array, just as they do for other items.
 
-Keep the canonical word stem when deriving related names: normal TypeScript casing for internal identifiers and type names, and `$` plus lower camel case for mapper-owned application properties. Source-derived XML data names and established profile mappings retain their declared spellings. Contextual group stems and collision suffixes remain one coherent naming decision to resolve before general generation; do not infer new keys or aliases from this casing rule.
+Keep the canonical word stem when deriving related names: normal TypeScript casing for internal identifiers and type names, and `$` plus lower camel case for mapper-owned application properties. Source-derived XML data names and established profile mappings retain their declared spellings. The bounded allocator below names opt-in checked groups without renaming ordinary business fields.
 
 Private source-graph and configuration objects do not need `$` prefixes merely to follow the payload namespace rule, but their names and descriptions must use the same concepts. Standards-owned names such as XSD `minOccurs`, existing graph `occurs`, and JSON Schema `oneOf` have explicit semantic mappings rather than mechanical renames. Choose `oneOf`, `anyOf` or other schema operators for their actual validation meaning, not because their names resemble a source term.
 
@@ -64,7 +64,9 @@ This convention does not create another architecture layer, public mode or manda
 
 ### Choice groups and named alternatives
 
-Use one spelling, `$choice`, in the bounded research example for both singleton and repeatable occurrences of the same source choice site. A contract permits one shape at that site: callers cannot interchange an object and an array. Repeating a group does not pluralize its key or its item type.
+Enable checked groups with `applicationGroups: {}` in the existing checked generation configuration. Each record uses reconstructible structured groups or retains its existing ordered presentation, with its disposition/reason in `inventory.json`. Absence of this option preserves existing checked shapes and generated artifacts.
+
+Use `$choice`, `$choice2` and subsequent numbers for independent choice sites in one containing application object, in retained source order. Repeated sequences use `$sequence`, `$sequence2` and subsequent numbers. Repeating a site uses one array without pluralizing its key or item type; JSON property order never controls XML order.
 
 | Source bounds | Application value | Schema |
 |---|---|---|
@@ -73,21 +75,23 @@ Use one spelling, `$choice`, in the bounded research example for both singleton 
 | `1..3` | Array, including for one occurrence | Required array with `minItems: 1`, `maxItems: 3` |
 | `0..unbounded` | Optional array | Array with no finite maximum |
 
-Optional repeated groups follow the selected mapping's omission/empty-array normalization rather than inventing an additional spelling. The executable example covers required singleton and bounded repetition through the native inverse; optional singleton presence is a schema-only control, not a general optional/empty-group reconstruction proof. Nullable alternatives and invisible empty occurrences still require the existing ADR-003 normalization decision.
+Optional repeated groups with nonempty bodies accept an empty array and canonically omit that property without mutating input. Required minima and finite maxima retain source bounds. Empty-capable bodies and ambiguous partitions retain ordered values and ADR-003 normalization; optional occurrence bounds alone do not make a body empty-capable.
 
-Every structured alternative needs a named object schema and TypeScript type, including when the group occurs only once. The prototype manually names its two objects `RequestChoiceAlternative1` and `RequestChoiceAlternative2`; `RequestChoice` is their union. Its `SingleRequest` deliberately reuses that common schema; this demonstrates named references and schema reuse, not execution of a contextual name allocator.
+Every structured alternative has a named object schema and TypeScript type, including singleton choices. For a source type `Request`, defaults are union `RequestChoice` and objects `RequestChoiceAlternative1` and `RequestChoiceAlternative2`. A repeated sequence references its named item object; recursive types remain finite references rather than unrolled combinations.
 
 A single property references the union directly; an array references the same union in `items`, and TypeScript uses `RequestChoice[]`. Sharing application schema structure does not merge the distinct native source declarations used for reconstruction.
 
-The proposed contextual pattern is `<ParentName><ParentObjectKey>Choice`, followed by `Alternative1`, `Alternative2` and so on for its object alternatives in source order. For parent `Order` and object key `payment`, that gives `OrderPaymentChoice`, `OrderPaymentChoiceAlternative1` and `OrderPaymentChoiceAlternative2`. The prototype's reserved `$choice` role contributes `Choice` once, giving `RequestChoice`, not `RequestChoiceChoice`.
+Default type stems use the owning named type's local name, or the anonymous type's containing element and scoped path digest, followed by `Choice` or `Sequence`. Nonalphanumeric source characters use injective `_u<hex>_` escaping; anonymous stems use `___Anonymous_<digest>`. Nested generated roles use `___` boundaries, which cannot occur in escaped source stems, and contribute once; alternatives append `Alternative1`, `Alternative2` and subsequent numbers in source order.
 
-Retain the full parent/source name when it ends in `Choice` or `Choices`; do not trim a business name by spelling alone. For parent `OrderChoice` and key `payment`, the candidate is `OrderChoicePaymentChoice`. Reusing an already-generated terminal role, resolving clashes with existing source type names, and naming several independent choice sites in one object still need one deterministic source-identity-based rule before general emission; the prototype does not implement that allocator.
+Several source type namespaces with the same local name receive a namespace digest suffix.
+
+Retain complete business names ending in `Choice`, `Choices` or `Sequence`; source type `PaymentChoice` therefore produces `PaymentChoiceChoice`. Default collisions append an underscore and the first twelve hexadecimal digits of the source-target digest. Ordinary fields and unrelated distinct declarations keep their names; explicit names never receive silent collision suffixes.
 
 Several occurrences of one choice site use one array. Several independent choice sites need distinct reserved properties and distinct contextual schemas; merging them into one array would lose their separate rules. The source identity and structural position distinguish such sites even when the alternatives have identical field names; display names do not establish identity.
 
 ### Configured application names
 
-The planned naming configuration must let developers override the synthetic group property, its union type/schema name, and each structured alternative type/schema name independently. Defaults follow the contextual convention above; explicit names let the generated API use the application's terminology. This is a requirement for future integration, not an implemented configuration option or a new CLI flag.
+The optional `applicationGroups.names` array configures the synthetic property, union/item type and structured alternative names independently. Generate with `applicationGroups: {}`, copy opaque tokens from `inventory.json` under `applicationGroups.targets`, and regenerate with entries containing `target`, optional `propertyName` and optional `typeName`. The same data works in `--checked-config` and `PipelineOptions.checkedComponents`; no additional command or flag is needed.
 
 | Naming target | Prototype default | Example configured name |
 |---|---|---|
@@ -104,7 +108,11 @@ Resolve default and configured names before emission and use that one mapping fo
 
 A configured alias selects the emitted/accepted name for that generated contract, not additional runtime synonyms. For example, a contract configured with `$payment` does not also accept `$choice` by default. Changing published keys or type names needs an explicit compatibility disposition and regenerated matching artifacts; runtime callers cannot submit naming configuration or change the native source binding through the payload.
 
-The exact configuration field names, selector syntax, override scope and interaction with schema reuse remain to be designed alongside the general name allocator. Required future evidence includes fresh JSON inverses using configured names, nested and repeated choices, independently renamed alternatives, consistent OpenAPI references, unchanged XML identities and rejection of ambiguous targets, invalid names, collisions and superseded keys. The current prototype does not implement these overrides.
+Choice and sequence targets accept either override; alternative targets accept only `typeName`. Properties must be `$` followed by a lower-camel ASCII identifier and cannot use reserved metadata keys; type names must be non-reserved ASCII TypeScript identifiers that are unchanged valid OpenAPI component keys. Unknown fields, duplicate targets, stale targets, accessors, proxies, malformed arrays and scoped collisions fail before artifact emission.
+
+Tokens are `ag1:` plus a SHA-256 digest of scoped owning/source/use-site identities, structural role and a guard of the selected record's effective particle shape. They are independent of physical snapshot paths, unrelated global declaration order, display names and aliases. A relevant particle edit invalidates old tokens; regenerate defaults and copy new tokens rather than migrating by position.
+
+Names are definition-scoped within the selected service, including recursive references and reuse across request, response and fault directions. Named-group uses in different owning records remain distinct targets. Inventory is diagnostic data only; capsules persist the selected options and reconstruction rederives them against authenticated authorized sources, while mismatched generated artifacts refuse.
 
 ## Reserved mapping keys
 
@@ -114,21 +122,22 @@ This convention applies recursively to synthetic mapping properties, including m
 
 ### Mapping-key inventory and status
 
-The inventory distinguishes existing behavior from the [selected mapping contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice; research-only type/group forms remain handoffs, not production capability claims or a new public mode.
+The inventory distinguishes existing behavior from the [selected mapping contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice, and opt-in application groups implement the bounded reconstructible grammar above. Research-only dynamic-type forms remain handoffs rather than production capability claims.
 
 | Key | Meaning and scope | Status |
 |---|---|---|
 | `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
 | `$attributes` | Attribute channel; named entries derive unique source identities, otherwise distinguish unqualified scalars and namespaced holders | Existing legacy bags unchanged; qualified checked keyed fallback |
 | `$content` | Ordered content; new entries are text objects or one named child occurrence | Existing ordered shapes unchanged; qualified checked keyed mixed/open grammar |
-| `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
+| `$choice`, `$choice2`, ... | Complete source choice; object or array from source bounds | Opt-in checked application groups |
+| `$sequence`, `$sequence2`, ... | Source sequence item; array for repeated groups | Opt-in checked application groups |
 | `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | [Checked component nil values](checked-gateway.md#nil-values); no null shorthand |
 | `$namespace` | Actual namespace URI of the element/attribute/type identity at this location | Qualified checked element/attribute metadata; type execution remains separate |
 | `$namespaces` | Prefix bindings introduced/rebound here, inherited by descendants | Qualified checked snapshot-at-boundary plus local-delta contract |
 | `$type` | Explicit assessed type identity with flat `$name`/`$namespace` strings | Selected research shape; native type checks remain required |
 | `$name` | XML type name string within `$type` | Selected research shape; never a nested name object or child-name duplicate |
 
-No other synthetic application-mapping keys are allocated by this inventory. `$selection` and `$selections` were superseded research spellings; `$choices` is not a plural alias. `$text` and `$element` occur in comparison alternatives only; they are not additional accepted spellings. A future source-named group key must also start with `$`, have deterministic collision handling among generated keys, and be documented before emission; this inventory does not invent a generic naming algorithm.
+Configured group aliases allocate only their selected `$` property spelling. `$selection` and `$selections` were superseded research spellings; `$choices` is not a plural alias. `$text` and `$element` occur in comparison alternatives only and are not additional accepted spellings.
 
 ### Existing unprefixed descriptors requiring a deliberate correction
 

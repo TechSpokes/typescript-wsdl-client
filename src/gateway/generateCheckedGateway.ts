@@ -10,6 +10,7 @@ import type {ReconstructedComponentSource} from '../compiler/directSourceCapsule
 import {lowerComponentShape} from '../generation/componentShape.js';
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
+import {inspectComponentValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 
 interface CheckedGatewayOptions {
@@ -69,9 +70,33 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   }));
   const fault: Schema = faultVariants.length ? {oneOf: faultVariants} : {not: {}};
   const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault}};
+  const grouped = expected.mappings.some(mapping => mapping.kind === 'component-mapping'
+    && inspectComponentValueMapping(mapping, expected.contract).applicationGroups);
+  const components: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
+  const documented = (value: unknown, dictionary = false): unknown => {
+    if (Array.isArray(value)) return value.map(item=>documented(item));
+    if (!value || typeof value !== 'object') return value;
+    const record = value as Record<string,unknown>, result: Record<string,unknown> = Object.create(null) as Record<string,unknown>;
+    // @why Property names belong to the application; definitions and $id are keywords only at schema nodes.
+    if (dictionary) {for (const [key,item] of Object.entries(record)) result[key]=documented(item);return result;}
+    if (Object.hasOwn(record,'definitions')) for (const [key,definition] of Object.entries(record.definitions as Record<string,Schema>)) {
+      const resolved = documented(definition) as Schema;
+      if (components[key] && JSON.stringify(components[key])!==JSON.stringify(resolved)) throw new TypeError(`applicationGroups OpenAPI component collision ${key}`);
+      components[key] = resolved;
+    }
+    for (const [key,item] of Object.entries(record)) {
+      if (key==='definitions' || key==='$id') continue;
+      result[key] = ['const','enum','default','examples'].includes(key) ? item
+        : key==='$ref' && typeof item==='string' && item.startsWith('#/definitions/') ? item.replace('#/definitions/','#/components/schemas/')
+        : documented(item,['properties','patternProperties','dependencies','dependentSchemas'].includes(key));
+    }
+    return result;
+  };
+  const documentation = grouped ? {request: documented(request),response: documented(response),fault: documented(fault)} : {request,response,fault};
   const doc = {
     openapi: '3.1.1', jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
     info: {title: expected.selection.service.local, version: '1.0.0'},
+    ...(grouped ? {components:{schemas:components}} : {}),
     'x-checked-model': {model: 'checked-components-v1', scope: 'native-component-structured-soap11',
       ...(expected.responseProjection
         ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
@@ -81,10 +106,10 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     paths: {[options.routePath]: {post: {operationId: expected.contract.selector.operation,
       ...(expected.responseProjection
         ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
-      requestBody: {required: true, content: {'application/json': {schema: request}}},
-      responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: response}}},
+      requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
+      responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
-        '502': {description: 'Declared SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [fault,
+        '502': {description: 'Declared SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentation.fault,
           {type: 'object', additionalProperties: false, required: ['kind', 'rule'], properties: {kind: {type: 'string'}, rule: {type: 'string'}}}]}}}},
         '500': {description: 'Incompatible artifacts or gateway configuration'}}}}},
   };
@@ -207,7 +232,15 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   }
   const {responseProjection: firstProjection, ...serviceModel} = documents[0]!['x-checked-model'] as Record<string, unknown>;
   void firstProjection;
-  const doc = {...documents[0], 'x-checked-model': {...serviceModel,
+  const componentSchemas: Record<string,unknown> = Object.create(null) as Record<string,unknown>;
+  for (const document of documents) {
+    const schemas = (document.components as {schemas?:Record<string,unknown>} | undefined)?.schemas ?? {};
+    for (const [name,schema] of Object.entries(schemas)) {
+      if (componentSchemas[name] && JSON.stringify(componentSchemas[name])!==JSON.stringify(schema)) throw new TypeError(`applicationGroups OpenAPI component collision ${name}`);
+      componentSchemas[name]=schema;
+    }
+  }
+  const doc = {...documents[0], ...(Object.keys(componentSchemas).length ? {components:{schemas:componentSchemas}} : {}), 'x-checked-model': {...serviceModel,
     selection: {service: operations[0]!.selection.service, port: operations[0]!.selection.port,
       selectors: operations.map(operation => operation.contract.selector)}}, paths};
   let clientImport = path.relative(options.gatewayDir, path.join(options.clientDir, 'client.js')).replaceAll('\\', '/');

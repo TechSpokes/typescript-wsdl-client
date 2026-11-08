@@ -11,8 +11,8 @@ import {runOwnedNode} from './ownedNodeProcess.js';
 
 export const CHECKED_GATEWAY_STAGE_TIMEOUT_MS = 240_000;
 export const CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS = 60_000;
-// @why Ten base commands and four commands for each of five variants have individual four-minute limits.
-export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = (10 + 5 * 4) * CHECKED_GATEWAY_STAGE_TIMEOUT_MS + CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS;
+// @why Base and variant commands have individual four-minute limits, including group inventory regeneration.
+export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = (10 + 7 * 5) * CHECKED_GATEWAY_STAGE_TIMEOUT_MS + CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS;
 /**
  * Packs the candidate and exercises only installed public generation and runtime entry points.
  * @param signal Caller cancellation; active owned command trees close before cleanup resolves.
@@ -127,15 +127,21 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     expect(result).toMatchObject({kind: 'checked-gateway-installed', originalCheckoutReadable: false});
     await writeFile(path.join(evidence, 'wire.log'), executed.stdout + executed.stderr);
     const original = await readFile(source, 'utf8');
-    for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets'] as const) {
-      const variant = mode === 'nil' || mode === 'keyed' || mode === 'facets' ? await readFile(path.join(root, `test/conformance/fixtures/assessment/${mode}.wsdl`), 'utf8') : mode === 'optional'
+    for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets', 'groups-default', 'groups-configured'] as const) {
+      const grouped = mode.startsWith('groups-');
+      const variant = grouped ? (await readFile(path.join(root,'test/conformance/fixtures/assessment/application-groups.wsdl'),'utf8'))
+        .replaceAll('urn:checked:groups','urn:checked:forecast').replaceAll('PaymentPortType','ForecastPortType').replaceAll('PaymentBinding','ForecastBinding')
+        .replaceAll('PaymentService','ForecastService').replaceAll('PaymentPort','ForecastPort').replaceAll('PaymentFault','ForecastFault').replaceAll('PaymentError','ForecastError')
+        .replaceAll('SubmitResponse','GetForecastResponse').replaceAll('Submit','GetForecast')
+        : mode === 'nil' || mode === 'keyed' || mode === 'facets' ? await readFile(path.join(root, `test/conformance/fixtures/assessment/${mode}.wsdl`), 'utf8') : mode === 'optional'
         ? original.replace('<xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int"/>',
           '<xs:element name="city" type="xs:string" minOccurs="0"/><xs:element name="days" type="xs:int" minOccurs="1" maxOccurs="unbounded"/>')
         : original.replace('type="t:ForecastRequest"', 'type="xs:boolean"')
           .replace('type="t:ForecastResponse"', 'type="xs:int"').replace('name="ForecastFault" type="t:ForecastFault"', 'name="ForecastFault" type="xs:string"');
       const variantSource = path.join(consumer, mode + '.wsdl');
       await writeFile(variantSource, variant);
-      const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents,
+      let groupOptions: {names?: {target:string;propertyName?:string;typeName?:string}[]} | undefined = grouped ? {} : undefined;
+      const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents:{...checkedComponents,...(grouped?{applicationGroups:groupOptions}:{})},
         clientOutDir: path.join(project, 'client'), openapi: {outFile: path.join(project, 'openapi.json')},
         gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: 'forecast'},
         app: {appDir: project}, test: {testDir: path.join(project, 'test')}};
@@ -143,6 +149,20 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
         '--input-type=module', '-e',
         'import {runGenerationPipeline} from "@techspokes/typescript-wsdl-client"; await runGenerationPipeline(JSON.parse(process.argv[1]));',
         JSON.stringify(opts)], tooling);
+      if (mode === 'groups-configured') {
+        const inventory = JSON.parse(await readFile(path.join(project,'client/inventory.json'),'utf8')) as {
+          applicationGroups:{targets:{target:string;role:string;defaults:{typeName:string}}[]}};
+        groupOptions={names:[...inventory.applicationGroups.targets.filter(t=>t.defaults.typeName.startsWith('PaymentChoiceChoice')).map(t=>({target:t.target,
+          ...(t.role==='choice'?{propertyName:'$payment',typeName:'PaymentMethod'}:{typeName:t.defaults.typeName.endsWith('1')?'CardPayment':'BankPayment'})})),
+          ...inventory.applicationGroups.targets.filter(t=>t.role==='choice' && t.defaults.typeName.startsWith('NestedAlternativesChoiceAlternative')).map(t=>({
+            target:t.target,propertyName:'$method',typeName:t.defaults.typeName.includes('Alternative1')?'CardChannel':'BankChannel'})),
+          ...inventory.applicationGroups.targets.filter(t=>t.role==='sequence' && ['OneSequenceSequence','TwoSequenceSequence'].includes(t.defaults.typeName)).map(t=>({
+            target:t.target,...(t.defaults.typeName==='OneSequenceSequence'?{propertyName:'$id',typeName:'__proto__'}:{typeName:'toString'})}))]};
+        await writeFile(config,JSON.stringify({...checkedComponents,applicationGroups:groupOptions}));
+        const args=[...installedGenerate];
+        args[args.indexOf('--wsdl-source')+1]=variantSource;
+        await run('configured group CLI inventory-copy regeneration',args,tooling);
+      }
       await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);
       const checked = await run(mode + ' independent HTTP/SOAP contract', ['--permission', '--allow-child-process', ...networkPermission,

@@ -21,6 +21,8 @@ import {assessProjectionScalarOperand} from './projectionScalar.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
 import {isXmlNCName, XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {planApplicationGroups, mapApplicationGroups, parseApplicationGroups, ApplicationGroupValueError} from './applicationGroups.js';
+import type {ApplicationGroupsOptions, ApplicationGroupPlan} from './applicationGroups.js';
 
 export type DirectPrimitive = string | boolean | number;
 /** Inverse construction caps; XML encoding may impose smaller byte/text/node limits. */
@@ -68,7 +70,8 @@ type Options = Readonly<{signal?: AbortSignal; maxText?: number; maxItems?: numb
 const mappings = new WeakMap<object, DirectOperationContract>();
 // @why Keep the exact native-derived plan with its issued mapping without widening portable preview data.
 const mappingProjections = new WeakMap<DirectValueMapping, DirectProjectionPlan>();
-const componentMappings = new WeakMap<object, Readonly<{mapping: ComponentValueMapping; contract: DirectOperationContract; projection: DirectProjectionPlan}>>();
+const componentMappings = new WeakMap<object, Readonly<{mapping: ComponentValueMapping; contract: DirectOperationContract; projection: DirectProjectionPlan;
+  applicationGroups?: ApplicationGroupPlan; applicationGroupsOptions?: ApplicationGroupsOptions}>>();
 const values = new WeakMap<object, DirectOperationContract>();
 const expansions = new WeakMap<object, DirectOperationContract>();
 const projectionValues = new WeakMap<object, SemanticContext>();
@@ -126,6 +129,7 @@ function runContext<T>(context: SemanticContext, options: Options, work: (s: Ses
     if (error instanceof DataOwnershipLimitError) return {kind: 'resource-limit', rule: error.message, usage: budget.usage()};
     if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, schemaPath: error.schemaPath,
       payloadPath: error.payloadPath, usage: Object.freeze({...budget.usage()})});
+    if (error instanceof ApplicationGroupValueError) return Object.freeze({kind: 'value-invalid', rule: error.message, usage: Object.freeze({...budget.usage()})});
     throw error;
   }
 }
@@ -168,7 +172,7 @@ export function createDirectValueMapping(contract: DirectOperationContract, dire
  *   It grants no codec, artifact or transport authority; copied mappings and mappings for other operations refuse.
  * @returns An operation-owned structured mapping or the existing unsupported/cancellation/resource diagnostic.
  */
-export function createComponentValueMapping(contract: DirectOperationContract, direction: DirectDirection, options: Options = {}): ComponentValueMapping | DirectValueFailure {
+export function createComponentValueMapping(contract: DirectOperationContract, direction: DirectDirection, options: Options = {}, applicationGroups?: ApplicationGroupsOptions): ComponentValueMapping | DirectValueFailure {
   return run(contract, options, s => {
     const {context} = inspectDirectOperation(contract);
     if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1')
@@ -178,19 +182,31 @@ export function createComponentValueMapping(contract: DirectOperationContract, d
       () => {throw new Stop('unsupported', 'native-component-shape', selected.root.element.context.source.path);});
     const mapping: ComponentValueMapping = s.publish({kind: 'component-mapping' as const, version: 'component-values-v1' as const,
       admitted: false as const, root: selected.root, direction: selected.direction, contextId: context.contextId});
-    componentMappings.set(mapping, Object.freeze({mapping, contract, projection}));
+    const groupOptions = applicationGroups ? directDataOwnership(s.budget).freeze(parseApplicationGroups(applicationGroups)) : undefined;
+    const groups = groupOptions ? planApplicationGroups(context, projection, groupOptions, s.check) : undefined;
+    componentMappings.set(mapping, Object.freeze({mapping, contract, projection, ...(groups ? {applicationGroups: groups,applicationGroupsOptions:groupOptions} : {})}));
     return mapping;
   });
 }
 
+/** Reconstruct another operation direction using the exact issued presentation, without payload configuration.
+ * @returns A fresh source-owned mapping retaining request-selected naming options, or a native refusal.
+ * @throws TypeError For foreign/copy-shaped input mappings or malformed presentation options.
+ */
+export function createComponentDirectionalMapping(contract: DirectOperationContract, supplied: unknown, direction: DirectDirection,
+  options: Options = {}): ComponentValueMapping | DirectValueFailure {
+  const input=inspectComponentValueMapping(supplied,contract).mapping;
+  return createComponentValueMapping(contract,direction,options,componentMappings.get(input)!.applicationGroupsOptions);
+}
+
 /** Authenticate the exact structured mapping and expose its existing native plan to local consumers only. */
 export function inspectComponentValueMapping(value: unknown, contract: DirectOperationContract):
-  Readonly<{mapping: ComponentValueMapping; projection: DirectProjectionPlan}> {
+  Readonly<{mapping: ComponentValueMapping; projection: DirectProjectionPlan; applicationGroups?: ApplicationGroupPlan}> {
   inspectDirectOperation(contract);
   if (!value || typeof value !== 'object') throw new TypeError('Fresh matching component value mapping required');
   const owned = componentMappings.get(value);
   if (!owned || owned.contract !== contract) throw new TypeError('Fresh matching component value mapping required');
-  return Object.freeze({mapping: owned.mapping, projection: owned.projection});
+  return Object.freeze({mapping: owned.mapping, projection: owned.projection, ...(owned.applicationGroups ? {applicationGroups: owned.applicationGroups} : {})});
 }
 function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): DirectAssessedScalar {
   const {budget, check} = s;
@@ -395,12 +411,14 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
 }
 
 /** Validate scalar operands and retain nested application records without claiming source or operation admission. */
-export function assessProjectionScalars(context: SemanticContext, supplied: unknown, options: Options = {}): ProjectionValueReceipt | DirectValueFailure {
+export function assessProjectionScalars(context: SemanticContext, supplied: unknown, options: Options = {}, mapping?: ComponentValueMapping): ProjectionValueReceipt | DirectValueFailure {
   const structural = inspectProjectionStructuralMatch(supplied, context);
   return runContext(context, options, s => {
     const operands: DirectAssessedScalar[] = [];
     for (const duty of structural.occurrences) {s.check(); operands.push(scalar(duty, s, context));}
-    const value = projectValue(structural.tree, operands, s);
+    let value = projectValue(structural.tree, operands, s);
+    const owned = mapping && componentMappings.get(mapping);
+    if (owned?.applicationGroups) value = mapApplicationGroups(owned.applicationGroups, owned.projection, value, 'from-native', s.check) as DirectApplicationValue;
     const receipt = s.publish({kind: 'projection-value' as const, scope: 'direct-structure-and-scalars' as const, admitted: false as const,
       root: structural.root, contextId: context.contextId, structural, operands, value});
     projectionValues.set(receipt, context);
@@ -845,9 +863,39 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
 }
 
 /** Validate structured application values with the same native structural/scalar owners, without operation admission. */
-export function expandProjectionValue(context: SemanticContext, root: ElementNode, application: unknown, options: Options = {}): ProjectionExpandedValue | DirectValueFailure {
+export function expandProjectionValue(context: SemanticContext, root: ElementNode, application: unknown, options: Options = {}, mapping?: ComponentValueMapping): ProjectionExpandedValue | DirectValueFailure {
   return runContext(context, options, s => {
     const plan = planDirectProjection(context, root, s.check, () => {throw new Stop('unsupported', 'native-direct-shape');});
+    const owned = mapping && componentMappings.get(mapping);
+    if (owned?.applicationGroups) {
+      const pending: {value: unknown; depth: number}[] = [{value:application,depth:0}], seen = new Set<object>();
+      while (pending.length) {
+        s.check(); const {value,depth} = pending.pop()!;
+        if (!value || typeof value !== 'object') continue;
+        if (depth > 200) throw new ApplicationGroupValueError('application-group-depth-limit');
+        if (types.isProxy(value)) throw new ApplicationGroupValueError('application-group-data-required');
+        if (seen.has(value)) continue;
+        seen.add(value);
+        const array = Array.isArray(value), prototype: unknown = Object.getPrototypeOf(value);
+        if (array ? prototype !== Array.prototype : prototype !== Object.prototype && prototype !== null) throw new ApplicationGroupValueError('application-group-data-required');
+        const keys = Reflect.ownKeys(value); s.budget.chargeWork(64+keys.length*32);
+        const length = array ? Object.getOwnPropertyDescriptor(value,'length')!.value as number : undefined;
+        if (array && keys.length !== length!+1) throw new ApplicationGroupValueError('application-group-dense-array-required');
+        for (const key of keys) {
+          s.check(); if (array && key === 'length') continue;
+          const descriptor = Object.getOwnPropertyDescriptor(value,key)!;
+          if (typeof key !== 'string' || !('value' in descriptor) || !descriptor.enumerable
+            || array && (!/^(0|[1-9][0-9]*)$/.test(key) || Number(key)>=length!)) throw new ApplicationGroupValueError('application-group-data-required');
+          pending.push({value:descriptor.value,depth:depth+1});
+        }
+      }
+      let copied: unknown;
+      try {copied = directDataOwnership(s.budget).snapshot(application, s.check);} catch (error) {
+        if (error instanceof TypeError) throw new ApplicationGroupValueError('application-group-data-required');
+        throw error;
+      }
+      application = mapApplicationGroups(owned.applicationGroups, owned.projection, copied, 'to-native', s.check);
+    }
     const payload = buildProjectionPayload(context, root, plan, application, options, s);
     const structural = matchDirectProjection(context, root, payload, options);
     if (structural.kind !== 'projection-match') {
@@ -857,7 +905,7 @@ export function expandProjectionValue(context: SemanticContext, root: ElementNod
       }
       throw new Stop(structural.kind, structural.rule, structural.schemaPath, structural.payloadPath);
     }
-    const validated = assessProjectionScalars(context, structural, options);
+    const validated = assessProjectionScalars(context, structural, options, mapping);
     if (validated.kind !== 'projection-value') throw new Stop(validated.kind, validated.rule, validated.schemaPath, validated.payloadPath);
     const expanded = s.publish({kind: 'projection-expanded' as const, provenance: 'generated-direct-value' as const, admitted: false as const, payload, validated});
     projectionExpansions.set(expanded, context);

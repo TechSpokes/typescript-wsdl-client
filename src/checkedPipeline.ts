@@ -30,9 +30,13 @@ import {createComponentRecordProjection, inspectComponentRecordProjection} from 
 import type {ComponentRecordProjectionSpec, ComponentRecordProjectionAssociation, ComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from './compiler/standardSchemaComponents.js';
 import {ComponentSoapPreparation} from './compiler/componentSoapPreparation.js';
+import {parseApplicationGroups} from './compiler/applicationGroups.js';
+import type {ApplicationGroupsOptions, ApplicationGroupTarget, ApplicationGroupRecord} from './compiler/applicationGroups.js';
+import {inspectComponentValueMapping} from './compiler/directValues.js';
 
 /** Explicit service operations and independently authorized snapshots for component generation. */
 export interface CheckedComponentOptions {
+  readonly applicationGroups?: ApplicationGroupsOptions;
   readonly service: {readonly namespace: string; readonly local: string};
   readonly port: string;
   readonly fileRoots: readonly string[];
@@ -56,6 +60,7 @@ type CheckedComponentRecordProjection = Readonly<{selector: DirectOperationSelec
  * @since Unreleased
  */
 export interface CheckedInventory {
+  readonly applicationGroups?: {readonly targets: readonly ApplicationGroupTarget[]; readonly records: readonly ApplicationGroupRecord[]};
   readonly model: string;
   readonly assurance: string;
   readonly admitted: false;
@@ -113,7 +118,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'applicationGroups'],
     resolved ? ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'] : []);
   if (['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => Object.hasOwn(data, key) && data[key] === undefined))
     throw new TypeError('Explicit component choices must not be undefined');
@@ -158,6 +163,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
   if (basePath && (!basePath.startsWith('/') || basePath.endsWith('/') || basePath.split('/').slice(1).some(segment => !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment)))) throw new TypeError('Literal nonempty route prefix required');
   if (data.signal !== undefined && !(data.signal instanceof AbortSignal)) throw new TypeError('Native AbortSignal required');
   return {...(selectors ? {selectors} : {}), ...(data.service === undefined ? {} : {service: name(data.service)}),
+    ...(Object.hasOwn(data, 'applicationGroups') ? {applicationGroups: parseApplicationGroups(data.applicationGroups)} : {}),
     ...(data.port === undefined ? {} : {port: text(data.port)}), ...(fileRoots ? {fileRoots} : {}),
     ...(sourceResources ? {sourceResources} : {}), ...(sourceOrigins ? {sourceOrigins} : {}),
     ...(data.sourceUri === undefined ? {} : {sourceUri: resolveResourceUri(text(data.sourceUri))}),
@@ -270,10 +276,29 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     tick(); if (result.kind !== 'selected') continue;
     const projection = projections.get(JSON.stringify(result.contract.selector));
     if (!projection && config.recordProjections?.some(entry => JSON.stringify(entry.selector) === JSON.stringify(result.contract.selector))) continue;
-    const native = await prepareComponentSourceForOperation(result.contract, {service: config.service, port: config.port}, preparation, config.signal, projection);
+    const native = await prepareComponentSourceForOperation(result.contract, {service: config.service, port: config.port}, preparation, config.signal, projection, config.applicationGroups);
     if (native.kind !== 'reconstructed-component') {refusals.push({selector: result.contract.selector, kind: native.kind, rule: native.rule, dimension: 'mapping-and-artifact'}); continue;}
     expected.push(native);
   }
+  const groupTargets = new Map<string, ApplicationGroupTarget>(), groupRecords = new Map<string, ApplicationGroupRecord>();
+  for (const operation of expected) for (const mapping of operation.mappings) {
+    if (mapping.kind !== 'component-mapping') continue;
+    const groups = inspectComponentValueMapping(mapping, operation.contract).applicationGroups;
+    for (const target of groups?.targets ?? []) groupTargets.set(target.target, target);
+    for (const record of groups?.dispositions ?? []) groupRecords.set(record.source, record);
+  }
+  if (config.applicationGroups) {
+    for (const [index, item] of (config.applicationGroups.names ?? []).entries()) if (!groupTargets.has(item.target))
+      throw new TypeError(`applicationGroups.names[${index}]: unknown, stale or retained-ordered target ${item.target}`);
+    const types = new Map<string, string>();
+    for (const target of groupTargets.values()) {
+      const previous = types.get(target.resolved.typeName);
+      if (previous && previous !== target.target) throw new TypeError(`applicationGroups ${target.source}: typeName collision ${target.resolved.typeName}`);
+      types.set(target.resolved.typeName, target.target);
+    }
+  }
+  const applicationGroups = config.applicationGroups ? {targets: [...groupTargets.values()].sort((a,b)=>a.target.localeCompare(b.target,'en')),
+    records: [...groupRecords.values()].sort((a,b)=>a.source.localeCompare(b.source,'en'))} : undefined;
   let layout: ReturnType<typeof prepareComponentLayout> | undefined;
   const generatedClients: GeneratedComponentClient[] = [];
   let gateway: Awaited<ReturnType<typeof generateComponentServiceGateway>> | undefined;
@@ -296,7 +321,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       }
     }
   }
-  return {expected, projections, namespaces, refusals, layout, generatedClients, gateway};
+  return {expected, projections, namespaces, refusals, layout, generatedClients, gateway, applicationGroups};
 }
 
 function prepareComponentLayout(expected: readonly ReconstructedComponentSource[], projections: ReadonlyMap<string, ComponentRecordProjection>, tick: () => void) {
@@ -366,6 +391,7 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
     .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
   const inventory: CheckedInventory = {model: 'checked-components-v1', assurance: 'native-component-source-and-mapping', admitted: false,
+    ...(native.applicationGroups ? {applicationGroups: native.applicationGroups} : {}),
     selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
   fs.writeFileSync(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
   const component = {source: root, capsules: Object.fromEntries(Object.entries(contracts).map(([name, file]) => [name, path.resolve(clientDir, file)])),

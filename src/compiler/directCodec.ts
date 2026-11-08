@@ -256,7 +256,7 @@ export function encodeComponentXml(contract: DirectOperationContract, mapping: u
     // @why Application items include attributes; XML syntax-node/text caps count elements and character data.
     //   Encoded bytes bound inverse input capacity without treating those different counters as equal.
     const expanded = expandProjectionValue(context, owned.root.element, application, {...options,
-      maxText: limits.maxBytes, maxItems: limits.maxBytes});
+      maxText: limits.maxBytes, maxItems: limits.maxBytes}, owned);
     if (expanded.kind !== 'projection-expanded') return expanded;
     const bytes = emitObservedXml(expanded.payload, session);
     return Object.freeze({kind: 'component-encoded' as const, admitted: false as const, encoding: 'utf-8' as const,
@@ -323,7 +323,7 @@ export function assessObservedComponentPayload(contract: DirectOperationContract
     const {context} = inspectDirectOperation(contract);
     const structural = matchDirectProjection(context, owned.root.element, payload, options);
     if (structural.kind !== 'projection-match') return structural;
-    const validated = assessProjectionScalars(context, structural, options);
+    const validated = assessProjectionScalars(context, structural, options, owned);
     if (validated.kind !== 'projection-value') return validated;
     return Object.freeze({kind: 'component-decoded' as const, admitted: false as const, payload, validated, mapping: owned,
       usage: Object.freeze({...budget.usage()})});
@@ -372,7 +372,7 @@ export function decodeComponentXml(contract: DirectOperationContract, mapping: u
     assertObservedPayload(root, selection.payload, check);
     const structural = matchDirectProjection(context, selected.root.element, selection.payload, options);
     if (structural.kind !== 'projection-match') return structural;
-    const validated = assessProjectionScalars(context, structural, options);
+    const validated = assessProjectionScalars(context, structural, options, selected);
     if (validated.kind !== 'projection-value') return validated;
     check(); directDataOwnership(budget).freeze(selection.payload); check();
     return Object.freeze({kind: 'component-decoded' as const, admitted: false as const, payload: selection.payload,

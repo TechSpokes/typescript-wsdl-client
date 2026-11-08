@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(components): generate source-derived application groups with configured names across checked clients and gateways.
 - feat(components): carry native facets, restricted lists and primitive-string unions through checked gateways.
 - feat(components): preserve keyed mixed, namespaced and source-permitted open values through checked gateways.
 - feat(components): preserve explicit nil and attributes through checked clients, HTTP schemas and gateway request/response/fault paths.

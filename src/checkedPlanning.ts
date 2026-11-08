@@ -253,7 +253,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           : 'Check resource availability and explicit roots/origins; permit a declared second origin once in sourceOrigins or supply authorized snapshots, then rerun fresh checks.',
         'checkedComponents.fileRoots/sourceOrigins/sourceResources', selectors, error.source);
     } else {
-      const configurationError = !preparingNative && (error instanceof TypeError || error instanceof RangeError);
+      const configurationError = (!preparingNative || error instanceof TypeError && error.message.startsWith('applicationGroups')) && (error instanceof TypeError || error instanceof RangeError);
       add(configurationError ? 'configuration' : 'operational-failure', complete ? 'native-preparation' : 'configuration',
         configurationError ? `invalid-or-unresolved-configuration:${error.message}` : 'native-preparation-failed',
         'Correct the configuration or inspect the local I/O failure and rerun.', 'checkedComponents');

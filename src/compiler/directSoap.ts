@@ -11,7 +11,7 @@ import {Client} from 'soap/lib/client.js';
 import {HttpClient} from 'soap/lib/http.js';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
-import {createDirectValueMapping, inspectDirectValueMapping, createComponentValueMapping, inspectComponentValueMapping} from './directValues.js';
+import {createDirectValueMapping, inspectDirectValueMapping, createComponentDirectionalMapping, inspectComponentValueMapping} from './directValues.js';
 import type {DirectValueMapping, ComponentValueMapping} from './directValues.js';
 import {decodeDirectXml, encodeDirectXml, decodeComponentXml, encodeComponentXml, DIRECT_XML_LIMITS} from './directCodec.js';
 import type {DirectCodecFailure, DirectDecodedXml, ComponentDecodedXml, DirectXmlLimits} from './directCodec.js';
@@ -130,13 +130,14 @@ export async function exchangeComponentSoap(contract: DirectOperationContract, i
         }});
       },
       create(owner, direction, controls) {
-        return direction.kind === 'output' ? responseProjection : createComponentValueMapping(owner, direction, controls);
+        return direction.kind === 'output' ? responseProjection : createComponentDirectionalMapping(owner, input, direction, controls);
       },
       prepare: (selection, check) => prepareComponentSoapWsdl(contract, selection, check),
     });
   }
   return exchangeSoap<ComponentValueMapping, ComponentDecodedXml>(contract, input, application, options, {
-    component: true, encode: encodeComponentXml, decode: decodeComponentXml, create: createComponentValueMapping,
+    component: true, encode: encodeComponentXml, decode: decodeComponentXml,
+    create: (owner,direction,controls)=>createComponentDirectionalMapping(owner,input,direction,controls),
     prepare: (selection, check) => prepareComponentSoapWsdl(contract, selection, check),
   });
 }

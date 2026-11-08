@@ -160,4 +160,5 @@ export async function compileWsdlToProject(
 }
 
 export {assessSchemaSource, serializeAssessmentReport, parseAssessmentReport, assessmentExitCode, ASSESSMENT_VERSION, ASSESSMENT_BASIS} from './compiler/checkedAssessment.js';
+export type {ApplicationGroupsOptions, ApplicationGroupName} from './compiler/applicationGroups.js';
 export type {CheckedAssessmentReport, AssessmentObligation, AssessedOperation, AssessmentStatus} from './compiler/checkedAssessment.js';
