@@ -1,0 +1,30 @@
+name: Optional research validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'research/**'
+      - 'vitest.research.config.ts'
+      - '.github/workflows/research.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  research:
+    name: Research (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run research:ci

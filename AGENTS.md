@@ -12,6 +12,11 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 
 ## Must-follow rules
 
+- Keep product validation independent of exploratory research; follow [ADR-004](docs/decisions/004-product-research-boundary.md).
+- Preserve product regressions and independent reference evidence regardless of research-derived filenames.
+- Run `npm run research:ci` for research changes; it is separate from product CI and release gates.
+- Keep current consumer contracts in `docs/` and exploratory or historical handoff material in `research/docs/`.
+- Keep package contents explicit, retain generation resources, and review actual package-size changes by consumer value.
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
 - Keep repository-owned temporary outputs classified under `tmp/`: smoke in `tmp/smoke/`, npm cache in `tmp/cache/npm/`, preflight examples in `tmp/preflight/examples/`, conformance in `tmp/conformance/`, and generated-test spikes in `tmp/test-generation/`.
 - Keep consumer output paths explicit and use the git-ignored `.generated/` convention in public examples.

@@ -33,12 +33,11 @@ function inside(): void {
         // Keep the established npm behavior: later defaults may silently withhold dependency install hooks.
         run('npm', ['install', '--global', 'npm@11.9.0']);
         run('npm', ['ci']);
-        for (const name of ['check:toolchain', 'typecheck:tooling', 'typecheck:research', 'typecheck:reference', 'typecheck:integration']) run('npm', ['run', name]);
+        for (const name of ['check:toolchain', 'typecheck:tooling', 'research:typecheck', 'typecheck:reference', 'typecheck:integration']) run('npm', ['run', name]);
         if (process.platform === 'linux') run('npm', ['run', process.versions.node.startsWith('24.') ? 'ci' : 'ci:github:node26']);
         run('npm', ['run', 'test:reference:full']);
-        run('npm', ['run', 'test:research:ports']);
+        run('npm', ['run', 'research:test']);
         run('npm', ['run', 'research:re01:measure']);
-        run(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', 'test/research/s06-pw01', 'test/research/dt01']);
         if (process.platform === 'win32') run('npm', ['run', 'test:feasibility']);
         run(process.execPath, [enforcement, 'verify']);
         if (git('status', '--porcelain') || JSON.stringify(sourceHashes()) !== JSON.stringify(hashes)) throw new Error('Qualification candidate changed during execution');

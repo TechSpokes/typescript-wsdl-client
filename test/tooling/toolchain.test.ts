@@ -6,7 +6,7 @@ describe('toolchain guard', () => {
             expect(checkFiles([{ path, text: '' }])).toHaveLength(1);
     });
     it('rejects reintroduction of any removed legacy source and permits historical data', () => {
-        expect(checkFiles([{path: 'test/research/re01/witness_probe.py', text: 'historical code'}])).toHaveLength(1);
+        expect(checkFiles([{path: 'research/tests/re01/witness_probe.py', text: 'historical code'}])).toHaveLength(1);
         expect(checkFiles([{path: 'test/conformance/reference/legacy-source-snapshot.json', text: '{"text":"import xmlschema"}'}])).toEqual([]);
         expect(checkFiles([])).toEqual([]);
     });

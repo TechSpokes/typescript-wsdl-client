@@ -122,7 +122,7 @@ This convention applies recursively to synthetic mapping properties, including m
 
 ### Mapping-key inventory and status
 
-The inventory distinguishes existing behavior from the [selected mapping contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice, and opt-in application groups implement the bounded reconstructible grammar above. Research-only dynamic-type forms remain handoffs rather than production capability claims.
+The inventory distinguishes existing behavior from the [selected mapping contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/mapping-contract.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice, and opt-in application groups implement the bounded reconstructible grammar above. Research-only dynamic-type forms remain handoffs rather than production capability claims.
 
 | Key | Meaning and scope | Status |
 |---|---|---|

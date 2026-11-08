@@ -2,7 +2,7 @@
  * Streaming SOAP-payload to record iterator.
  *
  * Phase 3 of ADR-002. Driven by saxes (chunk-boundary safe — proven in
- * test/research/sax-record-path.test.ts) and the compiled-catalog metadata
+ * research/tests/sax-record-path.test.ts) and the compiled-catalog metadata
  * that the buffered client already relies on. The parser accepts an async
  * iterable of bytes/strings (typically an upstream SOAP HTTP response) and
  * yields fully-materialized record objects as the corresponding end tags

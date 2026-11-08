@@ -9,7 +9,7 @@ import {parseAssessmentReport} from '../../src/compiler/checkedAssessment.js';
 describe('readiness inventory', () => {
   it('pins permitted closures and separates real metadata from synthetic controls', () => {
     const corpus = JSON.parse(readFileSync('test/conformance/readiness-corpus.json', 'utf8')) as {inputs: {id: string; source: string; tier: string; permission: string; files: {path: string; bytes: number; sha256: string}[]}[]; unavailable: {tier: string}[]};
-    expect(corpus.inputs).toHaveLength(8);
+    expect(corpus.inputs).toHaveLength(9);
     expect(corpus.inputs.filter(input => input.tier === 'real').map(input => input.id)).toEqual(['noaa-ndfd']);
     expect(corpus.unavailable).toEqual([]);
     for (const input of corpus.inputs) {
@@ -29,7 +29,7 @@ describe('readiness inventory', () => {
     try {
       execFileSync(process.execPath, ['--import', 'tsx', 'scripts/readiness-inventory.ts', '--profile', 'default', '--output', output], {cwd: process.cwd(), encoding: 'utf8'});
       const evidence = JSON.parse(readFileSync(output, 'utf8')) as {counts: {inputs: number; generationAdmitted: number}; rows: {input: string; closureVerified: boolean; report: unknown}[]};
-      expect(evidence.counts.inputs).toBe(8);
+      expect(evidence.counts.inputs).toBe(9);
       expect(evidence.counts.generationAdmitted).toBe(0);
       const selected = evidence.rows.find(row => row.input === 'checked-forecast');
       expect(selected?.closureVerified).toBe(true);

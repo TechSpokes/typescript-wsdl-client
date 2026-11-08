@@ -1,0 +1,86 @@
+name: Research platform qualification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Python absent (Linux Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node test/conformance/reference/qualification/platform-run.ts --container ${{ matrix.node }}
+      - name: Standalone conformance (Node 24)
+        if: matrix.node == 24
+        run: |
+          npm ci
+          npm run build
+          npm run test:conformance
+      - name: Generated internal installed client
+        run: |
+          npm ci
+          npm run build
+          npx vitest run test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/checked-direct-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/direct-normal-execution.test.ts
+      - name: Real-service source qualification
+        run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
+      - name: Installed checked gateway HTTP and SOAP
+        run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: linux-node-${{ matrix.node }}-reference
+          path: tmp/conformance/platform-${{ matrix.node }}/results
+          if-no-files-found: error
+
+  windows:
+    name: Python absent (Windows Node ${{ matrix.node }})
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      NODE_REFERENCE_DISPOSABLE_WINDOWS: 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node test/conformance/reference/qualification/platform-run.ts --windows
+      - run: node test/conformance/reference/qualification/environment.ts cleanup
+        if: always()
+      - name: Build installed consumer package
+        run: npm run build
+      - name: Checked source, operation and structural contracts
+        run: npx vitest run test/unit/checked-assessment.test.ts test/unit/direct-operation.test.ts test/unit/direct-structure.test.ts test/unit/direct-structure-evidence.test.ts test/unit/direct-values.test.ts test/unit/direct-codec.test.ts test/unit/direct-codec-independent.test.ts test/unit/direct-source-capsule.test.ts test/unit/direct-capsule-independent.test.ts test/integration/portable-installed.test.ts
+      - name: Generated internal installed client
+        run: npx vitest run test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/checked-direct-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/direct-normal-execution.test.ts
+      - name: Real-service source qualification
+        run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
+      - name: Installed checked gateway HTTP and SOAP
+        run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: windows-node-${{ matrix.node }}-reference
+          path: tmp/conformance
+          if-no-files-found: error

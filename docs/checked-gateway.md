@@ -56,7 +56,7 @@ The [nil fixture](https://github.com/TechSpokes/typescript-wsdl-client/blob/main
 
 ### Mixed, namespaced and open values
 
-Qualified component mappings use the [selected keyed contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract) for newly supported mixed and open content. Mixed records always have ordered `$content`, including empty and text-only instances. Entries contain one text `$value` or one child name; recursive children follow their own source-selected mapping.
+Qualified component mappings use the [selected keyed contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/mapping-contract.md#selected-keyed-mapping-contract) for newly supported mixed and open content. Mixed records always have ordered `$content`, including empty and text-only instances. Entries contain one text `$value` or one child name; recursive children follow their own source-selected mapping.
 
 ```json
 {"id":"7","$content":[{"$value":"Hello "},{"b":"world"},{"$value":"!"}]}

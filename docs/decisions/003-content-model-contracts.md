@@ -4,7 +4,7 @@ Architecture contracts for S02 and the later content-model implementation. See t
 
 ## Status and authority
 
-S02 contracts reconciled with the executed [SOAP probe](../content-model-soap-feasibility.md) and [gateway probe](../content-model-gateway-feasibility.md), October 9, 2026. The initial draft passed independent semantic and integration review at `2f88ec81f77f4fc5a06b78f2d507ae8e20fe7a7c` before either probe began. The [decision register](../content-model-decisions.md) is the single disposition/ownership register; [S02's handoff](../content-model-s02-handoff.md) and #149 record final review/check/delivery checkpoints. This ADR activates no production behavior.
+S02 contracts reconciled with the executed [SOAP probe](../content-model-soap-feasibility.md) and [gateway probe](../content-model-gateway-feasibility.md), October 9, 2026. The initial draft passed independent semantic and integration review at `2f88ec81f77f4fc5a06b78f2d507ae8e20fe7a7c` before either probe began. The [decision register](../content-model-decisions.md) is the single disposition/ownership register; [S02's handoff](../../research/docs/content-model-s02-handoff.md) and #149 record final review/check/delivery checkpoints. This ADR activates no production behavior.
 
 [Epic #147](https://github.com/TechSpokes/typescript-wsdl-client/issues/147), [S02 #149](https://github.com/TechSpokes/typescript-wsdl-client/issues/149) and #168/#169/#170 supply the acceptance gates. [S01 baseline](../content-model-baseline.md) and [shipped-fix reconciliation](../content-model-shipped-fix.md) are evidence, including BCsabaEngine's separately attributed production report. Their [manifest](../../test/conformance/semantic-baseline.json) remains authoritative for case IDs and expected outcomes.
 
@@ -40,7 +40,7 @@ Grouping requires observable nonempty boundaries; local optional bounds do not m
 
 One authenticated source-derived description drives inverse/forward mapping, named TypeScript alternatives and OpenAPI references. Optional repeated empty arrays normalize to omission without mutation. Capsules persist the presentation choice and rederive it from authorized sources; mismatched presentations fail artifact checks. This is a bounded opt-in disposition, not an automatic migration, new runtime payload switch or general ambiguity solver.
 
-The bounded [XML/JSON mapping contract](../roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract) selects keyed mixed/open entries, separate namespace identity/context, attribute carriers and explicit nil, with research-only fresh inverse examples for #409/#421. This handoff does not activate production support or replace these ADR guarantees; existing accepted mappings remain compatible.
+The bounded [XML/JSON mapping contract](../mapping-contract.md#selected-keyed-mapping-contract) selects keyed mixed/open entries, separate namespace identity/context, attribute carriers and explicit nil, with research-only fresh inverse examples for #409/#421. This handoff does not activate production support or replace these ADR guarantees; existing accepted mappings remain compatible.
 
 Synthetic keys introduced into XML-derived application objects use the repository's `$` prefix; the [reserved mapping-key inventory](../concepts.md#reserved-mapping-keys) distinguishes existing keys, research proposals and descriptor compatibility work. Source-derived XML data names remain data names.
 
@@ -136,7 +136,7 @@ Supported pattern planning admits the existing native-supported XSD regex fragme
 
 ### Scalar pipeline
 
-The [S06 research handoff](../content-model-s06-research-handoff.md) supplies separate AU01, RE01, PW01 and DT01 evidence and candidate interfaces.
+The [S06 research handoff](../../research/docs/content-model-s06-research-handoff.md) supplies separate AU01, RE01, PW01 and DT01 evidence and candidate interfaces.
 The maintainer explicitly selected C1 attribute semantics with universal source-replacement matching, R-240 wildcard bounds and candidate A's calendar repairs.
 Their local research acceptance is separate from RE01's missing completeness proof, #179 implementation and the factual BCE reference correction.
 The existing profile and this enforcement matrix remain authoritative, with #179 owning schema integration and #184 owning the shared payload scalar implementation.

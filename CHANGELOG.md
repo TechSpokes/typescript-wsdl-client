@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(validation): separate optional research from product checks while retaining independent reference, installed-consumer and platform coverage.
 - chore(package): ship consumer guides and generation resources without research or contributor archives, and validate installed documentation links.
 - feat(components): generate source-derived application groups with configured names across checked clients and gateways.
 - feat(components): carry native facets, restricted lists and primitive-string unions through checked gateways.

@@ -54,7 +54,7 @@ const files = [
     'test/conformance/reference/qualification/observations.json',
     'test/conformance/reference/validate.test.ts',
     'test/conformance/semantic-baseline.json',
-    'test/conformance/s06-research-manifest.json',
+    'research/provenance-manifest.json',
     'test/conformance/fixtures/xsd/s06-pw01/expectations.json',
     'test/conformance/reference/adapter.ts',
     'test/conformance/reference/primary.ts',

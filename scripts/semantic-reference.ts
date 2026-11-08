@@ -24,7 +24,7 @@ export function discoverReferenceTests(root = 'test/conformance/reference'): str
         if (!existsSync(row.target)) throw new Error('Missing mapped reference test: ' + row.target);
         if (!tests.includes(row.target)) tests.push(row.target);
     }
-    return [...new Set([...tests, 'test/conformance/s06-research.test.ts'])].sort();
+    return [...new Set(tests)].sort();
 }
 export async function runReference(options: {full?: boolean; manifest?: string; execute?: (files: readonly string[]) => void} = {}) {
     verifySetup();
@@ -32,7 +32,7 @@ export async function runReference(options: {full?: boolean; manifest?: string; 
     const manifestPath = options.manifest ?? 'test/conformance/semantic-baseline.json';
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {cases: BaselineCase[]};
     const provenance = captureProvenance([...referenceSources(), 'scripts/semantic-reference.ts', 'test/helpers/contentModelSoapReference.ts'],
-        [...fixtureInputs(), manifestPath, 'test/conformance/reference/migration-map.json', 'test/conformance/reference/continuation-contract.json', 'test/conformance/reference/legacy-source-snapshot.json', 'test/conformance/s06-research-manifest.json'],
+        [...fixtureInputs(), manifestPath, 'test/conformance/reference/migration-map.json', 'test/conformance/reference/continuation-contract.json', 'test/conformance/reference/legacy-source-snapshot.json'],
         ['package-lock.json', 'node_modules/libxml2-wasm/package.json', 'node_modules/libxml2-wasm/lib/index.mjs', 'node_modules/libxml2-wasm/lib/libxml2raw.mjs']);
     mkdirSync('tmp/conformance/reference', {recursive: true});
     const testReport = `tmp/conformance/reference/${options.full ? 'full' : 'required'}-tests.json`;

@@ -1,0 +1,3737 @@
+{
+  "formatVersion": 1,
+  "scope": "research-only; no production assessment acceptance",
+  "baseline": {
+    "revision": "5876065b00d4eeb6d2324eaa63ff9b70e2279198",
+    "tree": "b647d9b0343d421426a539fc008c3cffa82c7875"
+  },
+  "historicalDraft": {
+    "revision": "460f5b8379c68ffef79917284e445b5ab046429e",
+    "tree": "56830b28d1006b019918a364aa62f1ed9d7d8817"
+  },
+  "semanticDefaults": {
+    "maxNodes": 100000,
+    "maxWork": 125000000
+  },
+  "contracts": [
+    {
+      "qualification": "S06-AU-01",
+      "issue": 233,
+      "disposition": "selected",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "research/docs/content-model-s06-au-01.md",
+          "role": "decision",
+          "sha256": "5476ca25209f04ee083de27ae4352e9ce1955e92ca2d587aab89b330642dacfe",
+          "historical": {
+            "path": "docs/content-model-s06-au-01.md",
+            "sha256": "025f81da984fa1efdd0dfa98c0e117a47b5c4b0b6f86e8f58dc46d4bb1c65170",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "research/reference/s06-au01-contract.test.ts",
+          "role": "reference",
+          "sha256": "4ed2759d947e71ad691aa33835b2b3e4fb781bb5f3994c3e17b61ea6c8edb051",
+          "historical": {
+            "path": "test/conformance/reference/s06_au01_contract_test.py",
+            "sha256": "4a5a4537be47ad5a72cad51ee5d2fa4a10970159ac23fee05b56f30e55ea42fe",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/direct-distinct-local.xsd",
+          "role": "fixture",
+          "sha256": "3ce7f4be8056469aebff48880f75fd1b623500421296aab2b191577ffecb7d18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/direct-same-global.xsd",
+          "role": "fixture",
+          "sha256": "2479d8887eedbf3a265577b7c23a1ba42e94fa6be4b56f05dd7fd48484e95705"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-default-one.xsd",
+          "role": "fixture",
+          "sha256": "308fa68f8ec9eb87105379b1305ad87fc0bc91e108cc1b736615b617998cf4f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-default-two.xsd",
+          "role": "fixture",
+          "sha256": "56721803c3413a44b0a54b2e6282a67367419e513e468f2a837d1015f5124b0b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "e54c84e8a239b455667d69ad58b0d438b5f201ea4aa7b4807d6b8e31bffbb307"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "a44c9e09faaf1e5a7d39abd9d8f10d3203a610222694f6721232caca1cfcf240"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-none.xsd",
+          "role": "fixture",
+          "sha256": "3eea7a4fd39ea748de503808ff45b94293e44ad8f4799bc1304f0282fd22a967"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-default-one.xsd",
+          "role": "fixture",
+          "sha256": "636ef7a720de80ad1a5206a05741e9ea4311dbfa46bd76ee55c8d9533cab04dc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-default-two.xsd",
+          "role": "fixture",
+          "sha256": "1bac99e6291160c89ff3a666fc56c66f06d9e20fe9ead8943e067a49ad96b496"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "f7d50a0b3d4e1204471ef1653a44278262cfbeebad4eb19f2d187299fd66227f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "86430604ba5b8df2800959a5e43304db1c5b6c82008212e0d7d8f37b87d253cf"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-none.xsd",
+          "role": "fixture",
+          "sha256": "84de052adaf93300ab03a42ae4a788dfc8844437027177b9b152e57d066199db"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-default-one.xsd",
+          "role": "fixture",
+          "sha256": "d2ddc4e7fef2520549b7e74d75bf67e10c6d8e4d15f1058cb555be05c987ffa7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-default-two.xsd",
+          "role": "fixture",
+          "sha256": "771571e410c24529ca1d9c8e096bf7f898d3dcd25dd743dcd059ce7e51b27bcd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "c7ff93e82ae1351271b6e57391b8bbdc86d839c1d631ab2a9b1abce9f1ff867d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "d6b89faad9b1119e5b59472837ee53df6ed04bb52f5067f200809ef02e5677ce"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-none.xsd",
+          "role": "fixture",
+          "sha256": "12e94c8963e9d69d7d1bf91e3ab594c1a4af9d1d1922fc090fcd03c5de8d895c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-default-one.xsd",
+          "role": "fixture",
+          "sha256": "b31e775ed2ffe7d76cf73fa207e5fbf4fe565977c50fd1da49d21eff514b326f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-default-two.xsd",
+          "role": "fixture",
+          "sha256": "8b2b5b9d593c79a1d9cd067080c44559009eb691af72e286cf04756e7bbf4121"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "d63ca9377133090c2f45ed66bab0b2343432a3351558097909b22b26daebb88e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "fd317de2c7a7226af21d6f09cdebaec91b89fb4663c375a0114b9ff954987924"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-none.xsd",
+          "role": "fixture",
+          "sha256": "77043cc28abcd94eff12f33f28b9d9eacdd1aca28b30a8d4d31c4539d6432fad"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-default-one.xsd",
+          "role": "fixture",
+          "sha256": "9941676beb1a1191d616b53943d2ad22faf3e95d458f7a1f0e57e0374e3f5f2e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-default-two.xsd",
+          "role": "fixture",
+          "sha256": "918b5a6ed287b2b361dd4172332e9032f782470ce24a2f2c92aab4bc5897b699"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "965dbd42221574402b2d31dc7a6e4d34ad8238cbc170308ba0e57307666d122d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "7e5b38ab211307a2f4561e62f71f53012937757b85de8be56bc87affbd7ef1bb"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-none.xsd",
+          "role": "fixture",
+          "sha256": "c78128fe10687532683ab836c5af6aec06a14aaeb1dd163a2a8ea8797dc4a72f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-optional-fixed-required-fixed.xsd",
+          "role": "fixture",
+          "sha256": "c0539dcea620c1c2030a135eb42d7c979f5d6cc1419027b1bcd854e4de2873b6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-optional-none-required-fixed.xsd",
+          "role": "fixture",
+          "sha256": "359cff2edeb87a07500baf43ff160a06ae5bad4e6785742d68f047927e64143b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-optional-none-required-none.xsd",
+          "role": "fixture",
+          "sha256": "cd369f8a088fa964c832939e8024da578761b476ea0c540e531d781172f14b01"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-prohibited-required.xsd",
+          "role": "fixture",
+          "sha256": "673b5ebf3f8f2cf22b63c607461e1d5cd52df89c9dea04acd9b2f69b25f53478"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-fixed.xsd",
+          "role": "fixture",
+          "sha256": "a42b9072449c5cd965cfd04d4cc81ae1744201be77e7b1999eb14b864827f2e9"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd",
+          "role": "fixture",
+          "sha256": "c9272f3bc16f8cd742068a9edd8bd4750189e661d6a31861073b0bcb226a5b37"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-required-none-optional-none.xsd",
+          "role": "fixture",
+          "sha256": "0070c65084b4d733ab55042e22903d8e2afc8bd56bf7af820d402d9ee3f21240"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-default-required.xsd",
+          "role": "fixture",
+          "sha256": "c90d4dd2a87f088f402dba8792fe870503f7da5762004dfc3bfc289b6928526d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-fixed-conflicting.xsd",
+          "role": "fixture",
+          "sha256": "c24b916c9a97a3fbfad8465097f0deb18128f50a4f9d75124df4d072dde97af0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-fixed-default.xsd",
+          "role": "fixture",
+          "sha256": "01b238d27ea8ef6079923fd274fac0206ed5f3dd3a683320252dc92cb3190cf8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-fixed-equivalent.xsd",
+          "role": "fixture",
+          "sha256": "8a2c97e7c678ad1aa76deaa535086b48da6a84a226b7ed0a276b22341ab7d52f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-direct-distinct-au.xsd",
+          "role": "fixture",
+          "sha256": "fca6dc9f7c189ac5160efe352faebf932679a88e4210e1f0fb22b1b22e6e1d5b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-nested-distinct-au.xsd",
+          "role": "fixture",
+          "sha256": "bbe102b44484e422324310c2887f53fdb23122c93b330ff5132114dc29904240"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-prohibited-required.xsd",
+          "role": "fixture",
+          "sha256": "1c942be0327f3968aba8e2e4eea49c34443a326c87fcac5ae390c836dc55b6d1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-reused-au.xsd",
+          "role": "fixture",
+          "sha256": "4c99a093beb3fb59862418b42a311bf30d4aa61fa8ff14208e076af32f37e3ce"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/required-default.xsd",
+          "role": "fixture",
+          "sha256": "97feebfbb95e462b3ce479c14bda8c34700579ea75fd445adfe2a1570ca62c32"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-default-conflict-default-replacement.xsd",
+          "role": "fixture",
+          "sha256": "849f3a182ce69c2bd894b234ea2446938605cd8afbdfb6e284c6bc55a64eaf00"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-first-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "56515c6679909596be4f91fe658c3a770dff05f65d5abf12f957c38f9cdc6c27"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-group-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "2974e8ef5422cbd0990fad965591969cc4fbde3e4bddc767ca88c29886394b42"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-omitted.xsd",
+          "role": "fixture",
+          "sha256": "1931996d8592dbef2b1cf4b80d51732110ee94948d7e49f0b636d551765e848a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "5cf797a19aa86af14cb82158ba9165cd2e225f467fa56a1d4b7978413c3f393c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-second-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "248106b97eb3108699fec0e4da834afddf1c5533bbfb14d666953db221093b20"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-equivalent-first-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "734d0c5435342ff26f7963c83e60d06c0adbba493b2f23d0d0dff428d5e6ca70"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-equivalent-second-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "2cb4d3a5ae5a3e437d98f56c20d70be25d6da6e1991b630d1cf466f1c7facf87"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-none-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "9efc112dacd01de8a97d64fd6cc425724f0d809c9efa121ab77a6eb1ddeafc3b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-none-unfixed-replacement.xsd",
+          "role": "fixture",
+          "sha256": "d9337f3dbfecacd69ca53336ea506a839c899e4e758e001a35927dc41ec1efa1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-qname-distinct.xsd",
+          "role": "fixture",
+          "sha256": "c00c65e95fa5399a070d93b90e5742b42598c7a0849c0e0350275e71dc0fafdd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-qname-equivalent.xsd",
+          "role": "fixture",
+          "sha256": "ebde285551b2611096e9b0f5d7018d89282f199de25a6b39a1b2c5664315b43e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-first-optional-replacement.xsd",
+          "role": "fixture",
+          "sha256": "0cf83e45a8b72f3067039f4da37aa62c313881fb24d5f54949fc2b09252cfbca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-first-required-replacement.xsd",
+          "role": "fixture",
+          "sha256": "0107f868fb8215a54e436e767cb053c212a45c3a245b0d5a878ae9e32e6aaec6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-mixed-omitted.xsd",
+          "role": "fixture",
+          "sha256": "93b10c01820a370b15d363fd477d31129755aaff3fdb25aaee2cdc09076be5c2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-mixed-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "587e40aff30a471519c53dca73b726020b6d14ab9b9d9a9688fa4223ddb11d82"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-second-optional-replacement.xsd",
+          "role": "fixture",
+          "sha256": "ce800ec07cd48c9301502a6837ac66db8f9d661ee722c583940da42d62d15871"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-second-required-replacement.xsd",
+          "role": "fixture",
+          "sha256": "4634c03ac592ffb8a67c72f71ebf2db4eb74b0a86212656e6629b91eda9e5c7b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-type-token.xsd",
+          "role": "fixture",
+          "sha256": "8285d947180f8147573ba75fb6b165fc8fc3d6b0ccee833cba5cda8d4a7fecc2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-type-unrelated.xsd",
+          "role": "fixture",
+          "sha256": "97c89660a15018633c65265217a4a95d932d51eccde2a43a1fbe5520cccba86d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-omitted-required.xsd",
+          "role": "fixture",
+          "sha256": "4c1df7f82f5123c2ae9c1b35d614d669390457a80b052f6d34a26bc9092c0e2e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-prohibited-required.xsd",
+          "role": "fixture",
+          "sha256": "b7d3b4795449f5dfc3efe31d652917f30de23e48184229f65faebfb3daee1595"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/typed-fixed-values.xsd",
+          "role": "fixture",
+          "sha256": "e3e2e7c9629241ea08da63abe3a651ae670a9fa708f35b6676e640a669192786"
+        },
+        {
+          "path": "research/tests/s06-au01/probe.ts",
+          "role": "prototype",
+          "sha256": "59d76cd9c48b5a728df7d5baae137168c53e72afb885671d464cde51a89857ae",
+          "historical": {
+            "path": "test/research/s06-au01/probe.py",
+            "sha256": "420253fd040aaa90d1281de1f05dfffcb04bda170f2cbc1e0387c0865427e9c1",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        },
+        {
+          "path": "research/tests/s06-au01/probe.test.ts",
+          "role": "reference",
+          "sha256": "710e46ea1603713dcbfc505ecd4e552382574370f8385a94a78acb4a7fd88b75"
+        },
+        {
+          "path": "research/tests/s06-au01/fixture-input.ts",
+          "role": "prototype",
+          "sha256": "a3d67dbe0a619f3927363f0a243516802b3ebc7dab9c5ba20e2f40911e945219"
+        },
+        {
+          "path": "research/reference/scoped-au.ts",
+          "role": "prototype",
+          "sha256": "96ec2c595c8ba74d7874d99554fdf7ec251bf23a6678f15c78122df21b49542b"
+        }
+      ]
+    },
+    {
+      "qualification": "S06-RE-01",
+      "issue": 234,
+      "disposition": "open",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "research/docs/content-model-s06-re-01.md",
+          "role": "decision",
+          "sha256": "762b69eb7a1256a17cdaf9f29e1a7f8b733b5203f96ac3ec1c9bc8387bec3ce6",
+          "historical": {
+            "path": "docs/content-model-s06-re-01.md",
+            "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "research/reference/s06-re01-contract.test.ts",
+          "role": "reference",
+          "sha256": "736b82edaab8769f891e43da07d79531fe35d4fff4c3b8f40a7bf4dab7c405bc",
+          "historical": {
+            "path": "test/conformance/reference/s06_re01_contract_test.py",
+            "sha256": "803e8788fcfbccd5195a1a4e72959e0b76c7c0fe2556e22fe8f7fef069266f9f",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-source-original.xsd",
+          "role": "fixture",
+          "sha256": "ce1f22c9d765ff1e6c2852dcb477bf41f446e627c7b7f54df80903292bd7ed22"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-source-witness.xsd",
+          "role": "fixture",
+          "sha256": "12a66557c79691d8f18b64644f267e70c651e3119ef1006ad918ea0db9df32db"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/expectations.json",
+          "role": "expectations",
+          "sha256": "84703e05620dd30872af5b268872727b668c03608bb52b9f1075ce14aae464a8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/pointless-prefix-repeated-final.xsd",
+          "role": "fixture",
+          "sha256": "2f3e3a1326976f9eec1e8cfb3841e137ed2cf588c67b4ac2a957c19779a2a5f7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/re-dead-wildcard-final-restriction.xsd",
+          "role": "fixture",
+          "sha256": "45dd2ef3f8df03c433a3077e34c9449fe01259229d914827354b024de192e463"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/re-dead-wildcard-intermediate.xsd",
+          "role": "fixture",
+          "sha256": "ecbe91c7765ff85ee013ca9c3abd947c2020e1c007a59efa9e152a2c1356958c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-attribute-int.xsd",
+          "role": "fixture",
+          "sha256": "676410cdb6e3891069c5a9a71e3825e697a4cc567f73e39733a27a3ea368e892"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-attribute-string.xsd",
+          "role": "fixture",
+          "sha256": "c8335d094b7536c40ba5ae4fd3c07bd6d3bb187a718b09baf6e8a1cf6ee9c575"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-attribute-token.xsd",
+          "role": "fixture",
+          "sha256": "4241e5ba980df143ee9567ec42b702a55b21768bdda8b051e6fee65fec0cad2d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-particle-int.xsd",
+          "role": "fixture",
+          "sha256": "998b3dc8756bc18c1347e3f6223364f271b5d3c6d152648bccf604dbb396a6f6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-particle-string.xsd",
+          "role": "fixture",
+          "sha256": "b8d348a7fbc3ca810d3f881c8a74a3951efc58fa7a5423d36cddbb0ea87722b5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-particle-token.xsd",
+          "role": "fixture",
+          "sha256": "818f0ae03dfe006f34589c06b36356c074e39809d25c46d4cb1a803805acf0d3"
+        },
+        {
+          "path": "research/tests/re01/measure.ts",
+          "role": "prototype",
+          "sha256": "5c1a9d7dd8fe15c6faf11c693d54ad90cc5d4c5cf8172ac8bc1e4930d74674a3",
+          "historical": {
+            "path": "test/research/re01/measure.py",
+            "sha256": "8193839372dcb30d2c948c4a1728668f9f9052f669ea88b34080fdcaf2779800",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "research/tests/re01/witness-probe.ts",
+          "role": "prototype",
+          "sha256": "de3d616880c0b8a124bb6975b726104ab0c7e680dfe3fb0dd6571295bfdfec46",
+          "historical": {
+            "path": "test/research/re01/witness_probe.py",
+            "sha256": "5db4fe156cdbb0db22559fac9c1ca2288ac69b35109b847dde89d8b53c863566",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        },
+        {
+          "path": "research/tests/re01/witness-probe.test.ts",
+          "role": "reference",
+          "sha256": "2f70fb441817e88e446d9f24792022826d17b9ba34b37a67562ff9cf51873439"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-group-original.xsd",
+          "role": "fixture",
+          "sha256": "8ff9ffa913bea4a2ec01e1655d505c6bbafa0a82b5113569f09932977a0850d3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-group-witness.xsd",
+          "role": "fixture",
+          "sha256": "f886e75371e3361b106b1bea2dbe4c196ab376f82758046fc24fe17d0b5d1f78"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-direct-int-restriction.xsd",
+          "role": "fixture",
+          "sha256": "f243d3b1ab8027fce89b616c4d024883cc458d23689aa0c2755298e2527f1624"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-direct-token-restriction.xsd",
+          "role": "fixture",
+          "sha256": "a8bb6e16dbd21049ce325ea7fd6ca8620687f64c474c55382dc1b49a49d26e5d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-final-extension-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "cecca03afdeecebaa9d16249e604e305fbcec1d232c508ea863355ffd37c4904"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-map-and-sum-chain.xsd",
+          "role": "fixture",
+          "sha256": "fd7ab44e79c61540eea4bf2ad02d29390e2f79556f79eeba57b39c053da8ce42"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-map-and-sum-direct.xsd",
+          "role": "fixture",
+          "sha256": "932571e1a4d181ee6e3bbae14c7a40227ad28d9b5a0c4dbe6633d192ca2b3761"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-map-and-sum-step.xsd",
+          "role": "fixture",
+          "sha256": "64c413dbd22c730b56220d567e549d4fc7828877051f14a29fb18ec9a50edc18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-simple-content-inline-anchor-witness.xsd",
+          "role": "fixture",
+          "sha256": "bd89afe08457c378b851e83285d709136e7eb1884aa00667cf1d44d7b4aa56d3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-simple-content-no-inline-restriction.xsd",
+          "role": "fixture",
+          "sha256": "59d7e3f51acd817f15ccbf67a75fbaa27b7cb7e29b96b06a999f09f32db0e892"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-simple-content-original-chain.xsd",
+          "role": "fixture",
+          "sha256": "b12f401b4cfd54fd4fd26a149e02e07bd2ae69de1c00929fb52bdb81fa91e5cb"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-singleton-all-nested-extension.xsd",
+          "role": "fixture",
+          "sha256": "873ec10ed18de22c7fd383e99e50b09c6540f58a94f9bcaf73108a2799c9f1a3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-singleton-all-restoration.xsd",
+          "role": "fixture",
+          "sha256": "6ecbd0c31bf4b0d8ba003c647dc9c1d84b55d1f6171e3d95daabd0eecd4fde23"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-singleton-all-vacuous.xsd",
+          "role": "fixture",
+          "sha256": "e57c35040e7c573db5227bb8725f455c513efcd7cb5444a21504cb74b5d0b65e"
+        },
+        {
+          "path": "research/tests/re01/incidence-probe.ts",
+          "role": "prototype",
+          "sha256": "578d24ba9acd5a1b83e1bef1675a5e411d7fc88993bf705ecdc2c888c5a900cb"
+        },
+        {
+          "path": "research/tests/re01/incidence-case.ts",
+          "role": "prototype",
+          "sha256": "c6bdb17ee7599ef6bf3c572a999abc00022b6df7fd449e4332b44d4fb958adb1"
+        },
+        {
+          "path": "research/tests/re01/incidence-probe.test.ts",
+          "role": "reference",
+          "sha256": "583a4e220e3b0f119cf4feb4f19986e72b52bddf1e1c51a8d8af1306832af91f"
+        },
+        {
+          "path": "research/reference/re01-source-incidence.test.ts",
+          "role": "reference",
+          "sha256": "3976654b1f3e3782cdd4a266346ffc2f322611e1fdbf5f83a0134c7f5622f71e"
+        },
+        {
+          "path": "research/reference/re01-particle-continuation.test.ts",
+          "role": "reference",
+          "sha256": "9100e0a60e89b845bc11d3374592258e13366c39d25e6cea441bbd82382ac3ab"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/endpoint-all-original.xsd",
+          "role": "fixture",
+          "sha256": "b47cd197f897e027833209351b4407282f21198407ac0921a8c57549b22be84b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/endpoint-all-shadow.xsd",
+          "role": "fixture",
+          "sha256": "d052d6dc5dd933a7333566376c97dc96a08233eab6dfc9ded0044ffa690568ca"
+        },
+        {
+          "path": "research/reference/re01-endpoint-continuation.test.ts",
+          "role": "reference",
+          "sha256": "076dca5acd20c891113be8d62be161b33e63dae3a1e2ae30ad76250664294c58"
+        },
+        {
+          "path": "research/docs/content-model-s06-re-01-resolver.md",
+          "role": "decision",
+          "sha256": "34f149376265fc1f5629c6c5bec2ad70b1a16a7adca038893bd217f511aa7b9f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/substitution-actual.xsd",
+          "role": "fixture",
+          "sha256": "980d315341eaa1aaebb8684f1c285ce58a9ccf1daf21c93650c49a47d99c6489"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/substitution-retained.xsd",
+          "role": "fixture",
+          "sha256": "f73af4981d61c7a6263a8b5290650fc17a64f2a62ad6b758378eece8fbb33161"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/substitution-omitted.xsd",
+          "role": "fixture",
+          "sha256": "4248763e0507d6a9a356e345a10fbfb08462a8eaee9414c12d772952b37a5761"
+        },
+        {
+          "path": "test/conformance/reference/re01-substitution-context.test.ts",
+          "role": "reference",
+          "sha256": "396edb1f7ef14efd8e62262ee0558bb819eb9abd8bdf117aaa9b87e6cffbeced"
+        },
+        {
+          "path": "research/tests/re01/resolver-budget.test.ts",
+          "role": "reference",
+          "sha256": "fa8617f242f2456d75c2bf2f6a643d83fc1e6c40f260c838a29d9490e0d0273a"
+        },
+        {
+          "path": "research/tests/re01/resolver-budget.ts",
+          "role": "prototype",
+          "sha256": "2a57ebb3909a8c82b0c7b36089d16390fd46536f30c0b25d72c6bc3d35bf0810"
+        },
+        {
+          "path": "research/tests/re01/resolver-cache.test.ts",
+          "role": "reference",
+          "sha256": "5c1db7c634fa98feef36c5bf8c3a7c7257d3b949e3c87b5019b6ede364e94d47"
+        },
+        {
+          "path": "research/tests/re01/resolver-comparison.test.ts",
+          "role": "reference",
+          "sha256": "7c27fb3b00efdb3b50cc94798fcaf3dc5b86809bf881432b5b7329fff8bc78fd"
+        },
+        {
+          "path": "research/tests/re01/resolver-comparison.ts",
+          "role": "prototype",
+          "sha256": "7f2a1bd1d761265a657c5330e088d6a14450d84a513d4254e86f78ffa41cd671"
+        },
+        {
+          "path": "research/tests/re01/resolver-context.test.ts",
+          "role": "reference",
+          "sha256": "86fc99adcaffaf5177a39bdb555c2f43d9d2436b89ea1f09aeed8adca6170243"
+        },
+        {
+          "path": "research/tests/re01/resolver-context.ts",
+          "role": "prototype",
+          "sha256": "effcd7170d374a6380f95676cc62747249904d641f596b46a434bc326c07560f"
+        },
+        {
+          "path": "research/tests/re01/resolver-fixtures.ts",
+          "role": "prototype",
+          "sha256": "894b34e0d3ea64f33b8a60b8dce5632b7b1f58da73546ad495cc1a60af6d8934"
+        },
+        {
+          "path": "research/tests/re01/resolver-integration.test.ts",
+          "role": "reference",
+          "sha256": "f156af147e659d58b143c68a409c90762f5f9fa74c1aa3aa1a4da0bf602d6b42"
+        },
+        {
+          "path": "research/tests/re01/resolver-relations.test.ts",
+          "role": "reference",
+          "sha256": "14a4e5a7a599e773fd683c92d5226c94c6155471210b943c3af4565490fbc4ba"
+        },
+        {
+          "path": "research/tests/re01/resolver-relations.ts",
+          "role": "prototype",
+          "sha256": "13ca1845794b13ca37f55b5be24c1f1858534c97e1f9d7c20b3eaf07c912adc3"
+        },
+        {
+          "path": "research/tests/re01/resolver-resolution-records.ts",
+          "role": "prototype",
+          "sha256": "cb85ac2b55d4827e32352ff7d2b2a3bd28f1b1219be6dbc95c1251e401c3cf44"
+        },
+        {
+          "path": "research/tests/re01/resolver-resolution.test.ts",
+          "role": "reference",
+          "sha256": "55019416ecb9ac038e76692de679a235014a588bd50ecff101bfb7e814a72e11"
+        },
+        {
+          "path": "research/tests/re01/resolver-resolution.ts",
+          "role": "prototype",
+          "sha256": "ae1ddcd322cef4aeb079afbf7538f281363edbf16d633b37b3326e6f8326853d"
+        },
+        {
+          "path": "research/tests/re01/resolver-types.ts",
+          "role": "prototype",
+          "sha256": "1b84dbef641894cdacbe12c2d2037f6bd37d88e1bbb28c292c2d6f8bdc6f238d"
+        },
+        {
+          "path": "research/tests/re01/resolver-validation.test.ts",
+          "role": "reference",
+          "sha256": "4b6d9473c75c3681d239a85c93c2f598502c906a44e9f3a7cb239d3c24e5c699"
+        },
+        {
+          "path": "research/tests/re01/resolver-validation.ts",
+          "role": "prototype",
+          "sha256": "5dbc8028712595430456fff6545d8bee18feccafeae0e8695be1d7e46bb2bf45"
+        },
+        {
+          "path": "research/tests/re01/resolver-work-ledger.test.ts",
+          "role": "reference",
+          "sha256": "de7308bdaab5d40a1fc786cc6a1a44f56742534334b750bb74d6af12a1298ceb"
+        },
+        {
+          "path": "research/docs/content-model-s06-re-01-resolver-implementation.md",
+          "role": "decision",
+          "sha256": "eb6d19a8edd70a4bc7e30633a9fc0e0ea5d7caef20321b282ffd87ae96947d6f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
+          "role": "fixture",
+          "sha256": "cab5566e1c4294686585b3aa15a3cb0f8707ff4fd95cad9b5a7ac6dc431f5ac6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-block-empty.xsd",
+          "role": "fixture",
+          "sha256": "2e74faefe1b52a48c4f69f3cb237c13026ff601660369d0e0a82264e4b95254c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-block-original.xsd",
+          "role": "fixture",
+          "sha256": "35469d9742bd8c20c94ea211f1c82431152389a2860cd990228943bf13ed2ac0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-block-restriction.xsd",
+          "role": "fixture",
+          "sha256": "86677dfeee38d339fa314a67e25e8809f7ecb8f7ca9c889da73b5d005aa7a661"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-choice-omitted.xsd",
+          "role": "fixture",
+          "sha256": "3cd141ab161a82df6e0d36805abac66d85f8a2772d8ec94158e7ce48238a935d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-choice-original.xsd",
+          "role": "fixture",
+          "sha256": "88336f75998e2580bbbd55ab12a1b5411555401ed4b505e505db85b0fbcc2a7e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-choice-retained.xsd",
+          "role": "fixture",
+          "sha256": "e603a645c8d5b97e48764c596d2013de6ebc27af48ca88f6bffccb8486ef1932"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/mixed-empty-prefix-original.xsd",
+          "role": "fixture",
+          "sha256": "c74de9a602cd61a9dd282119207f3fe077e89ab13f29a36c6c3d2a04415a4c14"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/mixed-empty-prefix-shadow.xsd",
+          "role": "fixture",
+          "sha256": "6a5ac4b3b2e1e616ec734e288c6c3de384f60fa92e27f8a3bdecf84c4be2725e"
+        },
+        {
+          "path": "research/reference/re01-ambient-completeness.test.ts",
+          "role": "reference",
+          "sha256": "d294502298c814c1961d65e6acb5ed4a8820f10420103fc9b7a5070169db5a15"
+        },
+        {
+          "path": "research/tests/re01/decision-experiment.ts",
+          "role": "prototype",
+          "sha256": "c46ffcff6e348a2c6534d21c7b88e2b449e15e70810864c60193250d493b5463"
+        },
+        {
+          "path": "research/tests/re01/decision-experiment.test.ts",
+          "role": "prototype",
+          "sha256": "273ca61bf7e7ed5cdf828ad7ac2bad0b96bf85b1388e8b93bab1fc17592b8ac3"
+        },
+        {
+          "path": "research/tests/re01/decision-measure.ts",
+          "role": "prototype",
+          "sha256": "71857b1429b921fb63d7ec0fccedaaa1cb1acfd2700fe74f4a25b862277c6eba"
+        },
+        {
+          "path": "research/tests/re01/decision-sources.json",
+          "role": "expectations",
+          "sha256": "be37193428a0941f114826c5c73c17656c8a71f0bf9aff13f769911e55f02308"
+        },
+        {
+          "path": "research/tests/re01/decision-results.json",
+          "role": "expectations",
+          "sha256": "9f2919243a15336f05ef4e599d91c4f1cd662ba9ae4304edad29dc9c6292a24f"
+        },
+        {
+          "path": "test/conformance/reference/re01-decision-investigation.test.ts",
+          "role": "reference",
+          "sha256": "3ff16061d1fcab0f35dd2872159e8d754e9d3c7e6598158a8533111d34927b20"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/combined-identity-original.xsd",
+          "role": "fixture",
+          "sha256": "c5be8948cb8136f4c0679d3a77d3fe88205f580012e802dca5c2ab2a765ba086"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/combined-identity-reused.xsd",
+          "role": "fixture",
+          "sha256": "1f661c5a62d502d9bfb41d00083730df07282cc7cc25bc21047b08ba89969543"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/combined-identity-copy.xsd",
+          "role": "fixture",
+          "sha256": "76847d7a24d181620a52c71d4bf9f7c450afad3547ef6e1257473ba897cb6195"
+        },
+        {
+          "path": "research/tests/re01/literal-attribute-extension.ts",
+          "role": "prototype",
+          "sha256": "4c9665991fcbb80e7271e15e6ce89f4b99cde6ada35b1d57ed9a19c02128fbf3"
+        },
+        {
+          "path": "research/tests/re01/literal-attribute-extension.test.ts",
+          "role": "prototype",
+          "sha256": "be3f6474f9de98ae69f7aa76368a003cd301491001076920c0a2ecbe2a8a8557"
+        },
+        {
+          "path": "research/tests/re01/fresh-helper-case.ts",
+          "role": "expectations",
+          "sha256": "e8011b03f6705dd149bbb7a8a7b1a78346a80101ef12a7973796d617c1a72add"
+        },
+        {
+          "path": "research/tests/re01/fresh-helper.test.ts",
+          "role": "reference",
+          "sha256": "c3c8a4e8ffa86ced2343ecfb3755ee2ee283913878720cf589dfe7c497feb5a1"
+        },
+        {
+          "path": "research/tests/re01/literal-au-synthesis.ts",
+          "role": "prototype",
+          "sha256": "902d505b1656e23cf9f71a5fa6e7134a3a65756f383b9804670d1107d229ff81"
+        },
+        {
+          "path": "research/tests/re01/literal-au-synthesis.test.ts",
+          "role": "reference",
+          "sha256": "77a10656d6dbd09f00e1a1d99c55d18cff249b77bc8d400cdcbb3907125c26e5"
+        },
+        {
+          "path": "research/tests/re01/literal-context.test.ts",
+          "role": "reference",
+          "sha256": "986da2c0664dfcf0c735f2a0aaf18fe6f9d1c591a61ec8e686e41b9b6844f651"
+        },
+        {
+          "path": "research/tests/re01/literal-measure.ts",
+          "role": "prototype",
+          "sha256": "9348ebc29a1c55b9a27fd7975ba863f2b3a610a554a9fdfc2050930e1a740f0d"
+        },
+        {
+          "path": "research/reference/re01-literal-continuation.test.ts",
+          "role": "reference",
+          "sha256": "b087839030d1989e14977eb4b3c503e5dff29c4d0cf952290049b7a614e789b0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-actual-block-substitution.xsd",
+          "role": "fixture",
+          "sha256": "07f125c449fdc1715cf33cfb84604ec6b0bd6d818a0d84ed80463bb81b3369a4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-actual-final-extension.xsd",
+          "role": "fixture",
+          "sha256": "44d3c0a0b61d65d1f7bb2f42d26a4b021e00847f3874dbf4f677157421184454"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-actual.xsd",
+          "role": "fixture",
+          "sha256": "c2789eb39434d59bab9f47e180a7c25cf5fac4007e2f786de65d6451a02de3d7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-expectations.json",
+          "role": "expectations",
+          "sha256": "5ea569018ad06d788b62da1b33123d57bbca046e28f2af392b3444623792ee8c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-holder-blocked.xsd",
+          "role": "fixture",
+          "sha256": "30ab0b03ab5208a18ca9460ababda33009766b2b03ae067d7eee324505f67db2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-holder-unblocked.xsd",
+          "role": "fixture",
+          "sha256": "ac6bdff6c9acd9583f41f2bdfb9435ca859346b58445fcf2015f4454d7ba7043"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-local-fresh.xsd",
+          "role": "fixture",
+          "sha256": "8c38a6f08644e8d3a34b89bf5246cc717e33c9ed845fdc8340c233e93211eb86"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-fresh-block-substitution.xsd",
+          "role": "fixture",
+          "sha256": "a4ae887ff42bd39dabf71ca16cfc48a765de85e306137244c8b8635d191d9519"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-fresh.xsd",
+          "role": "fixture",
+          "sha256": "1f7d06dbe3e2ba849df2d2f85e0c938ddfeb805eb72b405c2cca58ba25d2df89"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-original-B.xsd",
+          "role": "fixture",
+          "sha256": "8e8ca40bbe111e5febd93a8c373e4d2a966edc1d94153becf7955cbf1b52d897"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-self.xsd",
+          "role": "fixture",
+          "sha256": "9543269815cb86b85a7bcce29ff67f87865e23e0f409e4f1be04673a1c066e5e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-absent.xsd",
+          "role": "fixture",
+          "sha256": "22eca7d1c1fdab871fbc445801c8a33fb37a208b54de7009c6c50d8f2dde804d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-actual.xsd",
+          "role": "fixture",
+          "sha256": "4a54570d125638981d8142b1552621238921ec4663b9b5ad641ddb0562bba3ee"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-expectations.json",
+          "role": "expectations",
+          "sha256": "a83e6820b2e12a2c8198a04bd5c3739a733d73e78c1c848b586dac5f57eff482"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-present.xsd",
+          "role": "fixture",
+          "sha256": "957626517c4e1ffc03ddbbad790214eceafa1bf52f112a4785cb83476619b169"
+        },
+        {
+          "path": "test/conformance/reference/re01-affiliation-derivability.test.ts",
+          "role": "reference",
+          "sha256": "e7c3de8efccd5a4c364a323469f0014ca25f85913bf9f2e79fd04d0e83da0346"
+        },
+        {
+          "path": "test/conformance/reference/re01-global-helper-necessity.test.ts",
+          "role": "reference",
+          "sha256": "b1d58c0bea1fe6b13d7643f33ea18c763e247f7ab93175e21e30672a31cf6abf"
+        },
+        {
+          "path": "research/tests/re01/cli.test.ts",
+          "role": "prototype",
+          "sha256": "7dd583fa8d4cc291d3ee6e5868708d42860274deea536d6a8f62d42eb8fdea1c"
+        },
+        {
+          "path": "research/tests/re01/cli.ts",
+          "role": "prototype",
+          "sha256": "ac8df45a25ce69e49a5b68edc3147df59918a3ad6d8a7acef4755a417e2fc658"
+        },
+        {
+          "path": "research/tests/re01/derivation-dependencies.behavior.test.ts",
+          "role": "prototype",
+          "sha256": "45e2206d06ed88a671895d1b639cc19ea32c779747be634e81f636274bad0541"
+        },
+        {
+          "path": "research/tests/re01/derivation-helper.behavior.test.ts",
+          "role": "prototype",
+          "sha256": "3ccd27b1680adae883effbac11ae26369c6d06abc9d9f6a974a68fbb645d4b07"
+        },
+        {
+          "path": "research/tests/re01/helper-affiliation-case.test.ts",
+          "role": "prototype",
+          "sha256": "05a8210a72c68ce5db6211f3f47346ccb8777b4e6b4e7a42408867e677aed4c5"
+        },
+        {
+          "path": "research/tests/re01/helper-affiliation-case.ts",
+          "role": "prototype",
+          "sha256": "45baea9e27fd86651070734911f83d32122d570e2cb828d1426dc5e521014db3"
+        },
+        {
+          "path": "research/tests/re01/model-selection.test.ts",
+          "role": "prototype",
+          "sha256": "26f770f0ae700bf3a4b8a958ce5a53b63616bf437bc7d27022d335ba269492a1"
+        },
+        {
+          "path": "research/tests/re01/model-selection.ts",
+          "role": "prototype",
+          "sha256": "c880e7b557b0ccc8810c11e01f7fc2aea0fac18702b09754408fadf5ee03077c"
+        },
+        {
+          "path": "research/tests/re01/derivation-dependencies.ts",
+          "role": "prototype",
+          "sha256": "e9811a94ed4aa539d4ec3ecc9ca6aa9a741633a5b396625343a7ab300624a351"
+        },
+        {
+          "path": "research/tests/re01/selector-work-ledger.test.ts",
+          "role": "prototype",
+          "sha256": "d719d6141daf3c5374c67c8f9c6eaf1f3a86e2b3eeb1ad00f6baebc29ad516a6"
+        },
+        {
+          "path": "src/compiler/catalogProvenance.ts",
+          "role": "semantic-source",
+          "sha256": "c16a6e839bead9d91042d005015d27d43f0833da11c32c05e20090c0e161aad9"
+        },
+        {
+          "path": "src/compiler/composeCanonicalGraph.ts",
+          "role": "semantic-source",
+          "sha256": "a670639a8598cf8693c769722f4fadb68bb9e778d3938146752917a9d801efc5"
+        },
+        {
+          "path": "src/compiler/occurrenceAnalysis.ts",
+          "role": "semantic-source",
+          "sha256": "51e01115280455850d69bd1544fe787de86754a1099839e3676bda610c4b6fa0"
+        },
+        {
+          "path": "src/loader/orderedSyntax.ts",
+          "role": "semantic-source",
+          "sha256": "df111418be47d54403c08b684b2b710eb253d1488b3725f45da98d4c30c8d6c9"
+        },
+        {
+          "path": "src/loader/schemaInput.ts",
+          "role": "semantic-source",
+          "sha256": "315f7cdefd31b50807a71dde740069fb5c0198d7f22b50a94349bbf77b3a7e2c"
+        },
+        {
+          "path": "research/tests/re01/predicate-dependencies.test.ts",
+          "role": "prototype",
+          "sha256": "102fc5056b3d10dc773ef2f36b7324a5305a518c63ba2fbe932c0e4e1045783a"
+        },
+        {
+          "path": "research/tests/re01/predicate-dependencies.ts",
+          "role": "prototype",
+          "sha256": "75271d03164e2c5f629597f50ec174802b72b1c0be3419d62ed817418c16d232"
+        },
+        {
+          "path": "src/compiler/complexTypeContent.ts",
+          "role": "semantic-source",
+          "sha256": "c63cf5712788a95b851bd0a5e4d49c97a95019b1b24d452d7f17a95cd2a4af80"
+        },
+        {
+          "path": "src/compiler/finiteRe01Verification.ts",
+          "role": "semantic-source",
+          "sha256": "b55580ff1f36f7adc8a3dd33a155e181f615be6cd5ac485bee4fb56d5fe754f6"
+        },
+        {
+          "path": "src/compiler/particleAttribution.ts",
+          "role": "semantic-source",
+          "sha256": "e4daf76bcd9b5985736e0bc33390de34a21759766ee0d024101b8685f5b36a74"
+        },
+        {
+          "path": "src/compiler/particleDeclarationConsistency.ts",
+          "role": "semantic-source",
+          "sha256": "39df6f64af9fa742bdbab9ba5753c525335a57fc10d152121491903e419dede2"
+        },
+        {
+          "path": "src/compiler/particleExtension.ts",
+          "role": "semantic-source",
+          "sha256": "148023bb89ebbb2130cb40f1d0a4b89f84cfbfac125a7248d9aeb0784f5d8417"
+        },
+        {
+          "path": "src/compiler/particleLocalAssessment.ts",
+          "role": "semantic-source",
+          "sha256": "23fb7c1d0ec38ac81bb246cde5ab2f2957ac45f91f308ef0d3a3553edd4b5403"
+        },
+        {
+          "path": "src/compiler/particleRestriction.ts",
+          "role": "semantic-source",
+          "sha256": "724c47da2ce8e79474802688d5773028a611b0c781923113946709782df96306"
+        },
+        {
+          "path": "src/compiler/particleSemanticView.ts",
+          "role": "semantic-source",
+          "sha256": "262c2282013d30b7daea2621e7e3c5773e43f6ed202af070a79a17910b93b030"
+        },
+        {
+          "path": "src/compiler/particleWildcardRelation.ts",
+          "role": "semantic-source",
+          "sha256": "7d5dc6cdb512b2b70205a712cdaa165ca4f7ca8a6d7d59c91eba04af10129d65"
+        },
+        {
+          "path": "src/compiler/re01CandidateCorrespondence.ts",
+          "role": "semantic-source",
+          "sha256": "9ea80e931d242ad9e5991a302a9863543b8249005653333a667c6f6ebdad841e"
+        },
+        {
+          "path": "src/compiler/re01TypeProperties.ts",
+          "role": "semantic-source",
+          "sha256": "084c13a8eb07af23f77c62aa1c5c51c4ea59c6b8d73b9fdb6f69c3f2c7c6a618"
+        },
+        {
+          "path": "src/compiler/re01TypePropertyValidation.ts",
+          "role": "semantic-source",
+          "sha256": "c4af7accb476c4e025f63d7e2537569194aa2cefb8b9c234894537aefa9ab99d"
+        },
+        {
+          "path": "src/compiler/scalarSchemaAssessment.ts",
+          "role": "semantic-source",
+          "sha256": "532993d17ba6357f525abeafb9a902e7b27aa87f80fd1b21abc548f639f4f706"
+        },
+        {
+          "path": "src/compiler/schemaAttributeGroupProperties.ts",
+          "role": "semantic-source",
+          "sha256": "fb79ec86714c0c8a1ceb8daed507359e1412bc397f2705e3f9ab9246f1d8b933"
+        },
+        {
+          "path": "src/compiler/schemaAttributeUses.ts",
+          "role": "semantic-source",
+          "sha256": "23b834b98c9c562784c65a22c8414bca97c7e97b232b6c020b6e3b605163e6dc"
+        },
+        {
+          "path": "src/compiler/schemaComponentEquality.ts",
+          "role": "semantic-source",
+          "sha256": "aeedd132c39734c829546fc8a9d3e177bd881fd8b1eef9e0b56f8110b030baa9"
+        },
+        {
+          "path": "src/compiler/schemaConstructionAssessment.ts",
+          "role": "semantic-source",
+          "sha256": "ae49ea10bd3b3e6896752355e3afecd3484de3e40aaf05cf01b057178df9e8c8"
+        },
+        {
+          "path": "src/compiler/datatypeValues.ts",
+          "role": "semantic-source",
+          "sha256": "22d71beea3fb906b1e0e0099f1f488f3e750fb997c7cd31c99f96c1605780734"
+        },
+        {
+          "path": "src/compiler/schemaDatatypeValues.ts",
+          "role": "semantic-source",
+          "sha256": "298047e1a479b66d0e70498e62ea7e3c7d2fab469b898ba623901c9f4548184f"
+        },
+        {
+          "path": "src/compiler/schemaDeclarationPrimitives.ts",
+          "role": "semantic-source",
+          "sha256": "c9b3d635d13a8cb307322075f0bfd0ba962595d3b00cf97bd44217048598d8ea"
+        },
+        {
+          "path": "src/compiler/schemaDocumentSyntax.ts",
+          "role": "semantic-source",
+          "sha256": "65cbecef2e9f66cd94b0b78e32a61b392ce31f6864e769fc3299afd3c6900fca"
+        },
+        {
+          "path": "src/compiler/schemaElementProperties.ts",
+          "role": "semantic-source",
+          "sha256": "29a5780f939f9bac03dd6829ace233bdda046738be4786cf7c79855b2aa6c796"
+        },
+        {
+          "path": "src/compiler/schemaExactCalendar.ts",
+          "role": "semantic-source",
+          "sha256": "d2097c19b682f5c156482d70f307ca589bc421bbaa7282231faba60fb19d6175"
+        },
+        {
+          "path": "src/compiler/schemaFacetAnnotation.ts",
+          "role": "semantic-source",
+          "sha256": "4f22ca2dafc8d3f45185e434bd0e13ecf8403d2e5f0d029509a4d6e4dd3f6397"
+        },
+        {
+          "path": "src/compiler/schemaPattern.ts",
+          "role": "semantic-source",
+          "sha256": "cc40b1744f90dd282446dc767551ec1a5b679817a1685dc6b22c8f9f46c955bb"
+        },
+        {
+          "path": "src/compiler/schemaScalarContext.ts",
+          "role": "semantic-source",
+          "sha256": "a28348d12ccc8fe60396289326ba0a2ba38c3bc74d039feebf2d0145dc588fcf"
+        },
+        {
+          "path": "src/compiler/schemaScalarKernel.ts",
+          "role": "semantic-source",
+          "sha256": "c22f1a6f2eb6d7e59e34ba8b3d1acb944b2586411bfe831d29bafd33e3b55d0f"
+        },
+        {
+          "path": "src/compiler/schemaSimpleTypeProperties.ts",
+          "role": "semantic-source",
+          "sha256": "6374f78e63e82cf6c4b1df2392b995c094c6b578fb9db1283e65606781bb8883"
+        },
+        {
+          "path": "src/compiler/schemaSyntaxAssessment.ts",
+          "role": "semantic-source",
+          "sha256": "5e001dc34349f987eba3786277d2fd9dbcb53caed05beec1a1a4361c663a491e"
+        },
+        {
+          "path": "src/compiler/schemaTypeRelations.ts",
+          "role": "semantic-source",
+          "sha256": "4f7c9e3bd9c165b321d87173d545b9313a7db656d095738354b42fef385a4bb7"
+        },
+        {
+          "path": "src/compiler/schemaUri.ts",
+          "role": "semantic-source",
+          "sha256": "dd7510a4d462ab4b139836c1d8a39560a299830636d5f0c0fa1aaeae47a91699"
+        },
+        {
+          "path": "src/compiler/semanticBudget.ts",
+          "role": "semantic-source",
+          "sha256": "15155cc97a151aa36ad42a89acd05126097886bdfdeb9080e046367e0139b3e3"
+        },
+        {
+          "path": "src/compiler/semanticContext.ts",
+          "role": "semantic-source",
+          "sha256": "e12440fcd5fd23f2ccb74d6831c52f3249a3cfe12426bb790115fde75d24e4ad"
+        },
+        {
+          "path": "src/compiler/wildcardAlgebra.ts",
+          "role": "semantic-source",
+          "sha256": "bd4a3a1843f8ef1c4982d39d2943b656ca01e4e404bcee94da1bb3786068d114"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/au-independent.xsd",
+          "role": "fixture",
+          "sha256": "8499352e3a032a21c6a47b5b9433c91b20948f946fb6b4ffa55e407deb42da3c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/au-raw-independent.xsd",
+          "role": "fixture",
+          "sha256": "dbb8afd2589d3d9ebb24dafe3a77faf08c7c0f694008b7fbc1212f4b901ccaaa"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/construction-independent.xsd",
+          "role": "fixture",
+          "sha256": "d15ca0b690c8d97f29bbd7618607734bb233c32ef175ef7664170a09704410cd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/content-independent.xsd",
+          "role": "fixture",
+          "sha256": "47ba56190ebf342ba3f78166b7826dc0a6ec9022973039ae7a6ff6d297e01d13"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/edc-independent.xsd",
+          "role": "fixture",
+          "sha256": "95b1c4333b5aab4ddca8d196a84a3e1ae3ca472174e365d8113716fcabcf1e40"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/extension-copy-independent.xsd",
+          "role": "fixture",
+          "sha256": "ce55b64ba5a7765f43f4b1e293ec6a6ab9d9621a928a2e2ae221ea00bb8686a6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-particle-independent.xsd",
+          "role": "fixture",
+          "sha256": "b5241798109a69a0760fdd0db2da41a2629f23169941fc659dc438b424312213"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-independent.xsd",
+          "role": "fixture",
+          "sha256": "35babfd123f05254b3997a5096de125c2dd81fbee3e4919e3ae2ae788c1e8535"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-invalid-original.xsd",
+          "role": "fixture",
+          "sha256": "1838770e5eb863398141ac68b36985450e1a559b61aa4101a064b330c63e2fd7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/restriction-independent.xsd",
+          "role": "fixture",
+          "sha256": "c37bbf698179b85bb184ce6dd5983c6cb4c111f5936eebd17c4a0dbce3f21b38"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-primitives.xsd",
+          "role": "fixture",
+          "sha256": "33f47a6762b9b3ef55cfde23cf6b0bbb6e7166b8fb17769a4b869807b316fcbf"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/upa-independent.xsd",
+          "role": "fixture",
+          "sha256": "34d164833dcf1c55999039e9af3ea20d0c16222fa2096366f39b7ed103e8b441"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/upa-symbolic-group-independent.xsd",
+          "role": "fixture",
+          "sha256": "e9ccf68b851d0eda619056e878b3964db490b97c3e4afb872400ea48163f9651"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/upa-symbolic-independent.xsd",
+          "role": "fixture",
+          "sha256": "fe61609bcf139ebe6d903248f4211ae4d449b2160bcd6b5aedab2984208ce09f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/upa-symbolic-narrow-group-independent.xsd",
+          "role": "fixture",
+          "sha256": "de999f7a29bf8a51ab26e32a60966bdf75407a065cac8f3723fbcc075b644fe3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/syntax/actual-source-controls.xsd",
+          "role": "fixture",
+          "sha256": "24642ea4759b553b3c2edb4d2a097f022c518393f8aa5e61c85fed86a2b38463"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/syntax/schema-document-controls.xsd",
+          "role": "fixture",
+          "sha256": "03cce25eae1a9b81926171c484d46ec70f8342f16f7f1e099a79c347d8f29ed8"
+        },
+        {
+          "path": "research/tests/re01/derivation-domain.behavior.test.ts",
+          "role": "prototype",
+          "sha256": "694b6915c6ea0fb2cb1a16e81cc94572cec0348921400451084fd947422bcea8"
+        },
+        {
+          "path": "research/tests/re01/derivation-domain.ts",
+          "role": "prototype",
+          "sha256": "a0ece7be019c92e490c11f42151f923c940acbf08cc7e30a5b381cd1c97b57b1"
+        },
+        {
+          "path": "research/tests/re01/finite-capacity-measure.ts",
+          "role": "prototype",
+          "sha256": "c945fa173ad014c3afff1a4907dac6aea413924a98a69d0a18acbbd66ac0004a"
+        },
+        {
+          "path": "research/tests/re01/predicate-dependencies.behavior.test.ts",
+          "role": "prototype",
+          "sha256": "245e875e35a59802084c2680e07bb7dd782854127da22d23c38af29c204053b0"
+        },
+        {
+          "path": "research/tests/re01/preparation-baseline.ts",
+          "role": "prototype",
+          "sha256": "89ecf50d56c4d3dc0cc9ad42a5a0754cd7b0f43a8374a28f74f4d381c3e0800b"
+        },
+        {
+          "path": "research/tests/re01/preparation-candidates.test.ts",
+          "role": "prototype",
+          "sha256": "46e61fcfa1af106490eee02b72c496d3fe536dcd61d631ce32b92ed181fa91ac"
+        },
+        {
+          "path": "research/tests/re01/preparation-candidates.ts",
+          "role": "prototype",
+          "sha256": "ad60b5aae9e99cf038f061ec8720fd65e23009d1f1cdcdc6f0d822f13ecd7c14"
+        },
+        {
+          "path": "research/tests/re01/preparation-corpus.ts",
+          "role": "prototype",
+          "sha256": "a0c6e5599cdcf24224255c441afb32693fb5bd927a14968cd344078ce784cbc5"
+        },
+        {
+          "path": "research/tests/re01/preparation-evidence.json",
+          "role": "expectations",
+          "sha256": "437b0074f22f78e4fc62d82752ff97e51cf933b77a458a41029aae42f88e8016"
+        },
+        {
+          "path": "research/tests/re01/preparation-measure.ts",
+          "role": "prototype",
+          "sha256": "b7ad5d83643b5bfc459056bb0a3ea4548236680f0dc674a0308b161e71f70931"
+        },
+        {
+          "path": "research/tests/re01/preparation-probe.ts",
+          "role": "prototype",
+          "sha256": "0393ca062d8d0cb4e5bf7b702584059d714e2f7dba059c0faec0b1580272984c"
+        },
+        {
+          "path": "research/tests/re01/preparation-provenance.test.ts",
+          "role": "prototype",
+          "sha256": "007ea65b3453e00c2143d6305e69c09dcf46a6ca151fb5e88079916aff76c58f"
+        },
+        {
+          "path": "research/tests/re01/preparation-summary.ts",
+          "role": "prototype",
+          "sha256": "7ab834e9c4acf76a393df0a7dea9547c9ce252d84e2a12f4898367612a2f8070"
+        },
+        {
+          "path": "test/unit/complex-content-independent.test.ts",
+          "role": "expectations",
+          "sha256": "0986f3ed3cc80f2c1b8d181c84cd39834d4aeec5daa7f048ef84dc077fe11774"
+        },
+        {
+          "path": "test/unit/complex-type-content.test.ts",
+          "role": "expectations",
+          "sha256": "9f2d253968ae7be99683c186ccd4e2b4df0fd5183552fd7ca1ed5f91b4e82bee"
+        },
+        {
+          "path": "test/unit/component-construction-independent.test.ts",
+          "role": "expectations",
+          "sha256": "0ff3087ce85d40fd9baa385a7d05c5c3c69743eb20686d7faf52d22ea6c40acf"
+        },
+        {
+          "path": "test/unit/particle-edc-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ad0eac1d14452b3749b7b2243a84def3981f034a409a5911141f1f2a3ffdced7"
+        },
+        {
+          "path": "test/unit/particle-extension-independent.test.ts",
+          "role": "expectations",
+          "sha256": "1fdda83d4514140ac09340eae683c058f2ad89e286aff43fca21d147cd6dad25"
+        },
+        {
+          "path": "test/unit/particle-restriction-independent.test.ts",
+          "role": "expectations",
+          "sha256": "9bca61a9f396a6125378a21e23fb4800b0a38bbf0d5e026a4fcae6cc09d18480"
+        },
+        {
+          "path": "test/unit/particle-upa-independent.test.ts",
+          "role": "expectations",
+          "sha256": "66e868ef7481bc93208cc5e35615ba80345c266b905e16af491192d7f85fddb9"
+        },
+        {
+          "path": "test/unit/particle-wildcard-relation.test.ts",
+          "role": "expectations",
+          "sha256": "8c4b1ec1cb238582f4e7bc955ff3b3aa241f078c3f1eb08dcc2118ed66e532a2"
+        },
+        {
+          "path": "test/unit/raw-type-properties-independent.test.ts",
+          "role": "expectations",
+          "sha256": "f9a3597a6dc18d33329fd9d6f5f5cf382fcb2f821df3ee5df4f86ddbe3fe62bd"
+        },
+        {
+          "path": "test/unit/re01-candidate-independent.test.ts",
+          "role": "expectations",
+          "sha256": "bd9228dd25161236b5ae4874be13347f89e30a64cd39b669b09b3f8c7cf9e893"
+        },
+        {
+          "path": "test/unit/re01-type-properties.test.ts",
+          "role": "expectations",
+          "sha256": "3db684a24cf5df30e5765a3a102bc0d0fdbb07c9a894022c8f4b1c5d4706f994"
+        },
+        {
+          "path": "test/unit/schema-attribute-independent.test.ts",
+          "role": "expectations",
+          "sha256": "6add87c1324824176a45b8e2ba2996fa8a39a7c219f3045c8b2fb0e5e14b5eda"
+        },
+        {
+          "path": "test/unit/schema-attribute-raw-independent.test.ts",
+          "role": "expectations",
+          "sha256": "e3f67c80249ccbb889472644c931b8b9bc24db9378fc42bec779bf92621840fc"
+        },
+        {
+          "path": "test/unit/schema-attribute-uses.test.ts",
+          "role": "expectations",
+          "sha256": "d664313bdc82e4ca03244f8e76fe210b2213e5de372e92fb336ca9684951fb2f"
+        },
+        {
+          "path": "test/unit/schema-construction.test.ts",
+          "role": "expectations",
+          "sha256": "5ffdd2540ea12bed22d4be44f79131dd86e07b11cb627cb791349d11f6b98c25"
+        },
+        {
+          "path": "test/unit/schema-document-independent.test.ts",
+          "role": "expectations",
+          "sha256": "894f88bfcc777da781fcfb02fc442feea6993762c7248cb3189ae360f307c0e9"
+        },
+        {
+          "path": "test/unit/schema-document-syntax.test.ts",
+          "role": "expectations",
+          "sha256": "8499defd5c718dbd92b53f8169bf9751338e6ba99527c0e9836e2d8db8991ec2"
+        },
+        {
+          "path": "test/unit/schema-scalar-independent.test.ts",
+          "role": "expectations",
+          "sha256": "f7c9a8124681630d75bd9ae3c936a3e326d45177516d0a64da45775c8aa28dc8"
+        },
+        {
+          "path": "test/unit/schema-syntax-assessment.test.ts",
+          "role": "expectations",
+          "sha256": "61b4fed67861a5da996675899bb3d663477cb254317aca3eae027144a87c7a07"
+        },
+        {
+          "path": "test/unit/schema-type-relations.test.ts",
+          "role": "expectations",
+          "sha256": "796fcc8e6ee8b15f78a0364ba899cfe77dad537d29137bc1befaae9bfeb5fd4d"
+        },
+        {
+          "path": "test/unit/semantic-context-independent.test.ts",
+          "role": "expectations",
+          "sha256": "d5d63f4c1379d85b60c3a2716257074d573cdbcb2153691c28cf02a1a613057a"
+        },
+        {
+          "path": "test/unit/semantic-context.test.ts",
+          "role": "expectations",
+          "sha256": "429e183993a88593c70386a58408624757af57f08b7aac3167f011c95e7c0a63"
+        },
+        {
+          "path": "test/unit/wildcard-algebra.test.ts",
+          "role": "expectations",
+          "sha256": "7be44fce6d0232bbe275086eabcc05376f758a1bb9d1dc3e34fd62079c8b6381"
+        },
+        {
+          "path": "src/compiler/catalogErrors.ts",
+          "role": "semantic-source",
+          "sha256": "adf4ee2eb8d2d69aecbc18f55d4d90d0ea8a01c9ea798a8e309cdc5b4ca40338"
+        },
+        {
+          "path": "src/compiler/buildCanonicalGraph.ts",
+          "role": "semantic-source",
+          "sha256": "9479e917f21c1625a1a1b5132b4498b885f44ae412085da9491b474b611f2658"
+        },
+        {
+          "path": "src/compiler/semanticCatalog.ts",
+          "role": "semantic-source",
+          "sha256": "7776422bdb7bb76116f62f8dfe34892a13e516c6559b0eb2b63f57bf8559e593"
+        },
+        {
+          "path": "src/compiler/canonicalGraph.ts",
+          "role": "semantic-source",
+          "sha256": "7cbdbd499e3f116b573362f478af54af1eb74cae7a01e4a69d3c3ec942c1e31b"
+        },
+        {
+          "path": "src/loader/wsdlLoader.ts",
+          "role": "semantic-source",
+          "sha256": "7f152bb88efbb078e7f6af15569898523422d6490521a8c6564cd1ce6dd1df9a"
+        },
+        {
+          "path": "src/compiler/schemaCompiler.ts",
+          "role": "semantic-source",
+          "sha256": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a"
+        },
+        {
+          "path": "src/config.ts",
+          "role": "semantic-source",
+          "sha256": "a5482ec9ad07c6d61fbe327469d5599941e74b13c9b8ad3b7f15228fe88d672c"
+        },
+        {
+          "path": "src/compiler/validateSemanticGraph.ts",
+          "role": "semantic-source",
+          "sha256": "9ef37e796b63ed55b5024b5e0ee98f003563f3571e7395ea3d2e7f5e1bae17d0"
+        },
+        {
+          "path": "src/compiler/structuralCompanions.ts",
+          "role": "semantic-source",
+          "sha256": "0e24309953491f9469b50eed5418ab2645bfb939efd5ca278147b7bc69ef2354"
+        },
+        {
+          "path": "src/compiler/resolveCanonicalGraph.ts",
+          "role": "semantic-source",
+          "sha256": "db66545b7805b9a09536208b576a3fae17eec589b722780b48c62cd517540fd5"
+        },
+        {
+          "path": "src/loader/schemaResources.ts",
+          "role": "semantic-source",
+          "sha256": "e7039183fa5cf9f85ce6a0be63b53d1ab9950c56ed84425de6c4c32b1301cc58"
+        },
+        {
+          "path": "src/loader/resolutionDepth.ts",
+          "role": "semantic-source",
+          "sha256": "0fa8fdc35604db2e8336f1394d6e59c723d3cf85761d6a0854aa1af82430c78d"
+        },
+        {
+          "path": "src/compiler/graphTraversal.ts",
+          "role": "semantic-source",
+          "sha256": "470900a618e50034d9497a101ea9deb9b3cf070b880e4cf16d5e99200633077e"
+        },
+        {
+          "path": "src/xsd/primitives.ts",
+          "role": "semantic-source",
+          "sha256": "d801d7bb332ba3e99ac57de54b9f6a662fe4706a2eaf3e241b3b70307f60d5aa"
+        },
+        {
+          "path": "src/util/tools.ts",
+          "role": "semantic-source",
+          "sha256": "a48488199ef76ef89ad710e8833db68a67aa3ea9155227c8d5f903170b2f00c5"
+        },
+        {
+          "path": "src/util/errors.ts",
+          "role": "semantic-source",
+          "sha256": "05f56093a5b25966a02e94f969b8fe40bea8d53119198cbcbe37b933122da772"
+        },
+        {
+          "path": "src/util/streamConfig.ts",
+          "role": "semantic-source",
+          "sha256": "90a9f83812359635dde5fc7e5613d6075d81df42f8dbac338c57116b6935d1eb"
+        },
+        {
+          "path": "src/loader/fetch.ts",
+          "role": "semantic-source",
+          "sha256": "d6c2e8c73374da5ae534ed6a78f5fe64028670c03ce9f3be5423617eeba69370"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/component-equality-independent.xsd",
+          "role": "fixture",
+          "sha256": "04b8854e04b59b7c71b5584d76b365565394fc25dd6ce090f6999b2d95720130"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-facet-bounds-independent.xsd",
+          "role": "fixture",
+          "sha256": "945d4a89d1cb84c8246e6a468b322d40f9af1189ec45704838c6211e427ff862"
+        },
+        {
+          "path": "test/unit/schema-component-equality-independent.test.ts",
+          "role": "expectations",
+          "sha256": "7fd923d4b9b253762bc054b368655ae325595faffcfd5a014192e4b358a46124"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/syntax/default-namespaces.xsd",
+          "role": "fixture",
+          "sha256": "6e930a5e67e7015c06163a353449963a46765df669dd16a9df9d0f38d6af4297"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/syntax/ordered-namespaces.xsd",
+          "role": "fixture",
+          "sha256": "e15457ac91cdcf4a8f205f6e82c19643d202cc0e89e281ed440e9d99fe68200e"
+        },
+        {
+          "path": "src/compiler/schemaNotationProperties.ts",
+          "role": "semantic-source",
+          "sha256": "ce1ee1450fcdeadf63ffecf03e8e4ce705f8bb2823d057f8c2ff134fb7f66b94"
+        },
+        {
+          "path": "src/compiler/schemaScalarWitnesses.ts",
+          "role": "semantic-source",
+          "sha256": "dc165ae70d9f22fce10023ba5eb243081c81e2f266a0f12b6faef503e9176816"
+        },
+        {
+          "path": "src/compiler/schemaSourceLexical.ts",
+          "role": "semantic-source",
+          "sha256": "6835b55ec7d63d9d87f38f43ed9842453b5274c6056f9f9aa6504b2f37ef8815"
+        },
+        {
+          "path": "src/compiler/schemaSourceWildcards.ts",
+          "role": "semantic-source",
+          "sha256": "1e0c41f6696c737ae5de45894f229f785f92ed7c85d804a9f68d02c2fa6b1dec"
+        },
+        {
+          "path": "src/compiler/schemaElementInstance.ts",
+          "role": "semantic-source",
+          "sha256": "968a379ca5cb7c355a306742deba90de8c3ab84d672f4ab0f0a2f0ef9bd5b3ef"
+        },
+        {
+          "path": "src/compiler/standardSchemaComponents.ts",
+          "role": "semantic-source",
+          "sha256": "8ff9a5637ca213e3752e3e62dce340079b6e7d216f177f5c275048836a121f24"
+        },
+        {
+          "path": "src/compiler/standardSchemaConstruction.ts",
+          "role": "semantic-source",
+          "sha256": "11e9e38389bbd56df0eeff74ae5d98a92993d02a87f5cd9e238bdbc6e8ec9d3b"
+        },
+        {
+          "path": "src/compiler/sourceSchemaBinding.ts",
+          "role": "semantic-source",
+          "sha256": "4e1b5fd2e6820f43efbeced70df933860b7329b8181b7ebc1c3a1d9ec6a40377"
+        },
+        {
+          "path": "src/util/xmlWhitespace.ts",
+          "role": "semantic-source",
+          "sha256": "b8fc36f39d85893b788cab2b62a52cf2effbc52840d481b6cfa2d1fbe4dc1e65"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-notation-independent.xsd",
+          "role": "fixture",
+          "sha256": "152d1835f90cfc9cbf73a342e9466d7a88ce4f68b32375c5d16966187f7150e0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/inherited-scalar-equality-independent.xsd",
+          "role": "fixture",
+          "sha256": "1f2c38e4a64f8681a6c24448734ce80f165b97d88d59674afff5b1213deb6f0e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/common.xsd",
+          "role": "fixture",
+          "sha256": "c12b82cd73f54d603d987b103322f57e8aab86a26526d92a1246407165cfc231"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/left.xsd",
+          "role": "fixture",
+          "sha256": "d1857b41b361004c86b7ad99845b7a2a7884362bc2e4e1932003faba946b60b9"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/right.xsd",
+          "role": "fixture",
+          "sha256": "87c6eaaac79a1b6903647afa39570c53a7850d1a3dd1094e29fc9b12b22aba3e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/root.wsdl",
+          "role": "fixture",
+          "sha256": "b59a7fec887c03c9eca46860dec6d868b28edfc190dced0419376791a825df1a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-finite-witness-independent.xsd",
+          "role": "fixture",
+          "sha256": "e2b92be63d99b39d7ae234d95ecaeae5d3b499d7ea4c7dd8a24557a3a7dd078d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-property-independent.xsd",
+          "role": "fixture",
+          "sha256": "6dba1925fd13260ecadd241f4b47d8fc04c259c33b77cb442d65ee188ce05f2d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-typed-bound-membership-independent.xsd",
+          "role": "fixture",
+          "sha256": "ea1d826bc7eb677e15c2906c46004114e06c770403bd6fc311ba3c59478e9ab2"
+        },
+        {
+          "path": "test/unit/schema-pattern-property-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ef2347e4455ffb6bdc763bb0d99558a869afe3bc3559edcc33d5cb8e37212c34"
+        },
+        {
+          "path": "test/unit/schema-raw-facet-independent.test.ts",
+          "role": "expectations",
+          "sha256": "83bc9006cc0d725fee6779f3d7a7493275d1c4f02debdf2f28c40e4ed9bc7055"
+        },
+        {
+          "path": "test/unit/schema-scalar-witness-independent.test.ts",
+          "role": "expectations",
+          "sha256": "7cb566fbf8489aac9993ed57ead8b58a94b0d26b9ef9fe500ab403070c567ba4"
+        },
+        {
+          "path": "test/unit/semantic-notation-independent.test.ts",
+          "role": "expectations",
+          "sha256": "1d8c5bfc9b8ca45404880953fe6601d8dc3980999001a486349a173fef1c2110"
+        },
+        {
+          "path": "test/unit/semantic-source-loading-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ca96429c3d9217fdb6dff40aa71b6f29ce2f03ec6ee451b76243caac512c9247"
+        },
+        {
+          "path": "src/compiler/schemaBuiltinFacets.ts",
+          "role": "semantic-source",
+          "sha256": "0b8a06b23b3841308970009bd4b91b8fcfb3d6b0c6aac76fa5bc65c08eae2de7"
+        },
+        {
+          "path": "src/compiler/schemaSourceGrammar.ts",
+          "role": "semantic-source",
+          "sha256": "173d211830c16fa462171fc5c966d003151bde39e0aaab825bf5e413a32363cc"
+        },
+        {
+          "path": "src/compiler/schemaSourceValues.ts",
+          "role": "semantic-source",
+          "sha256": "21d6feccdd10fc42d66dd423bfd1b6b9527fccfd49a5f5008b65380239a6e486"
+        },
+        {
+          "path": "src/compiler/schemaValueContext.ts",
+          "role": "semantic-source",
+          "sha256": "5aaa1d66ea83d0bf4d4614dad19e4ac00c818b27807c86ec8a36bfcf8ecb8229"
+        },
+        {
+          "path": "src/compiler/schemaValueSequences.ts",
+          "role": "semantic-source",
+          "sha256": "cfc874035a069638383762a90050397abbab605c93fbbb9024db0891cc092a1b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/au-reuse-independent.xsd",
+          "role": "fixture",
+          "sha256": "fe0e7be8f6ad9e155771c6899358d83e5bf6acc2958d3a79593339da9774a8f1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-membership-independent.xsd",
+          "role": "fixture",
+          "sha256": "f3b667dbae2f516c71e851f69600ae6170b4e162864df63d579471f6c34cb429"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-properties-independent.xsd",
+          "role": "fixture",
+          "sha256": "d9aee9b1651e8f0a95248bdb5b4aa5c7d919241d24ef7441c79f171fd6fa1740"
+        },
+        {
+          "path": "test/unit/schema-attribute-reuse-independent.test.ts",
+          "role": "expectations",
+          "sha256": "a8994331289c10614f589922c65beeaf470ae8813e79e1ee16f9519fd4c557bc"
+        },
+        {
+          "path": "test/unit/schema-scalar-membership-independent.test.ts",
+          "role": "expectations",
+          "sha256": "a90716b6db7e65a57647b953ad7d4a771d2f1ee540f48da8255fb2cd4fb6c67d"
+        },
+        {
+          "path": "test/unit/schema-scalar-properties-independent.test.ts",
+          "role": "expectations",
+          "sha256": "cce743e2976cb904ff9abd00a62b5cab0a5a8f6730d6c80fa8afbc4841e5d435"
+        },
+        {
+          "path": "test/unit/schema-source-assessment-independent.test.ts",
+          "role": "expectations",
+          "sha256": "d1dcc0348e83fab1081c78969afea84983ac7491c2424eccf5dc92f0de17eb95"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/particle-mapping-alternatives.xsd",
+          "role": "fixture",
+          "sha256": "b505c5622b1306aec770b7bae2303703a77ae20388d9bdd0f9ef3f80fb6615dc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-class-starvation-independent.xsd",
+          "role": "fixture",
+          "sha256": "7f58f97629b51c54badaa875c7013676cb34e3007bddee699768d0eb584e771d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-starvation-independent.xsd",
+          "role": "fixture",
+          "sha256": "bd80bef64c6913340b7951bdd43c062f03a6b3d0418abd27fab21c333c66cf1d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-witness-independent.xsd",
+          "role": "fixture",
+          "sha256": "a0f2d8a059dcba72b9e8514ab3e582376e4d65e565c1b6fd74aea157f7495bf2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-au-independent.xsd",
+          "role": "fixture",
+          "sha256": "4b81829d09fda5092bc174431a41381dd388eae5055e3a8e97fd0d5a934ac0d3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-gsc-chameleon.xsd",
+          "role": "fixture",
+          "sha256": "177231cf30c0bc61c074a2b96c781f155b8769cb0c86d6591068eeeeb83f2096"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-gsc-independent.xsd",
+          "role": "fixture",
+          "sha256": "ee81a98def4e6629b5bf5543f8b0bceb24a2547fa39329ff3b34aa37174860fc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-gsc-other.xsd",
+          "role": "fixture",
+          "sha256": "5b1daa7e0d41d4929131fb8624d3e34abe8af46e7f5a8528b258a9d978994ceb"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-particle-order.xsd",
+          "role": "fixture",
+          "sha256": "35bd2cf219d0e55c63a8ec83090b93304ce184ccef82bf71a1c05133ec516695"
+        },
+        {
+          "path": "test/unit/particle-mapping-alternatives.test.ts",
+          "role": "expectations",
+          "sha256": "31eede14a6536c4a73b5e3e0a5a7c155735bd09a2224a92336c7487192ef27d3"
+        },
+        {
+          "path": "test/unit/particle-selected-order-independent.test.ts",
+          "role": "expectations",
+          "sha256": "c2007b471bc1c0c7a0bed51d2371f6d30fc73a6d6fb4e9eae8233d4b97c2d504"
+        },
+        {
+          "path": "test/unit/schema-pattern-starvation-independent.test.ts",
+          "role": "expectations",
+          "sha256": "f436a53581aaa09de6c2570a3aa85d85100d1f19c84a5e6e15503a1b66d94883"
+        },
+        {
+          "path": "test/unit/schema-pattern-witness-independent.test.ts",
+          "role": "expectations",
+          "sha256": "c791aad7e9907aafadbe58c036505756dd6f6351e57bfdaf215a1a7de9b54951"
+        },
+        {
+          "path": "test/unit/schema-selected-au-independent.test.ts",
+          "role": "expectations",
+          "sha256": "fb8d5322e32f6d752a65e8bbae3f4395489875848490451993aa31a4081ee660"
+        },
+        {
+          "path": "test/unit/schema-selected-gsc-independent.test.ts",
+          "role": "expectations",
+          "sha256": "53427791d3e8218856e284b53ac472ee19c8cac2e3920137831853532ff84e57"
+        },
+        {
+          "path": "test/unit/schema-xml-inventory-independent.test.ts",
+          "role": "expectations",
+          "sha256": "e0fafe2356d4dcf3269021b4bfefefb0bfe8ba4238d1a100a062679899416141"
+        },
+        {
+          "path": "src/compiler/originalSourceMembership.ts",
+          "role": "semantic-source",
+          "sha256": "4f09fffef973f179b30f5c64cb369fce0bdf1c21922ea13215088089f2495cf0"
+        },
+        {
+          "path": "src/compiler/schemaAttributeProperties.ts",
+          "role": "semantic-source",
+          "sha256": "dcccd1fae0a67c167a8346561dcdb7da902b729980518f391e01f246799b84fe"
+        },
+        {
+          "path": "src/compiler/schemaGeneratedScalarShape.ts",
+          "role": "semantic-source",
+          "sha256": "10deb42d7f1f5fd912905102b653353c13df1342b7cceb88ebe1977aaa22793d"
+        },
+        {
+          "path": "src/compiler/schemaTypeIdentity.ts",
+          "role": "semantic-source",
+          "sha256": "90abff1198b143f7e139324c9fe74140263b3b7787ace6641619476e9de14449"
+        },
+        {
+          "path": "src/compiler/semanticTypeDependencies.ts",
+          "role": "semantic-source",
+          "sha256": "9c65032ebcd11839efd666fd4ad662a962cbc6d13d784c3a1bca0c8303493a26"
+        },
+        {
+          "path": "src/compiler/semanticTypeReference.ts",
+          "role": "semantic-source",
+          "sha256": "dd1c3208f35cec727c6efbe903557f395d1d6b5095c1019de12d58898b55e5f0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/cross-context-facets-independent.xsd",
+          "role": "fixture",
+          "sha256": "297f047a180efe2691b44a698164a2aec6eae5b3a1b862f29bad91138cac6f41"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-generated-absent-independent.xsd",
+          "role": "fixture",
+          "sha256": "d0dccb0c3f59e6977eb18054a4f1dc364d402a48858acdc0d8728c3dd49f2ca9"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-generated-absent-operand-independent.xsd",
+          "role": "fixture",
+          "sha256": "2cb40a31e7224ac94cd7e4a2cb1ee0103cff4914632722f09a5dc4be5b11910d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-generated-absent-syntax-independent.xsd",
+          "role": "fixture",
+          "sha256": "5891d44a1dad26c20f5b498e9c1c1699106a15851872cc2f78f0bc1dde9cae5e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-generated-binding-independent.xsd",
+          "role": "fixture",
+          "sha256": "60236a91a6ba4bd4e793a2f054a28baa819c0e95e2c9945a1c127730cf27ca96"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-generated-chameleon-independent.xsd",
+          "role": "fixture",
+          "sha256": "339dbb66fc66eeb193831a160cff5b7d2268f6f742dc09b1d115eafdb3e081de"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-generated-facets-independent.xsd",
+          "role": "fixture",
+          "sha256": "24f6bc7c85a481702dcfde18c5cebadad1352347d82e5e614b811bfe10aa6307"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-simple-correspondence-independent.xsd",
+          "role": "fixture",
+          "sha256": "51d548e28432e5a97423e635faa3984497427b1704fb3bafdae724a957e2bd91"
+        },
+        {
+          "path": "test/unit/helpers/original-simple-correspondence.ts",
+          "role": "expectations",
+          "sha256": "90570e78dd97fcf1b85b2347a95943af92b967197d4be5e790d8832fb83c810b"
+        },
+        {
+          "path": "test/unit/schema-attribute-origin-independent.test.ts",
+          "role": "expectations",
+          "sha256": "12255a76f3ba8ee5db44ffbf81461cf489d81670c9f00f993f937ddf6c655d5f"
+        },
+        {
+          "path": "test/unit/schema-cross-context-facets-independent.test.ts",
+          "role": "expectations",
+          "sha256": "28ab9cedba8b6d4a883a3aadede9b82d698adf93405d1f57149fea5faaafe9a9"
+        },
+        {
+          "path": "test/unit/schema-exact-facet-components-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ec8a2d8b0a749bf375d35bf1512db2fa2a37902c998cf38392bd107197bdbdf7"
+        },
+        {
+          "path": "test/unit/schema-original-generated-binding-independent.test.ts",
+          "role": "expectations",
+          "sha256": "a51c46c23f3cd734cb01070195c32541f764004058140f6fa17ba4bde0adb588"
+        },
+        {
+          "path": "test/unit/schema-simple-correspondence-independent.test.ts",
+          "role": "expectations",
+          "sha256": "dc9a9f74d7cbe46b292ac9496a7fbd5cbeda4c6805121633c9643ab0cf1fc7fc"
+        },
+        {
+          "path": "test/unit/semantic-type-dependencies.test.ts",
+          "role": "expectations",
+          "sha256": "add106df3bae2485e754a6cf70d875cdb83790e89f04322a1096cfbb6cadc1ab"
+        },
+        {
+          "path": "research/tests/re01/inherited-helper-obligation.test.ts",
+          "role": "prototype",
+          "sha256": "7bdb06ae3e9e023645302ec11b3e9b985821a643ad29e026d91601956ca1f628"
+        },
+        {
+          "path": "research/tests/re01/primitive-root-evidence.test.ts",
+          "role": "prototype",
+          "sha256": "b34cafb62a4c98bd4f224bcaef3da93b1f1987fd19db8a23e01a76b2fd6f5c2f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-affiliation.xsd",
+          "role": "fixture",
+          "sha256": "6432332a10fb9930a8b32f8343b0e31f74795696ef3226da583319d1c5f9a9d6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-invalid-original.xsd",
+          "role": "fixture",
+          "sha256": "ad105a3f3516e1ce8f5b84dd515d2c5417a52bdf1c6f1f2d2aa38d1d4106245c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-obligations.xsd",
+          "role": "fixture",
+          "sha256": "9027c3ec229a2f6f60141fe3f49e7dc0d082d2dbe3f7eb6e41596c628399b12a"
+        },
+        {
+          "path": "test/unit/schema-scalar-policy-independent.test.ts",
+          "role": "expectations",
+          "sha256": "8aa50e555ceb3e89ffd7ce4bc2cfa49fe4497d5f57a24c006df6c37ad7a8fb68"
+        },
+        {
+          "path": "test/unit/schema-scalar-inheritance-review.test.ts",
+          "role": "expectations",
+          "sha256": "859824a1ac871a86354ce684d5b846148ff3412f760cf23d9b5ba178143e6244"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-policy-independent.xsd",
+          "role": "fixture",
+          "sha256": "79cb661e38dc68b9726d4568e2062a0c5c53570901bd98107e36e8f5f4efe935"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-inheritance-review.xsd",
+          "role": "fixture",
+          "sha256": "9ed4bb4c7b23d7ce338c864cf19f6e14e47381f41c5c8508c7573cee2c5138e8"
+        },
+        {
+          "path": "research/tests/re01/finite-capacity-summary.ts",
+          "role": "prototype",
+          "sha256": "9fbc9f3194f4287864053f4f9ad098e43023dc08abf0656fcc54a993e3a00807"
+        },
+        {
+          "path": "research/tests/re01/finite-capacity-evidence.json",
+          "role": "expectations",
+          "sha256": "54fa2d89bcf82da8d858f78612ab41ef16b96a3eb497bee7f15ca7a60357bf52"
+        },
+        {
+          "path": "research/tests/re01/finite-capacity.test.ts",
+          "role": "prototype",
+          "sha256": "999b123c03e38d7aea37c4a94012829e4606c76b5589610f2b04c95d5eb64459"
+        },
+        {
+          "path": "src/compiler/schemaRegularLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "89722da26c2d105def4404a8a02b3d414bc571f0a8a448036a84f079a4e64876"
+        },
+        {
+          "path": "src/compiler/schemaDecimalLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "2df7523e9fac004cf903a92ea8ec88c4bbf534336910aa5c0408019bfc9afe5f"
+        },
+        {
+          "path": "src/compiler/schemaIeeeLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "1c72c7284a023168e99239d929e1a92781e3df5b0580e3982775d02211d7f25f"
+        },
+        {
+          "path": "src/compiler/schemaTemporalAliases.ts",
+          "role": "semantic-source",
+          "sha256": "197825bdced599ef17c1bc222b5610f37479005d0df68d97ffd1eaa800f32bd6"
+        },
+        {
+          "path": "src/compiler/schemaCalendarLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "632a5251fbfb52115e21975fd42cd72a77fba83472fae107a34b57e8fac0af99"
+        },
+        {
+          "path": "src/compiler/schemaDurationLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "7bf4e74b25fa326083db1c7e6b94c4bc4b7944ae01f7228295844a0f29ecefea"
+        },
+        {
+          "path": "src/compiler/schemaValueImages.ts",
+          "role": "semantic-source",
+          "sha256": "1dbb4a4d38010918a6a0bbcade1a770ceb387d86593e32eed4821cdff0891009"
+        },
+        {
+          "path": "src/compiler/schemaIntegerImages.ts",
+          "role": "semantic-source",
+          "sha256": "1f756af1a4d61e1d56c24a759503bf5d8e80f1a2f9006dc9fdb8b9629942ade1"
+        },
+        {
+          "path": "src/compiler/schemaCalendarImages.ts",
+          "role": "semantic-source",
+          "sha256": "96b263b7be9a9ca2fcd35135efa8b4ee79cc53521f1b43ae79414323c1c68658"
+        },
+        {
+          "path": "src/compiler/schemaNumericImageConditions.ts",
+          "role": "semantic-source",
+          "sha256": "44f46b0a06c3dda5340147fabb7c51ae77a0c054f9950b5cff572bf0f95a9694"
+        },
+        {
+          "path": "src/compiler/schemaLexicalPredicates.ts",
+          "role": "semantic-source",
+          "sha256": "7ee24ce2e220750f35647b0d50a9c96d67e5f9575bc5068964bdd72d906281ca"
+        },
+        {
+          "path": "src/compiler/schemaSymbolicSequences.ts",
+          "role": "semantic-source",
+          "sha256": "54081801d76a6da3774b1ec6ed3e39aeedaf114d0483842dc6792c43f3558df5"
+        },
+        {
+          "path": "src/compiler/schemaSymbolicValueSets.ts",
+          "role": "semantic-source",
+          "sha256": "a0364709f21c0a1dac4441e1929adef79c13f802ba3c05c680015186e7b28b15"
+        },
+        {
+          "path": "src/compiler/schemaTokenImages.ts",
+          "role": "semantic-source",
+          "sha256": "a4cd4dfffa8d88e03f115a549d61219e21ca3cc15f3b0de674fc0e48bcec15ec"
+        },
+        {
+          "path": "test/unit/schema-scalar-completeness-review.test.ts",
+          "role": "expectations",
+          "sha256": "3f96be4174b2fe7d42f4c49291e378bfdfbb65b52755e3da9cf36b1ae0dc2a8c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-completeness-review.xsd",
+          "role": "fixture",
+          "sha256": "a901e9f52689ef59ec5ff20f9994e3d59b0e2fba4320725ae9888da0d35226cd"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-measure.ts",
+          "role": "prototype",
+          "sha256": "1c749ce3b78a121f7087a8366a05af4ef9495fef54b93d7a52da490ff311dcd1"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-summary.ts",
+          "role": "prototype",
+          "sha256": "a92f1af5dff51af2ede1acc39249fc6f72c5b2152331af44fe9535fee9dd89a6"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-evidence.json",
+          "role": "expectations",
+          "sha256": "180fddc48f5a93322c1b789b0a1c694aab83640d0eb9ddeb6ff6b94b60ecfcb9"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-results/default.json",
+          "role": "expectations",
+          "sha256": "324cbfe07fa1198a83b36cf4714487aab3b35e0fb65490d8fd206b2632436301"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-results/legacy.json",
+          "role": "expectations",
+          "sha256": "4bd92787ef2d5ec96f6210fdb9bb5c6d8a32f730dcd243d84d743acc3a1e2cef"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-results/previous.json",
+          "role": "expectations",
+          "sha256": "ea0daa1c9d923531f8dd097ea14ee580012211b0a483944c5810a2e489f01c09"
+        },
+        {
+          "path": "research/tests/re01/scalar-capacity-results/diagnostic.json",
+          "role": "expectations",
+          "sha256": "d513b2472c61243731e43e5e33f20fe4c4f0e823d661400644cfd214c16f49ac"
+        },
+        {
+          "path": "research/tests/re01/parent-observation.test.ts",
+          "role": "prototype",
+          "sha256": "645d5c88e4431014167aaed9c737b28b9fd4fef26d40d63a53e616eea1a2f1c8"
+        },
+        {
+          "path": "research/tests/re01/ancestry-obstruction.test.ts",
+          "role": "prototype",
+          "sha256": "bae3c88668d5bbeb00110ccff1038e5e6789dbf80e4c91625271c00e21ffdf3c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-parent-observation.xsd",
+          "role": "fixture",
+          "sha256": "010fe90c2823b0d1671bacc96a2723b69d49345a82e75b39c9d0eaae503a3b31"
+        },
+        {
+          "path": "research/tests/re01/fresh-complex-name-type.test.ts",
+          "role": "prototype",
+          "sha256": "aaf1f33a9eeb46d39d1e60ea6be7cda3b50822d73cba9e747a06f033f6f238b4"
+        },
+        {
+          "path": "research/tests/re01/helper-membership-vector.test.ts",
+          "role": "prototype",
+          "sha256": "186f9164cad9fd0d05f4dbaaba788da3dfb1a2d71e6379300d9fbc26d010c99f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-complex-name-type.xsd",
+          "role": "fixture",
+          "sha256": "9c1942e73c28a5707723c18a50cdb457475809bfea76dfecf90c1b22c727b90f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-membership-vector.xsd",
+          "role": "fixture",
+          "sha256": "18de124e4f575685e9553d588cc3cd350a54371e856b3ff8d006a12534551ef4"
+        },
+        {
+          "path": "research/tests/re01/anchored-helper-support.test.ts",
+          "role": "prototype",
+          "sha256": "3125fba6c1402fe1cbef31acef438c1aa5a444f2a6d932fb90b76a66dd2f3d4c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/anchored-helper-support.xsd",
+          "role": "fixture",
+          "sha256": "a252d8e8cf294c39eeff00e690387a6cbe0abf3c2adf2450c97c8832bcd89b1d"
+        },
+        {
+          "path": "research/tests/re01/helper-method-support.test.ts",
+          "role": "prototype",
+          "sha256": "89eb0b8b5c33d55d414875479e55f218ab4248a5d4a95da2d5a196daae6c42be"
+        },
+        {
+          "path": "test/conformance/reference/re01-helper-method-support.test.ts",
+          "role": "reference",
+          "sha256": "fdec8595e0136c5687bd80d4e4a7642f0ab5e3651db5161a76dd8b3fb649e597"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-method-support.xsd",
+          "role": "fixture",
+          "sha256": "483b415e1b76224c07bd86abdd13cf43b584a9d197bd201f02e00b08f378a5ea"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-method-consumed-root.xsd",
+          "role": "fixture",
+          "sha256": "d177e8df9ca9db7726521e7f8b0018314ff77d393b3a4a329178d2042300ca75"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-role-anchors.xsd",
+          "role": "fixture",
+          "sha256": "a35c232a63fe048bf1064ab89dbbca5fcd1bf9f93011cf7069ec00aed23ded66"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-method-final.xsd",
+          "role": "fixture",
+          "sha256": "70c8b073abc6a089525e6a5c66a7c35534da9efc3221f85ed29b34386e8e962c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-method-blocked.xsd",
+          "role": "fixture",
+          "sha256": "2e4842b1549e7eec05b80dc0ea208bc1ebe9718af506e342525cbf9a1d05a226"
+        },
+        {
+          "path": "research/tests/re01/meaningful-prefix-bound.ts",
+          "role": "prototype",
+          "sha256": "0146bb14192c0cd2c691697ea0d42eb187379affe8cfbb4146c971ac45e16fe1"
+        },
+        {
+          "path": "research/tests/re01/meaningful-prefix-bound.test.ts",
+          "role": "reference",
+          "sha256": "34bc49c546b52e32e499a05aeb938a8d3f01943da9cc566079e3cb586f69f67f"
+        },
+        {
+          "path": "research/tests/re01/live-helper-forest.test.ts",
+          "role": "reference",
+          "sha256": "2b0bffdd1ac9f175089e5e1797aa37e523f7c3df18b8857b11e5f07055e6254b"
+        },
+        {
+          "path": "research/tests/re01/inherited-consumer-obstruction.ts",
+          "role": "prototype",
+          "sha256": "d52c37c37b6d1dbcd27f423dec66d122ccd47bdcbfe6f984a5bb08ebe0c5dc42"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/consumer-renamed.xsd",
+          "role": "fixture",
+          "sha256": "12979b1366e1d75186efae11a2eb10dd0bf8c215300a6c8b2e503f5746ae6152"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/consumer-two-prefix.xsd",
+          "role": "fixture",
+          "sha256": "001308947b65bcd60efbb6f3fcc79fd5d82a37bd10bf7aa1af449d766caa7a70"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/consumer-five-prefix.xsd",
+          "role": "fixture",
+          "sha256": "4d3107acf2dea85aaa104e9ac67a6c6d5e889dbe30ae81329bbf63b7662cbbf6"
+        },
+        {
+          "path": "research/tests/re01/copied-prefix-transport.test.ts",
+          "role": "reference",
+          "sha256": "5f5fbe2712868c4a42f68804ef923a1b97044124e41a1baa27d9a6054ccba61b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd",
+          "role": "fixture",
+          "sha256": "1303b54baf69fd8ef692e00656d6cdbfa2fe389ca6b14bccf10ac563173e4c39"
+        },
+        {
+          "path": "research/tests/re01/helper-renewal.test.ts",
+          "role": "reference",
+          "sha256": "484b1282318e48762973d843d75f0cbb4723b00cc23fcdee8e879ffaa48212e6"
+        },
+        {
+          "path": "test/conformance/reference/re01-helper-renewal.test.ts",
+          "role": "reference",
+          "sha256": "91528b8eb3ec9af90cc3d401e11b1b3403fba768362c2de2e6d9c6ca9bf7962a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-renewal-consumed.xsd",
+          "role": "fixture",
+          "sha256": "a02b1d6dd46fe3dd7d53d5e0ccf78d14284a16272508fc26b4eefad062f38465"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-renewal-unconsumed.xsd",
+          "role": "fixture",
+          "sha256": "c8b17166b71d04228634e32a9d11daa7df3de3c089189e92604897a0f2f3aa1d"
+        },
+        {
+          "path": "research/tests/re01/exact-vacuous-ground.test.ts",
+          "role": "reference",
+          "sha256": "efe781f871f3a4b4f17e4ffe0d447fd7a38ee84d004340c2f4ce73ccf7567d6f"
+        },
+        {
+          "path": "test/conformance/reference/re01-exact-vacuous-ground.test.ts",
+          "role": "reference",
+          "sha256": "010e3dffe178ecd09d54ec536493f202b5b8851d5cd96fe9548f9239a6293b8d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer.xsd",
+          "role": "fixture",
+          "sha256": "dbcf14f336c64d1a8486e4822c75e29d79f501708a6ffb70335994c68c76f30d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer-reanchored.xsd",
+          "role": "fixture",
+          "sha256": "5edfd90fd1aefd718f5b6cb6e55c0a6a77a9df97464f7715e9d6f3d8dec277a1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-identity-read.xsd",
+          "role": "fixture",
+          "sha256": "f791680a89d6f7fcc01933af4f1eaec70236ed0e8dd914d8626e4b18a3b2c479"
+        },
+        {
+          "path": "research/tests/re01/late-original-properties.test.ts",
+          "role": "reference",
+          "sha256": "2a9a19adaad279654b96265e51bee9a6d3db89f4b39aa52735b433de71cb5558"
+        },
+        {
+          "path": "test/conformance/reference/re01-late-original-properties.test.ts",
+          "role": "reference",
+          "sha256": "a4bf243e113f4cdb5ef8b50765fd6ab58672b4898ce2cf309588d18f2bc60210"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/late-original-complex-properties.xsd",
+          "role": "fixture",
+          "sha256": "218a84a255db16b2fa2f31fc7860d596c06c6322864127fc6e00eddd6d2e2b23"
+        },
+        {
+          "path": "research/tests/re01/scope-property-closure.test.ts",
+          "role": "reference",
+          "sha256": "c0095374701cc1f4e7b3ee5066544fdfbc4faa003a3eab3f43433bbf88732e60"
+        },
+        {
+          "path": "test/conformance/reference/re01-scope-properties.test.ts",
+          "role": "reference",
+          "sha256": "0b631290eab3c81b584900c33c8678929a2666c6b5107134efe4d0b2243864d8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scope-property-equality-independent.xsd",
+          "role": "fixture",
+          "sha256": "170c82d5769ef7ea63448308511f0ffcd9f6a13153c45064e2508deb830e7fa2"
+        },
+        {
+          "path": "research/tests/re01/scalar-content-properties.test.ts",
+          "role": "reference",
+          "sha256": "59243d00e7481329cb7e924d37f1f8cc121300539316af2a49703aa6e4c85a46"
+        },
+        {
+          "path": "test/conformance/reference/re01-scalar-content-properties.test.ts",
+          "role": "reference",
+          "sha256": "a45c686917363639825f53a5b66da061e329cbe9a2d296b546b7895c0e52ab3f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-content-property-independent.xsd",
+          "role": "fixture",
+          "sha256": "7432dd37c7b70b8d1fd01b6c2b8ebe2c2356698ec920c47da7180f1400ba7b49"
+        },
+        {
+          "path": "research/tests/re01/property-type-references.test.ts",
+          "role": "reference",
+          "sha256": "f4697dbe5029a53d349fcdae58ec8c6c3f09336fc9c631e72d19bbb2dde9bcb9"
+        },
+        {
+          "path": "test/conformance/reference/re01-property-type-references.test.ts",
+          "role": "reference",
+          "sha256": "83498893a81f342040d375611d0cf3e953656bc6b797b4b7c0e36e39bf8b2d69"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-reference-nested-independent.xsd",
+          "role": "fixture",
+          "sha256": "d54fa75669d266e2937bb42d57e94d585d5e1e446faefc9efe27aa495ad1fe91"
+        },
+        {
+          "path": "research/tests/re01/scalar-premise-forwarding.test.ts",
+          "role": "reference",
+          "sha256": "66592564c5e96d53c7ede70d49281867cf680cc833eed60f14a76ef9099230a6"
+        },
+        {
+          "path": "test/conformance/reference/re01-scalar-premise-forwarding.test.ts",
+          "role": "reference",
+          "sha256": "c1ff0a109a8f8d3647ff4e721b10894927c51e94cf7f3ec1867a09eda57bf77c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-forwarding-independent.xsd",
+          "role": "fixture",
+          "sha256": "004930eae9155933b0d01e661b1c26baecac67c99a7d35ac95174ee305401fa2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-nonprimitive-independent.xsd",
+          "role": "fixture",
+          "sha256": "033bdecf581233178aca31314f08ea5df880d5bcbb61495ff44eb5b2ec1f4767"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-mixed-independent.xsd",
+          "role": "fixture",
+          "sha256": "61fbecb9fdc7353831b8c45fe19f2302c20e053a76f053dbdec725e580cba8dd"
+        },
+        {
+          "path": "research/tests/re01/original-property-projection.test.ts",
+          "role": "prototype",
+          "sha256": "07f65a12562a5e660a43f04a46825ed9cc5b9544448d5ddeedc3108857b06342"
+        },
+        {
+          "path": "research/tests/re01/original-property-reader-boundaries.test.ts",
+          "role": "prototype",
+          "sha256": "50b5fb0dae418b80f34fa3f689a7cd2a8170ca5e7dc578f81cfd69a1cd5fe316"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-simple-content-properties.xsd",
+          "role": "fixture",
+          "sha256": "e1ade043221322cd5ec7de4d0e6ffdcd07bc347b0e278fb3af40c0dfda1e2db9"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-property-projection.test.ts",
+          "role": "reference",
+          "sha256": "eb81e0bdafb074cf54adbaf95f5be763a70665b3c7c51ed2a8a53318175517df"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-property-projection-independent.xsd",
+          "role": "fixture",
+          "sha256": "54b004dfaab2d52536881939e154b137875ddd4cc38ed04bb080eaa90df372fd"
+        },
+        {
+          "path": "research/tests/re01/original-construction-inputs.test.ts",
+          "role": "prototype",
+          "sha256": "2ecc99b4dc65b25aa84bf706a1c0d7db9ba371e2854044f64a006cb0fe6b4d64"
+        },
+        {
+          "path": "research/tests/re01/original-construction-boundaries.test.ts",
+          "role": "prototype",
+          "sha256": "6af8514ea8c55086e5711e8f55693a6cd2896c5df4495aa71d01f1dfc8ed9b97"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-construction-inputs.test.ts",
+          "role": "reference",
+          "sha256": "d62ed5adb3dbf4fc7a8766120477a363fb6197a0100824b83dc7ed8a855e6090"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-construction-inputs-independent.xsd",
+          "role": "fixture",
+          "sha256": "fc1f778479839e87d0f523ab2f639aec5280453d0cf44d68a6f4a14945c3c12b"
+        },
+        {
+          "path": "research/tests/re01/original-compositor-edges.test.ts",
+          "role": "prototype",
+          "sha256": "ee2215d591715c0488c20651a46d99e57a6651b5742b057ba1fb07b66e19f9bd"
+        },
+        {
+          "path": "research/tests/re01/original-compositor-boundaries.test.ts",
+          "role": "prototype",
+          "sha256": "984f08d2667c2450f1f7d1af8ad38f517c5d553052bc177b279552abe6850ff3"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-compositor-edges.test.ts",
+          "role": "reference",
+          "sha256": "c36483434ed9abb7abda67e8cdc5bb5e65994e12e330a74b15a3a2739eb778b4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-compositor-edge-independent.xsd",
+          "role": "fixture",
+          "sha256": "b7722ff79884265a83d33c01a2735960171c20b5392da157c3c6806aee12ab01"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-compositor-incidences-independent.xsd",
+          "role": "fixture",
+          "sha256": "52d9e888f1f33a8ed9d119882e6fece42b76e1f921bc45ff8930b0003bb65b57"
+        },
+        {
+          "path": "research/tests/re01/source-only-component-admission.test.ts",
+          "role": "prototype",
+          "sha256": "4f869f7780df69a72d7cdb75ae88af311665439ca7fb4aae33c954f73907b758"
+        },
+        {
+          "path": "test/conformance/reference/re01-source-only-component-admission.test.ts",
+          "role": "reference",
+          "sha256": "a7853163f80395e2c6dc97ebdba383f095e5a8d0316030554d21529682da6551"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-only-component-admission-independent.xsd",
+          "role": "fixture",
+          "sha256": "78910626f7767de96acb3e4eca0e03ac7e94f86eb9fdc4175209c09684963c45"
+        },
+        {
+          "path": "research/tests/re01/finite-observation-pruning.test.ts",
+          "role": "prototype",
+          "sha256": "f00629e761d5225948c4f642667ec3e96eee4845a6b5f16ececd458da6337b35"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-head-observation-independent.xsd",
+          "role": "fixture",
+          "sha256": "3d65d8d1f4d08bf5ae5c7e2d560c3fc9f6d877722daa3218032dfd988e161c61"
+        },
+        {
+          "path": "research/tests/re01/equality-anchor-reconstruction.test.ts",
+          "role": "prototype",
+          "sha256": "cb78d0abc7d5c5cedd3adc9a77727017d168ad276e06f6c81911318cd05c7549"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/equality-anchor-reconstruction-independent.xsd",
+          "role": "fixture",
+          "sha256": "88e7e24d9204726a1ab79c7aa01b5859a82d0e3c362b62896b0572e7c1edddc9"
+        },
+        {
+          "path": "test/conformance/reference/re01-equality-anchor-reconstruction.test.ts",
+          "role": "reference",
+          "sha256": "012b65098f8e789ddbe1575ef67b1cf2b007787c105acb6c018b036b98f87c99"
+        },
+        {
+          "path": "research/tests/re01/original-particle-handles.test.ts",
+          "role": "prototype",
+          "sha256": "32b19d24e1d2ea0013a42fe10940c290eb082e5bd2d712718ce2173db9ef0dd3"
+        },
+        {
+          "path": "research/tests/re01/fresh-target-flattening.test.ts",
+          "role": "prototype",
+          "sha256": "fd89af75af66e17ec6e0abe5ebc1ec22fe440e4a567120c3c2874efafe57968a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-particle-handles-independent.xsd",
+          "role": "fixture",
+          "sha256": "360378dfff4a146d6abf204c6af1a7a20b49c5f1a712f1c7c77b152a02941867"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-particle-self-reference-independent.xsd",
+          "role": "fixture",
+          "sha256": "443564e4761980c87e5cd151c37be7b4f993beae3e7465666df308b03561b43c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-target-flattening.xsd",
+          "role": "fixture",
+          "sha256": "ba654f398a38e333c61c287184a62f71d7b3f36dfb884de2aecf55c95c7ec4b8"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-particle-handles.test.ts",
+          "role": "reference",
+          "sha256": "23098b82379407ee4a666d5363121a9722c5d6708ac63387d7d22a6ecd4e49f6"
+        },
+        {
+          "path": "test/conformance/reference/re01-fresh-target-flattening.test.ts",
+          "role": "reference",
+          "sha256": "a09c25155196c59f56e66b259da8a76dd1b2abaaf0649e4c4b55acf0e149e3c6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-particle-suppressed-child-independent.xsd",
+          "role": "fixture",
+          "sha256": "e5e0192488a20d729990bf2f65ddbe2d27370ddc67d1acd10aaf03e3aa6ec85a"
+        },
+        {
+          "path": "research/tests/re01/one-entry-chain-erasure.test.ts",
+          "role": "prototype",
+          "sha256": "a56989696b8dece9ced8f367b9f402a791e28dd52c33abc647ccb9195bfd9056"
+        },
+        {
+          "path": "research/tests/re01/coherent-order-key-retraction.test.ts",
+          "role": "prototype",
+          "sha256": "1095cd372340ca129e0cfa92f2d4208242c3db19f7fed1fb7d2a00ed99d79d28"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/one-entry-chain-erasure.xsd",
+          "role": "fixture",
+          "sha256": "e929e1a0450ca9b4168401d41e6cb56dd6d3b86ecdcb01f5ad5698f0709bfb28"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/coherent-order-key-retraction.xsd",
+          "role": "fixture",
+          "sha256": "2d075f5bf7a7800979f55c01256371ffd60f6db9e8ec674a0d3c28d5f6472d5e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/pointless-optional-choice.xsd",
+          "role": "fixture",
+          "sha256": "985cbf0b47f93d59a4d160911e184104fb4b6f8ec68f925ac8f403a45f12912b"
+        },
+        {
+          "path": "test/conformance/reference/re01-local-normalization-and-folding.test.ts",
+          "role": "reference",
+          "sha256": "68ae0b9aa71eeda5340b01904a1c141c467cb60521f9520b21258439ac7fb979"
+        },
+        {
+          "path": "research/tests/re01/notation-constituent-use.test.ts",
+          "role": "prototype",
+          "sha256": "a2561de462ce85dad4c72e3f03125d9958796d6abdcc76042d1916d26a489e44"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-constituent-use.xsd",
+          "role": "fixture",
+          "sha256": "912f589e8cd1096e74cd874828ad6c239e63f5d0f36076b926bf7e4aaff6aecf"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-constituent-direct-use.xsd",
+          "role": "fixture",
+          "sha256": "fb432201250398f05ce4804c44127025fd3637f8dc82c76b4afd55c372a572be"
+        },
+        {
+          "path": "test/conformance/reference/re01-notation-constituent-use.test.ts",
+          "role": "reference",
+          "sha256": "593d839a43d19e6361fc6f1c2c7b9c9fc320a90a8f7330ce2a31c5fff0d2e4a0"
+        },
+        {
+          "path": "research/tests/re01/private-observed-copy-erasure.test.ts",
+          "role": "prototype",
+          "sha256": "f429fdbceb31b1c366cf8d3b49ceff60dabafbe87bb8e286e3243f8ef66345a4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-observed-copy-erasure.xsd",
+          "role": "fixture",
+          "sha256": "6805a74a84d7746ac23a7eaabd88515a5f9f2fc3ecbee5eae346cc3ecea1ec37"
+        },
+        {
+          "path": "src/compiler/hypotheticalScopedIdentity.ts",
+          "role": "semantic-source",
+          "sha256": "afda1a3a4e5b095bcb3a53fa05fc21eeabd763a1e65d0c3201c52f724f62e623"
+        },
+        {
+          "path": "test/unit/hypothetical-scoped-identity-independent.test.ts",
+          "role": "prototype",
+          "sha256": "8e30a802101837ac2852ecd943f67d51dde511213b540586675de11054639cdb"
+        },
+        {
+          "path": "research/tests/re01/frozen-prefix-transport.test.ts",
+          "role": "prototype",
+          "sha256": "d08380e8a874d716647017f9c9117bf07b94760fc8242016cd3beeae3443a1e4"
+        },
+        {
+          "path": "research/tests/re01/restriction-nontransitivity.test.ts",
+          "role": "prototype",
+          "sha256": "28e54d7b4edfb3c9905fb6fc8ea85f4735250378649f7319010eb32f77af47ce"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/frozen-prefix-transport.xsd",
+          "role": "fixture",
+          "sha256": "14576b38c80f5fbe918ebcc3a3913269fd7b6bd7effe09484b9b44189ead7d1b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/frozen-prefix-transport-inside.xsd",
+          "role": "fixture",
+          "sha256": "43ae6448c4049d5a54584ed27b7bf94d42c8cf61164b2a6e72c3e766dbf71a69"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/restriction-nontransitivity.xsd",
+          "role": "fixture",
+          "sha256": "7dee6889d7b84e37d2cc88bef6faba866b6321884bb8d9a93fd8458fd29fbebc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/mixed-fixed-particle-independent.xsd",
+          "role": "fixture",
+          "sha256": "03972088e96ac41fabe7d68f795c3c881eb75c2347c0ae722cd3a28e9061a727"
+        },
+        {
+          "path": "research/tests/re01/free-ur-common-mixed-payload.test.ts",
+          "role": "prototype",
+          "sha256": "790195e3c99d7f2a9cf86eb756dafd08f8446bd78c93be40d6aec415a25a71e6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-ur-common-mixed-payload.xsd",
+          "role": "fixture",
+          "sha256": "3ea86ad48d91dbfc61b5a2cab7aef31619f8695476bbbeb36e48d13bd4c27067"
+        },
+        {
+          "path": "research/docs/content-model-s06-re-01-support-reconstruction.md",
+          "role": "decision",
+          "sha256": "06fe728d33de71a5ce779fd79074485350e3810db5a705a9426258f350e81ce5"
+        },
+        {
+          "path": "research/tests/re01/census-twin-cap-two.test.ts",
+          "role": "prototype",
+          "sha256": "05991d6bcb5d8dae485ad9d596f752eaf9154c2985b6d9d4ab6b27c6bc85c85b"
+        },
+        {
+          "path": "research/tests/re01/phase-local-exact-b-quotient.test.ts",
+          "role": "prototype",
+          "sha256": "bd9c9fa61374aac5e65625d593b079d4bf8b76e7e2127871ece7abff0a444258"
+        },
+        {
+          "path": "research/tests/re01/private-gamma-copy-representative.test.ts",
+          "role": "prototype",
+          "sha256": "a248eac851144879aa812f033d4bb4453d344e848020cc6d19ad0503310e4e54"
+        },
+        {
+          "path": "research/tests/re01/private-copy-np-bundle.test.ts",
+          "role": "prototype",
+          "sha256": "b2cf08457896e0eae17551b1fae2c8d25755dab634fa30d9a0c1845bca27d388"
+        },
+        {
+          "path": "src/compiler/schemaParticleWildcardProperties.ts",
+          "role": "semantic-source",
+          "sha256": "05ea226db66717e33e9f1e2ccf01b250d74d87607b0ccf4ee2afa5172e81c7ff"
+        },
+        {
+          "path": "test/unit/particle-wildcard-properties-independent.test.ts",
+          "role": "prototype",
+          "sha256": "ca3c6dbdf8cddc4708cc0225f577abfa46fb7205cb009398720357a83ac6b9d2"
+        },
+        {
+          "path": "research/tests/re01/abstract-particle-wildcard-properties.test.ts",
+          "role": "prototype",
+          "sha256": "4ca765f10db154fe3e661bc4bfa5458d3658c30f92f6e83db139dc606d8f1daf"
+        },
+        {
+          "path": "test/conformance/reference/re01-abstract-particle-wildcard-properties.test.ts",
+          "role": "reference",
+          "sha256": "3a117c291dd0167926b2238b7918525b4aae2d9e644393e30486544b63e129f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/abstract-particle-wildcard-properties.xsd",
+          "role": "fixture",
+          "sha256": "416056833cf26b67a7b942ae5808f4938b75dcdc87616ea775789996f829c79e"
+        },
+        {
+          "path": "research/docs/content-model-s06-re-01-scalar-witnesses.md",
+          "role": "decision",
+          "sha256": "6dafd0e9e22b1eb660ee4118563ec9d8ff86e6697d0b91969fc387eda8de00c0"
+        },
+        {
+          "path": "research/tests/re01/inherited-raw-facet-identity.test.ts",
+          "role": "prototype",
+          "sha256": "0c4b3f852214e536a4534572eb9a815f8cf6b0aeda84a64e89d774fedfa66d9e"
+        },
+        {
+          "path": "research/tests/re01/enumeration-retention-annotation.test.ts",
+          "role": "prototype",
+          "sha256": "39725b0ce3b55b4a02532de957b5809c6772cc9c764f5bd31e2cbe9166b9e5ae"
+        },
+        {
+          "path": "research/tests/re01/raw-facet-group-authority.test.ts",
+          "role": "prototype",
+          "sha256": "e188e5e16cb06437beb22900ec12318fa5aef0090541cafe7b65591c759ceb0a"
+        },
+        {
+          "path": "research/tests/re01/empty-main-pattern-certificate.test.ts",
+          "role": "prototype",
+          "sha256": "cafc8d58e58939cf4f59c347f1b6ee25a3831a58ca48931c4a62d244db5f6b57"
+        },
+        {
+          "path": "research/tests/re01/immediate-base-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "8ec529e6cbb94e0f90fea7b2ef699dabfdf05bb8ee96aaacc4d9cc3e39983ea8"
+        },
+        {
+          "path": "research/tests/re01/scalar-source-union-members.test.ts",
+          "role": "prototype",
+          "sha256": "81209dcd499f10867414a7f0b6a4864c107c19a6ce29153d1e4e44820498f29d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-source-union-members.xsd",
+          "role": "fixture",
+          "sha256": "ffcc0f31607df4f6b8fd25bb1a5a1bf8444b12c2adf25f8755e4203c04ace4b5"
+        },
+        {
+          "path": "research/tests/re01/source-facet-current-components.test.ts",
+          "role": "prototype",
+          "sha256": "531de9cf092bfef94fbbf143627c51fdae08be0068fa64acbbca490d43c47545"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-facet-current-components.xsd",
+          "role": "fixture",
+          "sha256": "8154f7fa02d0ff139af2a93ef1281daeef2a4e5f7ed741eaf767e441148f0394"
+        },
+        {
+          "path": "research/tests/re01/source-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "b9013fcaff2a404cea8a9b03310b828a85dd922bbf0c4709acd021f86f25e147"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "790a2d80ebf9161cd5dbaf22809279d9fd6d7bb8ee0f6d37d82fc8bb1746c459"
+        },
+        {
+          "path": "research/tests/re01/input-property-copy-cut.test.ts",
+          "role": "prototype",
+          "sha256": "b896926314c57a76a9e5ddb4b925c00198ec3bb332583cbe6e41208c4de27c50"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/input-property-copy-cut.xsd",
+          "role": "fixture",
+          "sha256": "081ceee5733f4c44ae92835068ad9c6fbffa68845b788b371301f127cbd11650"
+        },
+        {
+          "path": "research/tests/re01/head-empty-fallback.test.ts",
+          "role": "prototype",
+          "sha256": "0e4c93be8b6b98768a20066c4b40649d69cbd173dd295da7b82e0a3cbb82c82d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/head-empty-fallback.xsd",
+          "role": "fixture",
+          "sha256": "4dc6b789c52497ca9a9c857b7dffbf62fe8005cf2d76cf1cbb507aea1c62b89d"
+        },
+        {
+          "path": "research/tests/re01/head-two-groups.test.ts",
+          "role": "prototype",
+          "sha256": "cac322e3a57f5a777b9f99e4f670932c704457dde118353df88e63410f80be2d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/head-two-groups.xsd",
+          "role": "fixture",
+          "sha256": "c9b9d84101a6ac57b5e37a5a0ac51cc3c17c7df20503475e3e31930316178132"
+        },
+        {
+          "path": "research/tests/re01/source-head-controller-payload.test.ts",
+          "role": "prototype",
+          "sha256": "ac28a6327e9a20973597726c0a58dae5c83fb783ac4f74eb8afa25e8212e5edd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-head-controller-payload.xsd",
+          "role": "fixture",
+          "sha256": "5b1feb518d5757f911df523d44a89c9d99455d74ff729bb923136b7ef1ce2620"
+        },
+        {
+          "path": "research/tests/re01/scoped-template-full-support.test.ts",
+          "role": "prototype",
+          "sha256": "1d4d4b678404b67a9d47e17a149e2678a5987e9edad98cb21f0e2f161577f55b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scoped-template-full-support.xsd",
+          "role": "fixture",
+          "sha256": "89ffdd993b288f059493d349af6fbb718ed589ad9348885d765440ff748c7cfc"
+        },
+        {
+          "path": "research/tests/re01/own-extension-scope-repair.test.ts",
+          "role": "prototype",
+          "sha256": "8ccaa44d6f96968fe09b3042e95618da50b8577b737ba9ac4aa9121006e8a0f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/own-extension-scope-repair.xsd",
+          "role": "fixture",
+          "sha256": "da5ba8ba53c9111a8db2990b014b9d7717963c48fc265b631f3b32f872f7c21d"
+        },
+        {
+          "path": "src/compiler/schemaIdentityConstraints.ts",
+          "role": "semantic-source",
+          "sha256": "c23172f34c2d2a445e91a131cd0ad16f999c29fa6ce2f6e2b4525d1194aa9536"
+        },
+        {
+          "path": "test/unit/schema-identity-constraints-independent.test.ts",
+          "role": "prototype",
+          "sha256": "d45d2df9c06b710113d3997a0c620de7eaba2b0717ddfdc9fbff007ee1714558"
+        },
+        {
+          "path": "research/tests/re01/original-identity-constraint-reuse.test.ts",
+          "role": "prototype",
+          "sha256": "8c06d446193d15643478e1fbe130a59162829f723e1a5077facf779a3b1b1a04"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-identity-constraints.xsd",
+          "role": "fixture",
+          "sha256": "02ac9483c5a79244d12fa53f3745a4607123c393d604535008f88591d67b50a2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-ic-no-owner.xsd",
+          "role": "fixture",
+          "sha256": "050fcd8ae507ec394db47723448bde3cfcdd3d404a2a9f22aebc0b1b2ab0b8e7"
+        },
+        {
+          "path": "research/tests/re01/source-group-self-reconstruction.test.ts",
+          "role": "prototype",
+          "sha256": "5f8970b7928a46979d5d6eafbc93a1d3800f7129d5aa48ced30d585c43e99cf7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-group-self-empty.xsd",
+          "role": "fixture",
+          "sha256": "d2375ae503d235e58e4b19225605f7a3f0dba4b7352789643acbcf81d20ea9f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-group-self-prefix.xsd",
+          "role": "fixture",
+          "sha256": "538a0e1f7f1067ade06b93a27c9a16f033451a807b5088908d5b6a5dc0e71bb2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/pure-any-dead-source-cell.xsd",
+          "role": "fixture",
+          "sha256": "b9577bd11ac0302e1bce6ada711b10bf7ae7ee03e46e0e610b8e64e1385cc50d"
+        },
+        {
+          "path": "research/tests/re01/private-r-entry-suffix-carries.test.ts",
+          "role": "prototype",
+          "sha256": "a3e2dc6f2a28212b3ebbae9338a427d26319d0b3bd4cc112e1e9db544cae97ab"
+        },
+        {
+          "path": "research/tests/re01/joint-native-arithmetic.test.ts",
+          "role": "prototype",
+          "sha256": "34aea0ac55aad8b6bdd57bf018580371008cb83e96cd332a51bcd59e0533d5f7"
+        },
+        {
+          "path": "research/tests/re01/fixed-declaration-reflexivity.test.ts",
+          "role": "prototype",
+          "sha256": "b279c3065f5e778bf0d6f94083a3821d91978e05552b2f8d0ea88e9ec1f639ef"
+        },
+        {
+          "path": "research/tests/re01/future-middle-allocation.test.ts",
+          "role": "prototype",
+          "sha256": "738d8cd6339c642316298234b3561881c77b4cb68d57f1a840259204cff41c9c"
+        },
+        {
+          "path": "research/tests/re01/selected-prototype-issuer.ts",
+          "role": "prototype",
+          "sha256": "ddcd80c6efe9c72da3f28ce6c73c30e7c9c64da37cf6cb6307e657714205c98b"
+        },
+        {
+          "path": "research/tests/re01/selected-prototype-issuer.test.ts",
+          "role": "prototype",
+          "sha256": "01e386bfd93f509ac9fffd425ddf3ae2f69c550d2c4cb1fb9458320f0d913ee8"
+        },
+        {
+          "path": "research/tests/re01/canonical-nominal-bank.ts",
+          "role": "prototype",
+          "sha256": "6c213c709e39aafc6aa134c4fbe0ea51c7cf357fa78d28529d1f98756c78f49d"
+        },
+        {
+          "path": "research/tests/re01/canonical-nominal-bank.test.ts",
+          "role": "prototype",
+          "sha256": "3b25cf280ec28aaf1e30ba4e5c64e30824f25b671f098b41d2c16e5cb4f516d2"
+        },
+        {
+          "path": "research/tests/re01/generated-scalar-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "528bbaee2331342e08a750d5ef089c9d2dfb597c59240c315c31da38de56d05d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/generated-scalar-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "c0bf4caf382313f860fe80c8c462ac4b560b7ff1cf1c2e3116ad4171a1f8c96d"
+        },
+        {
+          "path": "research/tests/re01/source-ur-wildcard-borrowing.test.ts",
+          "role": "prototype",
+          "sha256": "25f919de34b8b48bccc0ab537e78bded7b1cb54d4b92a0d5c0841ada6456effe"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-ur-wildcard-borrowing.xsd",
+          "role": "fixture",
+          "sha256": "99c01fbfa1bf0e85d3000ab64e4fd34999e8ded85b3d326bcc1ef3f57bd5ade5"
+        },
+        {
+          "path": "research/tests/re01/current-scalar-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "08a285a389b60a233bd876f92a02be51a9ec62e706caa1fc136c0fcbf89746e5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/current-scalar-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "9b261849dc878aff5e5a57d637fd986f569df1268c7f21d3a22576cc4e88f497"
+        },
+        {
+          "path": "research/tests/re01/changed-scalar-constituents-retention.test.ts",
+          "role": "prototype",
+          "sha256": "0c532288775de96b03275304e8f9654c3532f543fb179661735c498e195cd023"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/changed-scalar-constituents-retention.xsd",
+          "role": "fixture",
+          "sha256": "29eaa693df768483f1089233112377e9834e352ac3dfe9098ceb0cc8208446b7"
+        },
+        {
+          "path": "src/compiler/schemaEndpointWordCapacity.ts",
+          "role": "semantic-source",
+          "sha256": "45ef946be968b3b16cdb6f7ed750b0d0fd3b34d32df9bc59ef83b8010fb93413"
+        },
+        {
+          "path": "research/tests/re01/private-alias-endpoint-capacity.test.ts",
+          "role": "prototype",
+          "sha256": "eccfac7a292e6c4234991291f913f47e6a93952bb3c4482709b93b629a2ac7ca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-capacity.xsd",
+          "role": "fixture",
+          "sha256": "33e6a0f7a44359586d32ac8e3268ea675f58b969c28079b9d7dcb11b9f1226e5"
+        },
+        {
+          "path": "research/tests/re01/scalar-empty-name-inverse.test.ts",
+          "role": "prototype",
+          "sha256": "7852109e1c4f4258d54f87c654894ce414b968e41f4354c35bf5f7d605a741f8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-empty-name-inverse.xsd",
+          "role": "fixture",
+          "sha256": "b9d1f85c4d6deb15f80ceab38dedf2d496f65757bb666c4c8be0de32cbbf5564"
+        },
+        {
+          "path": "research/tests/re01/selected-prototype-new-group.test.ts",
+          "role": "prototype",
+          "sha256": "4de93d343dcf19bd865b79df06e8c3a156a6ecac8fc2cff7abe8ea218877e087"
+        },
+        {
+          "path": "research/tests/re01/scalar-union-activation-shields.test.ts",
+          "role": "prototype",
+          "sha256": "92dce2410afb4b358d13d19ae27fbe06f28218cbb5c256da40383a77798f7d6b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-union-activation-shields.xsd",
+          "role": "fixture",
+          "sha256": "e55cd833923d5b05e07bfca003d1e3199418fb72e1d19fd7c6068f2b59fb8631"
+        },
+        {
+          "path": "research/tests/re01/scalar-builtin-pattern-import.test.ts",
+          "role": "prototype",
+          "sha256": "02dca519004e0286cf7e663de3d144c8647411604e654389e366eb2acfe176bd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-builtin-pattern-import.xsd",
+          "role": "fixture",
+          "sha256": "740483c4992734ad0f9ea4c818a62a75af903190fd04630ad67bc86580b3c845"
+        },
+        {
+          "path": "research/tests/re01/scalar-list-formation-gates.test.ts",
+          "role": "prototype",
+          "sha256": "a75f818993d9d560a53b49b7eb8d9361e3af2e0c77606c38f144530afdb4122c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-list-formation-gates.xsd",
+          "role": "fixture",
+          "sha256": "b046677cbac11498cffe3b8b380da66fdcfd21c5b2f9516496b16e0619884586"
+        },
+        {
+          "path": "research/tests/re01/scalar-mixed-emptiability-dispatch.test.ts",
+          "role": "prototype",
+          "sha256": "3780b131cdee829a80a24c56f524f77c6622a1414c19ff1779d2d78520deec12"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-mixed-emptiability-dispatch.xsd",
+          "role": "fixture",
+          "sha256": "65bc5f4221ea7bc6220be956dc350fb84e71e48b4ccf5243b5749ab1fb0d4277"
+        },
+        {
+          "path": "research/tests/re01/scalar-sc-fixed-value-dispatch.test.ts",
+          "role": "prototype",
+          "sha256": "ca762ea1db652c89428a2711c34494e32a5d380cccc04905d411f1a57a419a18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-sc-fixed-value-dispatch.xsd",
+          "role": "fixture",
+          "sha256": "1774d5d5562da83e63c7841465bc6dbc947c7484092baa9a1d945d800d5cf7f8"
+        },
+        {
+          "path": "research/tests/re01/property-mixed-value-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "dfbfaf079a8a89b90124eb58583dee2c0f12e1daab1ec7516b80bf0c526afd6a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-mixed-value-frontier.xsd",
+          "role": "fixture",
+          "sha256": "3484ebae717bd25b659bfa82b00e08f4a1275b76c7433fbdce46aab97d023c06"
+        },
+        {
+          "path": "research/tests/re01/property-source-sc-value-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "dc41b54b6de585fb465423ec5f3c1f02ba81bca0c34a3fe009ee4f064eba2df1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-source-sc-value-frontier.xsd",
+          "role": "fixture",
+          "sha256": "1770d84245af6c3b9b7c25fe8a59d6b5c6b1f9029237d77fb0619e49bb0cf586"
+        },
+        {
+          "path": "research/tests/re01/scalar-retained-enum-containment-context.test.ts",
+          "role": "prototype",
+          "sha256": "4665724ecca79b084b51d5594818c837f168895d31b4e4467669f8d7b9385193"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-retained-enum-containment-context.xsd",
+          "role": "fixture",
+          "sha256": "b026b760b537da73891faa8ced6cee3363ca61c0e041dd9876885b541578acd2"
+        },
+        {
+          "path": "research/tests/re01/scalar-retained-enum-item-family.test.ts",
+          "role": "prototype",
+          "sha256": "a08b34870e7e9a070764b0e5fb6a4a6ccd63eb5ed76e5f549db73079d18b44d7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-retained-enum-item-family.xsd",
+          "role": "fixture",
+          "sha256": "19fcbff9bb5922261c4bff7216984b9d40bf714fd4bd700873001545477f32df"
+        },
+        {
+          "path": "research/tests/re01/scalar-legacy-value-containment.test.ts",
+          "role": "prototype",
+          "sha256": "4ca59b482ec7771e2faffaccf2e2aa74fbb6011649e372fe12e49a6ad59ec7b1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-legacy-value-containment.xsd",
+          "role": "fixture",
+          "sha256": "be96c6cd05c023b3e1b787ce3d8949ebcac006077574868f3b529087378fa45f"
+        },
+        {
+          "path": "research/tests/re01/scalar-qname-proxy-batch.test.ts",
+          "role": "prototype",
+          "sha256": "ddf7a27e0cadc3448a65924a4b0d29aedd4194d537e07ac727efad63fb07e03a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-qname-proxy-batch.xsd",
+          "role": "fixture",
+          "sha256": "508b7b345add98909d254a70e685f94ce591b676660c7ebcfa3779dab21f90fe"
+        },
+        {
+          "path": "research/tests/re01/shared-assignment.ts",
+          "role": "prototype",
+          "sha256": "66236803f1fe97383d156fdec1f9dc75ca0ccbd8a392b5c9d9e5624371f008de"
+        },
+        {
+          "path": "src/compiler/re01CandidateAssignments.ts",
+          "role": "semantic-source",
+          "sha256": "1f848e723bf6dfccf5c8fa8936288b07c7dd7f17531354e3bc7d1518eb9afc0e"
+        },
+        {
+          "path": "src/compiler/finiteRe01Construction.ts",
+          "role": "semantic-source",
+          "sha256": "32518f582e5d7676459b934354be68444df98b9507952ed5047fc6dfdfc01494"
+        },
+        {
+          "path": "research/tests/re01/shared-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "c9ca119193a4796d5ad98c243649dad8e69beb1d648777c039a05a787d8d2a4d"
+        },
+        {
+          "path": "research/tests/re01/private-alias-endpoint-admission.test.ts",
+          "role": "prototype",
+          "sha256": "6b46225cae63a9c3813c49be5ac2da3807cecbece48ffdfc54fbc99f2a76196c"
+        },
+        {
+          "path": "research/tests/re01/regular-binary-word-views.test.ts",
+          "role": "prototype",
+          "sha256": "8adc5a0de3e06fa96e24a26ea0e2a63f1cb4498cd1e76254b074f00b74fa2711"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/shared-inherited-list.xsd",
+          "role": "fixture",
+          "sha256": "06c0322b02f4c626b4696516f893e740e787fd116c6e71722e1758d5c6d4da6d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/shared-inherited-list-conflict.xsd",
+          "role": "fixture",
+          "sha256": "77a20c164ad6327ec701753fdd1872019e5d98180f1f0a2945f4f1af3a7cc235"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/regular-binary-word-views.xsd",
+          "role": "fixture",
+          "sha256": "6eb46861803b0cfaf0b91bc507f52bae8271040786cb386f818f16ffc0aa6125"
+        },
+        {
+          "path": "src/compiler/schemaBinaryWordReconstruction.ts",
+          "role": "semantic-source",
+          "sha256": "f14d309e0bbdd8ef3f80664368e67c64f536983d42e8704c0577310eeba75afc"
+        },
+        {
+          "path": "research/tests/re01/free-list-assignment.ts",
+          "role": "prototype",
+          "sha256": "f6d2d456e1d884321cef49167862da956c1936d96d454ac7f145540cd23d6858"
+        },
+        {
+          "path": "research/tests/re01/free-list-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "09c9c87815c6e4f9857d1e985f6ba53696ad09424f9229b57fefbedce64c020c"
+        },
+        {
+          "path": "research/tests/re01/free-list-changed-item.test.ts",
+          "role": "prototype",
+          "sha256": "aba8c324fca4b0634aebe66b457e85de4615da6c79ecfd151642a3b6a070361b"
+        },
+        {
+          "path": "research/tests/re01/private-alias-endpoint-tuples.test.ts",
+          "role": "prototype",
+          "sha256": "e249ddfdeab5a674833b8f4f09a232f306c9f63c1c0cee18de902acea93f354f"
+        },
+        {
+          "path": "research/tests/re01/finite-image-binary-word-views.test.ts",
+          "role": "prototype",
+          "sha256": "ea06986be2311757db782332c76f5b1dbbc8de8844f34dc47dee7cfbad47887b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-assignment.xsd",
+          "role": "fixture",
+          "sha256": "2bb4082e49b1a79152aeaab9e16c28b69aebd7dc7a594e586533dff03ea9f372"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-changed-item.xsd",
+          "role": "fixture",
+          "sha256": "af21078bd21b9a2e3ed2bb31ded6535072385d981bca20335a66bc23f07a2641"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-tuples.xsd",
+          "role": "fixture",
+          "sha256": "46391edc4c7f03ef0d69440cb20d611b0a116ecc4848dcf724ed77664508b36a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-image-binary-word-views.xsd",
+          "role": "fixture",
+          "sha256": "1b18838ebed4a7a796bc1a3c68cb15084e8cf6409c4162a05122426994f5733b"
+        },
+        {
+          "path": "research/tests/re01/free-list-boolean-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "9d9239dc61ae18eb33c8b0155a852111bd40748f2dda41039d1c7ed3f1e8d0f6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-boolean-assignment.xsd",
+          "role": "fixture",
+          "sha256": "d4640ee2d90e1ae945924d3419c63c90e7a33df96d7b8796fd66dab65ac2ef4b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-boolean-assignment-false.xsd",
+          "role": "fixture",
+          "sha256": "78f9a8916892e16e0cffdbeaac48eac246c9d817007daf1954a92eb044dbc27d"
+        },
+        {
+          "path": "research/tests/re01/anchored-list-assignment.ts",
+          "role": "prototype",
+          "sha256": "61d5b0cf15a7c57176e0bfb9e2e7a91981809e3ec90a71268874d8694cb02fab"
+        },
+        {
+          "path": "research/tests/re01/anchored-list-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "87a4d1db5775fea426b8fc7fe4c3aa8af9913763c301a461fe20d3d433f9cf05"
+        },
+        {
+          "path": "research/tests/re01/anchored-inherited-list.test.ts",
+          "role": "prototype",
+          "sha256": "2fdaeed7bb8773e94394394c244e148ea0822e80a028ed299d9888e7ff2e17c5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/anchored-inherited-list.xsd",
+          "role": "fixture",
+          "sha256": "fb28728cb821d7521d6cdb8dbd9c2a7db9e85ffad31dfed8846129c6ee06fd35"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/anchored-list-cross-copy.xsd",
+          "role": "fixture",
+          "sha256": "aaedd1cfc02eaf623c3e32f9e8b5f21c9948f9a6917a56018bb54d118cf3718a"
+        },
+        {
+          "path": "research/tests/re01/evidence-builder.ts",
+          "role": "prototype",
+          "sha256": "40c038acf9d66bb596c29a888fea718510f8b56d69516ad7d79ea0f6ad61c42a"
+        },
+        {
+          "path": "research/tests/re01/evidence-builder.test.ts",
+          "role": "prototype",
+          "sha256": "97f329837b4c76176d91a4c6bd080001dbe8073e3fa84d96b098f8d5c27dc7f4"
+        },
+        {
+          "path": "research/tests/re01/fresh-source-middle.test.ts",
+          "role": "prototype",
+          "sha256": "fa366fe8ce16444b97b182675454a3d23b4cdb34570da781ab51f33a9a5e9d3b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-source-middle-empty.xsd",
+          "role": "fixture",
+          "sha256": "ff353aca067f0d1b7fae848d1e731fff07f4814ee3404c011590a5c7a710862a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-source-middle-simple.xsd",
+          "role": "fixture",
+          "sha256": "80a225b09bdd7caa9bf47164ad030a685236b3e6c74d316914979dad14af0463"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-source-middle-particle.xsd",
+          "role": "fixture",
+          "sha256": "d614ccbdc65244a558fad7b744546a3c98079fd445cfd9032f9605095b8da01b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/additive-recursive-restriction.xsd",
+          "role": "fixture",
+          "sha256": "60852925d88a96f45bada9839b25243480ed70d7ae245e8c4b6ad9fa5a93049c"
+        },
+        {
+          "path": "research/tests/re01/native-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "f060b60bf69d79d9575c033dc69685a4358b1b4e4fa2990d075aa094fecaf50a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/shared-inherited-list-multiple.xsd",
+          "role": "fixture",
+          "sha256": "20eed53ddadb3b7a8b53f7c7702320387a997cabaff50fe38cb2558030beb705"
+        },
+        {
+          "path": "test/conformance/reference/re01-automatic-evidence-sources.test.ts",
+          "role": "reference",
+          "sha256": "ae08ee1b3985f0e5899915c6b524aa83143c0e183fdcc844269059bf49461788"
+        },
+        {
+          "path": "research/tests/re01/private-anchored-list.test.ts",
+          "role": "prototype",
+          "sha256": "23aa0fa4cb7089d90ac96fa8c6ebc8ed84b0a95e13c81ff91ac2384ed8f0c28a"
+        },
+        {
+          "path": "test/conformance/reference/re01-private-list-sources.test.ts",
+          "role": "reference",
+          "sha256": "e8bc393264fe935ed83d6cba8c93ceb035c14cbd8cde29b55f8d779cd4c4f2f7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-list-false-three.xsd",
+          "role": "fixture",
+          "sha256": "9e2666a82e333a6e2acdb4d978f85cd2b2cc0b49726d39694df4769b01d695f0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd",
+          "role": "fixture",
+          "sha256": "89f3b99fe8b3667d0da071c53f776c981e9dcbaa11c23001a16b16756e84d4c5"
+        },
+        {
+          "path": "research/tests/re01/private-ambient.ts",
+          "role": "prototype",
+          "sha256": "dd7c8e3f9ee8724fc48081903fc33666d0f4dbc5895cf148c92982b217e285e3"
+        },
+        {
+          "path": "research/tests/re01/private-ambient.test.ts",
+          "role": "prototype",
+          "sha256": "b22221c1a6faec854eaa7e4bff72ef652903117ca39a174d9604fff8193b9b97"
+        },
+        {
+          "path": "src/compiler/dataOwnership.ts",
+          "sha256": "91ee439add92b1b3b8fe7496eaad0dc49d79f95af2a2958b20f20178d6b12c01",
+          "role": "semantic-source"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/upa-disjoint-independent.xsd",
+          "sha256": "86f4f8265c0720e85d80292cc39ea0146530ed47c48384c0925eb27c006cf9ee",
+          "role": "fixture"
+        }
+      ]
+    },
+    {
+      "qualification": "S06-PW-01",
+      "issue": 235,
+      "disposition": "selected",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "research/docs/content-model-s06-pw-01.md",
+          "role": "decision",
+          "sha256": "f8470cd49a62827ecb21caef8f211d8667f905654143bcddccf23e232a720835",
+          "historical": {
+            "path": "docs/content-model-s06-pw-01.md",
+            "sha256": "d812fbb23336074d2b09c09ee0461be631800e1495f81e7cec9ae08b40dd081f",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "research/reference/s06-pw01-contract.test.ts",
+          "role": "reference",
+          "sha256": "cd47b6bd4b116240aaebf877784a8cec6cfa7d0e5d9b5b8fc20c4c31e3ac6707",
+          "historical": {
+            "path": "test/conformance/reference/s06_pw01_contract_test.py",
+            "sha256": "8f7af27e5fcdbe74bf8615b1cb006a7517f3c5583e21dc50a82d95efe664b1dc",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/all-optional-member.xsd",
+          "role": "fixture",
+          "sha256": "b1209d8f06c9ebc0be89dc9ff44bd05d74c7252658518da1ff0287de3053e076"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/all-optional-root-failure.xsd",
+          "role": "fixture",
+          "sha256": "bea92b571275498174453ccb7d0f348d1388aa52befc8cf417a63db6ce5d9db5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/all-positive-control.xsd",
+          "role": "fixture",
+          "sha256": "c5a6c9e676b0d2a34b560c9ddc59ed2c0a30473cf78f6b396ad705ef579e58d4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/chameleon-base.xsd",
+          "role": "fixture",
+          "sha256": "964935c708c3f8b3b41d0bdb87a0f7a538270868b7e61e54fc052d2e25a4015b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/chameleon-other-failure.xsd",
+          "role": "fixture",
+          "sha256": "d9e1468ca5a7d0c09e6f212778d647f098a7012113bf3984ace470d11bf894ac"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/choice-positive-control.xsd",
+          "role": "fixture",
+          "sha256": "4173555afa1608e7a8460354e79af437353e83c57f3774fbc8e0109773a09f06"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/count-gap.xsd",
+          "role": "fixture",
+          "sha256": "0fcacda339dff590d5b7576a54f48c220d3a6035acc787922ff3b460842e9274"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/dead-sequence.xsd",
+          "role": "fixture",
+          "sha256": "03cff4b9fc52a190a19b8dd8d19319a66ec3b5175a796c65e0848feedbd36826"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/direct-optional-member.xsd",
+          "role": "fixture",
+          "sha256": "a3b383c6febb1d58f636e8c7fe975269ab64f314f6e50c73b8424f6824e29668"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/empty-required-choice.xsd",
+          "role": "fixture",
+          "sha256": "5271242e619313f5002fa6f5e781e7af378d572106b24ebc0003ee837aaac832"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/empty-required-positive-min.xsd",
+          "role": "fixture",
+          "sha256": "bef233c61465db05816a99882c26ebe0f3cd6132fe363efa2fb9eeccbabeb534"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/epsilon-choice-failure.xsd",
+          "role": "fixture",
+          "sha256": "7e3cbcbf14e08fcc45690bf85381aee3f05b5e0d010f35b4b83544459339113d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/expectations.json",
+          "role": "expectations",
+          "sha256": "e718191a8ebd11e386db40370f85f297247d767a18c68be4dca5ccd3e97b74be"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/huge-exact-repetition.xsd",
+          "role": "fixture",
+          "sha256": "12941e5549419a6a818e0488fa5455b009920ebace187146cd0df33ce1bd296a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-base.xsd",
+          "role": "fixture",
+          "sha256": "dcdf83ba1d729d80b84ef92c4e7e32c6963f7b65d025bb3e680df8f46d51a140"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-other-absent-failure.xsd",
+          "role": "fixture",
+          "sha256": "4bd6813d5478dd57a334f80d2839995da53a9c22fc7023499df2d7bc800d10c5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-other-base-failure.xsd",
+          "role": "fixture",
+          "sha256": "922144478692f12898791ffd615ea310b1a41a279f30f19b08d48ebfa19cae53"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-other-valid.xsd",
+          "role": "fixture",
+          "sha256": "46d0f91b75904316123d15f88288076bf7982602389b1b42fc08563688453e3f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/literal-positive-control.xsd",
+          "role": "fixture",
+          "sha256": "90cf2379639742b169556d5ed561668b779967330062ad2303e5e41a2b03fae7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/namespace-failure.xsd",
+          "role": "fixture",
+          "sha256": "59bac900736399c661f7921fcfc1c6266a9777da60f41a0df4d51174680f24ec"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/nested-epsilon-choice.xsd",
+          "role": "fixture",
+          "sha256": "109414f945b9f80cc2af23b6631f3b9eccfe0d2e298b3136b493ad6d2ead2c9b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/nested-optional-member.xsd",
+          "role": "fixture",
+          "sha256": "e5ee1ab43d4f2dfb177cd15fdec1232f54398f3346452e178a81b72e92b5a073"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/optional-namespace-failure.xsd",
+          "role": "fixture",
+          "sha256": "0c2e5d4f5c5ab29bc440333c906736108b27ef8e0fb790cbb81e5b8397a32497"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/pinned-nested-optional.xsd",
+          "role": "fixture",
+          "sha256": "1795040f9bdb7b592f389340262167d56927e9ec4a5735b1955366e305ed93ca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/positive-unbounded-members.xsd",
+          "role": "fixture",
+          "sha256": "48074b2be42c196fe10ae05c96729be65c87f832d3c89323b9d6aac5fd55cc99"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/recursive-element-control.xsd",
+          "role": "fixture",
+          "sha256": "efad9bd3124669be4f842a3310bfb990eb1bbf01c5007c3417999a41039d2909"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/removable-epsilon-control.xsd",
+          "role": "fixture",
+          "sha256": "2824fc11090b77f4237dbd16a89063c6ca411c6bd5c58bafe5a89268d9a7590a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/repeated-choice.xsd",
+          "role": "fixture",
+          "sha256": "1b53071c3e52c8571301000916f10fcd60ef0407b2d215bfb6cce6f716209761"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/repeated-group-use.xsd",
+          "role": "fixture",
+          "sha256": "c55edff03dd35d860234c3229f32ac129ea10b5b08867e066e91cbef58e7ef11"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/repeated-sequence.xsd",
+          "role": "fixture",
+          "sha256": "d6048eaafafc3cfd49bd5b7b93de63707a28d3b8fdbe49f44c3f280578ccebc1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/required-wildcard-strength-failure.xsd",
+          "role": "fixture",
+          "sha256": "2f4cc06e0e20b32380efc0a667ad36c9d6e1b7c15875f3edc926cb2936c6fc93"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/shared-group-uses.xsd",
+          "role": "fixture",
+          "sha256": "295cefac89496ef956dc99535bd463e8e90fb821bd6d11ae3c89627e4a7db329"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/unbounded-control.xsd",
+          "role": "fixture",
+          "sha256": "f2e73eaceaceb35b1526ad5d66e65aab22e56dfe3aaa1e25bf4cf4d7cc311c3e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/unbounded-member-failure.xsd",
+          "role": "fixture",
+          "sha256": "964d2a3b341a245645a3a481d84ad78bfeb63bb15a3f46e62574a132fdec037b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/whole-maximum-failure.xsd",
+          "role": "fixture",
+          "sha256": "c2858091aa21005c6668824385ebb16d242a2e970d1cd3d0e480c0262716f67b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/whole-minimum-failure.xsd",
+          "role": "fixture",
+          "sha256": "e132bf29d3a811197a2a09a2f7e6bd2839aff2739fc314b832ad5a7f1374a20a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/wildcard-strength-failure.xsd",
+          "role": "fixture",
+          "sha256": "aef906c46b2435ae33926bbb505470f38fef9ab927c5447fb3b6e45fc49ffa7a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/wildcard-strength-valid.xsd",
+          "role": "fixture",
+          "sha256": "4ec868b5fd09eb1e6119da34a542573f09b4ec221fe7b6efbdd8da6fc4b18e83"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/zero-disabled-choice.xsd",
+          "role": "fixture",
+          "sha256": "82abcebcbd44f803e5194e9ac2f3bfb7bcb9546872ffcc9d366f7229e43d8966"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/zero-group.xsd",
+          "role": "fixture",
+          "sha256": "c5236f62efa30dc9ac80716ecd05c1f3535a6619e405a5fdacb63a183c0aabe8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/zero-min-control.xsd",
+          "role": "fixture",
+          "sha256": "ed0095d6484be0a0e07109ccc22d2402ed090c7725df9892f56f694cf3f6d273"
+        },
+        {
+          "path": "research/tests/s06-pw01/predicate.test.ts",
+          "role": "expectations",
+          "sha256": "3d4902cea5a593f3e7d59e6f587dc91a8b9e5f732b1098fb72a120e009b1a3e7"
+        },
+        {
+          "path": "research/tests/s06-pw01/predicate.ts",
+          "role": "prototype",
+          "sha256": "2da333ccc58ecaa7a78e2eeafbd564a00e18e943cfd4eb3510f08f293e673d42"
+        },
+        {
+          "path": "research/tests/s06-pw01/tsconfig.json",
+          "role": "prototype",
+          "sha256": "3dd9cc9e746c7e03bee40eb40b8e532b2535d1abc4217a251f9748ebb33db4a7"
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        },
+        {
+          "path": "research/reference/scoped-pw.ts",
+          "role": "prototype",
+          "sha256": "f8ef35de9bdcf6ad6a4cd058224cae6453741cfede6f9facb5861b95e1958155"
+        }
+      ]
+    },
+    {
+      "qualification": "S06-DT-01",
+      "issue": 236,
+      "disposition": "selected",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "research/docs/content-model-s06-dt-01.md",
+          "role": "decision",
+          "sha256": "50d2af6f27f7bdb3f4c2e9abc42e7c393c9d89dfbff4e62202aae8c4f6fff8b3",
+          "historical": {
+            "path": "docs/content-model-s06-dt-01.md",
+            "sha256": "abdca1524c4cdec535f493df62efff640ce2da26b6b28abaca4ece7c2a09b1d5",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "research/reference/dt01-calendar-contract.test.ts",
+          "role": "reference",
+          "sha256": "588158fd1533a1236de18e07bbf39adbaaf1278117211e51aa0991772a19caeb",
+          "historical": {
+            "path": "test/conformance/reference/dt01_calendar_contract_test.py",
+            "sha256": "b8e6018e3fe9fe14cbe75327c291aa357bc09a87093759405014fbd060774ed5",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-date-0001.xsd",
+          "role": "fixture",
+          "sha256": "ad760e2275c3bd8c463c1b4315d9cb3d10b458d8e426b12a59594a19ef98ab0d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-date-0004.xsd",
+          "role": "fixture",
+          "sha256": "b83e97d1397c31e201cf59f1b130b9d29fe82c6ba46f8714473e1016c6aee89a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-dateTime-0001.xsd",
+          "role": "fixture",
+          "sha256": "aba2ca3526ee2f75679be6b73c5947dbe19f95dc528ff06011f37bd6b5c3e225"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-dateTime-0004.xsd",
+          "role": "fixture",
+          "sha256": "ca3483fa31ab72a58c19e86ab82b88559526cbcf7a7a0cf7fdd9b7eaa3da1eb4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/calendar-equivalence.xsd",
+          "role": "fixture",
+          "sha256": "30f4f732bf62c06a3df67bfa3112d4ff0189a91e373e6705fed0329fde01ad33"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/calendar-scalars.xsd",
+          "role": "fixture",
+          "sha256": "8e58ecbebffbf7ec39dfba8d946e4d6693fd7b53deaf8216d4cc978d7a114ec0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/duration-cross-year-zero.xsd",
+          "role": "fixture",
+          "sha256": "a6d62e72b51b686aa756cd93c6e586c812b2f5cb6bbbe81da9f8208f19e225b6"
+        },
+        {
+          "path": "research/tests/dt01/dt01-cases.json",
+          "role": "expectations",
+          "sha256": "9c9c60abfd9f847b4c181767232c38b937af28b0554b328eb3c366649b6a3e81"
+        },
+        {
+          "path": "research/tests/dt01/dt01-reduced-cases.json",
+          "role": "expectations",
+          "sha256": "c9639ea4be3ac41f9d36d0b9259fd0e6bd3f7798446cde99ff39599b72c0739f"
+        },
+        {
+          "path": "research/tests/dt01/exact-calendar.test.ts",
+          "role": "expectations",
+          "sha256": "e6bec087c36b34175f6a55002746ff836a8391291b666d30632e6150d95d2583"
+        },
+        {
+          "path": "research/tests/dt01/exact-calendar.ts",
+          "role": "prototype",
+          "sha256": "1a57fb012c5d1a92786100a4e595b781ebe84bc1cfd6012695601027bec2ce3a"
+        },
+        {
+          "path": "research/tests/dt01/measure.ts",
+          "role": "prototype",
+          "sha256": "0c1093f376eb191af0912e429c71ae5269546b2571cf8de8140c549530cf3ebc"
+        },
+        {
+          "path": "research/tests/dt01/reduced-calendar.test.ts",
+          "role": "expectations",
+          "sha256": "6ce187de31f9fd2a448c8602021fed7b9788a9ffac3ba49e34e305af5f50458f"
+        },
+        {
+          "path": "research/tests/dt01/tsconfig.json",
+          "role": "prototype",
+          "sha256": "3dd9cc9e746c7e03bee40eb40b8e532b2535d1abc4217a251f9748ebb33db4a7"
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        }
+      ]
+    }
+  ],
+  "migration": {
+    "contract": "NT-CONT-01",
+    "acceptance": "https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195",
+    "originalArtifactCount": 147,
+    "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
+    "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
+    "currentArtifactCount": 250
+  },
+  "baselineSemanticDefaults": {
+    "maxNodes": 100000,
+    "maxWork": 1000000
+  }
+}
