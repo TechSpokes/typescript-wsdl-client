@@ -14,6 +14,7 @@
     "../../scripts/readiness-inventory.ts",
     "../../scripts/validate-npm-package.ts",
     "../../scripts/product-corpus.ts",
-    "../../scripts/run-verification.ts"
+    "../../scripts/run-verification.ts",
+    "../../scripts/lib/conformance-gate.ts"
   ]
 }
