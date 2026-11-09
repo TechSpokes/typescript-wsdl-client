@@ -1,6 +1,6 @@
 # Try opt-in checked generation
 
-Version 1.1.7 offers an opt-in WSDL-to-checked-gateway workflow for early testing and feedback. Choose `pipeline --model checked-components-v1` to generate a typed SOAP client, OpenAPI, Fastify gateway, runnable app and scaffold tests for supported document/literal SOAP 1.1 contracts. Omitting `--model` keeps the existing legacy behavior.
+Version 1.1.8 offers an opt-in WSDL-to-checked-gateway workflow for early testing and feedback. Choose `pipeline --model checked-components-v1` to generate a typed SOAP client, OpenAPI, Fastify gateway, runnable app and scaffold tests for supported document/literal SOAP 1.1 contracts. Omitting `--model` keeps the existing legacy behavior.
 
 This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. Generation exposes legacy and components only; the shipped v1.1.5 direct runtime remains a compatibility binding for existing clients. See the [checked gateway reference](checked-gateway.md).
 
@@ -10,7 +10,7 @@ Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.1.7
+npm install --save-dev @techspokes/typescript-wsdl-client@1.1.8
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```

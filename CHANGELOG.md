@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.8] - 2026-11-09
+
+- chore(release): prepare the checked-generation preview with current dependencies and complete upgrade guidance.
+- fix(release): recognize broad product coverage after the independent reference lane without weakening conformance checks.
+
 - docs(agents): preserve consumer-owned app scaffolds and keep the documentation index authoritative.
 - docs(testing): separate maintainer verification from legacy and checked consumer testing guidance.
 - test: separate fast checks from bounded workflows and prevent competing verification runs with retained attempt logs.

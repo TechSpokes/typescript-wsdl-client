@@ -17,40 +17,7 @@ export function verifyTrackedTreeStable(before, after) {
 const SUPPORTED_NODE_FLOOR = 24;
 const CURRENT_NODE_LINE = 26;
 
-function hasFocusedConformanceRun(script) {
-  return /\bvitest\s+run\b/.test(script) && /\btest[\\/]conformance\b/.test(script);
-}
-
-function hasBroadVitestRun(script) {
-  return /\bvitest\s+run\b/.test(script) && !/\btest[\\/](unit|snapshot|integration|conformance)\b/.test(script);
-}
-
-function ciRunsBroadTests(script) {
-  return /\bnpm\s+test(?:\s|$)/.test(script) || /\bnpm\s+run\s+test(?:\s|$)/.test(script) || hasBroadVitestRun(script);
-}
-
-export function verifyConformanceGateScripts(scripts) {
-  const errors = [];
-  const resolve = name => {
-    const command = scripts[name] ?? "";
-    return command === `tsx scripts/run-verification.ts ${name}:run` ? scripts[`${name}:run`] ?? "" : command;
-  };
-  const focusedConformance = resolve("test:conformance");
-  const allTests = resolve("test");
-  const ci = resolve("ci");
-
-  if (!hasFocusedConformanceRun(focusedConformance)) {
-    errors.push("package.json scripts.test:conformance must run vitest against test/conformance.");
-  }
-  if (!hasBroadVitestRun(allTests)) {
-    errors.push("package.json scripts.test must leave Vitest discovery broad enough to include test/conformance.");
-  }
-  if (!ciRunsBroadTests(ci)) {
-    errors.push("package.json scripts.ci must run npm test, npm run test, or a broad vitest run so conformance is release-covered.");
-  }
-
-  return errors;
-}
+export {verifyConformanceGateScripts} from "./conformance-gate.ts";
 
 export function verifyPublishWorkflowGate(scripts, releasePackageWorkflow) {
   const errors = [];

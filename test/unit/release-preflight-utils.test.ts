@@ -39,6 +39,41 @@ describe("verifyTrackedTreeStable", () => {
 });
 
 describe("verifyConformanceGateScripts", () => {
+  it("accepts the actual guarded release scripts and their independent reference lane", () => {
+    const pkg = JSON.parse(readFileSync("package.json", "utf8")) as {scripts: Record<string, string>};
+    expect(verifyConformanceGateScripts(pkg.scripts)).toEqual([]);
+  });
+
+  it.each(['"test/conformance/reference/**"', "'test/conformance/reference/**'", 'test/conformance/reference/**', '"test\\conformance\\reference\\**"'])(
+    "accepts only the already executed reference exclusion %s", exclusion => {
+      expect(verifyConformanceGateScripts({
+        test: "vitest run", "test:conformance": "vitest run test/conformance",
+        ci: `npm run test:reference && vitest run --exclude ${exclusion}`,
+      })).toEqual([]);
+    },
+  );
+
+  it.each([
+    'vitest run --exclude "test/conformance/reference/**"',
+    'vitest run --exclude "test/conformance/reference/**" && npm run test:reference',
+    'npm run test:reference-extra && vitest run --exclude "test/conformance/reference/**"',
+    'npm run test:reference || vitest run --exclude "test/conformance/reference/**"',
+    'npm run test:reference && vitest run test/unit --exclude "test/conformance/reference/**"',
+    'npm run test:reference && vitest run --exclude "test/conformance/**"',
+    'npm run test:reference && vitest run --exclude "test/conformance/reference/**" --exclude "test/conformance/stages/**"',
+  ])("rejects CI coverage loss in %s", ci => {
+    expect(verifyConformanceGateScripts({test: "vitest run", "test:conformance": "vitest run test/conformance", ci})).toContain(
+      "package.json scripts.ci must run npm test, npm run test, or a broad vitest run so conformance is release-covered.",
+    );
+  });
+
+  it("keeps the plain test command unexcluded", () => {
+    expect(verifyConformanceGateScripts({
+      test: 'vitest run --exclude "test/conformance/reference/**"',
+      "test:conformance": "vitest run test/conformance", ci: "npm test",
+    })).toContain("package.json scripts.test must leave Vitest discovery broad enough to include test/conformance.");
+  });
+
   it("accepts the current broad Vitest CI coverage with a focused conformance command", () => {
     const errors = verifyConformanceGateScripts({
       "test": "vitest run",
