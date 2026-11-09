@@ -23,6 +23,8 @@ import type {ProjectionScalarList} from './projectionScalar.js';
 import {isXmlNCName, XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {planApplicationGroups, mapApplicationGroups, parseApplicationGroups, ApplicationGroupValueError} from './applicationGroups.js';
 import type {ApplicationGroupsOptions, ApplicationGroupPlan} from './applicationGroups.js';
+import {planRpcParts} from './rpcTypedValues.js';
+import type {RpcPartPlan} from './rpcTypedValues.js';
 
 export type DirectPrimitive = string | boolean | number;
 /** Inverse construction caps; XML encoding may impose smaller byte/text/node limits. */
@@ -42,7 +44,7 @@ export interface DocumentComponentValueMapping {
   readonly usage: ResolverUsage;
 }
 export interface RpcComponentValueMapping {
-  readonly kind: 'component-mapping'; readonly version: 'component-rpc-string-values-v1'; readonly admitted: false;
+  readonly kind: 'component-mapping'; readonly version: 'component-rpc-string-values-v1' | 'component-rpc-typed-values-v1'; readonly admitted: false;
   readonly root: RpcMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
@@ -77,7 +79,7 @@ const mappings = new WeakMap<object, DirectOperationContract>();
 // @why Keep the exact native-derived plan with its issued mapping without widening portable preview data.
 const mappingProjections = new WeakMap<DirectValueMapping, DirectProjectionPlan>();
 const componentMappings = new WeakMap<object, Readonly<{mapping: ComponentValueMapping; contract: DirectOperationContract; projection?: DirectProjectionPlan;
-  applicationGroups?: ApplicationGroupPlan; applicationGroupsOptions?: ApplicationGroupsOptions}>>();
+  applicationGroups?: ApplicationGroupPlan; applicationGroupsOptions?: ApplicationGroupsOptions; rpcParts?: readonly RpcPartPlan[]}>>();
 const values = new WeakMap<object, DirectOperationContract>();
 const expansions = new WeakMap<object, DirectOperationContract>();
 const projectionValues = new WeakMap<object, SemanticContext>();
@@ -187,9 +189,11 @@ export function createComponentValueMapping(contract: DirectOperationContract, d
     const selected = mappingRoot(contract, direction, s);
     if (isRpcMessageRoot(selected.root)) {
       if (applicationGroups !== undefined) throw new Stop('unsupported', 'rpc-application-groups');
-      const mapping: RpcComponentValueMapping = s.publish({kind: 'component-mapping', version: 'component-rpc-string-values-v1', admitted: false,
+      const typed = isRpcMessageRoot(contract.input) && contract.input.parts.some(part => part.type.kind !== 'builtin' || part.type.name.local !== 'string' || part.type.name.namespace !== XSD_NAMESPACE);
+      const rpcParts = typed ? planRpcParts(context, selected.root, {...s, fail: (kind, rule) => {throw new Stop(kind === 'mismatch' ? 'value-invalid' : kind, rule);}}) : undefined;
+      const mapping: RpcComponentValueMapping = s.publish({kind: 'component-mapping', version: typed ? 'component-rpc-typed-values-v1' : 'component-rpc-string-values-v1', admitted: false,
         root: selected.root, direction: selected.direction, contextId: context.contextId});
-      componentMappings.set(mapping, Object.freeze({mapping, contract}));
+      componentMappings.set(mapping, Object.freeze({mapping, contract, rpcParts}));
       return mapping;
     }
     const element = selected.root.element;
@@ -216,12 +220,12 @@ export function createComponentDirectionalMapping(contract: DirectOperationContr
 
 /** Authenticate the exact structured mapping and expose its existing native plan to local consumers only. */
 export function inspectComponentValueMapping(value: unknown, contract: DirectOperationContract):
-  Readonly<{mapping: ComponentValueMapping; projection?: DirectProjectionPlan; applicationGroups?: ApplicationGroupPlan}> {
+  Readonly<{mapping: ComponentValueMapping; projection?: DirectProjectionPlan; applicationGroups?: ApplicationGroupPlan; rpcParts?: readonly RpcPartPlan[]}> {
   inspectDirectOperation(contract);
   if (!value || typeof value !== 'object') throw new TypeError('Fresh matching component value mapping required');
   const owned = componentMappings.get(value);
   if (!owned || owned.contract !== contract) throw new TypeError('Fresh matching component value mapping required');
-  return Object.freeze({mapping: owned.mapping, projection: owned.projection, ...(owned.applicationGroups ? {applicationGroups: owned.applicationGroups} : {})});
+  return Object.freeze({mapping: owned.mapping, projection: owned.projection, rpcParts: owned.rpcParts, ...(owned.applicationGroups ? {applicationGroups: owned.applicationGroups} : {})});
 }
 function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): DirectAssessedScalar {
   const {budget, check} = s;

@@ -26,15 +26,25 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     const owned = inspectComponentRecordProjection(supplied, contract);
     return lowerComponentShape(owned.companion, owned.mapping, role, check);
   }
-  const {mapping, projection, applicationGroups} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
+  const {mapping, projection, applicationGroups, rpcParts} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
   if ('parts' in mapping.root) {
     const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
     const required: string[] = [], members: string[] = [];
     for (const part of mapping.root.parts) {
       check();
-      properties[part.name] = {type: 'string'};
+      const plan = rpcParts?.find(plan => plan.name === part.name)?.projection;
+      let type = 'string';
+      if (plan?.root.kind === 'record') {
+        const record = plan.records[0]!;
+        const fields = Object.fromEntries(record.slots.map(slot => [slot.element.name.local, {type: 'boolean'}]));
+        properties[part.name] = {type: 'object', properties: fields, required: Object.keys(fields), additionalProperties: false};
+        type = `{${record.slots.map(slot => `readonly ${literal(slot.element.name.local)}: boolean`).join('; ')}}`;
+      } else {
+        type = plan?.root.kind === 'scalar' && plan.root.builtin.local === 'boolean' ? 'boolean' : 'string';
+        properties[part.name] = {type};
+      }
       required.push(part.name);
-      members.push(`readonly ${literal(part.name)}: string`);
+      members.push(`readonly ${literal(part.name)}: ${type}`);
     }
     return {type: `{${members.join('; ')}}`, declarations: [], schema: {type: 'object', additionalProperties: false, properties, required}};
   }

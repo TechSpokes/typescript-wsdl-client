@@ -1,7 +1,7 @@
 /** Payload facade over the existing native scalar implementation; no source-validity or admission receipt. */
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
-import type {AttributeNode, ElementNode, GraphNode, LexicalValue} from './canonicalGraph.js';
+import type {AttributeNode, ElementNode, GraphNode, LexicalValue, Reference} from './canonicalGraph.js';
 import {schemaScalarContext, SchemaAssessmentError, SchemaOperandContextError} from './schemaScalarContext.js';
 import {scalarSchemaAssessment} from './scalarSchemaAssessment.js';
 import type {DatatypeOperand} from './datatypeValues.js';
@@ -41,7 +41,9 @@ function kernel(context: SemanticContext) {
   const core = scalarSchemaAssessment(c);
   const descriptions = new Map<string, ProjectionScalarDescription>();
   const references = new Map<string, SemanticTypeReference>();
-  const owner = (declaration: Declaration): Declaration => {
+  const keyFor = (declaration: GraphNode, reference: Reference): string => JSON.stringify([declaration.id,
+    reference.kind, reference.kind === 'local' ? reference.target : [reference.name.namespace, reference.name.local]]);
+  const owner = (declaration: GraphNode): GraphNode => {
     if (types.isProxy(declaration)) throw new TypeError('Expected exact native scalar declaration');
     const id = Object.getOwnPropertyDescriptor(declaration, 'id');
     if (!id || !('value' in id) || typeof id.value !== 'string') throw new TypeError('Expected exact native scalar declaration');
@@ -49,12 +51,13 @@ function kernel(context: SemanticContext) {
     if (found.kind !== 'found' || found.node !== declaration) throw new TypeError('Expected exact native scalar declaration');
     return declaration;
   };
-  const describe = (declaration: Declaration): ProjectionScalarDescription | ProjectionScalarFailure => {
+  const describe = (declaration: GraphNode, selected: Reference): ProjectionScalarDescription | ProjectionScalarFailure => {
     owner(declaration);
-    const cached = descriptions.get(declaration.id);
+    const key = keyFor(declaration, selected);
+    const cached = descriptions.get(key);
     if (cached) return cached;
-    let reference: SemanticTypeReference = declaration.type;
-    const type = context.resolve(declaration.type);
+    let reference: SemanticTypeReference = selected;
+    const type = context.resolve(selected);
     if (type.kind === 'found' && type.node.kind === 'complexType') {
       const content = deriveActualComplexContent(context, type.node.id);
       if (content.kind !== 'checked' || content.view.content.kind !== 'simple') return Object.freeze({kind: 'unavailable', rule: 'scalar-content-reference'});
@@ -92,8 +95,8 @@ function kernel(context: SemanticContext) {
     const retainLexical = union || plan.layers.some(layer => layer.patterns.length > 0);
     const result: ProjectionScalarDescription = Object.freeze({kind: 'projection-scalar-type', builtin: Object.freeze({namespace: XSD_NAMESPACE, local}),
       ...(retainLexical ? {retainLexical: true as const} : {}), ...(item ? {list: item} : {})});
-    descriptions.set(declaration.id, result);
-    references.set(declaration.id, reference);
+    descriptions.set(key, result);
+    references.set(key, reference);
     return result;
   };
   const failure = (error: unknown, operand: boolean): ProjectionScalarFailure => {
@@ -102,28 +105,32 @@ function kernel(context: SemanticContext) {
     return Object.freeze({kind: operand && error.category === 'invalid-schema' ? 'scalar-invalid' : 'unavailable', rule: error.rule});
   };
   return {
-    describe(declaration: Declaration, cooperative?: () => void): DescriptionResult {
+    declarationType(declaration: Declaration): Reference {
+      owner(declaration);
+      return declaration.type;
+    },
+    describe(declaration: GraphNode, reference: Reference, cooperative?: () => void): DescriptionResult {
       const previous = callerCheck; callerCheck = cooperative; interrupted = false;
       try {
         return context.budget.guard(() => {
-          try {return describe(declaration);} catch (error) {return failure(error, false);}
+          try {return describe(declaration, reference);} catch (error) {return failure(error, false);}
         });
       } finally {if (interrupted) kernels.delete(context); callerCheck = previous;}
     },
-    assess(declaration: Declaration, supplied: DatatypeLexicalOperand, cooperative?: () => void): OperandResult {
+    assess(declaration: GraphNode, reference: Reference, supplied: DatatypeLexicalOperand, cooperative?: () => void): OperandResult {
       const previous = callerCheck; callerCheck = cooperative; interrupted = false;
       try {
         return context.budget.guard(() => {
           let operand = false;
           try {
-            const description = describe(declaration);
+            const description = describe(declaration, reference);
             if (description.kind !== 'projection-scalar-type') return description;
             const input = context.budget.freeze(context.budget.snapshot(supplied));
             // GraphContext here is calculation data, not a source/context receipt. Namespace and source facts come from the payload.
             const lexical: LexicalValue = {value: input.value, context: {...declaration.context,
               namespaces: input.context.namespaces, source: input.context.source, baseUri: input.context.source.uri}};
             operand = true;
-            const value = core.assess(references.get(declaration.id)!, lexical, declaration);
+            const value = core.assess(references.get(keyFor(declaration, reference))!, lexical, declaration);
             context.budget.chargeWork(16);
             return Object.freeze({kind: 'projection-scalar-operand', operand: value});
           } catch (error) {return failure(error, operand);}
@@ -142,10 +149,39 @@ function get(context: SemanticContext) {
 /** Native declaration lookup and source-type formation precede any payload calculation. */
 export function describeProjectionScalar(context: SemanticContext, declaration: Declaration, check?: () => void): DescriptionResult {
   assertSemanticContext(context);
-  return context.budget.guard(() => get(context).describe(declaration, check));
+  return context.budget.guard(() => {
+    const scalar = get(context);
+    return scalar.describe(declaration, scalar.declarationType(declaration), check);
+  });
 }
 /** A successful calculation is payload-only data; it grants no schema, operation or portable artifact authority. */
 export function assessProjectionScalarOperand(context: SemanticContext, declaration: Declaration, lexical: DatatypeLexicalOperand, check?: () => void): OperandResult {
   assertSemanticContext(context);
-  return context.budget.guard(() => get(context).assess(declaration, lexical, check));
+  return context.budget.guard(() => {
+    const scalar = get(context);
+    return scalar.assess(declaration, scalar.declarationType(declaration), lexical, check);
+  });
+}
+
+/** Describe a source-owned type without inventing an element declaration.
+ * @param context Native source context.
+ * @param owner Exact graph node owning the reference.
+ * @param reference Source-selected type reference.
+ * @param check Cooperative budget/cancellation checkpoint.
+ * @returns The existing native scalar description or explicit refusal.
+ */
+export function describeProjectionType(context: SemanticContext, owner: GraphNode, reference: Reference, check?: () => void): DescriptionResult {
+  return context.budget.guard(() => get(context).describe(owner, reference, check));
+}
+
+/** Assess a typed value through the same native restrictions as element values.
+ * @param context Native source context.
+ * @param owner Exact source node owning the reference.
+ * @param reference Source-selected type reference.
+ * @param lexical Observed lexical value and namespace context.
+ * @param check Cooperative checkpoint.
+ * @returns Native datatype operand or explicit refusal.
+ */
+export function assessProjectionTypeOperand(context: SemanticContext, owner: GraphNode, reference: Reference, lexical: DatatypeLexicalOperand, check?: () => void): OperandResult {
+  return context.budget.guard(() => get(context).assess(owner, reference, lexical, check));
 }

@@ -7,7 +7,7 @@
       "source": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
       "origin": "NOAA/NWS primary NDFD WSDL; retrieved 2026-10-31; adjacent provenance.json records source, rights and namespace-only imports",
       "permission": "NWS public-domain reuse policy, no source-specific restriction; attribution and no endorsement; not repository MIT material",
-      "rationale": "Unmodified deployed-service Latin1 metadata qualifies the explicitly selected LatLonListZipCode bounded RPC/encoded string operation against an owned server; no live-provider or geographic correctness claim",
+      "rationale": "Unmodified deployed-service Latin1 metadata qualifies all 12 typed RPC operations against an owned server; separate single ZIP-code live evidence does not establish all-operation provider or geographic correctness",
       "files": [
         {
           "path": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
@@ -22,10 +22,10 @@
           "outcome": "partial",
           "stages": [
             "original source decoding and 12-operation inventory",
-            "selected LatLonListZipCode native planning and generation",
-            "installed build and generated HTTP route",
-            "owned SOAP 1.1 RPC/encoded strings and local references",
-            "zero provider calls"
+            "all 12 operations native planning and generation",
+            "installed build and every generated HTTP route",
+            "owned typed SOAP 1.1 RPC with native restrictions and 73-field Boolean record",
+            "exact Latin1 responses and offline provider replay; zero provider calls in tests"
           ],
           "tests": [
             "test/integration/noaa-ndfd-qualification.test.ts",

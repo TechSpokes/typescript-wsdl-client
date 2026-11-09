@@ -4,7 +4,7 @@ Authentic-source intake and bounded owned-server execution evidence for NDFD met
 
 ## Result and scope
 
-The unchanged NOAA/NWS WSDL plans and generates the explicitly selected `LatLonListZipCode` operation through checked component generation. Its three required string inputs and one string result form a bounded SOAP 1.1 RPC/encoded profile qualified through an installed generated HTTP gateway against an owned loopback SOAP server. The other 11 operations remain independently inventoried, with no execution claim.
+The unchanged NOAA/NWS WSDL plans and generates all 12 operations through checked component generation. Every generated HTTP route has an independently specified owned SOAP exchange, using one installed consumer for client, OpenAPI, gateway, app and scaffold checks. The bounded SOAP 1.1 RPC/encoded profile includes native scalar restrictions and the complete 73-field Boolean record; every output remains an opaque string.
 
 Whole-source native component construction and dated-XSD component correspondence precede selection, generation and fresh runtime artifact reconstruction. The separate narrower direct assessment still completes with native schema `established`, dated-XSD correspondence `inconclusive` and `schemaEligible: false`; its selector returns `inconclusive: whole-source-qualification`. Component qualification does not broaden that older direct-runtime contract.
 
@@ -46,21 +46,37 @@ The WSDL declares SOAP 1.1 over SOAP HTTP, RPC style and encoded bodies, with en
 
 The [provider static request](https://digital.weather.gov/xml/docs/SOAP_Requests/LatLonListZipCode.xml), retained as [original XML](../test/fixtures/wsdl/real-services/noaa-ndfd/lat-lon-list-zip-code-request.xml), independently specifies `zipCodeList = "21045 20910"`, `XMLformat = "DWML"`, `listType = "zipCode"`, in that order with `xsi:type="xsd:string"`. The original is 654 bytes, SHA-256 `56c06c7044867970f028a5d3037dac6fae15dad137613b947dd952525099be9d`. Provider documentation separately lists the input semantics and DWML/TSML format choices.
 
-The static request uses wrapper namespace `uri:DWMLgen`, differing from the acquired binding. This discrepancy is retained, not repaired into a successful wire oracle. Response coordinates are not independently pinned and no service response was requested. No declared-fault behavior exists to qualify; undeclared SOAP faults remain possible.
+The static request uses wrapper namespace `uri:DWMLgen`, differing from the acquired binding. This historical discrepancy is retained. The later authorized ZIP-code observation followed the WSDL namespace and received the corresponding response; observed coordinates are not independent geographic truth. No declared-fault behavior exists to qualify; undeclared SOAP faults remain possible.
 
 The WSDL address is `http://localhost/xml/SOAP_server/ndfdXMLserver.php`. Current provider documentation instead instructs SOAP users to use HTTPS at the provider endpoint and preserve parameter order. The source declares no authentication requirement, SOAP header, WS-Policy or WS-Security contract; actual production security remains unverified. Neither address nor documentation grants endpoint permission.
 
-## Delivered string profile
+## Delivered typed RPC profile
 
-The public request is an object with exactly the required strings `zipCodeList`, `XMLformat` and `listType`. The response is an object with the string `listLatLonOut`; empty strings, escaped XML, Unicode and significant whitespace remain strings without DWML parsing or postal-code validation.
+Each public request is one object keyed by the original required message parts. `LatLonListZipCode` retains `zipCodeList`, `XMLformat` and `listType`; other operations add decimal, arbitrary-precision integer, date, dateTime and source-defined enumeration inputs, all represented as strings. Booleans remain JSON Booleans. No numeric floating-point or implicit JavaScript Date conversion occurs.
+
+`weatherParametersType` is one ordinary object with all 73 exact source Boolean names. Missing, null, unknown and invalid flags refuse; omitted flags never default to false. The native all-group owner validates actual outgoing children, including unordered input and fixed-value constraints. Canonical writing follows a deterministic source plan and typed accessors preserve named scalar/record namespaces.
+
+Every response is one object keyed by its original output part: `listLatLonOut`, `listCityNamesOut`, `XMLByDayOut`, `XMLOut` or `GMLOut`. Empty strings, escaped XML, Unicode and significant whitespace remain strings without DWML/GML/TSML parsing, schema-hint fetching or geographic validation.
 
 Requests use the WSDL body namespace, unqualified accessors and source message-part declaration order, independently of JSON property insertion order. There is no `parameterOrder`: declaration order is the deterministic writing policy and agrees with the saved request, but proves neither the provider's RPC signature nor live acceptance.
 
 Responses accept one unambiguous struct in the output body namespace and a single string return accessor regardless of their local names, projecting to the source-owned JSON key. Inline values and same-Body `id`/`href` string references before or after the struct are covered, with namespace-resolved explicit types and applicable SOAP encoding root markers. Duplicate or dangling IDs, external references, cycles, nil, unsupported dynamic types, compound values, multiple results, ambiguous roots, wrong namespaces, contradictory encoding and result-plus-Fault mixtures refuse without partial success.
 
-RPC/literal, other primitive types, multiple return/out parameters, declared RPC faults, headers, `parameterOrder`, encoded arrays and shared or cyclic object graphs remain outside this profile. Standard SOAP faults remain errors. Existing document/literal, mandatory-header, endpoint/TLS, media-type, cancellation and caller-selected limit checks remain in force.
+RPC/literal, other primitive families, general nested records, multiple return/out parameters, declared RPC faults, headers, `parameterOrder`, encoded arrays and shared or cyclic object graphs remain outside this profile. Standard SOAP faults remain errors. Existing document/literal, mandatory-header, endpoint/TLS, media-type, cancellation and caller-selected limit checks remain in force.
 
-All response values are independently authored owned-server values. No provider call, geographic correctness check, validation of all 12 NOAA operations or full SOAP 1.1/RPC encoding claim follows from this qualification.
+The source operation set is `LatLonListZipCode`, `LatLonListSubgrid`, `LatLonListLine`, `LatLonListSquare`, `LatLonListCityNames`, `CornerPoints`, `NDFDgenByDay`, `NDFDgenByDayLatLonList`, `GmlTimeSeries`, `NDFDgen`, `NDFDgenLatLonList` and `GmlLatLonList`. Independent owned-server request/response expectations cover each operation; this is not all-operation live-provider acceptance or full SOAP/RPC support.
+
+### Latin1 response boundary
+
+The checked component runtime accepts exact ISO-8859-1 response bytes under the [encoding agreement policy](supported-patterns.md#checked-soap-11-rpc-string-profile). Header, declaration and BOM assertions must agree; unsupported or contradictory assertions refuse before projection. UTF-8 remains the default, with BOM-marked UTF-16 retained. Separate non-ASCII and C1 controls distinguish true Latin1 from Windows-1252, with XML legality, original-byte digests and caller limits retained.
+
+Typed inputs use `component-rpc-typed-values-v1` and a distinct source-capsule interpretation. Existing string-RPC artifacts retain their deterministic identity and source reconstruction requirements. The additive compatible component response extension does not change the narrower shipped direct runtime or source decoder policy.
+
+### Provider observation and live acceptance
+
+The [portable evidence](../test/fixtures/wsdl/real-services/noaa-ndfd/live-zip-evidence.json), copied byte-exactly from [issue #460](https://github.com/TechSpokes/typescript-wsdl-client/issues/460), records the 2026-11-09 08:16 UTC authorized ZIP-code call. NOAA returned HTTP 200 with ISO-8859-1 header/declaration and an ASCII-only DWML string containing `39.203,-76.858 39.0138,-77.0242`; the previous gateway refused it with HTTP 502 at Content-Type. The installed owned-server harness replays those exact bytes offline and compares the complete output string, separately from authored non-ASCII controls.
+
+One controlled repeat of the same input at the explicit verified HTTPS endpoint is authorized for this implementation session. Its delivery result is recorded in the issue/PR handoff; ordinary tests, generation and startup never contact NOAA. One ZIP operation cannot establish live acceptance of the remaining 11, provider availability or geographic correctness.
 
 ## Reproduction
 
@@ -76,7 +92,7 @@ The source integration test uses the actual loader, assessment implementation, d
 
 Expected direct assessment is `execution: completed`, `schema: established`, `correspondence: inconclusive`, `schemaEligible: false`, `operationInventory: complete`, `admitted: false`, with all 12 operation names. Direct selection is `kind: inconclusive`, `rule: whole-source-qualification`, without a contract. The explicit component plan has a complete 12-operation inventory, `ready: true`, `executed: false` and no blockers; only `LatLonListZipCode` is selected.
 
-The existing isolated installed-consumer helper reuses its package installation and owned-server harness for the NOAA phase. Public CLI output regenerates deterministically, retains source bytes, builds client/OpenAPI/gateway/app artifacts and runs generated scaffold tests. The actual HTTP route verifies exact strings and separately authored namespace-aware request assertions; invalid JSON refuses before SOAP, malformed responses return errors, and stale source/artifact controls refuse before dispatch. Attempt-local `checked-gateway-installed/noaa-wire.log` and `noaa-typecheck.log`, `noaa-test.log`, `noaa-build.log` retain the observed outcome.
+The existing isolated installed-consumer helper reuses its package installation and owned-server harness for the NOAA phase. Public CLI output regenerates deterministically, retains source bytes, builds client/OpenAPI/gateway/app artifacts for all 12 operations and runs generated scaffold tests. Every actual HTTP route verifies exact strings and independently authored namespace-aware request assertions, including all 73 flags and distinctive precision/timezone values; invalid JSON refuses before SOAP, malformed responses return errors, and stale source/artifact controls refuse before dispatch. Attempt-local `checked-gateway-installed/noaa-wire.log` and `noaa-typecheck.log`, `noaa-test.log`, `noaa-build.log` retain the outcome.
 
 ### Historical acquisition validation checkpoint
 
@@ -137,7 +153,7 @@ The [corpus](../test/conformance/readiness-corpus.json) now has eight inputs: on
 | `repeated-composite` | Composite occurrence wrappers | Native established; correspondence inconclusive |
 | `deep-composition` | Nested composition | Native established; correspondence inconclusive |
 
-Weather and Forecast remain synthetic. NOAA adds authentic encoding/RPC metadata and one bounded original-source owned-server execution path, with no live NOAA service acceptance claim.
+Weather and Forecast remain synthetic. NOAA adds authentic encoding/RPC metadata, all-12 bounded original-source owned-server execution, offline provider replay and separate single-operation live evidence.
 
 The historical eight-input default and diagnostic runs recorded a NOAA loading failure and unassessed operations. Current executable inventory checks use the maintained nine-input corpus and require NOAA's pinned closure to verify, its assessment to complete with native schema established and correspondence inconclusive, and all 12 operations to be inventoried without admission. The historical JSON files retain their original revision and are not current-head results.
 
@@ -148,9 +164,9 @@ The historical eight-input default and diagnostic runs recorded a NOAA loading f
 | ISO-8859-1 source | #426 under #397 | Original bytes decode unchanged |
 | Locationless imports | #426/#427 with source owners | Unused imports permitted; required references still resolve natively |
 | Capsule compatibility | #185/#186 and #458 | Fresh reconstruction and stale/tampered refusal remain mandatory |
-| RPC/encoded typed string parts | #458 under #427 | One bounded profile and owned NOAA operation |
+| RPC/encoded typed parts | #458/#460 under #427 | All-12 owned execution; one flat Boolean record |
 | Whole-source direct correspondence | #195/#201 with semantic/scalar owners | Native schema established; correspondence inconclusive |
-| Production HTTPS/security | #190/#191 | Provider guidance; zero execution |
-| Generated runtime | #458 | Installed generated HTTP route and owned string exchanges |
+| Production HTTPS/security | #190/#191 | Single ZIP-code live evidence; no general security acceptance |
+| Generated runtime | #458/#460 | All-12 installed HTTP routes and owned opaque string exchanges |
 
 Issue #458 delivers the bounded component string profile and unused-import correction while preserving original bytes and digests. Broader #427, #426 and #397 work, narrow direct correspondence, the provider request namespace discrepancy and production security retain their separate owners and acceptance. No default/version change, release, publication or universal research closure belongs to this qualification.

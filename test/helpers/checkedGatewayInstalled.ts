@@ -8,7 +8,9 @@ import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, appendFile}
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {stripTypeScriptTypes} from 'node:module';
 import {runOwnedNode} from './ownedNodeProcess.js';
+import {noaaCases} from './noaaRpcOracle.js';
 
 export const CHECKED_GATEWAY_STAGE_TIMEOUT_MS = 240_000;
 export const CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS = 60_000;
@@ -120,6 +122,9 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       await copyFile(path.join(messageDir, name), path.join(project, name));
     }
     await copyFile(path.join(root, 'test/helpers/checkedGatewayInstalledProcess.ts'), path.join(project, 'qualification.ts'));
+    await copyFile(path.join(root, 'test/helpers/noaaRpcOracle.ts'), path.join(project, 'noaaRpcOracle.ts'));
+    await writeFile(path.join(project, 'noaaRpcOracle.js'), stripTypeScriptTypes(await readFile(path.join(root, 'test/helpers/noaaRpcOracle.ts'), 'utf8')));
+    await copyFile(path.join(root, 'test/fixtures/wsdl/real-services/noaa-ndfd/live-zip-evidence.json'), path.join(project, 'live-zip-evidence.json'));
     await copyFile(path.join(root, 'test/helpers/ownedParentGuard.ts'), path.join(project, 'parent-guard.ts'));
     const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
     const executed = await run('independent HTTP/SOAP contract and controls', ['--permission', '--allow-child-process', ...networkPermission,
@@ -213,9 +218,8 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     const noaaSource = path.join(consumer, 'noaa.wsdl');
     await copyFile(path.join(root, 'test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl'), noaaSource);
     const noaaNamespace = 'http://localhost/xml/wsdl/ndfdXML.wsdl';
-    const noaaSelector = {portType: {namespace: noaaNamespace, local: 'ndfdXMLPortType'},
-      binding: {namespace: noaaNamespace, local: 'ndfdXMLBinding'}, operation: 'LatLonListZipCode'};
-    await writeFile(config, JSON.stringify({...checkedComponents, selectors: [noaaSelector],
+    await writeFile(config, JSON.stringify({...checkedComponents, selectors: noaaCases.map(({operation}) => ({operation,
+      portType: {namespace: noaaNamespace, local: 'ndfdXMLPortType'}, binding: {namespace: noaaNamespace, local: 'ndfdXMLBinding'}})),
       service: {namespace: noaaNamespace, local: 'ndfdXML'}, port: 'ndfdXMLPort'}));
     // @why Changing the selected operation deliberately refreshes both consumer-owned
     //   scaffold defaults; the earlier same-contract check proves preservation without force.
@@ -223,15 +227,18 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     noaaGeneration[noaaGeneration.indexOf('--wsdl-source') + 1] = noaaSource;
     await run('NOAA original-source installed CLI generation', noaaGeneration, tooling);
     const noaaClient = await readFile(path.join(project, 'client/client.ts'), 'utf8');
-    const noaaContract = await readFile(path.join(project, 'client/operations/0/contract.json'), 'utf8');
+    const readNoaaContracts = () => Promise.all(noaaCases.map((_, index) => readFile(path.join(project, `client/operations/${index}/contract.json`), 'utf8')));
+    const noaaContracts = await readNoaaContracts();
+    const noaaOpenApi = await readFile(path.join(project, 'openapi.json'), 'utf8');
     await run('NOAA deterministic regeneration', noaaGeneration, tooling);
     expect(await readFile(path.join(project, 'client/client.ts'), 'utf8')).toBe(noaaClient);
-    expect(await readFile(path.join(project, 'client/operations/0/contract.json'), 'utf8')).toBe(noaaContract);
+    expect(await readNoaaContracts()).toEqual(noaaContracts);
+    expect(await readFile(path.join(project, 'openapi.json'), 'utf8')).toBe(noaaOpenApi);
     expect(await readFile(path.join(project, 'client/source/files/noaa.wsdl'))).toEqual(await readFile(noaaSource));
     const noaaInventory = JSON.parse(await readFile(path.join(project, 'client/inventory.json'), 'utf8')) as {
       operations: {operation: string; generated: boolean; executed: boolean}[]};
     expect(noaaInventory.operations).toHaveLength(12);
-    expect(noaaInventory.operations.filter(operation => operation.generated).map(operation => operation.operation)).toEqual(['LatLonListZipCode']);
+    expect(noaaInventory.operations.every(operation => operation.generated)).toBe(true);
     expect(noaaInventory.operations.every(operation => !operation.executed)).toBe(true);
     // @why This disposable project changes contracts in place. Retire the previous
     //   compiled scaffold before testing current source; the next build owns fresh output.
@@ -240,7 +247,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       const result = await run('NOAA consumer ' + command, [npm, 'run', command], project);
       await writeFile(path.join(evidence, 'noaa-' + command + '.log'), result.stdout + result.stderr);
     }
-    const noaaWire = await run('NOAA independent installed HTTP/SOAP string profile', ['--permission', '--allow-child-process', ...networkPermission,
+    const noaaWire = await run('NOAA independent installed HTTP/SOAP typed profile', ['--permission', '--allow-child-process', ...networkPermission,
       '--allow-fs-read=' + project, '--allow-fs-write=' + project,
       path.join(project, 'qualification.ts'), fixture, 'noaa'], project);
     expect(JSON.parse(noaaWire.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: 'noaa',

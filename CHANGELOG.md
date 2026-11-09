@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(components): execute all 12 NOAA RPC operations with native typed inputs and exact Latin1 SOAP responses.
 - feat(components): execute bounded SOAP 1.1 RPC/encoded strings with owned-server NOAA LatLonListZipCode qualification.
 
 ## [1.1.8] - 2026-11-09
