@@ -85,6 +85,7 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
   try {
     const result = budget.guard(() => {
       check();
+      if ('parts' in outer.output || 'parts' in companion.output) return failure('unsupported', 'record-projection-requires-document-output');
       if (outer.basis !== 'native-component-premises-v1' || companion.basis !== 'native-component-premises-v1'
         || outer.correspondence !== 'dated-XSD-2004-components-v1' || companion.correspondence !== 'dated-XSD-2004-components-v1') stop('component-record-source-authority');
       const requested = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(supplied, check));
@@ -110,6 +111,7 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
       const mapping = createComponentValueMapping(companion, {kind: 'output'}, options);
       if (mapping.kind !== 'component-mapping') return mapping;
       const projection = inspectComponentValueMapping(mapping, companion).projection;
+      if (!projection) return failure('unsupported', 'record-projection-requires-document-mapping');
       const records = new Map(projection.records.map(record => [record.type.id, record]));
       if (association && !Object.hasOwn(requested, 'recordPath')) {
         const candidates: (readonly ExpandedName[])[] = [];
@@ -220,6 +222,7 @@ export function inspectComponentRecordValue(value: ComponentRecordValue, project
 export function validateComponentRecordApplication(projection: ComponentRecordProjection, application: unknown,
   options: Readonly<{signal?: AbortSignal; maxText?: number; maxItems?: number}> = {}): ReturnType<typeof expandProjectionValue> {
   const owned = inspectComponentRecordProjection(projection), {context} = inspectDirectOperation(owned.companion);
+  if ('parts' in owned.mapping.root) throw new TypeError('Record projection requires a document mapping');
   return expandProjectionValue(context, owned.mapping.root.element, application, options);
 }
 
@@ -248,6 +251,7 @@ export function decodeComponentRecordXml(outer: DirectOperationContract, project
         return assessObservedComponentPayload(outer, mapping, observation, selected.payload, options);
       }
       const wrapper = selected.payload;
+      if ('parts' in outer.output) throw new ScopeStop('unsupported', 'record-projection-requires-document-output');
       if (!same(wrapper.name, outer.output.element.name)) throw new ScopeStop('mismatch', 'record-wrapper-root');
       if (wrapper.attributes.length || wrapper.children.some(node => node.kind === 'text' && /[^\t\r\n ]/.test(node.value)))
         throw new ScopeStop('mismatch', 'record-wrapper-attributes-or-text');
@@ -270,6 +274,7 @@ export function decodeComponentRecordXml(outer: DirectOperationContract, project
       if (!payload) throw new TypeError('Native record boundary unavailable');
       const decoded = assessObservedComponentPayload(owned.companion, owned.mapping, observation, payload, options);
       if (decoded.kind !== 'component-decoded') return decoded;
+      if (decoded.validated.kind !== 'projection-value') throw new TypeError('Record projection requires a document value receipt');
       const recordCount = countRecords(observation, payload, projection.spec.recordPath, check);
       const validated: ComponentRecordValue = Object.freeze({kind: 'component-record-value', scope: 'records-with-declared-wrapper-scope',
         admitted: false, value: decoded.validated.value, recordCount, companion: decoded.validated});

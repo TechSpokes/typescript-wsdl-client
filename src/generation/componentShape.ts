@@ -26,7 +26,19 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     const owned = inspectComponentRecordProjection(supplied, contract);
     return lowerComponentShape(owned.companion, owned.mapping, role, check);
   }
-  const {projection, applicationGroups} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
+  const {mapping, projection, applicationGroups} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
+  if ('parts' in mapping.root) {
+    const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
+    const required: string[] = [], members: string[] = [];
+    for (const part of mapping.root.parts) {
+      check();
+      properties[part.name] = {type: 'string'};
+      required.push(part.name);
+      members.push(`readonly ${literal(part.name)}: string`);
+    }
+    return {type: `{${members.join('; ')}}`, declarations: [], schema: {type: 'object', additionalProperties: false, properties, required}};
+  }
+  if (!projection) throw new TypeError('Native document projection required');
   const names = new Map(projection.records.map((record, index) => [record.type.id, applicationGroups
     ? applicationRecordName(record.type.id) : `${role}_Record_${index}`]));
   const definitions: Record<string, Schema> = Object.create(null) as Record<string, Schema>;

@@ -7,7 +7,7 @@ import {existsSync, readFileSync, writeFileSync} from 'node:fs';
 
 interface ProductEvidence {
   mode: 'legacy' | 'checked';
-  outcome: 'supported' | 'refused';
+  outcome: 'supported' | 'partial' | 'refused';
   stages: string[];
   tests: string[];
   commands: string[];

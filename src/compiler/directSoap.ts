@@ -218,6 +218,7 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (!(profile.component && allowEndpoint === undefined)
       && (typeof allowEndpoint !== 'function' || allowEndpoint(new URL(endpoint.href)) !== true)) return fail('unsupported', 'endpoint authorization');
     const action = contract.binding.action;
+    const rpc = contract.binding.style === 'rpc';
 
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');
     const elements = (node: SyntaxElement): SyntaxElement[] => {
@@ -235,15 +236,16 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
       if (!('direction' in mapping)) return fail(mapping.kind, mapping.rule);
       faults.set(fault.name, mapping);
     }
-    const shape = (node: SyntaxElement): SyntaxElement[] => {
+    const shape = (node: SyntaxElement, encodedScope = false): SyntaxElement[] => {
       const children = elements(node);
-      if (node.attributes.length || node.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP protocol attributes or text');
+      if (node.attributes.some(a => !(encodedScope && a.name.namespace === SOAP && a.name.local === 'encodingStyle'
+        && a.value === 'http://schemas.xmlsoap.org/soap/encoding/')) || node.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP protocol attributes or text');
       return children;
     };
     const ignoredHeaders: ExpandedName[] = [];
     const bodyRoot = (root: SyntaxElement, incoming = false): SyntaxElement => {
       if (!same(root.name, {namespace: SOAP, local: 'Envelope'})) stop('protocol', 'SOAP 1.1 Envelope required');
-      const children = shape(root);
+      const children = shape(root, rpc);
       if (children[0]?.name.namespace === SOAP && children[0].name.local === 'Header') {
         if (profile.component && incoming) {
           const assessed = assessComponentSoapHeader(children[0], check);
@@ -253,12 +255,21 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
         children.shift();
       }
       if (children.length !== 1 || !same(children[0]!.name, {namespace: SOAP, local: 'Body'})) stop('protocol', 'one SOAP Body required');
-      const body = shape(children[0]!);
+      const body = shape(children[0]!, rpc);
+      if (rpc && !body.some(n => same(n.name, {namespace: SOAP, local: 'Fault'}))) return children[0]!;
       if (body.length !== 1) stop('protocol', 'one SOAP Body payload required');
       return body[0]!;
     };
     const wsdl = await profile.prepare(config, check);
     check();
+    // @why node-soap's RPC writer would wrap `_xml` as a parameter. This private
+    //   instance retains its selected method/transport while native bytes own RPC construction.
+    const rpcArguments = Object.freeze({});
+    if (rpc) wsdl.objectToRpcXML = (name, args) => {
+      check();
+      if (name !== contract.selector.operation || args !== rpcArguments) stop('protocol', 'dependency RPC selection mismatch');
+      return Buffer.from(encoded.bytes).toString('utf8');
+    };
     // HTTP and codec byte limits bound buffering and output copies directly.
     agent = endpoint.protocol === 'https:' ? new HttpsAgent({keepAlive: false, maxSockets: 1, rejectUnauthorized: true,
       ...(config.ca === undefined ? {} : {ca: config.ca})}) : new Agent({keepAlive: false, maxSockets: 1});
@@ -311,7 +322,7 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     const method = port && typeof port === 'object' ? own(port, contract.selector.operation) : undefined;
     if (typeof method !== 'function') return fail('unsupported', 'dependency selected method unavailable');
     check();
-    await new Promise<void>((resolve, reject) => method({_xml: Buffer.from(encoded.bytes).toString('utf8')}, (error: unknown) => error === complete ? resolve() : reject(error), {}, {SOAPAction: `"${action}"`}));
+    await new Promise<void>((resolve, reject) => method(rpc ? rpcArguments : {_xml: Buffer.from(encoded.bytes).toString('utf8')}, (error: unknown) => error === complete ? resolve() : reject(error), {}, {SOAPAction: `"${action}"`}));
     check();
     if (timedOut) return fail('transport', 'SOAP deadline exceeded');
     if (hookFailure) throw hookFailure;

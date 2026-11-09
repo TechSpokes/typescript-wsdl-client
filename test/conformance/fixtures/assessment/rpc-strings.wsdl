@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:rpc:strings" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="urn:rpc:strings">
+  <types><xsd:schema targetNamespace="urn:rpc:strings"/></types>
+  <message name="EchoRequest"><part name="first" type="xsd:string"/><part name="second" type="xsd:string"/></message>
+  <message name="EchoResponse"><part name="result" type="xsd:string"/></message>
+  <portType name="StringsPortType"><operation name="Echo"><input message="tns:EchoRequest"/><output message="tns:EchoResponse"/></operation></portType>
+  <binding name="StringsBinding" type="tns:StringsPortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="Echo"><soap:operation soapAction="urn:rpc:strings#Echo"/>
+      <input><soap:body use="encoded" namespace="urn:rpc:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input>
+      <output><soap:body use="encoded" namespace="urn:rpc:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output>
+    </operation>
+  </binding>
+  <service name="Strings"><port name="StringsPort" binding="tns:StringsBinding"><soap:address location="http://localhost/owned-endpoint-required"/></port></service>
+</definitions>

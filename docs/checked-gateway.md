@@ -6,6 +6,8 @@ Generation offers legacy, the default, and opt-in checked components. Start with
 
 The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the shipped direct runtime and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
 
+The [bounded SOAP 1.1 RPC/encoded string profile](supported-patterns.md#checked-soap-11-rpc-string-profile) adds source-owned typed parts without document element roots. See the [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) for explicit selection, string/reference behavior and owned-server evidence limits.
+
 For a supported local WSDL or HTTP(S) root URL with one service/port/binding candidate, omit `--checked-config`. The planner selects all operations of that binding and derives supported mappings through the existing native owners. Local sources default to their containing directory; remote sources authorize their same-origin declared dependency graph. Canonical containment, redirect permission checks and native qualification still apply.
 
 ```bash

@@ -3,8 +3,8 @@ import {types} from 'node:util';
 /** Internal direct value chain. No XML encoding, transport or runtime admission. */
 import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
-import {inspectDirectOperation} from './directOperation.js';
-import type {DirectOperationContract, DirectMessageRoot} from './directOperation.js';
+import {inspectDirectOperation, isRpcMessageRoot} from './directOperation.js';
+import type {DirectOperationContract, DirectMessageRoot, RpcMessageRoot} from './directOperation.js';
 import {inspectDirectStructuralMatch, matchDirectOperation} from './directStructure.js';
 import type {DirectDirection, DirectScalarDuty, DirectStructuralMatch} from './directStructure.js';
 import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding} from './directStructurePlan.js';
@@ -36,11 +36,17 @@ export interface DirectValueMapping extends DirectRootPlan {
   readonly root: DirectMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
-export interface ComponentValueMapping {
+export interface DocumentComponentValueMapping {
   readonly kind: 'component-mapping'; readonly version: 'component-values-v1'; readonly admitted: false;
   readonly root: DirectMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
+export interface RpcComponentValueMapping {
+  readonly kind: 'component-mapping'; readonly version: 'component-rpc-string-values-v1'; readonly admitted: false;
+  readonly root: RpcMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
+  readonly usage: ResolverUsage;
+}
+export type ComponentValueMapping = DocumentComponentValueMapping | RpcComponentValueMapping;
 export interface DirectAssessedScalar extends DirectScalarDuty {
   readonly normalized: string; readonly canonical: string; readonly value: DirectPrimitive | readonly DirectPrimitive[];
 }
@@ -70,7 +76,7 @@ type Options = Readonly<{signal?: AbortSignal; maxText?: number; maxItems?: numb
 const mappings = new WeakMap<object, DirectOperationContract>();
 // @why Keep the exact native-derived plan with its issued mapping without widening portable preview data.
 const mappingProjections = new WeakMap<DirectValueMapping, DirectProjectionPlan>();
-const componentMappings = new WeakMap<object, Readonly<{mapping: ComponentValueMapping; contract: DirectOperationContract; projection: DirectProjectionPlan;
+const componentMappings = new WeakMap<object, Readonly<{mapping: ComponentValueMapping; contract: DirectOperationContract; projection?: DirectProjectionPlan;
   applicationGroups?: ApplicationGroupPlan; applicationGroupsOptions?: ApplicationGroupsOptions}>>();
 const values = new WeakMap<object, DirectOperationContract>();
 const expansions = new WeakMap<object, DirectOperationContract>();
@@ -133,12 +139,12 @@ function runContext<T>(context: SemanticContext, options: Options, work: (s: Ses
     throw error;
   }
 }
-function mappingRoot(contract: DirectOperationContract, direction: DirectDirection, s: Session): Readonly<{root: DirectMessageRoot; direction: DirectDirection}> {
+function mappingRoot(contract: DirectOperationContract, direction: DirectDirection, s: Session): Readonly<{root: DirectMessageRoot | RpcMessageRoot; direction: DirectDirection}> {
   inspectDirectOperation(contract);
   const {budget, check} = s;
   const owned = directDataOwnership(budget).snapshot(direction, check);
   if (!owned || typeof owned !== 'object' || Array.isArray(owned)) throw new TypeError('Data-only direct direction required');
-  let root: DirectMessageRoot;
+  let root: DirectMessageRoot | RpcMessageRoot;
   if (owned.kind === 'input' || owned.kind === 'output') root = contract[owned.kind];
   else if (owned.kind === 'fault' && typeof owned.name === 'string') {
 
@@ -153,6 +159,7 @@ function mappingFor(contract: DirectOperationContract, direction: DirectDirectio
   if (contract.basis !== 'native-direct-premises-v1' || contract.correspondence !== 'dated-XSD-2004-direct-v1')
     throw new Stop('unsupported', 'direct-mapping-version');
   const selected = mappingRoot(contract, direction, s), {root} = selected;
+  if (isRpcMessageRoot(root)) throw new Stop('unsupported', 'direct-mapping-version');
   const unsupported = (): never => {throw new Stop('unsupported', 'native-direct-shape', root.element.context.source.path);};
   const projection = planDirectProjection(context, root.element, check, unsupported);
   const plan = flatDirectProjection(projection, check, unsupported);
@@ -178,8 +185,16 @@ export function createComponentValueMapping(contract: DirectOperationContract, d
     if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1')
       throw new Stop('unsupported', 'component-mapping-version');
     const selected = mappingRoot(contract, direction, s);
-    const projection = planDirectProjection(context, selected.root.element, s.check,
-      () => {throw new Stop('unsupported', 'native-component-shape', selected.root.element.context.source.path);});
+    if (isRpcMessageRoot(selected.root)) {
+      if (applicationGroups !== undefined) throw new Stop('unsupported', 'rpc-application-groups');
+      const mapping: RpcComponentValueMapping = s.publish({kind: 'component-mapping', version: 'component-rpc-string-values-v1', admitted: false,
+        root: selected.root, direction: selected.direction, contextId: context.contextId});
+      componentMappings.set(mapping, Object.freeze({mapping, contract}));
+      return mapping;
+    }
+    const element = selected.root.element;
+    const projection = planDirectProjection(context, element, s.check,
+      () => {throw new Stop('unsupported', 'native-component-shape', element.context.source.path);});
     const mapping: ComponentValueMapping = s.publish({kind: 'component-mapping' as const, version: 'component-values-v1' as const,
       admitted: false as const, root: selected.root, direction: selected.direction, contextId: context.contextId});
     const groupOptions = applicationGroups ? directDataOwnership(s.budget).freeze(parseApplicationGroups(applicationGroups)) : undefined;
@@ -201,7 +216,7 @@ export function createComponentDirectionalMapping(contract: DirectOperationContr
 
 /** Authenticate the exact structured mapping and expose its existing native plan to local consumers only. */
 export function inspectComponentValueMapping(value: unknown, contract: DirectOperationContract):
-  Readonly<{mapping: ComponentValueMapping; projection: DirectProjectionPlan; applicationGroups?: ApplicationGroupPlan}> {
+  Readonly<{mapping: ComponentValueMapping; projection?: DirectProjectionPlan; applicationGroups?: ApplicationGroupPlan}> {
   inspectDirectOperation(contract);
   if (!value || typeof value !== 'object') throw new TypeError('Fresh matching component value mapping required');
   const owned = componentMappings.get(value);
@@ -418,7 +433,7 @@ export function assessProjectionScalars(context: SemanticContext, supplied: unkn
     for (const duty of structural.occurrences) {s.check(); operands.push(scalar(duty, s, context));}
     let value = projectValue(structural.tree, operands, s);
     const owned = mapping && componentMappings.get(mapping);
-    if (owned?.applicationGroups) value = mapApplicationGroups(owned.applicationGroups, owned.projection, value, 'from-native', s.check) as DirectApplicationValue;
+    if (owned?.applicationGroups && owned.projection) value = mapApplicationGroups(owned.applicationGroups, owned.projection, value, 'from-native', s.check) as DirectApplicationValue;
     const receipt = s.publish({kind: 'projection-value' as const, scope: 'direct-structure-and-scalars' as const, admitted: false as const,
       root: structural.root, contextId: context.contextId, structural, operands, value});
     projectionValues.set(receipt, context);
@@ -894,6 +909,7 @@ export function expandProjectionValue(context: SemanticContext, root: ElementNod
         if (error instanceof TypeError) throw new ApplicationGroupValueError('application-group-data-required');
         throw error;
       }
+      if (!owned.projection) throw new TypeError('Native document projection required');
       application = mapApplicationGroups(owned.applicationGroups, owned.projection, copied, 'to-native', s.check);
     }
     const payload = buildProjectionPayload(context, root, plan, application, options, s);

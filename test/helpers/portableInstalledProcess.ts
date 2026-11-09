@@ -32,6 +32,7 @@ const evidence = op.inspectDirectOperation(contract).evidence;
 assert.equal(evidence.kind, 'qualified-source');
 if (evidence.kind !== 'qualified-source') throw new Error('Direct capsule source qualification required');
 assert.equal(evidence.eligible, true);
+assert.ok(!op.isRpcMessageRoot(contract.input), 'Existing direct artifacts retain their document element roots');
 assert.equal(contract.input.element.name.local, 'GetForecast');
 assert.equal(contract.binding.action, 'urn:checked:GetForecast');
 const mapping = values.createDirectValueMapping(contract, {kind: 'input'});

@@ -17,6 +17,8 @@
     "checked-cli-diagnostics.test.ts",
     "component-soap-source.test.ts",
     "component-codec.test.ts",
+    "rpc-string-codec.test.ts",
+    "rpc-string-artifacts.test.ts",
     "wsdl-policy-requirements.test.ts",
     "schema-identity-constraints-independent.test.ts",
     "wildcard-algebra.test.ts",

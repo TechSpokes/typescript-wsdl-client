@@ -445,7 +445,11 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
         const selected = contract.faults.find(fault => budget.compareText(fault.name, ownedDirection.name) === 0);
         if (!selected) throw new Stop('unsupported', 'unknown-fault');
         root = selected.root;
-      } else root = contract[ownedDirection.kind];
+      } else {
+        const selected = contract[ownedDirection.kind];
+        if ('parts' in selected) throw new Stop('unsupported', 'direct-document-root-required');
+        root = selected;
+      }
       const matched = matchDirectProjection(context, root.element, payload, {...options, flatOnly: true});
       if (matched.kind !== 'projection-match') return matched;
       inspectProjectionStructuralMatch(matched, context);

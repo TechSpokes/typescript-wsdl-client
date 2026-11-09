@@ -251,7 +251,10 @@ export function checkDirectSourceCompatibility(expected: unknown, contract: Dire
 const componentVersions = Object.freeze({...versions, scope: 'component-soap11-utf8-graph-v1', mapping: 'component-values-v1',
   runtimePolicy: 'explicit-http-verified-https-transport-v1'} as const);
 const scopedComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-utf8-graph-v2', mapping: 'component-values-and-record-scope-v1'} as const);
-interface ComponentRoot {readonly element: ExpandedName; readonly message: ExpandedName; readonly part: string}
+const rpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-strings-v1', mapping: 'component-rpc-string-values-v1'} as const);
+type ComponentRoot = Readonly<{element: ExpandedName; message: ExpandedName; part: string}> | Readonly<{
+  kind: 'rpc-typed-parts-v1'; message: ExpandedName; wrapper: ExpandedName; bodyNamespace: string;
+  encoding: string; parts: readonly {name: string; type: ExpandedName}[]}>;
 interface ComponentResource {readonly key: string; readonly base64: string; readonly digest: string}
 interface ComponentRecordSource {
   readonly selector: DirectOperationSelector; readonly action: string; readonly output: ComponentRoot;
@@ -263,7 +266,7 @@ interface ComponentCompatibility extends DirectSourceSelection {
   readonly input: ComponentRoot; readonly output: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
 }
 interface ComponentCapsule {
-  readonly versions: typeof componentVersions | typeof scopedComponentVersions;
+  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions;
   readonly resources: readonly ComponentResource[];
   readonly libraries?: readonly string[]; readonly projection?: ComponentProjectionData | null;
   readonly compatibility: ComponentCompatibility; readonly fingerprint: string;
@@ -311,6 +314,12 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
     tick(); const mapping = direction.kind === 'output' && responseProjection ? responseProjection : createComponentValueMapping(contract, direction, {signal}, applicationGroups);
     if (mapping.kind !== 'component-mapping' && mapping.kind !== 'component-record-projection') throw new Stop(mapping.kind === 'resource-limit' || mapping.kind === 'cancelled' ? mapping.kind : 'unsupported', mapping.rule);
     mappings.push(mapping);
+    if ('parts' in mapping.root) return {kind: 'rpc-typed-parts-v1', message: mapping.root.message,
+      wrapper: mapping.root.wrapper, bodyNamespace: mapping.root.bodyNamespace, encoding: contract.binding.encoding!,
+      parts: mapping.root.parts.map(part => {
+        if (part.type.kind !== 'builtin') throw new Stop('unsupported', 'rpc-string-type-required');
+        return {name: part.name, type: part.type.name};
+      })};
     return {element: mapping.root.element.name, message: mapping.root.message, part: mapping.root.part};
   };
   const input = make({kind: 'input'}), output = make({kind: 'output'});
@@ -320,6 +329,7 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
   let projection: ComponentProjectionData | null = null;
   if (responseProjection) {
     const {companion} = inspectComponentRecordProjection(responseProjection, contract);
+    if ('parts' in companion.output) throw new Stop('unsupported', 'record-projection-requires-document-output');
     const {context} = inspectDirectOperation(companion);
     projection = {spec: responseProjection.spec, source: {selector: companion.selector, action: companion.binding.action,
       output: {element: companion.output.element.name, message: companion.output.message, part: companion.output.part},
@@ -360,7 +370,9 @@ function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescr
   budget: SemanticBudget): ComponentCapsule {
   const {compatibility, resources, libraries, projection} = derived;
   const extended = libraries.length > 0 || projection !== null;
-  const value = {versions: extended ? scopedComponentVersions : componentVersions, resources, compatibility,
+  const rpc = 'kind' in compatibility.input && compatibility.input.kind === 'rpc-typed-parts-v1';
+  if (rpc && (extended || derived.applicationGroups)) throw new Stop('unsupported', 'rpc-artifact-extension');
+  const value = {versions: rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
     ...(extended ? {libraries, projection} : {}), ...(derived.applicationGroups ? {applicationGroups: derived.applicationGroups,applicationGroupIdentity:derived.applicationGroupIdentity} : {})};
   return {...value, fingerprint: hash(json(value, budget))};
 }
@@ -411,11 +423,28 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
     try {parseApplicationGroups(parsed.applicationGroups);} catch {reject('application-group-configuration');}
     text(parsed.applicationGroupIdentity);if (!/^[a-f0-9]{64}$/.test(parsed.applicationGroupIdentity)) reject('application-group-identity');
   }
-  const expectedVersions = extended ? scopedComponentVersions : componentVersions;
+  const rpc = !!parsed.versions && typeof parsed.versions === 'object' && (parsed.versions as Record<string, unknown>).scope === rpcComponentVersions.scope;
+  if (rpc && (extended || grouped)) reject('rpc-artifact-extension');
+  const expectedVersions = rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
   const actual = record(parsed.versions, Object.keys(expectedVersions));
   for (const key of Object.keys(expectedVersions) as (keyof typeof expectedVersions)[]) if (actual[key] !== expectedVersions[key]) reject('unsupported-version-mode-or-policy');
   validateComponentResources(parsed.resources, budget, signal);
-  const root = (value: unknown) => {const r = record(value, ['element', 'message', 'part']); name(r.element); name(r.message); ncname(r.part);};
+  const root = (value: unknown) => {
+    if (rpc) {
+      const r = record(value, ['kind', 'message', 'wrapper', 'bodyNamespace', 'encoding', 'parts']);
+      if (r.kind !== 'rpc-typed-parts-v1' || r.encoding !== 'http://schemas.xmlsoap.org/soap/encoding/') reject('rpc-root-profile');
+      name(r.message); name(r.wrapper); text(r.bodyNamespace);
+      if (!Array.isArray(r.parts) || !r.parts.length) return reject('rpc-parts-required');
+      const names = new Set<string>();
+      for (const part of r.parts) {
+        check(budget, signal); const p = record(part, ['name', 'type']); ncname(p.name); name(p.type);
+        if (names.has(p.name)) reject('duplicate-rpc-part'); names.add(p.name);
+        if (p.type.namespace !== 'http://www.w3.org/2001/XMLSchema' || p.type.local !== 'string') reject('rpc-part-type');
+      }
+      return;
+    }
+    const r = record(value, ['element', 'message', 'part']); name(r.element); name(r.message); ncname(r.part);
+  };
   const selector = (value: unknown) => {const s = record(value, ['portType', 'binding', 'operation']); name(s.portType); name(s.binding); ncname(s.operation);};
   if (extended) {
     validateComponentLibraries(parsed.libraries);

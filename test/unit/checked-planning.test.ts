@@ -45,6 +45,18 @@ it('requests one missing value, refuses the placeholder, then rechecks the suppl
   fs.writeFileSync(dependency, '<broken>');
   expect((await planCheckedComponents(wsdl, resolved)).blockers).toMatchObject([{category: 'invalid-source'}]);
 });
+it('qualifies unused locationless imports without acquiring namespace URLs or fabricated schemas', async () => {
+  const {wsdl} = setup();
+  const source = fs.readFileSync(wsdl, 'utf8');
+  const schema = /(<(?:[A-Za-z_][\w.-]*:)?schema\b[^>]*>)/;
+  expect(schema.test(source)).toBe(true);
+  fs.writeFileSync(wsdl, source.replace(schema, '$1<xs:import xmlns:xs="http://www.w3.org/2001/XMLSchema" namespace="https://unused.invalid/schema"/>'));
+  const report = await planCheckedComponents(wsdl);
+  expect(report.ready).toBe(true);
+  expect(report.blockers).toEqual([]);
+  expect(report.resources).toHaveLength(2);
+  expect(report.resolution).toBeUndefined();
+});
 it('keeps ambiguity and same-name identities, resumes explicit selection, and refuses unsupported binding', async () => {
   const {wsdl} = setup('test/conformance/fixtures/assessment/wsdl-first-choices.wsdl');
   const report = await planCheckedComponents(wsdl);

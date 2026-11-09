@@ -33,10 +33,12 @@ async function altered(text: string, selected = selector, extra: Partial<Paramet
   await writeFile(source, text);
   return selectDirectOperation(source, selected, {limits: {}, loading: {policy: {fileRoots: [directory]}}, ...extra});
 }
-function selected(result: DirectOperationResult): DirectOperationContract {
+function selected(result: DirectOperationResult): DirectOperationContract & {input: DirectMessageRoot; output: DirectMessageRoot} {
   expect(result.kind).toBe('selected');
   if (result.kind !== 'selected') throw new Error(`${result.kind}: ${result.rule}`);
-  return result.contract;
+  const {contract} = result;
+  if (!('element' in contract.input) || !('element' in contract.output)) throw new Error('Document operation expected');
+  return contract as DirectOperationContract & {input: DirectMessageRoot; output: DirectMessageRoot};
 }
 function found(context: SemanticContext, id: string): GraphNode {
   const node = context.lookup(id);
@@ -90,7 +92,8 @@ describe('authenticated direct operation source contract', () => {
     const mapping = createComponentValueMapping(contract, {kind: 'input'});
     if (mapping.kind !== 'component-mapping') throw new Error(mapping.kind);
     expect(mapping.root).toBe(contract.input);
-    expect(inspectComponentValueMapping(mapping, contract).projection.root).toMatchObject({kind: 'record'});
+    if (!('element' in mapping.root)) throw new Error('Document mapping expected');
+    expect(inspectComponentValueMapping(mapping, contract).projection?.root).toMatchObject({kind: 'record'});
     const expanded = expandProjectionValue(inspection.context, mapping.root.element, {payload: {name: 'Synthetic imported value'}});
     expect(expanded).toMatchObject({kind: 'projection-expanded', validated: {value: {payload: {name: 'Synthetic imported value'}}}});
     if (expanded.kind !== 'projection-expanded') throw new Error(expanded.kind);

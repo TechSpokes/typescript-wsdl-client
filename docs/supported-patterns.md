@@ -6,6 +6,18 @@ The matrix describes the existing legacy generator. The unreleased opt-in [check
 
 The qualified checked domain includes [keyed mixed, namespace-collision and source-permitted open values](checked-gateway.md#mixed-namespaced-and-open-values), with production conformance and installed request/response/fault evidence. Native strict/lax/skip checks remain distinct from schema-source wildcard checks and from the legacy rows below.
 
+## Checked SOAP 1.1 RPC string profile
+
+Checked component generation supports the bounded RPC/encoded string profile below. The [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) records the unchanged source, installed generated HTTP execution against an owned server and the saved provider-request namespace discrepancy; no provider call or geographic correctness claim is made.
+
+| Capability | Status | Bounded contract |
+|---|---|---|
+| Typed RPC/encoded parts | Partial | Required non-null `xsd:string` inputs and one string result |
+| SOAP string references | Partial | Same-Body string `id`/`href`, inline strings and unambiguous roots |
+| Unused locationless imports | Supported | Native component qualification resolves actual required references |
+
+Request accessors follow source declaration order and the WSDL body namespace. Response struct and return-accessor local names may vary; the generated JSON response retains the source-owned part name. RPC/literal, other primitives, encoded arrays/object graphs, multiple results, declared RPC faults, headers and `parameterOrder` remain unsupported by this profile.
+
 ## Capability Evidence Matrix
 
 The rows below are backed by committed conformance fixtures under `test/conformance/fixtures/`. Status means the current product contract, not the full standards surface.
