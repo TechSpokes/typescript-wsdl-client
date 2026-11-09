@@ -148,6 +148,7 @@ interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping |
   encode(contract: DirectOperationContract, mapping: M, value: unknown, options: {signal?: AbortSignal; limits: DirectXmlLimits}):
     {bytes: Uint8Array} | DirectCodecFailure;
   decode(contract: DirectOperationContract, mapping: M, bytes: Uint8Array, options: {signal?: AbortSignal; limits: DirectXmlLimits;
+    componentResponseEncoding?: {charset?: string};
     uri: string; selectPayload: (root: SyntaxElement) => {payload: SyntaxElement; mapping: M}}): D | DirectCodecFailure;
   create(contract: DirectOperationContract, direction: M['direction'], options: {signal?: AbortSignal}): M | DirectCodecFailure;
   prepare(selection: {service: ExpandedName; port: string}, check: () => void): Promise<WSDL>;
@@ -329,16 +330,18 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (!response) return fail('transport', 'incomplete HTTP response');
     const observed: {bytes: Buffer; status: number; contentType: string; encoding: string} = response;
     if (observed.encoding && observed.encoding.toLowerCase() !== 'identity') return fail('unsupported', 'HTTP compression');
-    const media = /^text\/xml(?:\s*;\s*charset\s*=\s*(?:"(utf-8|utf-16|utf-16le|utf-16be)"|(utf-8|utf-16|utf-16le|utf-16be)))?\s*$/i.exec(observed.contentType);
+    const media = /^text\/xml(?:\s*;\s*charset\s*=\s*(?:"(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)"|(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)))?\s*$/i.exec(observed.contentType);
     if (!media) return fail('protocol', 'SOAP response Content-Type');
     if (observed.status !== 200 && observed.status !== 500) return fail('transport', 'SOAP HTTP status');
     // Header charset is a protocol assertion, checked against actual BOM bytes.
     const charset = (media[1] ?? media[2])?.toLowerCase();
+    if (!profile.component && charset === 'iso-8859-1') return fail('protocol', 'SOAP response Content-Type');
     const bom = observed.bytes[0] === 0xff && observed.bytes[1] === 0xfe ? 'utf-16le'
       : observed.bytes[0] === 0xfe && observed.bytes[1] === 0xff ? 'utf-16be' : 'utf-8';
-    if (charset && charset !== bom && !(charset === 'utf-16' && bom.startsWith('utf-16'))) return fail('protocol', 'SOAP charset disagrees with bytes');
+    if (!profile.component && charset && charset !== bom && !(charset === 'utf-16' && bom.startsWith('utf-16'))) return fail('protocol', 'SOAP charset disagrees with bytes');
     let faultInfo: {name: string; code: ExpandedName; codeNode: SyntaxElement; string: string; actor?: string} | undefined;
     const decoded = profile.decode(contract, output, observed.bytes, {signal, limits, uri: endpoint.href,
+      ...(profile.component ? {componentResponseEncoding: {charset}} : {}),
       selectPayload: root => {
         const payload = bodyRoot(root, true);
         if (!same(payload.name, {namespace: SOAP, local: 'Fault'})) {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:t="urn:rpc:typed" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="urn:rpc:typed">
+  <types><x:schema targetNamespace="urn:rpc:typed">
+    <x:simpleType name="Color"><x:restriction base="x:string"><x:enumeration value="red"/><x:enumeration value="blue"/></x:restriction></x:simpleType>
+    <x:complexType name="Flags"><x:all><x:element name="fixed" type="x:boolean" fixed="true"/><x:element name="selected" type="x:boolean"/></x:all></x:complexType>
+  </x:schema></types>
+  <message name="Request"><part name="amount" type="x:decimal"/><part name="count" type="x:integer"/><part name="day" type="x:date"/><part name="instant" type="x:dateTime"/><part name="color" type="t:Color"/><part name="flags" type="t:Flags"/></message>
+  <message name="Response"><part name="result" type="x:string"/></message>
+  <portType name="TypedPortType"><operation name="Echo"><input message="t:Request"/><output message="t:Response"/></operation></portType>
+  <binding name="TypedBinding" type="t:TypedPortType"><s:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="Echo"><s:operation soapAction="urn:rpc:typed#Echo"/><input><s:body use="encoded" namespace="urn:typed:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input><output><s:body use="encoded" namespace="urn:typed:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output></operation>
+  </binding>
+  <service name="Typed"><port name="TypedPort" binding="t:TypedBinding"><s:address location="http://localhost/explicit-owned-endpoint"/></port></service>
+</definitions>

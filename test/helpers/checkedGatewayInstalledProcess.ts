@@ -10,6 +10,8 @@ import {once} from 'node:events';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {SaxesParser} from 'saxes';
+import {createHash} from 'node:crypto';
+import {noaaCases, noaaInput, assertNoaaRequest} from './noaaRpcOracle.js';
 import Fastify, {type FastifyInstance} from 'fastify';
 
 const root = process.cwd();
@@ -29,7 +31,7 @@ const events = (xml: string) => {
   parser.write(xml).close();
   return {names, texts};
 };
-let reply = normal, replyStatus = 200, hang = false;
+let reply: string | Buffer = normal, replyStatus = 200, hang = false, replyContentType = 'text/xml; charset=utf-8';
 let hangingClosed: Promise<void> | undefined;
 const upstream: {xml: string; action: string | undefined; contentType: string | undefined;
   method: string | undefined; path: string | undefined}[] = [];
@@ -43,7 +45,7 @@ const soap = createServer((req, res) => {
       hangingClosed = new Promise<void>(resolve => {res.socket!.once('close', () => resolve());});
       return;
     }
-    res.writeHead(replyStatus, {'Content-Type': 'text/xml; charset=utf-8'}); res.end(reply);
+    res.writeHead(replyStatus, {'Content-Type': replyContentType}); res.end(reply);
   });
 });
 soap.listen(0, '127.0.0.1'); await once(soap, 'listening');
@@ -90,8 +92,8 @@ const route = '/v1/forecast/' + (process.argv[3] === 'noaa' ? 'LatLonListZipCode
 let calls = 0, refusals = 0;
 try {
   let url = await start();
-  const post = async (value: unknown) => {
-    const response = await fetch(url + route, {method: 'POST', headers: {'Content-Type': 'application/json'},
+  const post = async (value: unknown, operation?: string) => {
+    const response = await fetch(url + (operation ? '/v1/forecast/' + operation : route), {method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(value)});
     calls++;
     return {status: response.status, value: await response.json() as unknown};
@@ -109,6 +111,51 @@ try {
     const input = {listType: 'zipCode', XMLformat: 'DWML', zipCodeList: ' 21045 & <20910> Montréal\t\n '};
     const values = ['owned test value', '', '<dwml>é & 雪</dwml>\r\n  significant\t whitespace '];
     let positives = 0;
+    for (const [index, testCase] of noaaCases.entries()) {
+      const value = index === 1 ? '' : ` <owned operation="${testCase.operation}">é 雪 & 🌧</owned>\r\n\t `;
+      reply = envelope(`<r:Return><result i:type="x:string">${escape(value)}</result></r:Return>`);
+      assert.deepEqual(await post(noaaInput(testCase), testCase.operation), {status: 200, value: {[testCase.output]: value}});
+      const request = upstream.at(-1)!;
+      assert.equal(request.action, '"' + bodyNs + '#' + testCase.operation + '"');
+      assert.equal(request.contentType, 'text/xml; charset=utf-8'); assert.equal(request.method, 'POST');
+      assertNoaaRequest(request.xml, testCase); positives++;
+      const input = noaaInput(testCase), before = upstream.length;
+      for (const [name, type, value] of testCase.parts) {
+        const invalids: unknown[] = [null, typeof value === 'object' ? {...value, maxt: 'false'} : 42];
+        if (type.startsWith('tns:') && typeof value === 'string') invalids.push('invalid-enumeration');
+        if (['decimal', 'integer', 'date', 'dateTime'].includes(type)) invalids.push('invalid-lexical');
+        if (typeof value === 'object') {const missing = {...value}; delete missing.maxt; invalids.push(missing, {...value, extra: false}, {...value, maxt: null});}
+        for (const invalid of invalids) {assert.equal((await post({...input, [name]: invalid}, testCase.operation)).status, 400); refusals++;}
+      }
+      assert.equal(upstream.length, before, 'Invalid typed JSON must refuse before dispatch');
+    }
+    const evidence = JSON.parse(await readFile('live-zip-evidence.json', 'utf8')) as {files: {name: string; bytes: number; sha256: string; base64: string}[]};
+    for (const file of evidence.files) {
+      const bytes = Buffer.from(file.base64, 'base64'); assert.equal(bytes.length, file.bytes);
+      assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
+    }
+    reply = Buffer.from(evidence.files.find(file => file.name === 'response.bin')!.base64, 'base64');
+    replyContentType = 'text/xml; charset=ISO-8859-1';
+    const replay = await post({zipCodeList: '21045 20910', XMLformat: 'DWML', listType: 'zipCode'});
+    assert.equal(replay.status, 200);
+    assert.deepEqual(replay.value, {listLatLonOut: "<?xml version='1.0'?>\n"
+      + '<dwml version=\'1.0\' xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/xml/schema/DWML.xsd">\n'
+      + '<minResolution>-999</minResolution>\n<latLonList>39.203,-76.858 39.0138,-77.0242</latLonList>\n</dwml>\n'}); positives++;
+    const latin = ' café \u0080\u009fÿ <dwml/>\r\n ';
+    reply = Buffer.from('<?xml version="1.0" encoding="ISO-8859-1"?>' + envelope(`<r:Result><return>${escape(latin)}</return></r:Result>`), 'latin1');
+    assert.deepEqual(await post(input), {status: 200, value: {listLatLonOut: latin}}); positives++;
+    const originalLatin = reply;
+    for (const [header, bytes] of [
+      ['text/xml; charset=utf-8', originalLatin],
+      ['text/xml; charset=ISO-8859-1', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), originalLatin])],
+      ['text/xml; charset=windows-1252', originalLatin],
+      ['text/xml; charset=ISO-8859-1', Buffer.from(envelope('<r:Result><return>invalid \u0001</return></r:Result>'), 'latin1')],
+    ] as const) {
+      replyContentType = header; reply = bytes;
+      const invalid = await post(input); assert.equal(invalid.status, 502);
+      assert.ok(!Object.hasOwn(invalid.value as object, 'listLatLonOut')); refusals++;
+    }
+    replyContentType = 'text/xml; charset=utf-8';
     for (const value of values) {
       reply = envelope(`<r:LatLonListZipCodeResponse s:encodingStyle="${encoding}"><listLatLonOut i:type="x:string">${escape(value)}</listLatLonOut></r:LatLonListZipCodeResponse>`);
       assert.deepEqual(await post(input), {status: 200, value: {listLatLonOut: value}}); positives++;
@@ -125,7 +172,7 @@ try {
     }
     reply = envelope('<r:DifferentResponse><differentReturn>source-typed string</differentReturn></r:DifferentResponse>');
     assert.deepEqual(await post(input), {status: 200, value: {listLatLonOut: 'source-typed string'}}); positives++;
-    const captured = upstream[0]!;
+    const captured = upstream.find(request => request.xml.includes('Montréal'))!;
     assert.equal(captured.action, '"https://digital.weather.gov/xml/wsdl/ndfdXML.wsdl#LatLonListZipCode"');
     assert.equal(captured.contentType, 'text/xml; charset=utf-8');
     assert.equal(captured.method, 'POST'); assert.equal(captured.path, '/owned-forecast');
@@ -191,7 +238,8 @@ try {
     assert.equal((await post(input)).status, 502); refusals++;
     replyStatus = 200; reply = envelope(normalStruct);
     const beforeArtifacts = upstream.length;
-    for (const file of [source, path.join(root, 'client/operations/0/contract.json')]) {
+    const zipIndex = noaaCases.map(testCase => testCase.operation).sort().indexOf('LatLonListZipCode');
+    for (const file of [source, path.join(root, `client/operations/${zipIndex}/contract.json`)]) {
       const original = await readFile(file);
       await writeFile(file, file === source ? Buffer.concat([original, Buffer.from('\n<!-- stale original bytes -->')]) : '{}');
       try {url = await start(); assert.ok((await post(input)).status >= 400); refusals++;}
@@ -201,7 +249,7 @@ try {
     await writeFile('noaa-server.log', runtimeLog);
     process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', variant: mode, originalCheckoutReadable: false,
       calls, positives, refusals, upstreamRequests: upstream.length, providerCalls: 0,
-      scope: 'unchanged NOAA LatLonListZipCode; bounded SOAP 1.1 RPC/encoded strings; independent owned values, no geographic correctness claim'}) + '\n');
+      scope: 'unchanged NOAA all 12 operations; native typed SOAP 1.1 RPC/encoded; owned wire, offline provider replay and non-ASCII Latin1; no geographic correctness claim'}) + '\n');
   } else if (mode?.startsWith('encoding-')) {
     let artifactRefusals = 0;
     const input = {city: 'Montréal', language: 'français'};

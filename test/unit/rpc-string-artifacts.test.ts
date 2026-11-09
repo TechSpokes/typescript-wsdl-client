@@ -59,9 +59,18 @@ describe('bounded RPC source and artifact authority', () => {
     parsed.fingerprint = createHash('sha256').update(canonicalJson(parsed)).digest('hex');
     expect(await reconstructComponentSourceCapsule(Buffer.from(canonicalJson(parsed)), expected.input.file, expected.input.options)).toMatchObject({kind: 'incompatible-artifact', rule: 'source-contract-changed'});
   });
+  it('rejects a string-only artifact relabeled as the typed interpretation', async () => {
+    const expected = await capsule();
+    const parsed = JSON.parse(Buffer.from(expected.bytes).toString());
+    parsed.versions.scope = 'component-soap11-rpc-typed-latin1-v1';
+    parsed.versions.mapping = 'component-rpc-typed-values-v1'; delete parsed.fingerprint;
+    parsed.fingerprint = createHash('sha256').update(canonicalJson(parsed)).digest('hex');
+    expect(await reconstructComponentSourceCapsule(Buffer.from(canonicalJson(parsed)), expected.input.file, expected.input.options))
+      .toMatchObject({kind: 'incompatible-artifact', rule: 'rpc-type-version'});
+  });
   it.each([
     ['rpc/literal', (text: string) => text.replaceAll('use="encoded"', 'use="literal"')],
-    ['non-string type', (text: string) => text.replace('name="first" type="xsd:string"', 'name="first" type="xsd:int"')],
+    ['non-string return type', (text: string) => text.replace('name="result" type="xsd:string"', 'name="result" type="xsd:int"')],
     ['multiple return values', (text: string) => text.replace('name="result" type="xsd:string"/>', 'name="result" type="xsd:string"/><part name="extra" type="xsd:string"/>')],
     ['parameter order', (text: string) => text.replace('<operation name="Echo"><input', '<operation name="Echo" parameterOrder="first second"><input')],
     ['other encoding', (text: string) => text.replaceAll('encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"', 'encodingStyle="urn:other"')],

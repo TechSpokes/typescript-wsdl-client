@@ -2,13 +2,13 @@
 import type {DirectMessageRoot} from './directOperation.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
-import type {AttributeNode, ComplexTypeNode, ElementNode, GraphNode, NodeId, ParticleNode} from './canonicalGraph.js';
+import type {AttributeNode, ComplexTypeNode, ElementNode, GraphNode, NodeId, ParticleNode, Reference} from './canonicalGraph.js';
 import {assessSourceAttributeUses} from './schemaAttributeUses.js';
 import {deriveActualComplexContent, particleContentNode} from './complexTypeContent.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {XSD_NAMESPACE, XML_NAMESPACE, isXmlNCName} from '../loader/orderedSyntax.js';
 import {occurrenceAlgebra} from './occurrenceAnalysis.js';
-import {describeProjectionScalar, assessProjectionScalarOperand} from './projectionScalar.js';
+import {describeProjectionScalar, describeProjectionType, assessProjectionScalarOperand} from './projectionScalar.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
 import {builtinListItem} from './datatypeValues.js';
 import {prepareSemanticParticleView, assertSemanticParticleView} from './particleSemanticView.js';
@@ -243,6 +243,24 @@ export function selectProjectionAttribute(context: SemanticContext, record: Dire
  */
 export function planDirectProjection(context: SemanticContext, root: ElementNode, check: () => void,
   unsupported: (detail?: DirectProjectionUnavailable) => never): DirectProjectionPlan {
+  return planProjection(context, root, root.type, check, unsupported, root);
+}
+
+/** Plan a source-owned type using native scalar, content and particle owners.
+ * @param context Native source context.
+ * @param owner Exact source graph node owning the type reference.
+ * @param reference Selected source type.
+ * @param check Cooperative checkpoint.
+ * @param unsupported Explicit refusal callback.
+ * @returns The same native projection used by document elements, without element facts.
+ */
+export function planProjectionType(context: SemanticContext, owner: GraphNode, reference: Reference, check: () => void,
+  unsupported: (detail?: DirectProjectionUnavailable) => never): DirectProjectionPlan {
+  return planProjection(context, owner, reference, check, unsupported);
+}
+
+function planProjection(context: SemanticContext, owner: GraphNode, reference: Reference, check: () => void,
+  unsupported: (detail?: DirectProjectionUnavailable) => never, root?: ElementNode): DirectProjectionPlan {
   assertSemanticContext(context);
   if (context.kind !== 'actual') return unsupported();
   const {budget} = context;
@@ -255,12 +273,13 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
     if (result.kind !== 'found') return unsupported();
     return result.node;
   };
-  const records = new Map<NodeId, {type: ComplexTypeNode; declaration: ElementNode; slots: DirectProjectionSlot[]; attributes: DirectProjectionAttribute[];
+  if (lookup(owner.id) !== owner) return unsupported();
+  const records = new Map<NodeId, {type: ComplexTypeNode; declaration: GraphNode; reference: Reference; slots: DirectProjectionSlot[]; attributes: DirectProjectionAttribute[];
     content: 'empty' | 'element-only' | 'simple' | 'mixed'; keyed?: true; fixedOrder?: true; contextual?: true; attributeWildcard?: AttributeWildcard; text?: Extract<DirectProjectionValue, {kind: 'scalar'}>; ordered?: true; grammar?: OrderedGrammar} >();
   const pending: ComplexTypeNode[] = [];
   const value = (element: ElementNode): DirectProjectionValue => {
     if (lookup(element.id) !== element) return unsupported();
-    check(); const type = context.resolve(element.type);
+    check();
     if (element.abstract || element.substitutionGroup) return unsupported();
     const facts = {...(element.nillable ? {nillable: true as const} : {}), ...(() => {
       if (!element.value) return {};
@@ -268,12 +287,16 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
       if (assessed.kind !== 'projection-scalar-operand') return unavailable(element, 'element-value-constraint');
       return {constraint: Object.freeze({kind: element.value.kind, lexical: element.value.lexical.value, canonical: assessed.operand.canonical})};
     })()};
+    return typeValue(element, element.type, facts);
+  };
+  const typeValue = (element: GraphNode, reference: Reference, facts: Pick<DirectProjectionValue, 'nillable' | 'constraint'> = {}): DirectProjectionValue => {
+    check(); const type = context.resolve(reference);
     if (type.kind === 'builtin' && !builtinListItem(type.name.local)) {
       if (!projectionScalarRepresentation(type.name)) return unavailable(element, 'builtin-scalar-context-or-representation');
       return Object.freeze({kind: 'scalar', builtin: type.name, ...facts});
     }
     if (type.kind === 'builtin' || type.kind === 'found' && type.node.kind === 'simpleType') {
-      const scalar = describeProjectionScalar(context, element, check);
+      const scalar = describeProjectionType(context, element, reference, check);
       check();
       if (scalar.kind !== 'projection-scalar-type') return unavailable(element, 'rule' in scalar ? scalar.rule : 'scalar-source-definition');
       if (!projectionScalarRepresentation(scalar.builtin)) return unavailable(element, 'scalar-context-or-representation');
@@ -283,14 +306,14 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
     if (type.kind !== 'found' || type.node.kind !== 'complexType') return unavailable(element, 'unavailable-complex-type');
     if (!records.has(type.node.id)) {
       budget.chargeWork(64);
-      records.set(type.node.id, {type: type.node, declaration: element, slots: [], attributes: [], content: 'element-only'});
+      records.set(type.node.id, {type: type.node, declaration: element, reference, slots: [], attributes: [], content: 'element-only'});
       pending.push(type.node);
     }
     return Object.freeze({kind: 'record', type: type.node.id, ...facts});
   };
 
   budget.chargeWork(128);
-  const rootValue = value(root);
+  const rootValue = root ? value(root) : typeValue(owner, reference);
   while (pending.length) {
     check(); const type = pending.pop()!;
     const record = records.get(type.id)!;
@@ -337,7 +360,7 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
     check();
     if (content.kind !== 'checked') return unavailable(type, 'native-content-properties');
     if (content.view.content.kind === 'simple') {
-      const scalar = describeProjectionScalar(context, record.declaration, check);
+      const scalar = describeProjectionType(context, record.declaration, record.reference, check);
       check();
       if (scalar.kind !== 'projection-scalar-type') return unavailable(type, 'rule' in scalar ? scalar.rule : 'scalar-source-definition');
       if (!projectionScalarRepresentation(scalar.builtin)) return unavailable(type, 'scalar-context-or-representation');
@@ -489,7 +512,7 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
     }
   }
   budget.chargeWork(32 + ordered.length * 64);
-  return Object.freeze({root: rootValue, records: Object.freeze(ordered.map(({declaration: _declaration, grammar, ...record}) => {
+  return Object.freeze({root: rootValue, records: Object.freeze(ordered.map(({declaration: _declaration, reference: _reference, grammar, ...record}) => {
     const attributes = Object.freeze(record.attributes.map(attribute => {
       const local = attribute.declaration.name.local;
       const collision = record.slots.some(slot => slot.element.name.local === local)

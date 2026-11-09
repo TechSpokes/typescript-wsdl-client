@@ -356,7 +356,9 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
           names.add(name);
           const path = part.source.path.slice(message.syntax.source.path.length) || '/';
           const refs = message.references.filter(r => r.path === path && r.attribute === 'type');
-          if (refs.length !== 1 || refs[0]!.reference.kind !== 'builtin' || refs[0]!.reference.name.namespace !== XSD_NAMESPACE || refs[0]!.reference.name.local !== 'string')
+          if (refs.length !== 1) return refuse('unsupported', 'rpc-part-type-required');
+          const resolved = context.resolve(refs[0]!.reference);
+          if (direction === 'output' && (resolved.kind !== 'builtin' || resolved.name.namespace !== XSD_NAMESPACE || resolved.name.local !== 'string'))
             return refuse('unsupported', 'rpc-string-part-required');
           return Object.freeze({name, type: refs[0]!.reference, source: part.source});
         });
