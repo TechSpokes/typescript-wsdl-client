@@ -1,12 +1,12 @@
 # NOAA NDFD source and operation qualification
 
-Authentic-source intake and refusal evidence for NDFD metadata. See the root [README](../README.md).
+Authentic-source intake and bounded owned-server execution evidence for NDFD metadata. See the root [README](../README.md).
 
 ## Result and scope
 
-The original NOAA/NWS WSDL was acquired successfully on October 31, 2026. The metadata encoding slice of #426 now loads its unchanged declared ISO-8859-1 bytes and inventories all 12 operations. The component planner stops at two `missing-dependency` loading blockers: `locationless-import:http://schemas.xmlsoap.org/soap/encoding/` and `locationless-import:http://schemas.xmlsoap.org/wsdl/`.
+The unchanged NOAA/NWS WSDL plans and generates the explicitly selected `LatLonListZipCode` operation through checked component generation. Its three required string inputs and one string result form a bounded SOAP 1.1 RPC/encoded profile qualified through an installed generated HTTP gateway against an owned loopback SOAP server. The other 11 operations remain independently inventoried, with no execution claim.
 
-The separate narrow direct assessment completes with native schema `established`, dated-XSD correspondence `inconclusive` and `schemaEligible: false`; its operation selector returns `inconclusive: whole-source-qualification` without a contract. These are the measured next results, before any RPC/encoded runtime qualification. No NOAA capsule, mapping, codec, generated client or SOAP exchange is reached.
+Whole-source native component construction and dated-XSD component correspondence precede selection, generation and fresh runtime artifact reconstruction. The separate narrower direct assessment still completes with native schema `established`, dated-XSD correspondence `inconclusive` and `schemaEligible: false`; its selector returns `inconclusive: whole-source-qualification`. Component qualification does not broaden that older direct-runtime contract.
 
 The original P3.9-A acquisition used main `f7c93f9f3ba720995df47b79ef93e832c0ebcf3d`, package 1.1.5, and observed an encoding refusal. The current reclassification uses the #426 metadata encoding implementation based on main `1f96b4550eafd5fb5a5301a2841c098b05a269ab`, package 1.1.7, without changing provider bytes. This ASCII-only source verifies declaration handling and intake advancement; separate non-ASCII metadata fixtures establish character decoding.
 
@@ -22,7 +22,7 @@ These unmodified NOAA/NWS artifacts are public-domain provider material outside 
 
 The adjacent [provenance manifest](../test/fixtures/wsdl/real-services/noaa-ndfd/provenance.json) pins original/final URLs, retrieval times, bytes and SHA-256 for the source, official documentation, reuse policy and independent static request. HTML captures remain local acquisition evidence; they are not schema dependencies. Offline tests never re-fetch mutable provider pages. No VIES, private/customer evidence or credentials are included.
 
-The source-intake fixtures live under `test/fixtures/wsdl/real-services/`, separately from the conformance graph corpus. Focused source-intake tests verify original-byte identity, decoded metadata closure, independent operation identities and the current native planning refusal.
+The source-intake fixtures live under `test/fixtures/wsdl/real-services/`, separately from the synthetic conformance corpus. Focused source-intake tests verify original-byte identity, decoded metadata closure, all independent operation identities and the selected native plan; installed qualification adds generation and owned HTTP/SOAP execution.
 
 ## Resource closure
 
@@ -30,7 +30,7 @@ The resource closure is one WSDL with one inline schema, no WSDL imports, XSD in
 
 Both edges remain intact. The metadata test inventories every import/include/redefine and QName-bearing component-reference attribute; all component references name the inline namespace or XSD builtins. Neither imported namespace supplies a referenced component, so no external schema bytes are needed for this snapshot's resource inventory. Namespace declarations and SOAP encoding URIs are not retrieval instructions; no URL or dependency has been manufactured.
 
-The native loader now retains one original resource and both unresolved namespace-only import edges; the direct inventory verifies the pinned resource closure. The component planner requires explicit authorized schema locations for those declarations even though the independent reference inventory finds no component references into either namespace. Neither inventory grants dependency permission or substitutes for component qualification.
+The native loader retains one original resource and both unresolved namespace-only import edges. The planner allows unused imports without invented schemas and relies on whole-source native construction and reference resolution for required components. Genuinely missing referenced components, wrong namespaces, conflicting declarations and denied resource access still refuse; namespace URIs never become implicit retrieval targets.
 
 ## Selected operation and independent expectations
 
@@ -50,21 +50,33 @@ The static request uses wrapper namespace `uri:DWMLgen`, differing from the acqu
 
 The WSDL address is `http://localhost/xml/SOAP_server/ndfdXMLserver.php`. Current provider documentation instead instructs SOAP users to use HTTPS at the provider endpoint and preserve parameter order. The source declares no authentication requirement, SOAP header, WS-Policy or WS-Security contract; actual production security remains unverified. Neither address nor documentation grants endpoint permission.
 
+## Delivered string profile
+
+The public request is an object with exactly the required strings `zipCodeList`, `XMLformat` and `listType`. The response is an object with the string `listLatLonOut`; empty strings, escaped XML, Unicode and significant whitespace remain strings without DWML parsing or postal-code validation.
+
+Requests use the WSDL body namespace, unqualified accessors and source message-part declaration order, independently of JSON property insertion order. There is no `parameterOrder`: declaration order is the deterministic writing policy and agrees with the saved request, but proves neither the provider's RPC signature nor live acceptance.
+
+Responses accept one unambiguous struct in the output body namespace and a single string return accessor regardless of their local names, projecting to the source-owned JSON key. Inline values and same-Body `id`/`href` string references before or after the struct are covered, with namespace-resolved explicit types and applicable SOAP encoding root markers. Duplicate or dangling IDs, external references, cycles, nil, unsupported dynamic types, compound values, multiple results, ambiguous roots, wrong namespaces, contradictory encoding and result-plus-Fault mixtures refuse without partial success.
+
+RPC/literal, other primitive types, multiple return/out parameters, declared RPC faults, headers, `parameterOrder`, encoded arrays and shared or cyclic object graphs remain outside this profile. Standard SOAP faults remain errors. Existing document/literal, mandatory-header, endpoint/TLS, media-type, cancellation and caller-selected limit checks remain in force.
+
+All response values are independently authored owned-server values. No provider call, geographic correctness check, validation of all 12 NOAA operations or full SOAP 1.1/RPC encoding claim follows from this qualification.
+
 ## Reproduction
 
 After normal pinned dependency installation, run these offline checks:
 
 ```bash
-npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
+npm test -- test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
 npm run typecheck:integration
-npm run assess:inventory -- --profile default
+npm run test:installed
 ```
 
-The integration test uses the actual loader, assessment implementation, direct operation selector and component planner on unchanged local bytes with an explicit file-root policy and no allowed network origins. Two fresh assessment requests serialize identically; two fresh selector and planner requests refuse identically. Both `fetch` and socket connections are forbidden and counted, with zero calls asserted, including to the literal localhost service address.
+The source integration test uses the actual loader, assessment implementation, direct operation selector and component planner on unchanged local bytes with an explicit file-root policy and no allowed network origins. Two fresh assessments, direct selections and explicit component plans agree. Both `fetch` and socket connections are forbidden and counted, with zero calls asserted, including to the literal localhost service address.
 
-Expected direct assessment is `execution: completed`, `schema: established`, `correspondence: inconclusive`, `schemaEligible: false`, `operationInventory: complete`, `admitted: false`, with all 12 operation names. Direct selection is `kind: inconclusive`, `rule: whole-source-qualification`, without a contract. The component plan has a complete 12-operation inventory, `ready: false`, `executed: false` and exactly the two locationless-import loading blockers above; RPC/encoded remains a source observation rather than the immediate planner result.
+Expected direct assessment is `execution: completed`, `schema: established`, `correspondence: inconclusive`, `schemaEligible: false`, `operationInventory: complete`, `admitted: false`, with all 12 operation names. Direct selection is `kind: inconclusive`, `rule: whole-source-qualification`, without a contract. The explicit component plan has a complete 12-operation inventory, `ready: true`, `executed: false` and no blockers; only `LatLonListZipCode` is selected.
 
-No production SOAP call occurs. Without an authenticated contract, capsule/mapping/codec/generation and installed real-client loopback execution are inapplicable. Existing synthetic installed-consumer checks remain separate regression evidence.
+The existing isolated installed-consumer helper reuses its package installation and owned-server harness for the NOAA phase. Public CLI output regenerates deterministically, retains source bytes, builds client/OpenAPI/gateway/app artifacts and runs generated scaffold tests. The actual HTTP route verifies exact strings and separately authored namespace-aware request assertions; invalid JSON refuses before SOAP, malformed responses return errors, and stale source/artifact controls refuse before dispatch. Attempt-local `checked-gateway-installed/noaa-wire.log` and `noaa-typecheck.log`, `noaa-test.log`, `noaa-build.log` retain the observed outcome.
 
 ### Historical acquisition validation checkpoint
 
@@ -125,7 +137,7 @@ The [corpus](../test/conformance/readiness-corpus.json) now has eight inputs: on
 | `repeated-composite` | Composite occurrence wrappers | Native established; correspondence inconclusive |
 | `deep-composition` | Nested composition | Native established; correspondence inconclusive |
 
-Weather and Forecast remain synthetic. This real source adds authentic encoding/RPC metadata and a measured component planning refusal, with no successful NOAA SOAP execution claim.
+Weather and Forecast remain synthetic. NOAA adds authentic encoding/RPC metadata and one bounded original-source owned-server execution path, with no live NOAA service acceptance claim.
 
 The historical eight-input default and diagnostic runs recorded a NOAA loading failure and unassessed operations. Current executable inventory checks use the maintained nine-input corpus and require NOAA's pinned closure to verify, its assessment to complete with native schema established and correspondence inconclusive, and all 12 operations to be inventoried without admission. The historical JSON files retain their original revision and are not current-head results.
 
@@ -133,12 +145,12 @@ The historical eight-input default and diagnostic runs recorded a NOAA loading f
 
 | Boundary | Existing owner | Evidence limit |
 |---|---|---|
-| ISO-8859-1 source | #426 under #397 | Original bytes decode; no NOAA runtime contract |
-| Locationless imports | #426/#427 with source owners | Immediate component planner missing-dependency blockers |
-| Capsule compatibility | #185/#186 | No capsule issued; checks remain mandatory |
-| RPC/encoded type-based multipart request | #190/#191 | Outside document/literal single-element contract |
+| ISO-8859-1 source | #426 under #397 | Original bytes decode unchanged |
+| Locationless imports | #426/#427 with source owners | Unused imports permitted; required references still resolve natively |
+| Capsule compatibility | #185/#186 and #458 | Fresh reconstruction and stale/tampered refusal remain mandatory |
+| RPC/encoded typed string parts | #458 under #427 | One bounded profile and owned NOAA operation |
 | Whole-source direct correspondence | #195/#201 with semantic/scalar owners | Native schema established; correspondence inconclusive |
 | Production HTTPS/security | #190/#191 | Provider guidance; zero execution |
-| Generated runtime | #195/#201 | No authenticated plan |
+| Generated runtime | #458 | Installed generated HTTP route and owned string exchanges |
 
-The encoding slice removes the original decoding obstruction while preserving original bytes and digests. Authorized dependency closure, RPC/encoded support, direct correspondence, the provider request namespace discrepancy and production security retain their separate owners and acceptance. No NOAA runtime support, public activation, default/version change, release or publication follows from this intake result.
+Issue #458 delivers the bounded component string profile and unused-import correction while preserving original bytes and digests. Broader #427, #426 and #397 work, narrow direct correspondence, the provider request namespace discrepancy and production security retain their separate owners and acceptance. No default/version change, release, publication or universal research closure belongs to this qualification.

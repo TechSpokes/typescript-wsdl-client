@@ -2,7 +2,7 @@ import {directLimit, directLoadingLimits} from './directExecutionPolicy.js';
 /** Transient source-owned schema selection. This module grants no runtime admission. */
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
 import type {SchemaInput, SchemaInputOptions} from '../loader/schemaInput.js';
-import {SchemaLoadingError, WSDL_NAMESPACE, syntaxAttribute, syntaxElements, isXmlNCName} from '../loader/orderedSyntax.js';
+import {SchemaLoadingError, WSDL_NAMESPACE, XSD_NAMESPACE, syntaxAttribute, syntaxElements, isXmlNCName} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import {globalId} from './canonicalGraph.js';
 import type {ElementNode, GraphNode, Reference, WsdlNode} from './canonicalGraph.js';
@@ -32,14 +32,33 @@ export interface DirectMessageRoot {
   readonly type: Reference;
   readonly source: SyntaxSource;
 }
+/** Source-owned RPC parameters; these are WSDL parts rather than schema element declarations.
+ * @since 1.1.9
+ */
+export interface RpcMessageRoot {
+  readonly kind: 'rpc-typed-parts-v1';
+  readonly message: ExpandedName;
+  readonly parts: readonly Readonly<{name: string; type: Reference; source: SyntaxSource}>[];
+  readonly wrapper: ExpandedName;
+  readonly bodyNamespace: string;
+  readonly encoding: 'http://schemas.xmlsoap.org/soap/encoding/';
+  readonly source: SyntaxSource;
+}
+/** Distinguish typed RPC parameters without inventing a document element.
+ * @param root Selected native message.
+ * @returns Whether the message uses the bounded RPC profile.
+ */
+export function isRpcMessageRoot(root: DirectMessageRoot | RpcMessageRoot): root is RpcMessageRoot {
+  return 'kind' in root && root.kind === 'rpc-typed-parts-v1';
+}
 export interface DirectOperationContract {
   readonly selector: DirectOperationSelector;
   readonly contextId: string;
   readonly basis: 'native-direct-premises-v1' | 'native-component-premises-v1';
   readonly correspondence: 'dated-XSD-2004-direct-v1' | 'dated-XSD-2004-components-v1';
-  readonly binding: Readonly<{version: '1.1'; style: 'document'; use: 'literal'; transport: string; action: string; source: SyntaxSource}>;
-  readonly input: DirectMessageRoot;
-  readonly output: DirectMessageRoot;
+  readonly binding: Readonly<{version: '1.1'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; source: SyntaxSource}>;
+  readonly input: DirectMessageRoot | RpcMessageRoot;
+  readonly output: DirectMessageRoot | RpcMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
   readonly policy?: BindingPolicyRequirements;
   readonly addressingActions?: Readonly<{required: false; input?: string; output?: string;
@@ -219,7 +238,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         portType: ['name'], operation: ['name', 'parameterOrder'], input: ['name', 'message'], output: ['name', 'message'], fault: ['name', 'message'],
         binding: ['name', 'type'], service: ['name'], port: ['name', 'binding'],
       };
-      const soapAttributes: Record<string, readonly string[]> = {binding: ['style', 'transport'], operation: ['soapAction', 'style'], body: ['use', 'parts'], fault: ['name', 'use'], address: ['location']};
+      const soapAttributes: Record<string, readonly string[]> = {binding: ['style', 'transport'], operation: ['soapAction', 'style'], body: profile === 'components' ? ['use', 'parts', 'namespace', 'encodingStyle'] : ['use', 'parts'], fault: ['name', 'use'], address: ['location']};
       for (const document of input.documents) {
         const stack = [document.root];
         while (stack.length) {
@@ -277,7 +296,8 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       shape(soapBinding, []); shape(soapOperation, []);
       if (!['document', 'rpc'].includes(attr(soapBinding, 'style') ?? 'document')) return refuse('unsupported', 'soap-binding-style');
       if (attr(soapBinding, 'transport') !== HTTP) return refuse('unsupported', 'soap-transport');
-      if ((attr(soapOperation, 'style') ?? attr(soapBinding, 'style') ?? 'document') !== 'document') return refuse('unsupported', 'soap-style');
+      const style = attr(soapOperation, 'style') ?? attr(soapBinding, 'style') ?? 'document';
+      if (style !== 'document' && !(profile === 'components' && style === 'rpc')) return refuse('unsupported', 'soap-style');
       const action = attr(soapOperation, 'soapAction');
       if (action === undefined) return refuse('unsupported', 'soap-action-required');
       shape(abstract, [ws('input'), ws('output'), ws('fault'), ws('documentation')]);
@@ -297,6 +317,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         shape(boundSyntax, [soap(faultName === undefined ? 'body' : 'fault'), ws('documentation')]);
         const body = exactly(boundSyntax, SOAP, faultName === undefined ? 'body' : 'fault');
         shape(body, []);
+        attrs(body, faultName === undefined ? ['use', 'parts'] : ['use', 'name']);
         if (attr(body, 'use') !== 'literal') return refuse('unsupported', 'literal-required');
         if (faultName !== undefined && attr(body, 'name') !== faultName) return refuse('selection-refused', 'soap-fault-name');
         const message = reference(portType, messageSyntax, 'message');
@@ -314,16 +335,47 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         if (element.type.kind === 'symbol' && !element.type.target) return refuse('selection-refused', 'element-type');
         return Object.freeze({message: message.name, part: partName, element, type: element.type, source: part.source});
       };
-      const io = (direction: 'input' | 'output', declaration: SyntaxElement): DirectMessageRoot => {
+      const rpcRoot = (messageSyntax: SyntaxElement, boundSyntax: SyntaxElement, direction: 'input' | 'output'): RpcMessageRoot => {
+        attrs(messageSyntax, ['name', 'message']); attrs(boundSyntax, ['name']);
+        shape(messageSyntax, [ws('documentation')]); shape(boundSyntax, [soap('body'), ws('documentation')]);
+        const body = exactly(boundSyntax, SOAP, 'body'); shape(body, []);
+        const encoding = 'http://schemas.xmlsoap.org/soap/encoding/' as const;
+        if (attr(body, 'use') !== 'encoded' || attr(body, 'encodingStyle')?.trim() !== encoding) return refuse('unsupported', 'rpc-string-encoding');
+        const bodyNamespace = attr(body, 'namespace');
+        if (!bodyNamespace || !/^[A-Za-z][A-Za-z0-9+.-]*:/.test(bodyNamespace)) return refuse('unsupported', 'rpc-body-namespace');
+        const message = reference(portType, messageSyntax, 'message');
+        if (message.kind !== 'wsdl' || message.role !== 'message') return refuse('selection-refused', 'message-reference');
+        shape(message.syntax, [ws('part'), ws('documentation')]);
+        const declared = children(message.syntax).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'part');
+        if (!declared.length || direction === 'output' && declared.length !== 1) return refuse('unsupported', 'rpc-single-string-result');
+        const names = new Set<string>();
+        const parts = declared.map(part => {
+          attrs(part, ['name', 'type']); shape(part, [ws('documentation')]);
+          const name = attr(part, 'name');
+          if (!name || !isXmlNCName(name) || names.has(name)) return refuse('selection-refused', 'rpc-part-name');
+          names.add(name);
+          const path = part.source.path.slice(message.syntax.source.path.length) || '/';
+          const refs = message.references.filter(r => r.path === path && r.attribute === 'type');
+          if (refs.length !== 1 || refs[0]!.reference.kind !== 'builtin' || refs[0]!.reference.name.namespace !== XSD_NAMESPACE || refs[0]!.reference.name.local !== 'string')
+            return refuse('unsupported', 'rpc-string-part-required');
+          return Object.freeze({name, type: refs[0]!.reference, source: part.source});
+        });
+        if (attr(body, 'parts') !== undefined && attr(body, 'parts')!.trim().split(/[\t\r\n ]+/).join(' ') !== parts.map(p => p.name).join(' '))
+          return refuse('unsupported', 'rpc-body-parts');
+        return Object.freeze({kind: 'rpc-typed-parts-v1', message: message.name, parts, bodyNamespace, encoding,
+          wrapper: {namespace: bodyNamespace, local: ownedSelector.operation + (direction === 'output' ? 'Response' : '')}, source: body.source});
+      };
+      const io = (direction: 'input' | 'output', declaration: SyntaxElement): DirectMessageRoot | RpcMessageRoot => {
         const boundIo = exactly(bound, WSDL_NAMESPACE, direction);
         const boundName = attr(boundIo, 'name');
         const expectedName = attr(declaration, 'name') ?? `${ownedSelector.operation}${direction === 'input' ? 'Request' : 'Response'}`;
         if (boundName !== undefined && boundName !== expectedName) return refuse('selection-refused', 'binding-message-name');
-        return root(declaration, boundIo);
+        return style === 'rpc' ? rpcRoot(declaration, boundIo, direction) : root(declaration, boundIo);
       };
       const requestRoot = io('input', abstractInput), responseRoot = io('output', abstractOutput);
       const declaredFaults = children(abstract).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'fault');
       const boundFaults = children(bound).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'fault');
+      if (style === 'rpc' && (declaredFaults.length || boundFaults.length)) return refuse('unsupported', 'rpc-declared-fault');
       if (declaredFaults.length !== boundFaults.length) return refuse('selection-refused', 'fault-mapping');
       const faultNames = new Set<string>();
       const faults = declaredFaults.map(f => {
@@ -340,7 +392,8 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId,
         basis: profile === 'direct' ? 'native-direct-premises-v1' : 'native-component-premises-v1',
         correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
-        binding: {version: '1.1', style: 'document', use: 'literal', transport: HTTP, action, source: binding.context.source},
+        binding: {version: '1.1', style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
+          ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
         input: requestRoot, output: responseRoot, faults,
         ...(policyOwner ? {policy: policyOwner.forBinding(binding.syntax), addressingActions: {required: false as const,
           input: attr(abstractInput, 'Action', ADDRESSING_WSDL), output: attr(abstractOutput, 'Action', ADDRESSING_WSDL),

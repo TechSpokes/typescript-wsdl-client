@@ -63,6 +63,7 @@ describe('explicit native companion record scope', () => {
     }
   });
   it('preserves typed records across a same-QName boundary using separate native contexts', () => {
+    if (!('element' in outer.output) || !('element' in companion.output)) throw new Error('Document outputs expected');
     expect(outer.output.element.name).toEqual(companion.output.element.name);
     expect(outer.contextId).not.toBe(companion.contextId);
     const decoded = decodeComponentRecordXml(outer, projection, xml());

@@ -3,7 +3,7 @@ import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
 import {types} from 'node:util';
-import {inspectDirectOperation} from './directOperation.js';
+import {inspectDirectOperation, isRpcMessageRoot} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
 import {inspectDirectValueMapping, expandDirectValue, assessDirectScalars, inspectComponentValueMapping,
   expandProjectionValue, assessProjectionScalars} from './directValues.js';
@@ -14,6 +14,7 @@ import {parseOrderedSyntax, SchemaLoadingError, XML_NAMESPACE} from '../loader/o
 import {isXmlNamespaceBinding} from './directStructurePlan.js';
 import type {SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import type {SemanticBudget, ResolverUsage} from './semanticBudget.js';
+import {expandRpcStrings, readRpcStrings} from './rpcStringValues.js';
 
 export interface DirectXmlLimits {
   readonly maxBytes?: number;
@@ -51,13 +52,21 @@ export interface DirectDecodedXml {
 }
 export interface ComponentEncodedXml {
   readonly kind: 'component-encoded'; readonly admitted: false; readonly encoding: 'utf-8';
-  readonly bytes: Uint8Array; readonly expanded: ProjectionExpandedValue; readonly mapping: ComponentValueMapping;
+  readonly bytes: Uint8Array; readonly expanded: ProjectionExpandedValue | RpcExpandedValue; readonly mapping: ComponentValueMapping;
   readonly usage: ResolverUsage;
 }
 export interface ComponentDecodedXml {
   readonly kind: 'component-decoded'; readonly admitted: false;
-  readonly payload: SyntaxElement; readonly validated: ProjectionValueReceipt; readonly mapping: ComponentValueMapping;
+  readonly payload: SyntaxElement; readonly validated: ProjectionValueReceipt | RpcValueReceipt; readonly mapping: ComponentValueMapping;
   readonly usage: ResolverUsage;
+}
+export interface RpcValueReceipt {
+  readonly kind: 'rpc-string-value'; readonly admitted: false;
+  readonly value: Readonly<Record<string, string>>; readonly usage: ResolverUsage;
+}
+export interface RpcExpandedValue {
+  readonly kind: 'rpc-string-expanded'; readonly admitted: false;
+  readonly payload: SyntaxElement; readonly validated: RpcValueReceipt; readonly usage: ResolverUsage;
 }
 export interface ComponentPayloadSelection {readonly payload: SyntaxElement; readonly mapping: ComponentValueMapping}
 /** Parser ownership only; neither the observation nor its displayed fields establish value or operation validity. */
@@ -88,9 +97,11 @@ function runMapping<M extends CodecMapping, T extends {readonly usage: ResolverU
   try {
     const result = budget.guard(() => {
       check();
-      if (mapping.version !== profile.version || mapping.contextId !== contract.contextId
+      const rpc = profile === componentProfile && mapping.version === 'component-rpc-string-values-v1' && isRpcMessageRoot(mapping.root)
+        && contract.binding.style === 'rpc' && contract.binding.use === 'encoded' && contract.binding.encoding === 'http://schemas.xmlsoap.org/soap/encoding/';
+      if ((!rpc && mapping.version !== profile.version) || mapping.contextId !== contract.contextId
         || contract.basis !== profile.basis || contract.correspondence !== profile.correspondence
-        || contract.binding.version !== '1.1' || contract.binding.style !== 'document' || contract.binding.use !== 'literal'
+        || contract.binding.version !== '1.1' || !rpc && (contract.binding.style !== 'document' || contract.binding.use !== 'literal')
         || contract.binding.transport !== 'http://schemas.xmlsoap.org/soap/http') throw new Stop('unsupported', profile.rule);
       const direction = mapping.direction;
       const root = direction.kind === 'fault' ? contract.faults.find(f => {
@@ -253,6 +264,14 @@ export function encodeDirectXml(contract: DirectOperationContract, mapping: unkn
 export function encodeComponentXml(contract: DirectOperationContract, mapping: unknown, application: unknown, options: Options = {}): ComponentEncodedXml | DirectCodecFailure {
   return runComponent(contract, mapping, options, (owned, session) => {
     const {context} = inspectDirectOperation(contract), {budget, limits} = session;
+    if (isRpcMessageRoot(owned.root)) {
+      const result = expandRpcStrings(owned.root, application, {...session, fail: (kind, rule, node) => {throw new Stop(kind, rule, node?.source);}});
+      const validated: RpcValueReceipt = {kind: 'rpc-string-value', admitted: false, value: result.value, usage: budget.usage()};
+      const expanded: RpcExpandedValue = {kind: 'rpc-string-expanded', admitted: false, payload: result.payload, validated, usage: budget.usage()};
+      directDataOwnership(budget).freeze(expanded);
+      const bytes = emitObservedXml(result.payload, session);
+      return Object.freeze({kind: 'component-encoded', admitted: false, encoding: 'utf-8', bytes, expanded, mapping: owned, usage: budget.usage()});
+    }
     // @why Application items include attributes; XML syntax-node/text caps count elements and character data.
     //   Encoded bytes bound inverse input capacity without treating those different counters as equal.
     const expanded = expandProjectionValue(context, owned.root.element, application, {...options,
@@ -321,6 +340,13 @@ export function assessObservedComponentPayload(contract: DirectOperationContract
   return runComponent(contract, mapping, options, (owned, {budget, check}) => {
     assertObservedPayload(observation.root, payload, check);
     const {context} = inspectDirectOperation(contract);
+    if (isRpcMessageRoot(owned.root)) {
+      const value = readRpcStrings(owned.root, payload, owned.direction.kind === 'output', {budget, check,
+        fail: (kind, rule, node) => {throw new Stop(kind, rule, node?.source);}});
+      const validated: RpcValueReceipt = {kind: 'rpc-string-value', admitted: false, value, usage: budget.usage()};
+      directDataOwnership(budget).freeze(validated);
+      return {kind: 'component-decoded', admitted: false, payload, validated, mapping: owned, usage: budget.usage()};
+    }
     const structural = matchDirectProjection(context, owned.root.element, payload, options);
     if (structural.kind !== 'projection-match') return structural;
     const validated = assessProjectionScalars(context, structural, options, owned);
@@ -370,6 +396,13 @@ export function decodeComponentXml(contract: DirectOperationContract, mapping: u
     const selection = options.selectPayload?.(root) ?? {payload: root, mapping: owned};
     const selected = inspectComponentValueMapping(selection.mapping, contract).mapping;
     assertObservedPayload(root, selection.payload, check);
+    if (isRpcMessageRoot(selected.root)) {
+      const value = readRpcStrings(selected.root, selection.payload, selected.direction.kind === 'output', {...session,
+        fail: (kind, rule, node) => {throw new Stop(kind, rule, node?.source);}});
+      const validated: RpcValueReceipt = {kind: 'rpc-string-value', admitted: false, value, usage: budget.usage()};
+      directDataOwnership(budget).freeze(validated); directDataOwnership(budget).freeze(selection.payload);
+      return {kind: 'component-decoded', admitted: false, payload: selection.payload, validated, mapping: selected, usage: budget.usage()};
+    }
     const structural = matchDirectProjection(context, selected.root.element, selection.payload, options);
     if (structural.kind !== 'projection-match') return structural;
     const validated = assessProjectionScalars(context, structural, options, selected);

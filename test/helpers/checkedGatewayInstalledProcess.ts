@@ -86,7 +86,7 @@ const start = async (overrides: Record<string, unknown> = {}): Promise<string> =
     current.once('exit', code => {clearTimeout(timer); reject(new Error(`Gateway exited ${code}: ${output}`));});
   });
 };
-const route = '/v1/forecast/GetForecast';
+const route = '/v1/forecast/' + (process.argv[3] === 'noaa' ? 'LatLonListZipCode' : 'GetForecast');
 let calls = 0, refusals = 0;
 try {
   let url = await start();
@@ -97,7 +97,112 @@ try {
     return {status: response.status, value: await response.json() as unknown};
   };
   const mode = process.argv[3];
-  if (mode?.startsWith('encoding-')) {
+  if (mode === 'noaa') {
+    const soapNs = 'http://schemas.xmlsoap.org/soap/envelope/';
+    const encoding = 'http://schemas.xmlsoap.org/soap/encoding/';
+    const bodyNs = 'https://digital.weather.gov/xml/wsdl/ndfdXML.wsdl';
+    const xsd = 'http://www.w3.org/2001/XMLSchema';
+    const xsi = 'http://www.w3.org/2001/XMLSchema-instance';
+    const envelope = (content: string, attributes = '') => `<s:Envelope xmlns:s="${soapNs}" xmlns:e="${encoding}" xmlns:r="${bodyNs}" xmlns:x="${xsd}" xmlns:i="${xsi}"${attributes}><s:Body>${content}</s:Body></s:Envelope>`;
+    const escape = (text: string) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\r', '&#13;');
+    // @why Property insertion order deliberately disagrees with source part order; no geographic values are inferred.
+    const input = {listType: 'zipCode', XMLformat: 'DWML', zipCodeList: ' 21045 & <20910> Montréal\t\n '};
+    const values = ['owned test value', '', '<dwml>é & 雪</dwml>\r\n  significant\t whitespace '];
+    let positives = 0;
+    for (const value of values) {
+      reply = envelope(`<r:LatLonListZipCodeResponse s:encodingStyle="${encoding}"><listLatLonOut i:type="x:string">${escape(value)}</listLatLonOut></r:LatLonListZipCodeResponse>`);
+      assert.deepEqual(await post(input), {status: 200, value: {listLatLonOut: value}}); positives++;
+    }
+    for (const [before, independent, accessor, wrapper] of [
+      [false, '<e:string id="v" e:root="0">owned reference after</e:string>', '<listLatLonOut href="#v"/>', 'LatLonListZipCodeResponse'],
+      [true, '<e:string id="v" e:root="0" i:type="x:string">owned reference before</e:string>', '<otherResult href="#v"/>', 'OtherResponse'],
+      [false, '<value id="v" e:root="0" i:type="x:string">owned typed independent</value>', '<return href="#v"/>', 'ResultStruct'],
+    ] as const) {
+      const value = before ? 'owned reference before' : wrapper === 'ResultStruct' ? 'owned typed independent' : 'owned reference after';
+      const struct = `<r:${wrapper} e:root="1" s:encodingStyle="${encoding}">${accessor}</r:${wrapper}>`;
+      reply = envelope(before ? independent + struct : struct + independent);
+      assert.deepEqual(await post(input), {status: 200, value: {listLatLonOut: value}}); positives++;
+    }
+    reply = envelope('<r:DifferentResponse><differentReturn>source-typed string</differentReturn></r:DifferentResponse>');
+    assert.deepEqual(await post(input), {status: 200, value: {listLatLonOut: 'source-typed string'}}); positives++;
+    const captured = upstream[0]!;
+    assert.equal(captured.action, '"https://digital.weather.gov/xml/wsdl/ndfdXML.wsdl#LatLonListZipCode"');
+    assert.equal(captured.contentType, 'text/xml; charset=utf-8');
+    assert.equal(captured.method, 'POST'); assert.equal(captured.path, '/owned-forecast');
+    const tags: {namespace: string; local: string; attributes: Record<string, string>; namespaces: Record<string, string>; text: string}[] = [];
+    const parser = new SaxesParser({xmlns: true}), scopes: Record<string, string>[] = [{}];
+    const active: number[] = [];
+    parser.on('opentag', tag => {
+      const namespaces = {...scopes.at(-1), ...tag.ns}; scopes.push(namespaces);
+      active.push(tags.length);
+      tags.push({namespace: tag.uri, local: tag.local, attributes: Object.fromEntries(Object.values(tag.attributes)
+        .filter(attribute => attribute.uri !== 'http://www.w3.org/2000/xmlns/')
+        .map(attribute => [`{${attribute.uri}}${attribute.local}`, attribute.value])), namespaces, text: ''});
+    });
+    parser.on('text', text => {if (active.length) tags[active.at(-1)!]!.text += text;});
+    parser.on('closetag', () => {scopes.pop(); active.pop();});
+    parser.write(captured.xml).close();
+    assert.deepEqual(tags.map(tag => [tag.namespace, tag.local]), [[soapNs, 'Envelope'], [soapNs, 'Body'],
+      [bodyNs, 'LatLonListZipCode'], ['', 'zipCodeList'], ['', 'XMLformat'], ['', 'listType']]);
+    assert.deepEqual(tags.slice(3).map(tag => tag.text), [input.zipCodeList, input.XMLformat, input.listType]);
+    assert.ok(tags.slice(0, 3).some(tag => tag.attributes[`{${soapNs}}encodingStyle`] === encoding));
+    for (const tag of tags.slice(3)) {
+      const type = tag.attributes[`{${xsi}}type`]; assert.ok(type);
+      const [prefix, local] = type.split(':'); assert.equal(local, 'string'); assert.equal(tag.namespaces[prefix!], xsd);
+    }
+    const beforeInvalid = upstream.length;
+    for (const invalid of [{}, {...input, extra: 'no'}, {...input, zipCodeList: null}, {...input, XMLformat: 1},
+      {...input, listType: false}, {zipCodeList: '21045', XMLformat: 'DWML'}, {...input, zipCodeList: ['21045']}]) {
+      assert.equal((await post(invalid)).status, 400); refusals++;
+    }
+    assert.equal(upstream.length, beforeInvalid, 'Invalid JSON must refuse before SOAP');
+    const normalStruct = '<r:LatLonListZipCodeResponse><listLatLonOut>owned</listLatLonOut></r:LatLonListZipCodeResponse>';
+    const badBodies = [
+      '<r:LatLonListZipCodeResponse><listLatLonOut i:nil="true"/></r:LatLonListZipCodeResponse>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut i:type="x:int">42</listLatLonOut></r:LatLonListZipCodeResponse>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut i:type="missing:string">owned</listLatLonOut></r:LatLonListZipCodeResponse>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut href="#missing"/></r:LatLonListZipCodeResponse>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut href="https://provider.invalid/value"/></r:LatLonListZipCodeResponse>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut href="#a"/></r:LatLonListZipCodeResponse><e:string id="a" href="#a" e:root="0"/>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut href="#a"/></r:LatLonListZipCodeResponse><e:string id="a" e:root="0">one</e:string><e:string id="a" e:root="0">two</e:string>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut>one</listLatLonOut><extra>two</extra></r:LatLonListZipCodeResponse>',
+      '<r:LatLonListZipCodeResponse><listLatLonOut><nested>compound</nested></listLatLonOut></r:LatLonListZipCodeResponse>',
+      normalStruct + '<r:AnotherResponse><return>ambiguous</return></r:AnotherResponse>',
+      normalStruct + '<e:string e:root="0">unexpected independent</e:string>',
+      normalStruct + '<s:Fault><faultcode>s:Server</faultcode><faultstring>mixed</faultstring></s:Fault>',
+      normalStruct.replace('<r:LatLonListZipCodeResponse>', '<r:LatLonListZipCodeResponse s:encodingStyle="urn:wrong">'),
+      normalStruct.replaceAll('r:', 'x:'),
+    ];
+    for (const body of badBodies) {
+      reply = envelope(body); const result = await post(input);
+      assert.equal(result.status, 502, body);
+      const failure = result.value as {kind: string; rule: string};
+      assert.ok(['unsupported', 'mismatch', 'protocol', 'xml-invalid'].includes(failure.kind), JSON.stringify(failure));
+      assert.equal(typeof failure.rule, 'string'); assert.ok(failure.rule.length > 0);
+      assert.ok(!Object.hasOwn(result.value as object, 'listLatLonOut'), 'No partial success for malformed wire data'); refusals++;
+    }
+    for (const invalid of [envelope(normalStruct).replaceAll(soapNs, 'http://www.w3.org/2003/05/soap-envelope'),
+      envelope(normalStruct).replaceAll('s:Body', 'x:Body'),
+      envelope(normalStruct).replace('<s:Body>', '<s:Header><r:Required s:mustUnderstand="1"/></s:Header><s:Body>')]) {
+      reply = invalid; assert.equal((await post(input)).status, 502); refusals++;
+    }
+    replyStatus = 500;
+    reply = envelope('<s:Fault><faultcode>s:Server</faultcode><faultstring>owned failure</faultstring></s:Fault>');
+    assert.equal((await post(input)).status, 502); refusals++;
+    replyStatus = 200; reply = envelope(normalStruct);
+    const beforeArtifacts = upstream.length;
+    for (const file of [source, path.join(root, 'client/operations/0/contract.json')]) {
+      const original = await readFile(file);
+      await writeFile(file, file === source ? Buffer.concat([original, Buffer.from('\n<!-- stale original bytes -->')]) : '{}');
+      try {url = await start(); assert.ok((await post(input)).status >= 400); refusals++;}
+      finally {await writeFile(file, original);}
+      assert.equal(upstream.length, beforeArtifacts, 'Stale source or artifact must refuse before SOAP');
+    }
+    await writeFile('noaa-server.log', runtimeLog);
+    process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', variant: mode, originalCheckoutReadable: false,
+      calls, positives, refusals, upstreamRequests: upstream.length, providerCalls: 0,
+      scope: 'unchanged NOAA LatLonListZipCode; bounded SOAP 1.1 RPC/encoded strings; independent owned values, no geographic correctness claim'}) + '\n');
+  } else if (mode?.startsWith('encoding-')) {
     let artifactRefusals = 0;
     const input = {city: 'Montréal', language: 'français'};
     reply = '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="urn:checked:forecast"><s:Body>'

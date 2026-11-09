@@ -209,6 +209,43 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       expect(JSON.parse(checked.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: mode});
       await writeFile(path.join(evidence, mode + '-wire.log'), checked.stdout + checked.stderr);
     }
+    // @why #458 qualifies original NOAA bytes through the same installed consumer and owned-server harness.
+    const noaaSource = path.join(consumer, 'noaa.wsdl');
+    await copyFile(path.join(root, 'test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl'), noaaSource);
+    const noaaNamespace = 'http://localhost/xml/wsdl/ndfdXML.wsdl';
+    const noaaSelector = {portType: {namespace: noaaNamespace, local: 'ndfdXMLPortType'},
+      binding: {namespace: noaaNamespace, local: 'ndfdXMLBinding'}, operation: 'LatLonListZipCode'};
+    await writeFile(config, JSON.stringify({...checkedComponents, selectors: [noaaSelector],
+      service: {namespace: noaaNamespace, local: 'ndfdXML'}, port: 'ndfdXMLPort'}));
+    // @why Changing the selected operation deliberately refreshes both consumer-owned
+    //   scaffold defaults; the earlier same-contract check proves preservation without force.
+    const noaaGeneration = [...installedGenerate, '--force-test', '--force-init'];
+    noaaGeneration[noaaGeneration.indexOf('--wsdl-source') + 1] = noaaSource;
+    await run('NOAA original-source installed CLI generation', noaaGeneration, tooling);
+    const noaaClient = await readFile(path.join(project, 'client/client.ts'), 'utf8');
+    const noaaContract = await readFile(path.join(project, 'client/operations/0/contract.json'), 'utf8');
+    await run('NOAA deterministic regeneration', noaaGeneration, tooling);
+    expect(await readFile(path.join(project, 'client/client.ts'), 'utf8')).toBe(noaaClient);
+    expect(await readFile(path.join(project, 'client/operations/0/contract.json'), 'utf8')).toBe(noaaContract);
+    expect(await readFile(path.join(project, 'client/source/files/noaa.wsdl'))).toEqual(await readFile(noaaSource));
+    const noaaInventory = JSON.parse(await readFile(path.join(project, 'client/inventory.json'), 'utf8')) as {
+      operations: {operation: string; generated: boolean; executed: boolean}[]};
+    expect(noaaInventory.operations).toHaveLength(12);
+    expect(noaaInventory.operations.filter(operation => operation.generated).map(operation => operation.operation)).toEqual(['LatLonListZipCode']);
+    expect(noaaInventory.operations.every(operation => !operation.executed)).toBe(true);
+    // @why This disposable project changes contracts in place. Retire the previous
+    //   compiled scaffold before testing current source; the next build owns fresh output.
+    await rm(path.join(project, 'dist'), {recursive: true, force: true});
+    for (const command of ['typecheck', 'test', 'build']) {
+      const result = await run('NOAA consumer ' + command, [npm, 'run', command], project);
+      await writeFile(path.join(evidence, 'noaa-' + command + '.log'), result.stdout + result.stderr);
+    }
+    const noaaWire = await run('NOAA independent installed HTTP/SOAP string profile', ['--permission', '--allow-child-process', ...networkPermission,
+      '--allow-fs-read=' + project, '--allow-fs-write=' + project,
+      path.join(project, 'qualification.ts'), fixture, 'noaa'], project);
+    expect(JSON.parse(noaaWire.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: 'noaa',
+      originalCheckoutReadable: false, providerCalls: 0});
+    await writeFile(path.join(evidence, 'noaa-wire.log'), noaaWire.stdout + noaaWire.stderr);
   } catch (error) {
     const failure = error as Error & {stdout?: string; stderr?: string};
     await writeFile(path.join(evidence, 'failure.log'), failure.message + '\n' + (failure.stdout ?? '') + (failure.stderr ?? ''));

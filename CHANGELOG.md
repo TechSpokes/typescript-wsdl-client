@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(components): execute bounded SOAP 1.1 RPC/encoded strings with owned-server NOAA LatLonListZipCode qualification.
+
 ## [1.1.8] - 2026-11-09
 
 - chore(release): prepare the checked-generation preview with current dependencies and complete upgrade guidance.

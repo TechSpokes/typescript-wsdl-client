@@ -14,7 +14,7 @@ P1 contract review accepted `7e40478`; implementation review accepted final head
 
 The [manifest](../test/conformance/readiness-corpus.json) now pins eight inputs and ten resource entries with origin, permission, digest, bytes and selection rationale. Weather, import, chameleon and shared recursion reuse [#272](https://github.com/TechSpokes/typescript-wsdl-client/issues/272)'s provenance work; existing conformance sources add repeated/deep composition. Forecast is authored in P2, separately from the reused-corpus baseline.
 
-The maintained corpus includes synthetic and reference controls plus authentic NOAA/NWS metadata. The [NOAA qualification report](noaa-ndfd-qualification.md) records permission, original-byte identity, all 12 operation identities and locationless-import component planning refusals after decoding. This establishes source intake evidence, with no production SOAP compatibility or market coverage claim; no reduced tier is counted.
+The maintained corpus includes synthetic and reference controls plus authentic NOAA/NWS metadata. The [NOAA qualification report](noaa-ndfd-qualification.md) records permission, original-byte identity, all 12 operation identities and the bounded `LatLonListZipCode` component string profile through an installed generated gateway and owned SOAP server. This establishes one selected operation's execution evidence, with no live-provider compatibility or market coverage claim; no reduced tier is counted.
 
 ```bash
 npm run assess:inventory -- --profile default
@@ -55,7 +55,7 @@ The operation is `{urn:checked:forecast}ForecastPortType/GetForecast`, document/
 
 The declared `ForecastError` uses `{urn:checked:forecast}ForecastFault` detail with ordered `code` and `message` strings. Independent [request](../test/conformance/fixtures/assessment/forecast-messages/request.xml), [response](../test/conformance/fixtures/assessment/forecast-messages/response.xml), [fault](../test/conformance/fixtures/assessment/forecast-messages/fault.xml) and [expectations](../test/conformance/fixtures/assessment/forecast-messages/expectations.json) pin application values, SOAP faultcode/faultstring, HTTP 500 and detail separately. Their bare message roots now run through the internal [direct XML codec](direct-values.md#internal-bare-root-xml-codec); SOAP transport acceptance remains open.
 
-The fixture address is a deliberately unusable localhost port. The later transport fixture must inject its actual local server address, retain SOAPAction and text/xml behavior, and exercise requests, responses and declared faults without production dispatch. The [real-source refusal](noaa-ndfd-qualification.md) is separate from this synthetic target and establishes no successful real-service runtime execution.
+The fixture address is a deliberately unusable localhost port. The transport fixture injects its actual local server address, retains SOAPAction and text/xml behavior, and exercises requests, responses and declared faults without production dispatch. The [real-source NOAA qualification](noaa-ndfd-qualification.md) is separate from this historical synthetic target and covers one bounded RPC/encoded string operation against an owned server.
 
 ## P3.1 entry packet
 

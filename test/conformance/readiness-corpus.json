@@ -7,7 +7,7 @@
       "source": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
       "origin": "NOAA/NWS primary NDFD WSDL; retrieved 2026-10-31; adjacent provenance.json records source, rights and namespace-only imports",
       "permission": "NWS public-domain reuse policy, no source-specific restriction; attribution and no endorsement; not repository MIT material",
-      "rationale": "Unmodified deployed-service Latin1 metadata loads; locationless imports block component planning, not real-service runtime support",
+      "rationale": "Unmodified deployed-service Latin1 metadata qualifies the explicitly selected LatLonListZipCode bounded RPC/encoded string operation against an owned server; no live-provider or geographic correctness claim",
       "files": [
         {
           "path": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
@@ -19,14 +19,17 @@
       "product": [
         {
           "mode": "checked",
-          "outcome": "refused",
+          "outcome": "partial",
           "stages": [
             "original source decoding and 12-operation inventory",
-            "locationless-import planning refusal",
-            "zero SOAP dispatch"
+            "selected LatLonListZipCode native planning and generation",
+            "installed build and generated HTTP route",
+            "owned SOAP 1.1 RPC/encoded strings and local references",
+            "zero provider calls"
           ],
           "tests": [
-            "test/integration/noaa-ndfd-qualification.test.ts"
+            "test/integration/noaa-ndfd-qualification.test.ts",
+            "test/integration/checked-gateway-installed.test.ts"
           ],
           "commands": []
         }

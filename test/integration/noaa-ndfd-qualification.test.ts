@@ -111,7 +111,7 @@ describe('NOAA NDFD original-source one-operation qualification', () => {
       .toEqual(['zipCodeList', 'XMLformat', 'listType']);
   });
 
-  it('loads original bytes, inventories operations, records the next native blockers, and opens zero sockets', async () => {
+  it('loads original bytes, retains all operation identities, and plans only the selected string operation with zero sockets', async () => {
     const sockets = vi.spyOn(Socket.prototype, 'connect').mockImplementation(() => {throw new Error('Network forbidden in offline qualification');});
     const fetches = vi.fn(() => {throw new Error('HTTP forbidden in offline qualification');});
     vi.stubGlobal('fetch', fetches);
@@ -132,16 +132,16 @@ describe('NOAA NDFD original-source one-operation qualification', () => {
       expect(selections[0]).toEqual(selections[1]);
       expect(selections[0]).toMatchObject({kind: 'inconclusive', rule: 'whole-source-qualification'});
       expect(selections[0]).not.toHaveProperty('contract');
-      const plans = await Promise.all([1, 2].map(() => planCheckedComponents(source, {fileRoots: [root]})));
+      const plans = await Promise.all([1, 2].map(() => planCheckedComponents(source, {fileRoots: [root],
+        service: {namespace, local: 'ndfdXML'}, port: 'ndfdXMLPort', selectors: [selector]})));
       expect(plans[0]).toEqual(plans[1]);
-      expect(plans[0]).toMatchObject({ready: false, executed: false, inventory: {complete: true, operations: 12}});
+      expect(plans[0]).toMatchObject({ready: true, executed: false, inventory: {complete: true, operations: 12},
+        dimensions: {sourceLegality: 'established', correspondence: 'established', mapping: 'established', runtime: 'unassessed'}});
       expect(plans[0]!.operations.map(({portType, binding, operation}) => ({portType, binding, operation})))
         .toEqual(operationNames.map(operation => ({portType: selector.portType, binding: selector.binding, operation})));
       expect(plans[0]!.operations.every(operation => !operation.generated && !operation.executed)).toBe(true);
-      expect(plans[0]!.blockers.map(({category, stage, reason}) => ({category, stage, reason}))).toEqual([
-        {category: 'missing-dependency', stage: 'loading', reason: 'locationless-import:http://schemas.xmlsoap.org/soap/encoding/'},
-        {category: 'missing-dependency', stage: 'loading', reason: 'locationless-import:http://schemas.xmlsoap.org/wsdl/'},
-      ]);
+      expect(plans[0]!.operations.filter(operation => operation.selected).map(operation => operation.operation)).toEqual(['LatLonListZipCode']);
+      expect(plans[0]!.blockers).toEqual([]);
     } finally {
       expect(fetches).not.toHaveBeenCalled();
       expect(sockets).not.toHaveBeenCalled();

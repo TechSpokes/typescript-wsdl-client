@@ -46,7 +46,8 @@ describe('closed original snapshot bootstrap for the existing SOAP dependency', 
     const schemaBytes = encode(schema.replaceAll('ImportedPayload', 'ChargeÉ').replace('name="name"', 'name="prénom"'), encoding === 'latin1' ? 'utf16be' : 'latin1');
     const input = await source(rootBytes, schemaBytes);
     const wsdl = await prepareComponentSoapWsdl(input.contract, selection, () => {});
-    const operation = wsdl.describeServices().ImportService.ImportPort.SubmitImported;
+    const services = wsdl.describeServices() as {ImportService: {ImportPort: {SubmitImported: {input: unknown}}}};
+    const operation = services.ImportService.ImportPort.SubmitImported;
     expect(operation.input).toHaveProperty('données.prénom', 'xs:string');
     expect(await readFile(input.wsdl)).toEqual(rootBytes);
     expect(await readFile(input.dependency)).toEqual(schemaBytes);

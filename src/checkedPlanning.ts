@@ -203,9 +203,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           && !input.schemas.some(s => s.targetNamespace === namespace)
           && namespace !== XSD_NAMESPACE) missing.set(namespace, child.source);
       }
-      for (const [namespace, at] of missing) add('missing-dependency', 'loading', `locationless-import:${namespace}`, 'Supply an authorized schema path for this namespace.',
-        `checkedComponents.namespaceLocations[${JSON.stringify(namespace)}].location`, selectors.length ? selectors : operations.flatMap(o => o.binding ? [{portType: o.portType, binding: o.binding, operation: o.operation}] : []), at);
-      if (missing.size) unresolved = [...(intake.namespaceLocations ?? []), ...[...missing.keys()].sort().map(namespace => ({namespace, location: 'REQUIRED_SCHEMA_LOCATION'}))];
+      // @why XSD 1.0 section 4.2.3 permits locationless imports. Native construction
+      //   decides whether their components are needed; namespace URIs are never fetch locations.
       if (!blockers.length && config) {
         if (!Object.hasOwn(explicit, 'standardLibraries') && input.schemas.some(s => syntaxElements(s.syntax, XSD_NAMESPACE, 'import')
           .some(n => syntaxAttribute(n, 'namespace') === XSD_NAMESPACE && syntaxAttribute(n, 'schemaLocation') === undefined))) {
@@ -224,6 +223,27 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           }
         }
         for (const refusal of native.refusals) {
+          if (['whole-source-qualification', 'source-preparation'].includes(refusal.rule) && missing.size) {
+            const referenced = new Set<string>();
+            const pending = documents.map(document => document.root);
+            while (pending.length) {
+              const node = pending.pop()!;
+              for (const attribute of node.attributes) if (attribute.name.namespace === ''
+                && ['type', 'ref', 'base', 'itemType', 'memberTypes', 'substitutionGroup', 'element'].includes(attribute.name.local)) {
+                for (const token of attribute.value.trim().split(/[\t\r\n ]+/)) {
+                  try {referenced.add(resolveLexicalQName(token, node).namespace);} catch { /* Native diagnostics retain malformed references. */ }
+                }
+              }
+              pending.push(...syntaxElements(node));
+            }
+            const needed = [...missing].filter(([namespace]) => referenced.has(namespace));
+            for (const [namespace, at] of needed) add('missing-dependency', 'native-preparation', `locationless-import:${namespace}`, 'Supply an authorized schema path for required components in this namespace.',
+              `checkedComponents.namespaceLocations[${JSON.stringify(namespace)}].location`, [refusal.selector], at);
+            if (needed.length) {
+              unresolved = [...(intake.namespaceLocations ?? []), ...needed.map(([namespace]) => namespace).sort().map(namespace => ({namespace, location: 'REQUIRED_SCHEMA_LOCATION'}))];
+              continue;
+            }
+          }
           if (refusal.rule.startsWith('ambiguous-record-path:')) {
             add('ambiguous-selection', 'native-preparation', refusal.rule,
               'Supply recordPath using expanded names to select one declared repeated complex record in this companion source.',
