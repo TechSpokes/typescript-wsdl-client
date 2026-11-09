@@ -1,0 +1,28 @@
+{
+  "services": [
+    {
+      "key": "main",
+      "generation": {
+        "wsdl": "../../test/conformance/fixtures/wsdl/composition/main.wsdl",
+        "catalogOut": ".generated/main/client/catalog.json",
+        "clientOutDir": ".generated/main/client",
+        "compiler": {"imports": "js"},
+        "openapi": {"outFile": ".generated/main/openapi.json", "basePath": "/main"},
+        "gateway": {"outDir": ".generated/main/gateway", "serviceSlug": "main", "versionSlug": "v1"}
+      }
+    },
+    {
+      "key": "content",
+      "generation": {
+        "wsdl": "../../test/conformance/fixtures/wsdl/composition/content.wsdl",
+        "catalogOut": ".generated/content/client/catalog.json",
+        "clientOutDir": ".generated/content/client",
+        "compiler": {"imports": "js"},
+        "openapi": {"outFile": ".generated/content/openapi.json", "basePath": "/content"},
+        "gateway": {"outDir": ".generated/content/gateway", "serviceSlug": "content", "versionSlug": "v1"}
+      }
+    }
+  ],
+  "openapi": {"outFile": ".generated/aggregate/openapi.json", "title": "Owned two-source example", "version": "1.0.0"},
+  "gateway": {"outDir": ".generated/aggregate/gateway", "imports": "js"}
+}

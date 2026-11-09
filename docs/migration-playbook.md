@@ -4,6 +4,8 @@ A step-by-step guide for modernizing a SOAP API into a typed TypeScript client a
 
 For CLI flag details, see [CLI Reference](cli-reference.md). For gateway integration, see [Gateway Guide](gateway-guide.md).
 
+See the root [README](../README.md) and [1.1.x-to-1.2.0 migration](migration.md#from-11x-to-120) before regenerating. Native legacy composition retains per-client ownership; checked/RPC generation has a separate buffered validation contract.
+
 ## Overview
 
 The typical migration follows this sequence:

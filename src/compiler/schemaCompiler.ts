@@ -15,6 +15,8 @@ import {getChildrenWithLocalName, getFirstWithLocalName, normalizeArray, pascal,
 import {xsdToTsPrimitive} from "../xsd/primitives.js";
 import {WsdlCompilationError} from "../util/errors.js";
 import type {OperationStreamMetadata, StreamConfig} from "../util/streamConfig.js";
+import {LegacyDeclarations} from "./legacyDeclarations.js";
+import type {NodeId} from "./declarationIdentity.js";
 
 /**
  * Qualified name with namespace and local part
@@ -258,30 +260,6 @@ const XS = "http://www.w3.org/2001/XMLSchema";
  */
 function qkey(q: QName): string {
   return `{${q.ns}}${q.local}`;
-}
-
-/**
- * Generates a name for an inline complex type
- *
- * This function creates appropriate TypeScript names for anonymous types
- * that are defined inline within element declarations.
- *
- * @param {string} parentTypeName - Name of the parent type
- * @param {string} [propName] - Name of the property containing the inline type
- * @param {number|"unbounded"} [_max] - Maximum occurrence (unused but kept for API compatibility)
- * @returns {string} - Generated TypeScript name for the inline type
- */
-function makeInlineTypeName(
-  parentTypeName: string,
-  propName?: string,
-  _max?: number | "unbounded"
-): string {
-  const base = pascal(parentTypeName || "AnonParent");
-  const prop = pascal(propName || "");
-  if (prop) {
-    return prop;
-  }
-  return `${base}Anon`;
 }
 
 // --- Minimal WS-Policy scanning (inline policies only; PolicyReference not resolved) ---
@@ -535,10 +513,14 @@ export function compileCatalog(
     }
   }
 
-  // outputs & state
-  const compiledMap = new Map<string, CompiledType>();  // key: ns|name
-  const aliasMap = new Map<string, CompiledAlias>(); // key: ns|name
-  const inProgress = new Set<string>();
+  const declarations = new LegacyDeclarations([
+    ...Array.from(complexTypes.values(), rec => ({kind: "complex" as const, name: String(rec.node["@_name"]), ns: rec.tns, node: rec.node, prefixes: rec.prefixes})),
+    ...Array.from(simpleTypes.values(), rec => ({kind: "simple" as const, name: String(rec.node["@_name"]), ns: rec.tns, node: rec.node, prefixes: rec.prefixes})),
+    ...Array.from(elements.values(), rec => ({kind: "element" as const, name: String(rec.node["@_name"]), ns: rec.tns, node: rec.node, prefixes: rec.prefixes})),
+  ]);
+  const compiledMap = new Map<NodeId, CompiledType>();
+  const aliasMap = new Map<NodeId, CompiledAlias>();
+  const inProgress = new Set<NodeId>();
 
   // meta accumulators
   const attrSpec: Record<string, string[]> = {};
@@ -600,8 +582,9 @@ export function compileCatalog(
     const list = getFirstWithLocalName(simpleNode, "list");
     if (list?.["@_itemType"]) {
       const q = resolveQName(list["@_itemType"], schemaNS, prefixes);
-      const declared = q.ns === XS ? `xs:${q.local}` : `{${q.ns}}${q.local}`;
-      return {tsType: `${xsdToTsPrimitive(declared, (options as any)?.primitive)}[]`, declared};
+      const item = resolveTypeRef(q, schemaNS, prefixes);
+      const itemType = item.tsType.includes("|") ? `(${item.tsType})` : item.tsType;
+      return {tsType: `${itemType}[]`, declared: item.declared};
     }
     // fallback
     return {tsType: "string", declared: "xs:string"};
@@ -614,7 +597,7 @@ export function compileCatalog(
     schemaNS: string,
     prefixes: Record<string, string>
   ): CompiledAlias {
-    const key = `${schemaNS}|${name}`;
+    const key = declarations.type(schemaNS, name);
     const present = aliasMap.get(key);
     if (present) {
       return present;
@@ -622,7 +605,7 @@ export function compileCatalog(
 
     const {tsType, declared, jsdoc} = compileSimpleTypeNode(sNode, schemaNS, prefixes);
     const alias: CompiledAlias = {
-      name: pascal(name),
+      name: declarations.name(key),
       ns: schemaNS,
       tsType,
       declared,
@@ -680,21 +663,31 @@ export function compileCatalog(
     name: string,
     cnode: any,
     schemaNS: string,
-    prefixes: Record<string, string>
+    prefixes: Record<string, string>,
+    declarationId: NodeId = declarations.type(schemaNS, name),
   ): CompiledType {
-    // Early cycle detection: check if we're already processing this raw name + namespace combo
-    // BEFORE calling pascal() to avoid stack overflow on circular references
-    const rawKey = `${schemaNS}|${name}`;
-    if (inProgress.has(rawKey)) {
-      // Return a minimal stub to break the cycle
-      const stubName = pascal(name);
-      return {name: stubName, ns: schemaNS, attrs: [], elems: []};
+    const key = declarationId;
+    const outName = declarations.name(key);
+    const present = compiledMap.get(key);
+    if (present) return present;
+    if (inProgress.has(key)) return {name: outName, ns: schemaNS, attrs: [], elems: []};
+    inProgress.add(key);
+    try {
+      return compileComplexBody(cnode, schemaNS, prefixes, declarationId);
+    } finally {
+      inProgress.delete(key);
     }
-    inProgress.add(rawKey);
+  }
 
-    const outName = pascal(name);
+  function compileComplexBody(
+    cnode: any,
+    schemaNS: string,
+    prefixes: Record<string, string>,
+    declarationId: NodeId,
+  ): CompiledType {
+    const key = declarationId;
+    const outName = declarations.name(key);
     const typeDoc = extractAnnotationDocumentation(cnode);
-    const key = `${schemaNS}|${outName}`;
 
     // hoisted helpers for merging and collecting
     const mergeAttrs = (into: CompiledType["attrs"], list: CompiledType["attrs"]) => {
@@ -723,46 +716,6 @@ export function compileCatalog(
         }
       }
     };
-    const mergeChoiceGroups = (
-      into: CompiledChoiceGroup[] | undefined,
-      list: CompiledChoiceGroup[]
-    ): CompiledChoiceGroup[] | undefined => {
-      if (list.length === 0) return into;
-      const merged = into ? [...into] : [];
-      const idx = new Map<string, number>();
-      merged.forEach((g, i) => idx.set(g.name, i));
-      for (const g of list) {
-        const pos = idx.get(g.name);
-        if (pos == null) {
-          idx.set(g.name, merged.length);
-          merged.push(g);
-        } else {
-          merged[pos] = g;
-        }
-      }
-      return merged;
-    };
-    const mergeJsonUnique = <T>(into: T[] | undefined, list: T[]): T[] | undefined => {
-      if (list.length === 0) return into;
-      const merged = into ? [...into] : [];
-      const seen = new Set(merged.map((w) => JSON.stringify(w)));
-      for (const w of list) {
-        const key = JSON.stringify(w);
-        if (!seen.has(key)) {
-          seen.add(key);
-          merged.push(w);
-        }
-      }
-      return merged;
-    };
-    const mergeWildcards = (
-      into: CompiledWildcard[] | undefined,
-      list: CompiledWildcard[]
-    ): CompiledWildcard[] | undefined => mergeJsonUnique(into, list);
-    const mergeAttributeWildcards = (
-      into: CompiledAttributeWildcard[] | undefined,
-      list: CompiledAttributeWildcard[]
-    ): CompiledAttributeWildcard[] | undefined => mergeJsonUnique(into, list);
     const collectAttributes = (node: any): CompiledType["attrs"] => {
       const out: CompiledType["attrs"] = [];
       const attrs = getChildrenWithLocalName(node, "attribute");
@@ -865,10 +818,7 @@ export function compileCatalog(
       return out;
     };
 
-    const compileElementParticle = (
-      ownerTypeName: string,
-      e: any
-    ): CompiledType["elems"][number] | undefined => {
+    const compileElementParticle = (e: any): CompiledType["elems"][number] | undefined => {
       const nameOrRef = e["@_name"] || e["@_ref"];
       if (!nameOrRef) return undefined;
       const propName = e["@_name"];
@@ -877,8 +827,8 @@ export function compileCatalog(
       const inlineComplex = getFirstWithLocalName(e, "complexType");
       const inlineSimple = getFirstWithLocalName(e, "simpleType");
       if (inlineComplex) {
-        const inlineName = makeInlineTypeName(ownerTypeName, propName || nameOrRef, max);
-        const rec = getOrCompileComplex(inlineName, inlineComplex, schemaNS, prefixes);
+        const inlineId = declarations.inline(declarationId, e);
+        const rec = getOrCompileComplex(String(propName || nameOrRef), inlineComplex, schemaNS, prefixes, inlineId);
         return {
           name: propName || nameOrRef,
           tsType: rec.name,
@@ -925,7 +875,7 @@ export function compileCatalog(
       });
       const recurse = (groupNode: any, inherited: Occurrence = one, inheritSequenceOccurs = true) => {
         for (const e of getChildrenWithLocalName(groupNode, "element")) {
-          const particle = compileElementParticle(ownerTypeName, e);
+          const particle = compileElementParticle(e);
           if (!particle) continue;
           // @constraints Preserve disabled particles until the content model can represent their absence (#145).
           out.push(particle.max === 0 ? particle : {...particle, ...combine(inherited, particle)});
@@ -958,7 +908,7 @@ export function compileCatalog(
             const branches: CompiledChoiceBranch[] = [];
             let branchSourceOrder = 0;
             for (const e of getChildrenWithLocalName(child.node, "element")) {
-              const particle = compileElementParticle(ownerTypeName, e);
+              const particle = compileElementParticle(e);
               if (particle) {
                 branches.push({
                   name: particle.name,
@@ -994,30 +944,6 @@ export function compileCatalog(
       recurse(node);
       return out;
     };
-
-    const present = compiledMap.get(key);
-    if (present) {
-      // On duplicate definitions, merge new attributes and elements
-      const newAttrs = collectAttributes(cnode);
-      const newElems = collectParticles(outName, cnode);
-      const newWildcards = collectWildcards(cnode);
-      const newAttributeWildcards = collectAttributeWildcards(cnode);
-      const newChoiceGroups = collectChoiceGroups(outName, cnode);
-      mergeAttrs(present.attrs, newAttrs);
-      mergeElems(present.elems, newElems);
-      present.wildcards = mergeWildcards(present.wildcards, newWildcards);
-      present.attributeWildcards = mergeAttributeWildcards(present.attributeWildcards, newAttributeWildcards);
-      const mergedChoiceGroups = mergeChoiceGroups(present.choiceGroups, newChoiceGroups);
-      if (mergedChoiceGroups && mergedChoiceGroups.length > 0) {
-        present.choiceGroups = mergedChoiceGroups;
-      }
-      if (!present.doc && typeDoc) {
-        present.doc = typeDoc;
-      }
-      // Remove from inProgress since we're done with this cycle
-      inProgress.delete(rawKey);
-      return present;
-    }
 
     // result accumulators
     const attrs: CompiledType["attrs"] = [];
@@ -1074,7 +1000,6 @@ export function compileCatalog(
           ...(localChoiceGroups.length > 0 ? {localChoiceGroups} : {}),
         };
         compiledMap.set(key, result);
-        inProgress.delete(key);
         return result;
       }
     }
@@ -1110,7 +1035,6 @@ export function compileCatalog(
           ...(attributeWildcards.length > 0 ? {attributeWildcards} : {}),
         };
         compiledMap.set(key, result);
-        inProgress.delete(rawKey);
         return result;
       };
       if (ext) {
@@ -1139,7 +1063,6 @@ export function compileCatalog(
       ...(choiceGroups.length > 0 ? {choiceGroups} : {}),
     };
     compiledMap.set(key, result);
-    inProgress.delete(rawKey);
     return result;
   }
 
@@ -1150,15 +1073,15 @@ export function compileCatalog(
     schemaNS: string,
     prefixes: Record<string, string>
   ): CompiledType {
-    const outName = pascal(name);
+    const key = declarations.surface(schemaNS, name);
+    const outName = declarations.name(key);
     const elementDoc = extractAnnotationDocumentation(enode);
-    const key = `${schemaNS}|${outName}`;
     const present = compiledMap.get(key);
     if (present) return present;
 
     const inlineComplex = getFirstWithLocalName(enode, "complexType");
     if (inlineComplex) {
-      return getOrCompileComplex(name, inlineComplex, schemaNS, prefixes);
+      return getOrCompileComplex(name, inlineComplex, schemaNS, prefixes, key);
     }
     const inlineSimple = getFirstWithLocalName(enode, "simpleType");
     if (inlineSimple) {
@@ -1205,7 +1128,7 @@ export function compileCatalog(
           // record alias: ElementName -> BaseTypeName
           const aliasKey = key;
           const existingAlias = aliasMap.get(aliasKey);
-          const declared = `{${base.ns}}${base.name}`;
+          const declared = `{${base.ns}}${q.local}`;
           if (!existingAlias) {
             aliasMap.set(aliasKey, {name: outName, ns: schemaNS, tsType: base.name, declared, doc: elementDoc});
           } else {
@@ -1478,9 +1401,10 @@ export function compileCatalog(
       const inputElement = elementOfMessage(inMsg);
       const outputElement = elementOfMessage(outMsg);
       const doc = extractDirectDocumentation(po);
-      // Derive TypeScript type names from element local names
-      const inputTypeName = inputElement ? pascal(inputElement.local) : undefined;
-      const outputTypeName = outputElement ? pascal(outputElement.local) : undefined;
+      const surfaceName = (element: QName) => elements.has(qkey(element))
+        ? declarations.name(declarations.surface(element.ns, element.local)) : pascal(element.local);
+      const inputTypeName = inputElement ? surfaceName(inputElement) : undefined;
+      const outputTypeName = outputElement ? surfaceName(outputElement) : undefined;
       const op: CompiledOperation = {
         name,
         soapAction: bOps.get(name) || "",

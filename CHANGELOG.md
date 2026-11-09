@@ -9,6 +9,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-09
+
+- docs(release): align public documentation and agent guidance for 1.2.0.
+
+- fix(compiler): preserve scoped types and references when generated names collide.
+- feat(gateway): compose independent WSDL clients behind one API definition.
+- fix(streaming): map streamed XML records to generated DTOs and preserve transport cancellation.
+- docs(noaa): record ten live RPC successes and upstream GML failures for the 1.2.0 release scope.
+
 - feat(components): execute all 12 NOAA RPC operations with native typed inputs and exact Latin1 SOAP responses.
 - feat(components): execute bounded SOAP 1.1 RPC/encoded strings with owned-server NOAA LatLonListZipCode qualification.
 

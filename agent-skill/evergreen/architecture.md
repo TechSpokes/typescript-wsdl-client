@@ -16,6 +16,10 @@ The checked path is buffered and separate from legacy catalog generation and str
 
 ## Catalog
 
+Native legacy composition preserves independent catalogs and routers, qualifies OpenAPI components and operation IDs, and exposes one aggregate plugin. It does not merge SOAP client ownership or add checked composition. Legacy streaming uses node-soap's WSDL serializer and `requestStream`; completed lexical parser records become generated DTOs before delivery.
+
+The checked RPC profile is bounded SOAP 1.1 encoded typed parts, a flat Boolean record and one opaque string output. Checked encoding agreement includes qualified Latin1/UTF-16/UTF-8 paths; this does not extend to the UTF-8 legacy stream parser or narrower direct runtime. Owned-server qualification and live-provider acceptance are separate evidence.
+
 This catalog workflow describes the legacy model. Opt-in checked generation uses the source-backed workflow above.
 
 The catalog is the intermediate representation shared by generation stages. Use it to inspect services, operations, schema types, WSDL documentation, and stream metadata.

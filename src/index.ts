@@ -36,6 +36,10 @@ export {
 export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
 export type {PipelineOptions} from './pipeline.js';
+export {runMultiServicePipeline, loadMultiServiceConfig} from './multiServicePipeline.js';
+export type {MultiServicePipelineOptions, MultiServicePipelineResult, MultiServiceEntry} from './multiServicePipeline.js';
+export {composeOpenApiDocuments} from './openapi/composeOpenAPI.js';
+export type {ComposedOpenApiDocument, OpenApiCompositionEntry, OpenApiCompositionOptions} from './openapi/composeOpenAPI.js';
 export type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
 export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';
 export type {CheckedComponentPlan, ComponentPlanBlocker} from './checkedPlanning.js';

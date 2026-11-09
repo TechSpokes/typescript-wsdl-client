@@ -75,7 +75,7 @@ Stream responses can stay open for the full duration of the upstream SOAP call. 
 
 ### Memory Profile
 
-Memory stays bounded regardless of payload size because records are parsed and emitted one at a time. The SAX parser buffers only within the current record element. This is the primary reason to opt into streaming: buffered operations load the full response into memory before yielding.
+Streaming avoids materializing the entire response, but memory depends on record size and transport/parser buffering. A large record still requires memory before DTO mapping; no constant-memory or total-byte-cap guarantee is provided.
 
 ### Observability
 
@@ -83,7 +83,7 @@ Log the time to first record, not just the time to response completion. First-re
 
 ### Terminal-Error Policy
 
-Errors raised before the first record use the normal gateway error envelope because the JSON array helper prefetches the first record before emitting `[`. Errors raised mid-stream truncate the response. NDJSON consumers detect this as an incomplete HTTP response, and JSON array consumers must treat an incomplete or invalid JSON document as a failed stream. Document this behavior for downstream API consumers so they distinguish truncation from a legitimate empty stream.
+Errors handled before response commitment can use the gateway error envelope. The JSON-array helper prefetches before emitting `[`, but a first-record boundary alone is not a universal commitment guarantee. After commitment, failures truncate output; consumers must treat incomplete HTTP or JSON as a failed stream, even when earlier records were valid.
 
 ## Known Limitations
 
@@ -107,6 +107,6 @@ Single-child sequences with maxOccurs>1 become array schemas. Sequences with mul
 
 `ndjson` is the default stream format. `json-array` is supported for operations that need a single JSON document response; it streams records incrementally as a JSON array and does not buffer the full SOAP response.
 
-### Stream Transport Bypasses node-soap
+### Stream transport settings
 
-Stream operations bypass `node-soap` entirely and POST a hand-built SOAP envelope via `fetch`. Any `node-soap` middleware, interceptors, or custom security handlers that your buffered operations rely on will not apply to stream operations. Authentication headers, proxies, and TLS options must be configured on the stream transport path separately.
+Stream operations use node-soap's WSDL serializer and public HTTP `requestStream`, including supported static headers, endpoint and security hooks. Configure stream HTTP options separately from WSDL acquisition; see [transport support and refusals](gateway-guide.md#streaming-transport-settings). On supported Node versions, `node --use-system-ca` uses verified system trust; caller-specific CA/HTTPS agent settings remain client-owned. Keep certificate verification enabled.

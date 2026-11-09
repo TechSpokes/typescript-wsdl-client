@@ -12,6 +12,7 @@
  */
 
 import {pascal, trimRepeatedEdgeChar} from "../util/tools.js";
+import path from "node:path";
 
 /**
  * OpenAPI document structure (minimal type for internal use)
@@ -473,6 +474,7 @@ export interface ResolvedOperationMeta {
  * @property {"js"|"ts"|"bare"} importsMode - Import extension mode
  */
 export interface ResolveClientMetaOptions {
+  gatewayDir?: string;
   clientDir?: string;
   catalogFile?: string;
   clientClassName?: string;
@@ -534,6 +536,19 @@ export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any)
   const operationsImportPath = opts.clientDir
     ? `../client/operations${suffix}`
     : `./client/operations${suffix}`;
+
+  const modulePath = (from: string, module: string): string => {
+    const relative = path.relative(from, path.join(opts.clientDir!, module + suffix)).replaceAll("\\", "/");
+    if (path.isAbsolute(relative) || /^[a-z]:/i.test(relative)) throw new Error("Generated client and gateway modules must share a filesystem root");
+    return relative.startsWith(".") ? relative : "./" + relative;
+  };
+  if (opts.clientDir && opts.gatewayDir) return {
+    className, decoratorName,
+    importPath: modulePath(path.join(opts.gatewayDir, "routes"), "client"),
+    typesImportPath: modulePath(path.join(opts.gatewayDir, "routes"), "types"),
+    pluginImportPath: modulePath(opts.gatewayDir, "client"),
+    operationsImportPath: modulePath(opts.gatewayDir, "operations"),
+  };
 
   return {
     className,

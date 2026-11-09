@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import {execFileSync} from "node:child_process";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -20,22 +21,10 @@ function difference(left: string[], right: string[]): string[] {
   return left.filter((item) => !rightSet.has(item));
 }
 
-function extractCliCommandBlock(source: string, command: typeof commandNames[number]): string {
-  const marker = `if (rawArgs[0] === "${command}")`;
-  const start = source.indexOf(marker);
-  expect(start).toBeGreaterThanOrEqual(0);
-
-  const nextCommandStart = commandNames
-    .filter((candidate) => candidate !== command)
-    .map((candidate) => source.indexOf(`if (rawArgs[0] === "${candidate}")`, start + marker.length))
-    .filter((index) => index >= 0)
-    .sort((a, b) => a - b)[0];
-
-  return source.slice(start, nextCommandStart ?? source.length);
-}
-
-function extractCliCommandFlags(source: string, command: typeof commandNames[number]): string[] {
-  return extractCliFlags(extractCliCommandBlock(source, command));
+function commandHelp(...args: string[]): string {
+  // @why Public help is the user-facing option boundary; source branch spelling is not part of the CLI contract.
+  return execFileSync(process.execPath, ["--import", "tsx", path.join(repoRoot, "src/cli.ts"), ...args, "--help"],
+    {cwd: repoRoot, encoding: "utf8", timeout: 15_000, windowsHide: true});
 }
 
 function extractMarkdownSection(source: string, heading: typeof commandNames[number]): string {
@@ -74,16 +63,17 @@ describe("CLI contract documentation", () => {
   });
 
   it("keeps choice-mode support scoped to compiler-backed commands", () => {
-    const cliSource = readFileSync(path.join(repoRoot, "src", "cli.ts"), "utf8");
-
     for (const command of ["compile", "client", "pipeline"] as const) {
-      expect(extractCliCommandFlags(cliSource, command)).toContain("client-choice-mode");
+      expect(commandHelp(command)).toContain("--client-choice-mode");
     }
 
     for (const command of ["openapi", "gateway", "app"] as const) {
-      expect(extractCliCommandFlags(cliSource, command)).not.toContain("client-choice-mode");
+      expect(commandHelp(command)).not.toContain("--client-choice-mode");
     }
-  });
+    const composition = commandHelp("pipeline", "--services-config", "unused-services.json");
+    expect(composition).toContain("--services-config");
+    expect(composition).not.toContain("--client-choice-mode");
+  }, 60_000);
 
   it("documents choice mode only on commands that accept it", () => {
     const docsSource = readFileSync(path.join(repoRoot, "docs", "cli-reference.md"), "utf8");

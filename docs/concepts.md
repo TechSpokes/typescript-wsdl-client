@@ -312,8 +312,7 @@ OpenAPI uses operation docs for both `description` and default `summary` values.
 
 ## Response Envelope
 
-All gateway responses follow a uniform envelope structure. This has been
-always-on since v0.7.1.
+Buffered legacy gateway responses use this envelope. Stream success bodies deliver records directly, and checked components use their separate value/fault contract.
 
 ### Success Response
 
@@ -367,7 +366,7 @@ details:
 
 ### Streaming Bypass
 
-Operations opted into streaming with `--stream-config` bypass the success envelope on the `200` response path. The OpenAPI response content is declared as the configured stream media type, and the gateway writes raw NDJSON lines or one streamed JSON array straight to the response body. Error responses (400, 502, and the rest) still use the normal envelope so clients always see structured failures before the first record. See [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for the full rationale.
+Legacy stream operations bypass the success envelope. OpenAPI declares the configured media type, and the gateway writes NDJSON lines or one JSON array. Errors handled before response commitment can use the normal error envelope; after commitment, failures truncate output. See [streaming handlers](gateway-guide.md#streaming-handlers).
 
 ### Envelope Naming
 
@@ -497,13 +496,13 @@ The generator produces two response execution models. Buffered is the default an
 
 ### Execution Model Contrast
 
-Buffered operations call `node-soap`, wait for the full response to materialize, and return `{ response, headers, responseRaw, requestRaw }`. Streaming operations bypass `node-soap`, POST a hand-built SOAP envelope via `fetch`, and return `StreamOperationResponse<RecordType>` with `records: AsyncIterable<RecordType>`. The SAX parser in `runtime/streamXml.ts` walks the configured `recordPath` and yields each record as its closing tag arrives.
+Buffered operations call `node-soap`, wait for the full response to materialize, and return `{ response, headers, responseRaw, requestRaw }`. Streaming operations use node-soap's WSDL serializer and public HTTP `requestStream` transport, returning `StreamOperationResponse<RecordType>` with `records: AsyncIterable<RecordType>`. The SAX parser walks `recordPath`; each completed record passes through `fromSoapResult` to produce the generated DTO, including flat attributes and typed `$value` content.
 
 The catalog is the source of truth for stream metadata. Each opted-in operation carries an `OperationStreamMetadata` entry, and downstream emitters (client, OpenAPI, gateway, tests) all read from the catalog. OpenAPI carries a derived view via the `x-wsdl-tsc-stream` extension.
 
 ### Terminal-Error Policy
 
-Errors before the first record use the normal gateway error envelope because the response headers and status have not been committed yet. Errors mid-stream truncate the response; NDJSON consumers detect this as an incomplete HTTP response, and JSON array consumers see an incomplete or invalid JSON document. Both cases must be treated as failed streams. This behavior is documented for operators in the [Production Guide](production.md#terminal-error-policy).
+Failures before response commitment can use the normal gateway error handler. After commitment, failures truncate output; an incomplete HTTP response or JSON document is a failed stream. See the [Production Guide](production.md#terminal-error-policy).
 
 ## Companion Catalogs and Shape Resolution
 

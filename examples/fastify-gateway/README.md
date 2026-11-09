@@ -2,6 +2,8 @@
 
 Multiservice gateway setup using generated Fastify plugins.
 
+This example mounts plugins manually. Prefer [native composition](../native-composition/README.md) when you need one generated aggregate plugin and OpenAPI definition. Keep each runtime WSDL and security configuration explicit.
+
 ## Overview
 
 When integrating multiple SOAP services, each service gets its own generated client, gateway plugin, and OpenAPI spec. This example shows how to compose them into a single Fastify application using encapsulation scopes.

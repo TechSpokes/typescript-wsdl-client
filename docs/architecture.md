@@ -157,4 +157,4 @@ Data flow through the pipeline:
 
 ## Client Stream Transport
 
-Phase-0 research (see ADR-002) established that `node-soap` buffers the full response before invoking its operation callback. Stream operations cannot use that transport, so the generated client emits a parallel `callStream()` method that POSTs a hand-built SOAP envelope via global `fetch`, captures HTTP headers before the first record, and pipes the response body through `parseRecords`. Buffered operations continue to use `node-soap` unchanged. The two transports coexist on the same client class.
+Buffered node-soap operation callbacks materialize the response. Current legacy `callStream()` instead uses node-soap's WSDL serializer and public HTTP `requestStream`, captures headers and maps complete parser records through the generated DTO converter. Supported endpoint/security hooks, iterator disposal, per-call abort/deadline and downstream cancellation follow the [gateway contract](gateway-guide.md#streaming-transport-settings).

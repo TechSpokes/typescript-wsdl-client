@@ -4,6 +4,8 @@ This guide covers upgrade steps between major versions of `@techspokes/typescrip
 
 Versions are listed newest first. Find your current version and follow the steps for each version you need to cross.
 
+See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
+
 ## General Upgrade Steps
 
 These steps apply to every version upgrade:
@@ -13,6 +15,16 @@ These steps apply to every version upgrade:
 3. Regenerate all output by running your generation script or pipeline command
 4. Run `tsc --noEmit` to verify the generated code compiles
 5. Test your application
+
+## From 1.1.x to 1.2.0
+
+The 1.2.0 compiler correction separates declarations that previously collapsed into one generated type. Distinct inline `Entry` declarations under `Left` and `Right` now receive separate owner-qualified names. Non-colliding exported names and XML/JSON member names are preserved; residual Pascal-case or namespace collisions receive deterministic suffixes.
+
+This minor release includes corrective compatibility changes: affected exported DTO names can break source imports after regeneration, and stream records now use generated DTOs rather than lexical attribute bags. Review consumers and stream `recordType` references before adopting regenerated output; no blanket no-breaking-impact guarantee applies.
+
+Regenerate matched catalog/client/OpenAPI/gateway artifacts together from the original WSDL. Preserve adopted app/test scaffolds under their skip/force rules. Stream calls add optional `{signal, timeoutMs}` and supported node-soap serializer/transport hooks; dates retain type-level behavior and bigint retains existing JSON limitations. See [the stream API](api-reference.md#generated-stream-client-contract).
+
+The compiled catalog format remains unchanged. Old catalogs remain readable as stored, but cannot recover declarations lost through an earlier merge; loading one does not fetch its WSDL or reconstruct missing types. Companion catalogs retain their existing conservative same-name structural conflict checks.
 
 ## Version Compatibility
 

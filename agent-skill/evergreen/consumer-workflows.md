@@ -19,7 +19,15 @@ Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, RES
 5. Run the consumer project's typecheck and tests.
 6. Commit the WSDL reference, configuration files, generated output policy, and tests according to the consumer project's conventions.
 
-## Opt-in Checked Component Trial
+## Native multi-service adoption
+
+Use `pipeline --services-config services.json` alone, without single-source CLI flags. Each service's `generation` uses `PipelineOptions` property names and explicit client/catalog/OpenAPI/gateway paths. Keep keys, normalized slugs, decorators, prefixes and output ownership unique. Paths resolve against the config; companion paths in a stream file resolve against that stream file.
+
+Import the aggregate plugin and its typed `createClients`. Supply each key's own `{source, options, security}`; `source` is runtime WSDL metadata, while `soapClient().setEndpoint(...)` selects the SOAP destination. Keep credentials, trust and stream transport settings with the owning client. Register `{clients}` without a runtime aggregate prefix; generation-time base paths already appear in the contract.
+
+The aggregate serves JSON discovery at `/openapi.json` unless generation changes or disables it. There is no aggregate checked/app/test mode. Failure preserves the previous aggregate pair, but earlier service dependencies may already have changed; regenerate and verify the whole matched output. Load `references/composition.md` for the canonical configuration and API.
+
+## Checked profile selection
 
 Use `pipeline --model checked-components-v1` only when the consumer chooses the bounded checked preview. Start from WSDL sources, not a legacy catalog. Unambiguous sources need no authored selectors or resource maps; additional metadata origins and genuinely missing schema locations still require explicit input.
 

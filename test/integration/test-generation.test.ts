@@ -14,6 +14,8 @@
 import { describe, it, expect, beforeAll, type TestContext } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import {pathToFileURL} from "node:url";
+import type {FastifyInstance} from "fastify";
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
@@ -339,21 +341,24 @@ describe("JSON array stream test generation", () => {
       }),
     });
 
-    const runtimeContent = readFileSync(join(outDir, "gateway", "runtime.ts"), "utf-8");
-    expect(runtimeContent).toContain("export function toNdjson");
-    expect(runtimeContent).toContain("export function toJsonArray");
-
-    const routeContent = readFileSync(join(outDir, "gateway", "routes", "getweatherinformation.ts"), "utf-8");
-    expect(routeContent).toContain('import { toJsonArray } from "../runtime.js";');
-    expect(routeContent).toContain('reply.type("application/json");');
-    expect(routeContent).toContain("return reply.send(toJsonArray(result.records));");
-    expect(routeContent).not.toContain("toNdjson(result.records)");
-
-    const routesTestContent = readFileSync(join(testDir, "gateway", "routes.test.ts"), "utf-8");
-    expect(routesTestContent).toContain("const records = JSON.parse(res.body);");
-    expect(routesTestContent).toContain("expect(Array.isArray(records)).toBe(true);");
-    expect(routesTestContent).toContain("expect(records.length).toBeGreaterThan(0);");
-
+    // @why Exercise the generated app through its advertised operation rather than freeze import lists, mapper helpers or handler syntax.
+    const spec = JSON.parse(readFileSync(join(outDir, "openapi.json"), "utf8")) as {
+      paths: Record<string, {post?: {operationId?: string}}>;
+    };
+    const route = Object.entries(spec.paths).find(([, item]) => item.post?.operationId === "GetWeatherInformation")?.[0];
+    expect(route).toBeDefined();
+    const {createTestApp} = await import(pathToFileURL(join(testDir, "helpers/test-app.ts")).href) as {
+      createTestApp(): Promise<FastifyInstance>;
+    };
+    const app = await createTestApp();
+    try {
+      const response = await app.inject({method: "POST", url: route!, payload: {}});
+      expect(response.statusCode).toBe(200);
+      expect(response.headers["content-type"]).toContain("application/json");
+      const records: unknown = response.json();
+      expect(Array.isArray(records)).toBe(true);
+      expect((records as unknown[]).length).toBeGreaterThan(0);
+    } finally {await app.close();}
     await runGeneratedVitest(join(testDir, "vitest.config.ts"), context);
   }, 120_000);
 });

@@ -30,7 +30,7 @@ A missing, empty, or unreadable packaged preamble fails generation with the reso
 | Structural collision between main and companion catalog | Two types share a name but differ structurally; rename in the companion source or point `recordType` at a distinct subtree |
 | Stream response ends abruptly or JSON array parse fails | Mid-stream upstream error per the terminal-error policy; check gateway logs for the classified error |
 | Stream recordPath does not match | SAX matching is positional and case-sensitive; verify duplicate local-name segments are spelled exactly |
-| Stream client throws "stream request failed" | The upstream SOAP endpoint rejected the hand-built envelope; check `requestRaw` on the response and verify SOAP action and namespaces match the WSDL binding |
+| Stream request fails | Check endpoint/action/binding, media type/encoding, shape config, DTO conversion and cancellation evidence |
 
 ## SOAP Wire Logging
 
@@ -84,6 +84,8 @@ cat ./src/services/hotel/catalog.json | jq '.types'
 ```
 
 ## Streaming Debug
+
+Requests use node-soap's WSDL serializer and `requestStream`. Check the [supported transport settings](gateway-guide.md#streaming-transport-settings) before changing serialization. Pre-header failures can use the gateway error handler; once output is committed, failure truncates the stream and cannot become a recoverable JSON error envelope. Scoped diagnostics and explicit companion sources help configuration; a universal live-response mismatch doctor or wizard is not provided.
 
 Inspect stream metadata on the compiled catalog to confirm the config was parsed and applied:
 

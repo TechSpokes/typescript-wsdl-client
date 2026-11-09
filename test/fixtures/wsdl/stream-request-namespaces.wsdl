@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:stream-request" xmlns:f="urn:stream-request:foreign" targetNamespace="urn:stream-request">
+  <wsdl:types><xs:schema targetNamespace="urn:stream-request" elementFormDefault="unqualified">
+    <xs:import namespace="urn:stream-request:foreign" schemaLocation="stream-request-foreign.xsd"/>
+    <xs:element name="Read"><xs:complexType><xs:sequence>
+      <xs:element name="Local" type="xs:string"/><xs:element ref="f:Foreign"/>
+      <xs:element name="Nested"><xs:complexType><xs:sequence><xs:element name="LocalCode" type="xs:string"/></xs:sequence><xs:attribute name="Active" type="xs:boolean"/></xs:complexType></xs:element>
+    </xs:sequence><xs:attribute name="Enabled" type="xs:boolean"/></xs:complexType></xs:element>
+    <xs:element name="ReadResponse"><xs:complexType><xs:sequence><xs:element name="Record" type="tns:Record" maxOccurs="unbounded"/></xs:sequence></xs:complexType></xs:element>
+    <xs:complexType name="Record"><xs:sequence><xs:element name="Value" type="xs:string"/></xs:sequence></xs:complexType>
+  </xs:schema></wsdl:types>
+  <wsdl:message name="ReadIn"><wsdl:part name="parameters" element="tns:Read"/></wsdl:message>
+  <wsdl:message name="ReadOut"><wsdl:part name="parameters" element="tns:ReadResponse"/></wsdl:message>
+  <wsdl:portType name="RequestPort"><wsdl:operation name="Read"><wsdl:input message="tns:ReadIn"/><wsdl:output message="tns:ReadOut"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="RequestBinding" type="tns:RequestPort"><soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/><wsdl:operation name="Read"><soap:operation soapAction="urn:stream-request:read"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+  <wsdl:service name="RequestNamespaces"><wsdl:port name="RequestPort" binding="tns:RequestBinding"><soap:address location="http://127.0.0.1:1/must-override"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

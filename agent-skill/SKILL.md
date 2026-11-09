@@ -10,6 +10,8 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 
 ## Default Workflow
 
+Choose legacy single-source, legacy multi-service or checked generation explicitly. Native `pipeline --services-config` composes independent legacy clients behind one API; it does not compose checked routes. Checked components support bounded document/literal and RPC/encoded string profiles with buffered checked values. Legacy buffered replies use success envelopes; legacy streams deliver mapped DTO records directly.
+
 1. Confirm the consumer project uses Node.js 24 or newer.
 2. Install `@techspokes/typescript-wsdl-client` as a development dependency.
 3. Install `soap` as a runtime dependency.
@@ -51,3 +53,4 @@ Load fluid references only when details are needed:
 - `references/testing.md` for mock clients, generated tests, and consumer test setup.
 - `references/troubleshooting.md` for installation, TypeScript, catalog, and streaming diagnostics.
 - `references/streaming.md` for stream configuration and NDJSON or JSON array behavior.
+- `references/composition.md` for services-config, typed createClients and per-client WSDL/security ownership.

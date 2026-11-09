@@ -12,7 +12,7 @@ Product changes do not wait for unrelated universal research completion. Each ch
 
 ## Next deliveries
 
-Release the already implemented capabilities recorded in [Unreleased](CHANGELOG.md#unreleased) through the existing release process. Package preparation, validated release candidates and maintainer publication remain distinct steps.
+Prepare the [1.2.0 candidate](docs/releases/v1.2.0.md) through the existing release process. Native legacy composition is implemented; checked composition and checked streaming remain deferred. Candidate validation and maintainer publication remain distinct steps.
 
 Use the existing [working-gateway coverage register](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [product outcome](https://github.com/TechSpokes/typescript-wsdl-client/issues/401) to choose bounded additions by the integrations they unlock. Extend the existing conformance corpus with rights-cleared sources and independent positive, invalid-input and refusal expectations.
 
@@ -30,7 +30,7 @@ Use representative corpus exchanges alongside independent native checks, install
 
 Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The current package version is 1.1.7; [release notes](docs/releases/README.md) and [published releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) establish release availability. Development-tree capabilities and successful tests do not by themselves mean a package has been published.
+The local candidate targets 1.2.0; [release notes](docs/releases/README.md) and [published releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) establish availability. Development-tree capabilities and successful tests do not establish publication.
 
 ## Research and historical coordination
 

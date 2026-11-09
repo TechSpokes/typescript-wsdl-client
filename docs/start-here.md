@@ -2,6 +2,8 @@
 
 This page helps you understand what this package does, decide if it fits your needs, and find the fastest path to your first result.
 
+See the root [README](../README.md) for installation and the documentation index.
+
 ## What This Package Does
 
 `@techspokes/typescript-wsdl-client` reads a WSDL/XSD definition and generates typed TypeScript code. Depending on the command you run, you get a typed SOAP client, an OpenAPI 3.1 specification, a Fastify REST gateway, or all of the above.
@@ -16,6 +18,8 @@ The generated output is deterministic: re-running the same command produces iden
 - Projects that require deterministic code generation under version control
 
 ## Choose Your Path
+
+Choose legacy single-source generation for existing DTO/envelope integrations. For multiple independent legacy sources, use [native composition](gateway-guide.md#multi-service-setup) with `pipeline --services-config`. For source-backed validation and the bounded SOAP 1.1 RPC/encoded profile, choose [checked generation](checked-generation.md); checked replies remain buffered values, without the legacy success envelope. Neither profile claims universal SOAP support.
 
 ### I need a typed SOAP client
 
@@ -72,7 +76,7 @@ Start with [Try Opt-in Checked Generation](checked-generation.md) for a bundled 
 
 ### I need to stream large SOAP responses
 
-Some SOAP services return payloads that are too large or too slow to buffer in memory. Opt selected operations into streaming with a small JSON config and the `--stream-config` flag. Operations not listed keep their buffered behavior, so existing output stays byte-for-byte unchanged.
+Some SOAP services return large responses. Opt selected legacy operations into streaming with `--stream-config`. Unlisted operations retain their buffered API selection; generated mapper and metadata output can change in 1.2.0. Stream bodies bypass the legacy success envelope.
 
 ```bash
 npx wsdl-tsc pipeline \

@@ -1,11 +1,11 @@
 /**
- * Response shape for streaming __CLIENT_NAME__ operations. `records` is a
- * single-pass async iterable of parsed record objects; iteration pulls bytes
- * from the upstream SOAP response on demand. `headers` is the HTTP response
- * header map captured before the first record is parsed. `requestRaw`, when
- * populated, contains the serialized SOAP envelope that was sent upstream.
+ * Represents a streamed __CLIENT_NAME__ response.
+ * @typeParam RecordType Parsed record DTO yielded by the single-pass upstream iterator.
+ * @typeParam HeadersType HTTP headers captured before the first record is parsed.
+ * @constraints The structural default permits WSDL DTOs named Record without shadowing a utility type.
+ * @remarks requestRaw contains the serialized SOAP request when populated.
  */
-export type StreamOperationResponse<RecordType, HeadersType = Record<string, unknown>> = {
+export type StreamOperationResponse<RecordType, HeadersType = {[key: string]: unknown}> = {
   records: AsyncIterable<RecordType>;
   headers: HeadersType;
   requestRaw?: string;

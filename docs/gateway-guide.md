@@ -201,9 +201,19 @@ export async function registerRoute_v1_weather_getweatherinformation(fastify: Fa
     schema: routeSchema,
     handler: async (request, reply) => {
       const client = fastify.weatherClient;
-      const result = await client.GetWeatherInformation(request.body as GetWeatherInformation);
-      reply.type("application/x-ndjson");
-      return reply.send(toNdjson(result.records));
+      const controller = new AbortController();
+      const disconnected = () => { if (!reply.raw.writableEnded) controller.abort(); };
+      request.raw.once("aborted", disconnected);
+      reply.raw.once("close", disconnected);
+      if (request.raw.aborted || reply.raw.destroyed) controller.abort();
+      try {
+        const result = await client.GetWeatherInformation(request.body as GetWeatherInformation, {signal: controller.signal});
+        reply.type("application/x-ndjson");
+        return await reply.send(toNdjson(result.records));
+      } finally {
+        request.raw.removeListener("aborted", disconnected);
+        reply.raw.removeListener("close", disconnected);
+      }
     },
   });
 }
@@ -211,7 +221,25 @@ export async function registerRoute_v1_weather_getweatherinformation(fastify: Fa
 
 For `format: "json-array"`, the same handler imports `toJsonArray`, sets `reply.type("application/json")`, and sends `reply.send(toJsonArray(result.records))`.
 
-The client method returns `StreamOperationResponse<RecordType>` with a `records: AsyncIterable<RecordType>`. Errors raised before the first record use the normal error envelope. Errors raised mid-stream truncate the response; NDJSON clients see an incomplete HTTP response, and JSON array clients see an incomplete or invalid JSON document.
+The client method returns `StreamOperationResponse<RecordType>` with a single-pass `records` iterable. Failures before response commitment can use the error envelope; errors after commitment truncate the response. Treat an incomplete HTTP response or JSON array as a failed stream, even if earlier records were valid.
+
+Each completed record passes through the legacy client's `fromSoapResult` mapper before delivery. Public DTOs flatten XML attributes, convert boolean/numeric lexical values according to projected types, preserve configured string-first decimal/integer policies, map typed `$value` content, tokenize XML lists and retain repeated-element arrays. Empty complex types without child fields become `{}`; empty primitive strings remain strings. The low-level `streamXml.ts` parser retains lexical values and attribute bags, and checked mapping conventions are unchanged.
+
+For buffered responses, node-soap's `null` empty-object recovery requires a declared non-nillable child of a known complex type without child fields. Nullable and unknown values keep their existing behavior; empty containers with declared optional children are outside this bounded recovery.
+
+When array-wrapper flattening is enabled, the gateway unwraps each mapped record using the same wrapper convention as buffered routes. Both NDJSON and JSON-array delivery stay incremental. A consumer disconnect aborts the upstream request even before SOAP response headers arrive, and remains connected to cancellation throughout record delivery.
+
+### Streaming transport settings
+
+Stream calls use `soap.HttpClient.requestStream` or the configured `options.httpClient.requestStream`, with the configured `options.request` adapter. They honor the current `soapClient().setEndpoint(...)`, static SOAP/HTTP headers, and the current security object's `addHeaders`, `addOptions`, `toXML` and `postProcess` hooks. A custom HTTP client must implement `requestStream`.
+
+Requests pass through `toSoapArgs` and node-soap's WSDL document serializer, preserving unqualified local children and foreign namespace references. The initialized client's `envelopeKey` also governs SOAP headers and security `postProcess`. Stream calls require a compatible live document/literal binding matching the generated operation name and SOAP action; missing or ambiguous incompatible bindings are refused before I/O.
+
+Only clients with stream-configured operations expose constructor `streamRequestOptions`, using node-soap's `IExOptions` HTTP options. Use it for stream-specific HTTP timeouts or an HTTPS agent with trusted CA/client certificates; WSDL-fetch settings remain separate. TLS verification stays enabled by default and uses Node's configured trust; no certificate bypass is added.
+
+Generated stream operations also accept `{signal, timeoutMs}` as an optional second argument. `timeoutMs` covers the upstream HTTP request and record consumption, starting after SOAP metadata initialization. Exhaust the records or return their iterator to release the connection; a per-call signal already aborted rejects before metadata initialization. See the [generated stream client API](api-reference.md#generated-stream-client-contract).
+
+Streaming supports SOAP 1.1 document/literal requests. SOAP 1.2/custom envelope namespaces, functional SOAP headers, SOAP body attributes, MTOM attachments and NTLM transport are explicitly refused. Other node-soap serializer/security combinations require separate qualification; date mappings remain type-level, and `bigint` values retain normal JSON serialization limitations.
 
 ## Error Handling
 
@@ -220,12 +248,14 @@ The centralized error handler (runtime.ts) automatically classifies errors:
 | Error Type         | HTTP Status | Error Code          |
 |--------------------|-------------|---------------------|
 | Validation errors  | 400         | VALIDATION_ERROR    |
-| SOAP faults        | 502         | SOAP_FAULT          |
+| Buffered node-soap faults | 502   | SOAP_FAULT          |
 | Connection refused | 503         | SERVICE_UNAVAILABLE |
 | Timeout            | 504         | GATEWAY_TIMEOUT     |
 | Other errors       | 500         | INTERNAL_ERROR      |
 
-All errors are wrapped in the standard envelope format. See [Concepts](concepts.md) for the envelope structure.
+Legacy errors handled before response commitment use the standard envelope. After stream output begins, errors truncate the response. Checked component values and faults follow their separate [checked contract](checked-gateway.md).
+
+Stream parser faults fail the iterator instead of producing an empty successful result. Before output begins they use the generic error classification; after output begins the response is truncated.
 
 ## Stub Handler Mode
 
@@ -252,38 +282,85 @@ Example: `urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse`
 
 ## Multi-Service Setup
 
-When integrating multiple SOAP services, each service gets its own client, gateway, and OpenAPI spec. Register each in its own Fastify encapsulation scope to prevent decorator collisions:
+Native legacy composition generates independent service clients and routers, one aggregate Fastify plugin, and one combined OpenAPI document. Save a configuration such as `services.json` beside your `sources/` directory:
+
+```json
+{
+  "services": [
+    {
+      "key": "main",
+      "generation": {
+        "wsdl": "./sources/main.wsdl",
+        "catalogOut": "./.generated/main/client/catalog.json",
+        "clientOutDir": "./.generated/main/client",
+        "compiler": {"imports": "js"},
+        "openapi": {"outFile": "./.generated/main/openapi.json", "basePath": "/main"},
+        "gateway": {"outDir": "./.generated/main/gateway", "serviceSlug": "main", "versionSlug": "v1"}
+      }
+    },
+    {
+      "key": "content",
+      "generation": {
+        "wsdl": "./sources/content.wsdl",
+        "catalogOut": "./.generated/content/client/catalog.json",
+        "clientOutDir": "./.generated/content/client",
+        "compiler": {"imports": "js"},
+        "openapi": {"outFile": "./.generated/content/openapi.json", "basePath": "/content"},
+        "gateway": {"outDir": "./.generated/content/gateway", "serviceSlug": "content", "versionSlug": "v1"}
+      }
+    }
+  ],
+  "openapi": {"outFile": "./.generated/aggregate/openapi.json", "title": "Combined SOAP Gateway", "version": "1.0.0"},
+  "gateway": {"outDir": "./.generated/aggregate/gateway", "imports": "js"}
+}
+```
+
+```bash
+npx wsdl-tsc pipeline --services-config ./services.json
+```
+
+Relative paths resolve against `services.json`; companion paths in `streamConfigFile` resolve against that stream file. Each `generation` uses `PipelineOptions` property names. Every service requires explicit outputs and its own static `basePath`; prefixes are baked into routes once. Keys, normalized service slugs, decorators and prefixes must be unique; output ownership must not overlap across services, and source metadata must remain outside outputs.
+
+### Runtime clients
+
+The aggregate plugin exports a typed `createClients` helper. Its registry requires exactly the configured keys, and each value is that service client's constructor options:
 
 ```typescript
 import Fastify from "fastify";
-import weatherPlugin from "./.generated/weather/gateway/plugin.js";
-import inventoryPlugin from "./.generated/inventory/gateway/plugin.js";
-import { Weather } from "./.generated/weather/client/client.js";
-import { Inventory } from "./.generated/inventory/client/client.js";
+import gateway, {createClients} from "./.generated/aggregate/gateway/plugin.js";
+import type {IOptions, ISecurity} from "soap";
 
-const app = Fastify({ logger: true });
+declare const mainEndpoint: string, contentEndpoint: string;
+declare const mainOptions: IOptions, contentOptions: IOptions;
+declare const mainSecurity: ISecurity, contentSecurity: ISecurity;
 
-// Each plugin gets its own scope to isolate decorators
-await app.register(async (scope) => {
-  await scope.register(weatherPlugin, {
-    client: new Weather({ source: "https://example.com/weather?wsdl" }),
-    prefix: "/api/weather",
-  });
+const clients = createClients({
+  main: {source: "./sources/main.wsdl", options: mainOptions, security: mainSecurity},
+  content: {source: "./sources/content.wsdl", options: contentOptions, security: contentSecurity},
 });
+(await clients.main.soapClient()).setEndpoint(mainEndpoint);
+(await clients.content.soapClient()).setEndpoint(contentEndpoint);
 
-await app.register(async (scope) => {
-  await scope.register(inventoryPlugin, {
-    client: new Inventory({ source: "https://example.com/inventory?wsdl" }),
-    prefix: "/api/inventory",
-  });
-});
-
-await app.listen({ port: 3000 });
+const app = Fastify({logger: true});
+await app.register(gateway, {clients});
+await app.listen({port: 3000});
 ```
 
-See [`examples/fastify-gateway`](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/examples/fastify-gateway/README.md) for a complete example.
+Runtime `source` supplies WSDL metadata, while `setEndpoint` selects the SOAP destination. Keep source, credentials, trust, headers, stream settings and cancellation decisions scoped to their client; overlapping SOAP operation names still dispatch through their owning route. Alternatively, provide a `{clients}` registry of preconfigured instances or compatible operations mocks directly.
+
+The aggregate serves the combined definition at `/openapi.json`; generation `gateway.openapiPath` can change or disable that route. Do not register the aggregate under a Fastify runtime prefix, including an inherited parent prefix; configure each service's generation-time `openapi.basePath` instead.
+
+Components and operation identifiers are qualified by service key, including stream item schema references. Local references and security scheme names are rewritten, and service-local root security/server semantics are preserved at their applicable operations or paths. Composition rejects duplicate final paths, unresolved/relative references and unsupported schema resources or anchors. Compiler settings and optional stream configuration stay inside each `generation`; checked composition and aggregate app/test scaffolding remain deferred.
+
+The aggregate specification is JSON only. Aggregate spec/plugin staging protects the previous pair on failure, but earlier service-generated dependencies can already have changed. This is not a whole-directory transaction; regenerate and verify matched artifacts after a failure.
+
+Single-source plugins can still be mounted manually in separate Fastify scopes. See [`examples/fastify-gateway`](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/examples/fastify-gateway/README.md) for single-source application wiring and the [composition API](api-reference.md#runmultiservicepipeline) for its supported settings and limits.
+
+The credential-free [native composition example](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/examples/native-composition/README.md) uses two committed generic sources, explicit `.generated/` outputs and a compileable typed registry.
 
 ## Contract Assumptions
+
+The following assumptions describe buffered legacy gateway input. Stream responses use format-specific bodies without success envelopes; checked components use their own value/schema contract. Native composition retains those per-service legacy contracts.
 
 - All request/response bodies must use $ref to components.schemas
 - Every operation must have a default response with application/json content

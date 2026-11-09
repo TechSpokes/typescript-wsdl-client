@@ -196,6 +196,7 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
 
   // Resolve client metadata for full handler generation
   const clientMeta = resolveClientMeta({
+    gatewayDir: opts.outDir,
     clientDir: opts.clientDir,
     catalogFile: opts.catalogFile,
     clientClassName: opts.clientClassName,

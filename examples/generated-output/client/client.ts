@@ -65,6 +65,8 @@ export class Weather {
   protected attributesKeyOut: string;
   protected client?: Client;
   protected dataTypes: WeatherDataTypes = WEATHER_DATA_TYPES;
+  protected scalarTypes: Readonly<Record<string, string>> = {};
+
 
   /**
    * Creates a new Weather instance.
@@ -86,6 +88,7 @@ export class Weather {
     this.source = options.source;
     this.attributesKeyIn = options.attributesKeyIn ?? "$attributes";
     this.attributesKeyOut = options.attributesKeyOut ?? "attributes";
+
     if (options.options) {
       this.options = options.options;
     }
@@ -312,12 +315,27 @@ export class Weather {
    *
    * @param node - The raw SOAP response node.
    * @param typeName - Optional metadata key to guide deserialization.
+   * @param nonNillable - Whether parent schema metadata rules out a nil child, permitting empty-object recovery.
    * @returns The deserialized object matching your DTO shape.
+   * @throws TypeError for invalid boolean, numeric, or bigint lexical values.
    */
-  protected fromSoapResult(node: any, typeName?: string): any {
-    // Pass through null/undefined unchanged
+  protected fromSoapResult(node: any, typeName?: string, nonNillable = false): any {
+    // @why node-soap collapses empty complex elements to null; only a declared non-nillable child permits recovering its object DTO.
+    // @constraints Nullable children and unknown/custom metadata retain null, including explicit xsi:nil responses.
+    if (node === null && nonNillable && typeName && Object.hasOwn(this.dataTypes.Attributes, typeName)
+      && Object.keys(this.dataTypes.ChildrenTypes[typeName] ?? {}).length === 0) return {};
     if (node == null) {
       return node;
+    }
+    if (typeName && Object.hasOwn(this.scalarTypes, typeName)) typeName = this.scalarTypes[typeName];
+    if (typeName?.endsWith("[]")) {
+      let itemType = typeName.slice(0, -2);
+      if (itemType.startsWith("(") && itemType.endsWith(")")) itemType = itemType.slice(1, -1);
+      if (typeof node === "string") {
+        const lexical = node.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, "");
+        return lexical === "" ? [] : lexical.split(/[\t\r\n ]+/).map(item => this.fromSoapResult(item, itemType));
+      }
+      if (Array.isArray(node)) return node.map(item => this.fromSoapResult(item, itemType));
     }
     const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
     const attributeTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.AttributeTypes?.[typeName]) || {};
@@ -328,8 +346,22 @@ export class Weather {
       if (lexical === "false" || lexical === "0") return false;
       throw new TypeError("Invalid XML boolean response value");
     }
+    if (typeof node === "string" && (typeName === "number" || typeName === "bigint")) {
+      const lexical = node.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, "");
+      if (typeName === "bigint") {
+        if (!/^[+-]?\d+$/.test(lexical)) throw new TypeError("Invalid XML bigint response value");
+        return BigInt(lexical);
+      }
+      if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(lexical)) {
+        throw new TypeError("Invalid XML numeric response value");
+      }
+      const number = Number(lexical);
+      if (!Number.isFinite(number)) throw new TypeError("Non-finite XML numeric response value");
+      return number;
+    }
     // A simple-content complex type retains its object shape when no attributes are present on the wire.
     if (typeof node !== "object") {
+      if (node === "" && typeName && Object.hasOwn(this.dataTypes.Attributes, typeName) && Object.keys(childrenTypes).length === 0) return {};
       return childrenTypes.$value ? {$value: this.fromSoapResult(node, childrenTypes.$value)} : node;
     }
     // Recursively process array elements
@@ -339,11 +371,12 @@ export class Weather {
 
     // Get child type mapping for recursive processing with correct types
     const repeatedElements: readonly string[] = (typeName && this.dataTypes?.RepeatedElements?.[typeName]) || [];
+    const nonNillableElements: readonly string[] = (typeName && this.dataTypes?.NonNillableElements?.[typeName]) || [];
     const result: any = {};
 
     // Preserve text content for mixed XML elements
-    if ("$value" in node) {
-      result.$value = (node as any).$value;
+    if ("$value" in node && (childrenTypes.$value || node.$value !== "")) {
+      result.$value = this.fromSoapResult(node.$value, childrenTypes.$value);
     }
 
     // Extract attributes from various node-soap attribute containers
@@ -365,10 +398,11 @@ export class Weather {
       // Recursively convert child elements with their specific type info
       const childType: string | undefined = childrenTypes[k];
       // node-soap can return a scalar when repetition is declared on a wrapping sequence (#141).
-      const value = v != null && !Array.isArray(v) && repeatedElements.includes(k) ? [v] : v;
-      result[k] = Array.isArray(value)
-        ? value.map(node => this.fromSoapResult(node, childType))
-        : this.fromSoapResult(value, childType);
+      const repeated = repeatedElements.includes(k);
+      const value = v != null && !Array.isArray(v) && repeated ? [v] : v;
+      result[k] = repeated && Array.isArray(value)
+        ? value.map(node => this.fromSoapResult(node, childType, nonNillableElements.includes(k)))
+        : this.fromSoapResult(value, childType, nonNillableElements.includes(k));
     }
 
     return result;

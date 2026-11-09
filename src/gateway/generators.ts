@@ -1074,7 +1074,7 @@ export function emitRouteFilesWithHandlers(
       ? "toJsonArray"
       : "toNdjson";
     const runtimeImport = op.stream
-      ? `import { ${streamHelperName} } from "../runtime${suffix}";`
+      ? `import { ${streamHelperName}${hasUnwrap ? ", unwrapArrayWrappers" : ""} } from "../runtime${suffix}";`
       : hasUnwrap
         ? `import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime${suffix}";`
         : `import { buildSuccessEnvelope } from "../runtime${suffix}";`;
@@ -1096,9 +1096,24 @@ export function emitRouteFilesWithHandlers(
     const handlerBody = op.stream
       ? `    handler: async (request, reply) => {
       const client = fastify.${clientMeta.decoratorName};
-      const result = await client.${clientMethod}(${bodyArg});
-      reply.type(${JSON.stringify(op.stream.mediaType)});
-      return reply.send(${streamHelperName}(result.records));
+      const controller = new AbortController();
+      const disconnected = () => { if (!reply.raw.writableEnded) controller.abort(); };
+      request.raw.once("aborted", disconnected);
+      reply.raw.once("close", disconnected);
+      if (request.raw.aborted || reply.raw.destroyed) controller.abort();
+      try {
+        const result = await client.${clientMethod}(${bodyArg}, { signal: controller.signal });
+        reply.type(${JSON.stringify(op.stream.mediaType)});
+        ${hasUnwrap ? `async function* mappedRecords() {
+          for await (const record of result.records) yield unwrapArrayWrappers(record, ${JSON.stringify(op.stream.recordTypeName ?? "unknown")});
+        }
+        // @constraints Keep disconnect cancellation active until the response stream finishes.
+        return await reply.send(${streamHelperName}(mappedRecords()));` : `// @constraints Keep disconnect cancellation active until the response stream finishes.
+        return await reply.send(${streamHelperName}(result.records));`}
+      } finally {
+        request.raw.removeListener("aborted", disconnected);
+        reply.raw.removeListener("close", disconnected);
+      }
     },`
       : `    handler: async (request) => {
       const client = fastify.${clientMeta.decoratorName};

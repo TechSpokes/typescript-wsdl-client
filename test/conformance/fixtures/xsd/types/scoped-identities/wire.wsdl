@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                  xmlns:tns="urn:scoped-wire" targetNamespace="urn:scoped-wire">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:scoped-wire" elementFormDefault="qualified">
+      <xs:element name="ReadRequest"><xs:complexType><xs:sequence>
+        <xs:element name="Entry"><xs:complexType>
+          <xs:sequence><xs:element name="LeftOnly" type="xs:string"/></xs:sequence>
+          <xs:attribute name="Code" type="xs:string" use="required"/>
+        </xs:complexType></xs:element>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="ReadResponse"><xs:complexType><xs:sequence>
+        <xs:element name="Entry"><xs:complexType>
+          <xs:sequence><xs:element name="RightOnly" type="xs:string"/></xs:sequence>
+          <xs:attribute name="Code" type="xs:string" use="required"/>
+        </xs:complexType></xs:element>
+      </xs:sequence></xs:complexType></xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="Input"><wsdl:part name="parameters" element="tns:ReadRequest"/></wsdl:message>
+  <wsdl:message name="Output"><wsdl:part name="parameters" element="tns:ReadResponse"/></wsdl:message>
+  <wsdl:portType name="Port"><wsdl:operation name="Read">
+    <wsdl:input message="tns:Input"/><wsdl:output message="tns:Output"/>
+  </wsdl:operation></wsdl:portType>
+  <wsdl:binding name="Binding" type="tns:Port">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Read"><soap:operation soapAction="urn:scoped-wire:read"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ScopedWire"><wsdl:port name="Port" binding="tns:Binding">
+    <soap:address location="http://127.0.0.1:0/scoped"/>
+  </wsdl:port></wsdl:service>
+</wsdl:definitions>

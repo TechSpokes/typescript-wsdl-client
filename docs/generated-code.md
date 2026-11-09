@@ -140,20 +140,20 @@ const forecast = await client.GetCityForecastByZIP({
   ZIP: "10001"
 });
 
-console.log(forecast.GetCityForecastByZIPResult.Success);
-console.log(forecast.GetCityForecastByZIPResult.ForecastResult);
+console.log(forecast.response.GetCityForecastByZIPResult?.Success);
+console.log(forecast.response.GetCityForecastByZIPResult?.ForecastResult);
 ```
 
 Operations without input still require an empty object:
 
 ```typescript
 const info = await client.GetWeatherInformation({});
-console.log(info.GetWeatherInformationResult.WeatherDescriptions);
+console.log(info.response.GetWeatherInformationResult?.WeatherDescription);
 ```
 
 ## Calling Stream Operations
 
-Operations opted into streaming with `--stream-config` return `StreamOperationResponse<RecordType>` instead of the buffered shape. `records` is a single-pass `AsyncIterable<RecordType>` that pulls bytes from the upstream SOAP response on demand, so memory stays bounded regardless of payload size.
+Operations opted into streaming with `--stream-config` accept `(args, {signal, timeoutMs}?)` and return `StreamOperationResponse<RecordType>`. The single-pass `records` iterable maps complete records into generated DTOs. Memory depends on record size and transport/parser buffering; there is no constant-memory or byte-cap guarantee.
 
 ```typescript
 const result = await client.UnitDescriptiveInfoStream({});
@@ -163,6 +163,8 @@ for await (const record of result.records) {
 ```
 
 Because `records` is single-pass, each response can be iterated once. Headers captured before the first record are available on `result.headers`, and the serialized SOAP envelope that was sent upstream is on `result.requestRaw` when populated.
+
+Exhaust or return the iterator, for example by breaking a `for await` loop, to dispose of transport resources. A per-call deadline starts after metadata initialization; an already-aborted signal rejects before it. Stream-enabled constructors accept `streamRequestOptions` for HTTP settings such as a verified HTTPS agent, separately from WSDL loading. See [transport settings and refusals](gateway-guide.md#streaming-transport-settings).
 
 Streaming requires the `saxes` runtime dependency. The generated app scaffold pins `saxes ^6.0.0` automatically; consumers that integrate the generated client into their own project must install it explicitly.
 
@@ -214,11 +216,11 @@ Generated gateway test suites use one valid branch in union-mode mocks. They als
 All operations and types are fully typed:
 
 ```typescript
-const result: GetCityWeatherByZIPResponse = await client.GetCityWeatherByZIP({
+const result = await client.GetCityWeatherByZIP({
   ZIP: "10001"
 });
 
-result.GetCityWeatherByZIPResult.Temperature;
+result.response.GetCityWeatherByZIPResult?.Temperature;
 ```
 
 Autocomplete and type checking work across all generated interfaces.

@@ -11,16 +11,17 @@ import {
 } from "../helpers/contentModelSoapProbe.js";
 import {validateCapturedSoap} from "../helpers/contentModelSoapReference.js";
 
-// This evidence intentionally asserts legacy failures. It is not a new public
-// faithful runtime or a capability support claim for unexercised combinations.
+// @constraints Independent ordered-wire evidence remains separate from the legacy DTO projection and the bounded SOAP 1.1 transport contract.
 describe("#169 bounded generated SOAP adapter feasibility", () => {
   let server: Awaited<ReturnType<typeof startProbeServer>>;
   let generated: Awaited<ReturnType<typeof generateProbe>>;
+  let mixedBindings: Awaited<ReturnType<typeof generateProbe>>;
   beforeAll(async () => {
     server = await startProbeServer();
-    generated = await generateProbe(server.url);
+    generated = await generateProbe(server.url, "single-soap11");
+    mixedBindings = await generateProbe(server.url);
   });
-  afterAll(async () => {generated?.cleanup(); await server?.close();});
+  afterAll(async () => {generated?.cleanup(); mixedBindings?.cleanup(); await server?.close();});
 
   function rawResponse(xml: string): OrderedNode {
     const capture = orderedCapture();
@@ -150,7 +151,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(await validateCapturedSoap(capture.raw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
   });
 
-  it("retains expanded names and nil aliases from HTTP chunks before the namespace-blind record parser", async () => {
+  it("parses prefixed records and nil aliases while preserving independent expanded-name evidence", async () => {
     const xml = responseParts().join("")
       .replaceAll("<record ", '<p:record xmlns:p="urn:content-model:probe" ')
       .replaceAll("</record>", "</p:record>")
@@ -161,17 +162,18 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     const client = generated.create();
     const seam = installOrderedStreamSeams(client);
     const result = await client.StreamSubmit({});
-    // Shipped parser matches lexical tag names, so p:record is invisible.
-    expect(await drain(result.records)).toEqual([]);
+    const records = await drain(result.records);
+    expect(records).toHaveLength(2);
+    expect(records[0]).toMatchObject({selection: {a: ["1", "4"], b: ["2", "5"], c: "3"}, nullable: null});
     expect(seam.capture.records).toHaveLength(2);
     assertContext(seam.capture.records[0]);
     expect(seam.capture.raw).toBe(xml);
     expect(await validateCapturedSoap(seam.capture.raw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
   });
 
-  it("executes explicit buffered ports/SOAP1.2 while streaming ignores node-soap binding overrides", async () => {
+  it("preserves buffered mixed-binding evidence and refuses unsupported stream bindings before I/O", async () => {
     server.configure({});
-    const buffered = generated.create();
+    const buffered = mixedBindings.create();
     const dep = await buffered.soapClient();
     dep.Submit = dep.SoapProbe.Second11.Submit;
     await preencoded(buffered);
@@ -183,7 +185,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     await preencoded(buffered);
     expect(server.requests.at(-1)!.headers.soapaction).toBe('"urn:probe:submit"');
     server.configure({namespace: soap12});
-    const version12 = generated.create({forceSoap12Headers: true});
+    const version12 = mixedBindings.create({forceSoap12Headers: true});
     const dep12 = await version12.soapClient();
     dep12.Submit = dep12.SoapProbe.Port12.Submit;
     const result12 = await preencoded(version12);
@@ -193,15 +195,18 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(dep12.lastResponseHeaders?.["content-type"]).toBe("application/soap+xml; charset=utf-8");
     expect(await validateCapturedSoap(result12.requestRaw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     server.configure({});
-    const streamed = generated.create({endpoint: `${server.url}/override`, forceSoap12Headers: true});
+    const streamed = generated.create({endpoint: `${server.url}/override`});
     const streamDep = await streamed.soapClient();
     streamDep.setEndpoint(`${server.url}/second`);
-    streamDep.StreamSubmit = streamDep.SoapProbe.Port12.StreamSubmit;
     installOrderedStreamSeams(streamed);
     await streamed.StreamSubmit({}).then(value => drain(value.records));
-    expect(server.requests.at(-1)!.path).toBe("/first");
+    expect(server.requests.at(-1)!.path).toBe("/second");
     expect(server.requests.at(-1)!.xml).toContain(soap11);
     expect(server.requests.at(-1)!.headers.soapaction).toBe('"urn:probe:stream"');
+    const before = server.requests.length;
+    await expect(mixedBindings.create().StreamSubmit({})).rejects.toThrow(/matching.*binding|binding.*match|ambiguous|incompatible/i);
+    await expect(mixedBindings.create({forceSoap12Headers: true}).StreamSubmit({})).rejects.toThrow(/SOAP 1\.1/i);
+    expect(server.requests).toHaveLength(before);
   });
 
   it("executes Basic, HTTP/SOAP headers and UsernameToken independently on each current path", async () => {
@@ -220,19 +225,35 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
       if (security instanceof soap.BasicAuthSecurity) expect(buffered.headers.authorization).toBe("Basic ZHVtbXk6ZHVtbXk=");
       else expect(buffered.xml).toContain("UsernameToken");
       installOrderedStreamSeams(client);
-      if (security instanceof soap.BasicAuthSecurity) await expect(client.StreamSubmit({})).rejects.toThrow("401");
-      else await client.StreamSubmit({}).then(value => drain(value.records));
+      await client.StreamSubmit({}).then(value => drain(value.records));
       const streamed = server.requests.at(-1)!;
-      expect(streamed.headers.authorization).toBeUndefined();
-      expect(streamed.headers["x-probe-request"]).toBeUndefined();
-      expect(streamed.xml).not.toContain("UsernameToken");
-      expect(streamed.xml).not.toContain('<trace xmlns="urn:headers">request</trace>');
+      expect(streamed.headers["x-probe-request"]).toBe("dummy");
+      expect(streamed.xml).toContain('<trace xmlns="urn:headers">request</trace>');
+      if (security instanceof soap.BasicAuthSecurity) expect(streamed.headers.authorization).toBe("Basic ZHVtbXk6ZHVtbXk=");
+      else expect(streamed.xml).toContain("UsernameToken");
+      expect(await validateCapturedSoap(streamed.xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     }
   });
 
-  it("executes mutual TLS on buffered calls and characterizes the dedicated fetch security failure", async () => {
+  it("refuses dynamic SOAP headers, body attributes, MTOM, and NTLM before dispatch", async () => {
+    server.configure({});
+    const dynamicHeader = generated.create();
+    (await dynamicHeader.soapClient()).addSoapHeader(() => '<trace xmlns="urn:headers">dynamic</trace>');
+    const bodyAttributes = generated.create();
+    (await bodyAttributes.soapClient()).addBodyAttribute('id="unsupported"');
+    const mtom = generated.create({}, {toXML: () => "", addOptions(options) {options.forceMTOM = true;}});
+    const ntlm = generated.create({}, {toXML: () => "", addOptions(options) {options.ntlm = true;}});
+    const before = server.requests.length;
+    await expect(dynamicHeader.StreamSubmit({})).rejects.toThrow(/static.*SOAP header/i);
+    await expect(bodyAttributes.StreamSubmit({})).rejects.toThrow(/body attribute/i);
+    await expect(mtom.StreamSubmit({})).rejects.toThrow(/MTOM/i);
+    await expect(ntlm.StreamSubmit({})).rejects.toThrow(/NTLM/i);
+    expect(server.requests).toHaveLength(before);
+  });
+
+  it("executes mutual TLS through the configured security on buffered and streamed calls", async () => {
     const tls = await startProbeServer(true);
-    const tlsGenerated = await generateProbe(tls.url);
+    const tlsGenerated = await generateProbe(tls.url, "single-soap11");
     try {
       const key = readFileSync(join(fixtureDir, "test-key.pem"));
       const cert = readFileSync(join(fixtureDir, "test-cert.pem"));
@@ -241,12 +262,15 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
       expect(tls.requests.at(-1)!.tlsAuthorized).toBe(true);
       expect(await validateCapturedSoap(tls.requests.at(-1)!.xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
       installOrderedStreamSeams(client);
-      await expect(client.StreamSubmit({})).rejects.toThrow("fetch failed");
-      expect(tls.requests).toHaveLength(1);
+      const streamed = await client.StreamSubmit({});
+      expect(await drain(streamed.records)).toHaveLength(2);
+      expect(tls.requests).toHaveLength(2);
+      expect(tls.requests[1].tlsAuthorized).toBe(true);
+      expect(await validateCapturedSoap(tls.requests[1].xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     } finally {tlsGenerated.cleanup(); await tls.close();}
   });
 
-  it("signs the final buffered preencoded body and verifies that signature locally, while stream omits it", async () => {
+  it("signs the final buffered and streamed ordered bodies and verifies both signatures locally", async () => {
     server.configure({});
     const key = readFileSync(join(fixtureDir, "test-key.pem"), "utf8");
     const cert = readFileSync(join(fixtureDir, "test-cert.pem"), "utf8");
@@ -261,19 +285,29 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(verifier.checkSignature(result.requestRaw.replace("<a>1</a>", "<a>changed</a>"))).toBe(false);
     expect(await validateCapturedSoap(result.requestRaw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     installOrderedStreamSeams(client);
-    await client.StreamSubmit({}).then(result => drain(result.records));
-    expect(server.requests.at(-1)!.xml).not.toContain("Signature");
+    const streamed = await client.StreamSubmit({});
+    await drain(streamed.records);
+    const streamedXml = server.requests.at(-1)!.xml;
+    expect(streamed.requestRaw).toBe(streamedXml);
+    expect(streamedXml).toContain(orderedBody);
+    const streamedDocument = new DOMParser().parseFromString(streamedXml, "text/xml");
+    const streamedSignature = streamedDocument.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature")[0];
+    const streamedVerifier = new SignedXml({publicCert: cert, getCertFromKeyInfo: () => null});
+    streamedVerifier.loadSignature(streamedSignature);
+    expect(streamedVerifier.checkSignature(streamedXml)).toBe(true);
+    expect(streamedVerifier.checkSignature(streamedXml.replace("<a>1</a>", "<a>changed</a>"))).toBe(false);
+    expect(await validateCapturedSoap(streamedXml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     // No incoming signature verification is implemented or claimed here.
   });
 
-  it("distinguishes HTTP failure, SOAP fault omissions, malformed EOF and syntax completion", async () => {
+  it("rejects HTTP failures, SOAP faults, and malformed EOF through the generated stream", async () => {
     server.configure({status: 500, body: faultBody});
     await expect(preencoded(generated.create())).rejects.toThrow();
     await expect(generated.create().StreamSubmit({})).rejects.toThrow("500");
     server.configure({body: faultBody});
     await expect(preencoded(generated.create())).rejects.toThrow("probe failure");
     const unadapted = await generated.create().StreamSubmit({});
-    expect(await drain(unadapted.records)).toEqual([]);
+    await expect(drain(unadapted.records)).rejects.toThrow(/SOAP Fault/);
     const faultClient = generated.create();
     const faultSeam = installOrderedStreamSeams(faultClient);
     await expect(faultClient.StreamSubmit({}).then(result => drain(result.records))).rejects.toThrow("soap-fault");
@@ -288,15 +322,14 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(truncatedSeam.lifecycle.outcome).toBe("failure");
   });
 
-  it("shows current early return does not cancel input and proves a consumption-bound cancellation seam", async () => {
+  it("cancels the actual response when stream consumption returns early, with and without syntax capture", async () => {
     server.configure({gated: true});
     const current = await generated.create().StreamSubmit({});
     const currentIterator = current.records[Symbol.asyncIterator]();
     await currentIterator.next();
     await currentIterator.return!();
     expect(server.finished).toBe(false);
-    expect(server.cancelled).toBe(false);
-    server.release();
+    await vi.waitFor(() => expect(server.cancelled).toBe(true));
     server.configure({gated: true});
     const client = generated.create();
     const seam = installOrderedStreamSeams(client);

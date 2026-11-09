@@ -26,7 +26,13 @@ npx wsdl-tsc pipeline \
   --gateway-service-name <slug> \
   --gateway-version-prefix <version>
 
-## Generated Files
+## Profile selection
+
+Use legacy pipeline for one source, or pipeline --services-config services.json for independent legacy sources. The aggregate typed createClients binds each runtime WSDL, endpoint and security separately; no checked/app/test aggregate mode is available. See [composition](docs/gateway-guide.md#multi-service-setup).
+
+Use pipeline --model checked-components-v1 for the bounded document/literal or SOAP 1.1 RPC/encoded string profile. Checked replies remain buffered checked values. Legacy buffered success uses envelopes; opt-in legacy NDJSON/JSON-array streams deliver generated DTO records directly through node-soap requestStream. See [migration](docs/migration.md#from-11x-to-120).
+
+## Output inventory
 
 - client/client.ts: typed SOAP client class
 - client/types.ts: TypeScript interfaces from XSD

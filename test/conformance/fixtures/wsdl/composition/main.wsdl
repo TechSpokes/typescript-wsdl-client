@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:composition:main" targetNamespace="urn:composition:main">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:composition:main" elementFormDefault="qualified">
+      <xs:element name="ReadRequest"><xs:complexType><xs:sequence><xs:element name="Entry"><xs:complexType><xs:sequence><xs:element name="Lookup" type="xs:string"/></xs:sequence><xs:attribute name="Scope" type="xs:string" use="required"/></xs:complexType></xs:element></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="ReadResponse"><xs:complexType><xs:sequence><xs:element name="Entry" type="tns:Reply"/></xs:sequence></xs:complexType></xs:element>
+      <xs:complexType name="Reply"><xs:sequence><xs:element name="Value" type="xs:string"/></xs:sequence><xs:attribute name="Scope" type="xs:string" use="required"/></xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ReadInput"><wsdl:part name="parameters" element="tns:ReadRequest"/></wsdl:message>
+  <wsdl:message name="ReadOutput"><wsdl:part name="parameters" element="tns:ReadResponse"/></wsdl:message>
+  <wsdl:portType name="ServicePortType"><wsdl:operation name="Read"><wsdl:input message="tns:ReadInput"/><wsdl:output message="tns:ReadOutput"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="ServiceBinding" type="tns:ServicePortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="Read"><soap:operation soapAction="urn:composition:main:Read"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+  <wsdl:service name="Service"><wsdl:port name="ServicePort" binding="tns:ServiceBinding"><soap:address location="http://127.0.0.1:1/main-source-must-be-overridden"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

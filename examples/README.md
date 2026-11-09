@@ -4,6 +4,8 @@ Sample files, configuration, and generated output for `@techspokes/typescript-ws
 
 ## Directory Contents
 
+Use [native composition](native-composition/README.md) for a credential-free two-source aggregate. The older Fastify example demonstrates manual plugin mounting, which does not create an aggregate OpenAPI definition.
+
 - [minimal/weather.wsdl](minimal/weather.wsdl): source WSDL file used for smoke tests and examples
 - [generated-output](generated-output/README.md): pre-generated output from weather.wsdl for inspection
 - [config](config/README.md): configuration file examples for OpenAPI generation

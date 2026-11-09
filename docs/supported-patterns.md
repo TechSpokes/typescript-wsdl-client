@@ -8,7 +8,7 @@ The qualified checked domain includes [keyed mixed, namespace-collision and sour
 
 ## Checked SOAP 1.1 RPC string profile
 
-Checked component generation supports the bounded RPC/encoded profile below. The [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) distinguishes all-12 owned-server execution, offline provider-response replay and the separately authorized single ZIP-code live recheck. No geographic correctness claim follows.
+Checked component generation supports the bounded RPC/encoded profile below. The [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) distinguishes all-12 owned-server execution, offline provider-response replay and the 2026-11-09 live retest: ten operations succeeded, while two GML operations returned non-SOAP provider errors. No geographic correctness claim follows.
 
 | Capability | Status | Bounded contract |
 |---|---|---|

@@ -21,6 +21,7 @@ import {type CompilerOptions, resolveCompilerOptions} from "./config.js";
 import {emitClientArtifacts, reportCompilationStats, reportOpenApiSuccess, success} from "./util/cli.js";
 import {loadStreamConfigFile, type StreamConfig} from "./util/streamConfig.js";
 import {applyShapeCatalogs} from "./compiler/shapeResolver.js";
+import {deriveClientName} from "./util/tools.js";
 
 /**
  * Configuration options for the generation pipeline
@@ -71,7 +72,7 @@ export interface PipelineOptions {
   /**
    * Path to a stream configuration JSON file. Loaded and parsed once before
    * compilation; the parsed value takes precedence over `streamConfig` when
-   * both are set. Leave undefined to preserve byte-for-byte buffered output.
+   * both are set. Unlisted operations retain their buffered API selection.
    */
   streamConfigFile?: string;
   /**
@@ -212,6 +213,7 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       clientDir: opts.clientOutDir ? path.resolve(opts.clientOutDir) : undefined,
       // Reuse the same imports mode as the TypeScript client/types/utils emitters
       imports: finalCompiler.imports,
+      clientClassName: opts.gateway.clientClassName ?? deriveClientName(compiled),
       // Pass catalog for runtime unwrap generation
       catalogFile: path.resolve(opts.catalogOut),
       // Thread flatten flag from OpenAPI options
