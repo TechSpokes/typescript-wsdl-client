@@ -12,19 +12,20 @@ Product changes do not wait for unrelated universal research completion. Each ch
 
 ## Next deliveries
 
-Complete review and maintainer release preparation for the [1.2.0 candidate](docs/releases/v1.2.0.md), tracked by [#463](https://github.com/TechSpokes/typescript-wsdl-client/issues/463) and [PR #464](https://github.com/TechSpokes/typescript-wsdl-client/pull/464). Native legacy composition is implemented; checked composition and checked streaming remain deferred. Candidate validation, GitHub draft creation and npm publication are distinct steps.
+Complete review and maintainer release preparation for [1.3.0](docs/releases/v1.3.0.md), tracked by [SOAP 1.2 issue #423](https://github.com/TechSpokes/typescript-wsdl-client/issues/423) and [PR #465](https://github.com/TechSpokes/typescript-wsdl-client/pull/465). Checked SOAP 1.2 document/literal is implemented; checked composition and checked streaming remain deferred. Candidate validation, GitHub draft creation and npm publication are distinct steps.
 
 ### Release availability and upgrade impact
 
-At the 1.2.0 candidate preparation check on 2026-11-10, npm's latest published version was 1.1.8. Version 1.1.5 was also published; 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. A tag or release-note file alone does not establish package availability; see the [version migration guide](docs/migration.md#from-11x-to-120).
+Version 1.2.0 has a published GitHub release. Versions 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. Verify registry availability before installing a target; a tag or release-note file alone does not establish npm availability. See the [version migration guide](docs/migration.md).
 
 | Delivery state | Scope |
 |---|---|
 | Published in 1.1.8 | Opt-in checked component preview and its documented structured mappings |
-| Implemented for the 1.2.0 candidate | Scoped legacy declarations, native legacy composition, mapped streams and bounded checked RPC |
+| Released in 1.2.0 | Scoped legacy declarations, native legacy composition, mapped streams and bounded checked RPC |
+| Implemented for 1.3.0 | Checked SOAP 1.2 document/literal with an additive runtime handshake |
 | Deferred | Checked composition, checked incremental decoding and broader protocol/security coverage |
 
-Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values; the candidate includes [consumer upgrade and rollback instructions](docs/migration.md#from-11x-to-120), not a guarantee of a drop-in migration for every project.
+Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values when crossing 1.2.0. The [migration guide](docs/migration.md) retains those impacts and describes the separately adopted SOAP 1.2 runtime in 1.3.0.
 
 ### Subsequent bounded deliveries
 

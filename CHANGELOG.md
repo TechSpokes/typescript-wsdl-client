@@ -9,7 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-10
+
 - feat(soap): execute checked SOAP 1.2 document/literal operations with binding-isolated actions and validated faults.
+
+- docs(release): document SOAP 1.2 adoption, preserved SOAP 1.1 runtime compatibility and owned-server evidence limits.
 
 ## [1.2.0] - 2026-11-09
 

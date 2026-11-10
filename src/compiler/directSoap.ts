@@ -43,7 +43,7 @@ export interface DirectSoapFailure {
   readonly phase?: 'input' | 'response';
 }
 /** Version-specific protocol metadata; application detail remains owned by native mappings.
- * @since 1.2.1
+ * @since 1.3.0
  */
 export interface Soap12FaultMetadata {
   readonly version: '1.2';
@@ -56,7 +56,7 @@ export interface Soap12FaultMetadata {
 }
 export type DeclaredSoapFault = Readonly<{name: string; code: ExpandedName; codeNode: SyntaxElement; string: string; actor?: string}> & Partial<Soap12FaultMetadata>;
 /** A valid SOAP 1.2 fault without a uniquely declared application detail.
- * @since 1.2.1
+ * @since 1.3.0
  * @constraints Unassessed detail remains only in responseBytes; no native value receipt is issued.
  */
 export interface ComponentProtocolFault {

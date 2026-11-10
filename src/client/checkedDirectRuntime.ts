@@ -87,7 +87,7 @@ export const checkedComponentRuntimeV1: Readonly<{
 });
 
 /** Additive SOAP 1.2 binding permits protocol faults without declared application detail.
- * @since 1.2.1
+ * @since 1.3.0
  * @remarks Source reconstruction, endpoint restrictions and native validation use the shared component runtime.
  * @returns Native component values, SOAP 1.2 protocol faults or explicit refusal; no full-profile admission.
  */

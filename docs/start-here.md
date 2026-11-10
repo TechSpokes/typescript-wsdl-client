@@ -6,7 +6,7 @@ See the root [README](../README.md) for installation and the documentation index
 
 ## Upgrade an existing project
 
-Read the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) before regenerating an existing gateway. Installing the package does not itself rewrite generated code, but consumer build/install scripts can run generation. Legacy remains the default; affected generated names, stream record shapes and corrected scalar/simple-content results need review.
+Read the [migration guide for the intended version](migration.md) before regenerating an existing gateway. The [1.3.0 upgrade](migration.md#from-12x-to-130) adds checked SOAP 1.2; earlier generation changes retain their historical migration guidance. Installing the package does not itself rewrite generated code, but consumer build/install scripts can run generation. Legacy remains the default.
 
 Use the existing generation command and preserve app/test customizations first. Adopt native composition or checked generation separately; successful representative release tests do not certify migration of every consumer project.
 

@@ -9,6 +9,10 @@ Turn legacy WSDL/SOAP services into typed TypeScript clients and optional REST A
 
 Created from production integration work at [TechSpokes](https://www.techspokes.com); built for teams modernizing real enterprise SOAP integrations.
 
+## Upgrading to 1.3.0
+
+Version 1.3.0 adds opt-in checked SOAP 1.2 document/literal execution through the existing adapter. Existing SOAP 1.1 and direct-runtime bindings retain their contracts. SOAP 1.2 clients use an additive runtime handshake; regenerate matched artifacts when adopting that binding. Read the [1.2.x migration guidance](docs/migration.md#from-12x-to-130) for adoption and evidence limits.
+
 ## Upgrading to 1.2.0
 
 Existing projects keep legacy generation unless they explicitly choose another profile. Regeneration can change affected DTO names, stream records and corrected scalar/simple-content results; 1.2.0 is not an unconditional drop-in regeneration upgrade. Read the [1.1.x migration guide](docs/migration.md#from-11x-to-120) before updating, including matched artifact regeneration, scaffold preservation, consumer checks and rollback.
@@ -250,6 +254,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 | [1.2.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, consumer compatibility and bounded RPC qualification |
+| [1.3.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.3.0.md) | Checked SOAP 1.2 execution and preserved SOAP 1.1 compatibility |
 | [XML/JSON Mapping Contract](docs/mapping-contract.md) | Checked keyed, namespace, nil and group representations |
 | [Product Corpus](docs/corpus.md) | Representative public inputs and their executable evidence |
 

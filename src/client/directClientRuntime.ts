@@ -49,7 +49,7 @@ export interface DirectClientRuntime {
   execute(expectedBase64: string, input: unknown, options: DirectClientOptions): Promise<DirectClientResult>;
 }
 /** Component-only protocol faults retain raw bytes without claiming an application value.
- * @since 1.2.1
+ * @since 1.3.0
  */
 export type ComponentClientResult = Exclude<DirectClientResult, {kind: 'soap-fault'}> | ComponentProtocolFault
   | Readonly<Omit<Extract<DirectClientResult, {kind: 'soap-fault'}>, 'fault'> & {fault: Omit<DeclaredSoapFault, 'codeNode'>}>;
@@ -64,7 +64,7 @@ export const componentClientRuntime = Object.freeze({
   execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions): Promise<DirectClientResult> => executeClient(expectedBase64, input, options, true),
 });
 /** Additive SOAP 1.2 injection shares reconstruction and transport with SOAP 1.1.
- * @since 1.2.1
+ * @since 1.3.0
  */
 export const componentSoap12ClientRuntime = Object.freeze({
   version: COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION,

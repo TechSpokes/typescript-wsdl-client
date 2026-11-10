@@ -1,18 +1,18 @@
 # Try opt-in checked generation
 
-Opt-in checked generation supports qualified SOAP 1.1 and SOAP 1.2 document/literal contracts and the bounded SOAP 1.1 RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. SOAP 1.2 execution is new since 1.2.0; see the [binding and artifact contract](checked-gateway.md#component-service-generation). See the root [README](../README.md).
+Opt-in checked generation supports qualified SOAP 1.1 and SOAP 1.2 document/literal contracts and the bounded SOAP 1.1 RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. SOAP 1.2 execution is available starting with 1.3.0; see the [binding and artifact contract](checked-gateway.md#component-service-generation). See the root [README](../README.md).
 
 This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. Generation exposes legacy and components only; the shipped v1.1.5 direct runtime remains a compatibility binding for existing clients. See the [checked gateway reference](checked-gateway.md).
 
 ## Install and try the bundled contract
 
-Version 1.2.0 is a release candidate until published. During candidate verification, install the locally packed 1.2.0 tarball instead of requesting an unpublished registry version. Earlier published previews retain their historical contracts.
+The examples target 1.3.0. Before that version is published, install a locally packed 1.3.0 tarball instead of requesting an unpublished registry version. After publication, use the explicit registry version below. Earlier releases retain their own documented contracts.
 
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.2.0
+npm install --save-dev @techspokes/typescript-wsdl-client@1.3.0
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```

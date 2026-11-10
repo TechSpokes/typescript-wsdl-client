@@ -1,5 +1,5 @@
 /** Frozen component injection contract emitted by the v1.2.0 generator.
- * @since 1.2.1
+ * @since 1.3.0
  * @constraints Copied from src/client/generateDirectClient.ts at v1.2.0; never derive this compatibility oracle from current runtime types.
  */
 export interface Usage {readonly nodes: number; readonly work: number}
