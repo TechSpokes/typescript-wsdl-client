@@ -19,6 +19,14 @@ Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, RES
 5. Run the consumer project's typecheck and tests.
 6. Commit the WSDL reference, configuration files, generated output policy, and tests according to the consumer project's conventions.
 
+## Existing project upgrades
+
+Load `references/migration.md` before changing an existing consumer's generator/runtime version. Inspect its installed version, lockfiles, build/install scripts, generation inputs and selected profile. Keep the existing generation profile during the package upgrade; do not add checked mode or native composition merely because the new version supports them.
+
+Preserve a known-working revision, update an explicit package version and regenerate the matched generator-owned artifacts from their original inputs. Review changed DTO/schema names, stream `recordType` references, mapped record shapes and scalar/simple-content corrections. Preserve adopted app/test scaffolds; force replacement is deliberate, not an ordinary upgrade requirement.
+
+Run the consumer's TypeScript check and maintained tests, and qualify representative backend behavior with appropriate authorization. Release fixtures and generated mock/scaffold checks do not establish that every application migrated. For rollback, restore manifests, lockfiles, matched artifacts and input/configuration revisions together; reinstalling an older generator alone does not revert new generated code.
+
 ## Native multi-service adoption
 
 Use `pipeline --services-config services.json` alone, without single-source CLI flags. Each service's `generation` uses `PipelineOptions` property names and explicit client/catalog/OpenAPI/gateway paths. Keep keys, normalized slugs, decorators, prefixes and output ownership unique. Paths resolve against the config; companion paths in a stream file resolve against that stream file.
@@ -32,6 +40,8 @@ The aggregate serves JSON discovery at `/openapi.json` unless generation changes
 Use `pipeline --model checked-components-v1` only when the consumer chooses the bounded checked preview. Start from WSDL sources, not a legacy catalog. Unambiguous sources need no authored selectors or resource maps; additional metadata origins and genuinely missing schema locations still require explicit input.
 
 Generate client, OpenAPI, gateway, app and tests together with explicit output paths. Inspect the component planning report and operation inventory, then install, typecheck and test the generated project. Runtime configuration keeps generated source snapshots; the selected WSDL endpoint or explicit override supplies routing intent, while optional restrictions narrow it, including empty deny-all.
+
+Checked hosts require `@techspokes/typescript-wsdl-client` as a production runtime dependency, as emitted by their app manifest. Keep that dependency when deployment omits development packages, even if generation tooling is installed separately in a parent project.
 
 Generation, startup and scaffold tests do not execute business SOAP. Independently specified owned-service wire checks and provider acceptance remain separate work. Unsupported source, wildcard or required declaration cases must not be routed through legacy behavior to bypass checked validation. Preserve explicit companion configuration and buffered scope where used.
 

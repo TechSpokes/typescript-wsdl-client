@@ -6,6 +6,8 @@ Implemented legacy composition and deferred checked scope. See the root [README]
 
 Native legacy composition is implemented through `runMultiServicePipeline`, `loadMultiServiceConfig` and `pipeline --services-config`. Each independent WSDL retains its generated client, catalog, SOAP binding/action metadata and service router; the aggregate emits one Fastify plugin and one OpenAPI 3.1 JSON document.
 
+This implementation belongs to the [1.2.0 candidate](../releases/v1.2.0.md), not a claim that composition shipped in the earlier 1.1.8 npm package. The [current roadmap](../../ROADMAP.md#release-availability-and-upgrade-impact) separates published, candidate and deferred capabilities; the historical 1.0 plans remain unchanged.
+
 The [gateway guide](../gateway-guide.md#multi-service-setup) defines the consumer configuration and runtime client registry. The [API reference](../api-reference.md#runmultiservicepipeline) documents exported types, and the [CLI reference](../cli-reference.md#multi-service-configuration) covers invocation. These are the current contracts; the configuration examples previously proposed here are superseded.
 
 Checked composition remains deferred. Checked generation still selects one source/service/binding context; no legacy composition setting relaxes that authority or enables checked streaming.
@@ -65,5 +67,7 @@ Checked component responses currently document buffered delivery. Incremental ch
 ## Compatibility and service isolation
 
 Existing single-source CLI/API entry points remain available when composition is not selected. Keep credentials, trust decisions, source permissions, cancellation signals and stream settings scoped to the runtime client that owns them.
+
+Retaining those entry points does not promise unchanged regenerated types or record values. Use the [1.1.x-to-1.2.0 migration guide](../migration.md#from-11x-to-120) for corrective DTO/schema naming, mapped streams, scaffold preservation and rollback; adopt composition separately from an ordinary package upgrade.
 
 A combined OpenAPI document describes REST paths. It does not make separate SOAP contracts or checked-generation assessments interchangeable.

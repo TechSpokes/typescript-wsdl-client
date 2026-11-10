@@ -71,7 +71,9 @@ Records flow through `Readable.from` in the generated `runtime.ts`. The iterator
 
 ### Connection Timeouts
 
-Stream responses can stay open for the full duration of the upstream SOAP call. The Fastify `keepAliveTimeout`, `requestTimeout`, and any reverse proxy (nginx, ALB, CloudFront) must allow the maximum expected upstream duration. Default Fastify timeouts are shorter than typical long-running SOAP batch responses.
+Stream responses can stay open for the duration of the upstream SOAP call. Configure an upstream operation deadline and align reverse-proxy/load-balancer limits with the expected duration and idle gaps. Supported legacy stream calls accept `{signal, timeoutMs}`; their per-call deadline starts after SOAP metadata initialization.
+
+Fastify's `requestTimeout` limits receipt of the incoming request, while HTTP keep-alive settings govern idle connection reuse; neither is a substitute for the SOAP operation deadline. Review the [Fastify server options](https://fastify.dev/docs/latest/Reference/Server/) separately from [stream transport settings](gateway-guide.md#streaming-transport-settings). Do not assume a universal Fastify default will bound an active upstream call.
 
 ### Memory Profile
 

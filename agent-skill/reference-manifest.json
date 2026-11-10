@@ -2,6 +2,14 @@
   "references": [
     {
       "kind": "fluid",
+      "source": "docs/migration.md",
+      "output": "references/migration.md",
+      "sections": ["## General Upgrade Steps", "## From 1.1.x to 1.2.0"],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
       "source": "docs/checked-generation.md",
       "output": "references/checked-generation.md",
       "sections": [

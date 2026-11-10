@@ -12,6 +12,8 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 
 Choose legacy single-source, legacy multi-service or checked generation explicitly. Native `pipeline --services-config` composes independent legacy clients behind one API; it does not compose checked routes. Checked components support bounded document/literal and RPC/encoded string profiles with buffered checked values. Legacy buffered replies use success envelopes; legacy streams deliver mapped DTO records directly.
 
+For an existing project upgrade, load `references/migration.md` before installing a new version or regenerating. Keep the current profile first, preserve lockfiles and adopted scaffolds, and review generated names and value/stream shapes. New profile adoption is a separate consumer decision; representative release checks do not certify the project's migration.
+
 1. Confirm the consumer project uses Node.js 24 or newer.
 2. Install `@techspokes/typescript-wsdl-client` as a development dependency.
 3. Install `soap` as a runtime dependency.
@@ -21,6 +23,8 @@ Choose legacy single-source, legacy multi-service or checked generation explicit
 7. Validate generated output with the consumer project's TypeScript build and tests.
 
 For testing setup, load `references/testing.md` and choose legacy mock-route tests or checked app scaffold checks. Use consumer scripts and configuration; this package does not install the generator repository's test commands, Vitest projects or verification lock. Generated checks do not replace independent SOAP wire and provider/business acceptance.
+
+The development-dependency installation above describes generator tooling. Checked hosts, including retained direct-runtime clients, also import this package at runtime; preserve its production dependency when deploying with development dependencies omitted.
 
 ## Missing Input Discovery
 
@@ -54,3 +58,4 @@ Load fluid references only when details are needed:
 - `references/troubleshooting.md` for installation, TypeScript, catalog, and streaming diagnostics.
 - `references/streaming.md` for stream configuration and NDJSON or JSON array behavior.
 - `references/composition.md` for services-config, typed createClients and per-client WSDL/security ownership.
+- `references/migration.md` for published upgrade paths, affected contracts, matched regeneration and rollback.

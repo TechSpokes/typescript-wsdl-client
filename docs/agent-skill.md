@@ -6,6 +6,8 @@ Standalone agent skill artifact for consumer projects using `@techspokes/typescr
 
 Consumer guidance selects legacy single-source, native legacy multi-service and checked/RPC profiles. The extracted composition reference includes services-config and typed `createClients` with explicit WSDL/source/security ownership; streaming references describe current mapped DTO transport rather than historical callback-only research.
 
+Existing-project upgrades load the extracted [migration guide](migration.md#from-11x-to-120) before regeneration. It distinguishes package installation from generated-output changes, retains current profile selection, and covers compatibility impacts, consumer verification and rollback. The skill also distinguishes generator development tooling from the checked host's production runtime dependency.
+
 Release assets include `typescript-wsdl-client-agent-skill-vX.Y.Z.zip` and `SHA256SUMS`. GitHub artifact provenance attests the ZIP, which contains an installable `typescript-wsdl-client/` skill folder for consumer projects.
 
 The skill is for consumer-project agents. It tells agents how to choose `wsdl-tsc` commands, handle generated output boundaries, load reference material, and validate generated code without treating generated files as hand-maintained source.
@@ -20,8 +22,11 @@ typescript-wsdl-client/
   references/
     architecture.md
     consumer-workflows.md
+    checked-generation.md
     cli-reference.md
+    composition.md
     generated-code.md
+    migration.md
     testing.md
     troubleshooting.md
     streaming.md

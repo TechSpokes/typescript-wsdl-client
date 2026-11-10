@@ -6,6 +6,8 @@ For CLI flag details, see [CLI Reference](cli-reference.md). For gateway integra
 
 See the root [README](../README.md) and [1.1.x-to-1.2.0 migration](migration.md#from-11x-to-120) before regenerating. Native legacy composition retains per-client ownership; checked/RPC generation has a separate buffered validation contract.
 
+This playbook describes adopting a SOAP-to-REST integration. Updating an existing generated gateway is a separate package-upgrade task: keep its profile first, review matched regenerated artifacts and preserved scaffolds, and use the version migration guide's verification and rollback steps. Adopting checked generation or composition should be a deliberate follow-up rather than an incidental upgrade effect.
+
 ## Overview
 
 The typical migration follows this sequence:

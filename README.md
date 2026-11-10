@@ -9,13 +9,19 @@ Turn legacy WSDL/SOAP services into typed TypeScript clients and optional REST A
 
 Created from production integration work at [TechSpokes](https://www.techspokes.com); built for teams modernizing real enterprise SOAP integrations.
 
+## Upgrading to 1.2.0
+
+Existing projects keep legacy generation unless they explicitly choose another profile. Regeneration can change affected DTO names, stream records and corrected scalar/simple-content results; 1.2.0 is not an unconditional drop-in regeneration upgrade. Read the [1.1.x migration guide](docs/migration.md#from-11x-to-120) before updating, including matched artifact regeneration, scaffold preservation, consumer checks and rollback.
+
+Published npm starting points include 1.1.5 and 1.1.8; 1.1.6 and 1.1.7 were unpublished candidates. Native multi-service composition and checked generation are optional capabilities with separate adoption instructions, not automatic migrations of an existing gateway.
+
 ## Pick Your Path
 
 | Goal | Command | What you get |
 |------|---------|-------------|
 | Typed SOAP client | `npx wsdl-tsc client` | TypeScript types, typed operations, mockable interface |
 | OpenAPI 3.1 spec | `npx wsdl-tsc openapi` | OpenAPI JSON/YAML generated from WSDL |
-| Full SOAP-to-REST bridge | `npx wsdl-tsc pipeline` | Client + OpenAPI + Fastify gateway + runnable app |
+| Full SOAP-to-REST bridge | `npx wsdl-tsc pipeline --init-app` | Client + OpenAPI + Fastify gateway + runnable app |
 | Several SOAP sources behind one API | `npx wsdl-tsc pipeline --services-config services.json` | Separate legacy clients, one gateway plugin and combined OpenAPI |
 | Checked document/literal or bounded RPC | `npx wsdl-tsc pipeline --model checked-components-v1` | Source-backed validation and buffered checked values |
 
@@ -243,7 +249,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
-| [1.2.0 Release Candidate](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, stream DTO migration and bounded RPC qualification |
+| [1.2.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, consumer compatibility and bounded RPC qualification |
 | [XML/JSON Mapping Contract](docs/mapping-contract.md) | Checked keyed, namespace, nil and group representations |
 | [Product Corpus](docs/corpus.md) | Representative public inputs and their executable evidence |
 

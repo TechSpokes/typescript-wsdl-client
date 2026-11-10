@@ -6,7 +6,7 @@ See the root [README](../README.md) for the documentation index. This catalog-ba
 
 ## TypeScript File Preambles
 
-All complete emitted TypeScript files receive one [generated preamble](generated-code.md#generated-preambles-and-eslint), including optional helpers and `_typecheck.ts`. App and generated-test scaffolds use editable-source wording and retain their existing skip/force behavior. Data outputs and existing consumer source remain unchanged.
+All complete emitted TypeScript files receive one [generated preamble](generated-code.md#generated-preambles-and-eslint), including optional helpers and `_typecheck.ts`. App and generated-test scaffolds use editable-source wording and retain their existing skip/force behavior. Preambles do not alter data files or existing consumer source; regeneration compatibility follows the [version migration guide](migration.md#from-11x-to-120).
 
 ## Generation Flow
 

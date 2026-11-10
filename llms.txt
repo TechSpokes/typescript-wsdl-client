@@ -28,6 +28,8 @@ npx wsdl-tsc pipeline \
 
 ## Profile selection
 
+Before upgrading a 1.1.x consumer, read [migration](docs/migration.md#from-11x-to-120). Legacy remains the default, but regeneration can change colliding DTO names, mapped stream records and corrected scalar/simple-content values. Preserve matched artifacts, lockfiles and app/test customizations; adopt a new profile separately. npm published 1.1.5 and 1.1.8, while 1.1.6/1.1.7 were unpublished candidates.
+
 Use legacy pipeline for one source, or pipeline --services-config services.json for independent legacy sources. The aggregate typed createClients binds each runtime WSDL, endpoint and security separately; no checked/app/test aggregate mode is available. See [composition](docs/gateway-guide.md#multi-service-setup).
 
 Use pipeline --model checked-components-v1 for the bounded document/literal or SOAP 1.1 RPC/encoded string profile. Checked replies remain buffered checked values. Legacy buffered success uses envelopes; opt-in legacy NDJSON/JSON-array streams deliver generated DTO records directly through node-soap requestStream. See [migration](docs/migration.md#from-11x-to-120).

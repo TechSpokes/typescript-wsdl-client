@@ -12,7 +12,21 @@ Product changes do not wait for unrelated universal research completion. Each ch
 
 ## Next deliveries
 
-Prepare the [1.2.0 candidate](docs/releases/v1.2.0.md) through the existing release process. Native legacy composition is implemented; checked composition and checked streaming remain deferred. Candidate validation and maintainer publication remain distinct steps.
+Complete review and maintainer release preparation for the [1.2.0 candidate](docs/releases/v1.2.0.md), tracked by [#463](https://github.com/TechSpokes/typescript-wsdl-client/issues/463) and [PR #464](https://github.com/TechSpokes/typescript-wsdl-client/pull/464). Native legacy composition is implemented; checked composition and checked streaming remain deferred. Candidate validation, GitHub draft creation and npm publication are distinct steps.
+
+### Release availability and upgrade impact
+
+At the 1.2.0 candidate preparation check on 2026-11-10, npm's latest published version was 1.1.8. Version 1.1.5 was also published; 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. A tag or release-note file alone does not establish package availability; see the [version migration guide](docs/migration.md#from-11x-to-120).
+
+| Delivery state | Scope |
+|---|---|
+| Published in 1.1.8 | Opt-in checked component preview and its documented structured mappings |
+| Implemented for the 1.2.0 candidate | Scoped legacy declarations, native legacy composition, mapped streams and bounded checked RPC |
+| Deferred | Checked composition, checked incremental decoding and broader protocol/security coverage |
+
+Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values; the candidate includes [consumer upgrade and rollback instructions](docs/migration.md#from-11x-to-120), not a guarantee of a drop-in migration for every project.
+
+### Subsequent bounded deliveries
 
 Use the existing [working-gateway coverage register](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [product outcome](https://github.com/TechSpokes/typescript-wsdl-client/issues/401) to choose bounded additions by the integrations they unlock. Extend the existing conformance corpus with rights-cleared sources and independent positive, invalid-input and refusal expectations.
 
@@ -30,7 +44,9 @@ Use representative corpus exchanges alongside independent native checks, install
 
 Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The local candidate targets 1.2.0; [release notes](docs/releases/README.md) and [published releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) establish availability. Development-tree capabilities and successful tests do not establish publication.
+The local candidate targets 1.2.0; [release notes](docs/releases/README.md) describe its scope, while [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability. Development-tree capabilities and successful tests do not establish publication.
+
+Provider evidence remains narrower than implementation coverage. All 12 NOAA operations have owned-server qualification, while the retained live retest has ten successes and two non-SOAP GML failures; Escapia evidence covers selected Test reads. These limitations remain explicit in the [NOAA qualification](docs/noaa-ndfd-qualification.md) and [composition status](docs/roadmap/multi-service-gateway.md), without closing the broader coverage work.
 
 ## Research and historical coordination
 

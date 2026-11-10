@@ -58,3 +58,5 @@ Legacy generated tests use the operations interface to avoid live SOAP calls. Ch
 
 Regenerate generator-owned client, gateway, OpenAPI and checked source/capsule artifacts from inputs and configuration instead of patching them. Preserve consumer-owned app/test scaffolds and deliberately merge changes when refreshing them. Classify files by ownership rather than their parent directory: a checked app contains both replaceable artifacts and maintained scaffolds.
 
+Package installation and regeneration are different events; consumer build/install scripts may connect them. Regeneration with a newer compiler can change generated names and mapper behavior even when legacy remains selected. Use `references/migration.md` for the versioned impacts and rollback boundary, and keep generator/runtime versions matched for checked artifacts.
+

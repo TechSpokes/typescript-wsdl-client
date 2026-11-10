@@ -362,6 +362,8 @@ const client = createMockClient({
 
 ## For Consumer Projects
 
+When upgrading an existing project, use the [version migration guide](migration.md#from-11x-to-120) to identify changed names and record/value shapes before choosing checks. This package's release tests qualify representative generated consumers and compatibility fixtures; they do not certify every consumer's migration. Keep a known-working revision and verify the application's observable contracts with its own build, maintained tests and authorized backend acceptance.
+
 Choose tests for your integration's observable contracts and regressions. Start with the smallest meaningful check in your project's existing runner; using this generator does not require adopting the generator repository's CI or test configuration. The npm-shipped guide contains maintainer sections for reference, but repository scripts, shared locks and release gates do not apply to consumer projects.
 
 ### Choose legacy or checked generation

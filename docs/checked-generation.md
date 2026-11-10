@@ -162,4 +162,6 @@ With generated defaults, omitted restrictions retain the generated choices; expl
 
 Consumer-owned server/config/test files are preserved unless their existing `--force-init` or `--force-test` option is selected. Review customizations before deliberately refreshing older host scaffolds. Existing v1.1.5-issued direct clients continue using `checkedDirectRuntimeV1` unchanged; new generation uses components.
 
-Legacy users need no model change. Refresh existing consumer dependency lockfiles separately to pick up transitive security fixes.
+Legacy users need no model change. Follow the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) for affected generated names, stream values, buffered conversion fixes and rollback. The preview reached npm in 1.1.8; the earlier 1.1.6/1.1.7 candidates were unpublished.
+
+Checked hosts import `@techspokes/typescript-wsdl-client` at runtime. Retain it in production dependencies as emitted by the checked app manifest; do not omit it from a deployment that installs only production dependencies. Refresh separately maintained consumer package/lockfiles deliberately, and preserve adopted app/test customizations when regenerating.

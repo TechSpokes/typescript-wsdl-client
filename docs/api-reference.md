@@ -4,7 +4,9 @@ This reference covers public generation, composition, stream and security APIs. 
 
 See the main [README](../README.md) for installation, CLI usage, and project overview.
 
-All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Signatures and options are unchanged; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
+All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Adding a preamble does not change an API signature or option; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
+
+Generated-output compatibility is versioned separately from those preambles. Read the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) before regenerating existing clients or changing their selected profile.
 
 ## compileWsdlToProject
 

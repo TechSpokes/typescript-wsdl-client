@@ -11,7 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [1.2.0] - 2026-11-09
 
-- docs(release): align public documentation and agent guidance for 1.2.0.
+- docs(release): align public documentation and agent guidance for 1.2.0, including published upgrade paths and compatibility checks.
 
 - fix(compiler): preserve scoped types and references when generated names collide.
 - feat(gateway): compose independent WSDL clients behind one API definition.

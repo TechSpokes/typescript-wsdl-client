@@ -4,6 +4,12 @@ This page helps you understand what this package does, decide if it fits your ne
 
 See the root [README](../README.md) for installation and the documentation index.
 
+## Upgrade an existing project
+
+Read the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) before regenerating an existing gateway. Installing the package does not itself rewrite generated code, but consumer build/install scripts can run generation. Legacy remains the default; affected generated names, stream record shapes and corrected scalar/simple-content results need review.
+
+Use the existing generation command and preserve app/test customizations first. Adopt native composition or checked generation separately; successful representative release tests do not certify migration of every consumer project.
+
 ## What This Package Does
 
 `@techspokes/typescript-wsdl-client` reads a WSDL/XSD definition and generates typed TypeScript code. Depending on the command you run, you get a typed SOAP client, an OpenAPI 3.1 specification, a Fastify REST gateway, or all of the above.
@@ -70,7 +76,7 @@ Next: [Gateway Guide](gateway-guide.md) for integration details, then [Migration
 
 ### I want to try source-backed checked generation
 
-From version 1.1.6, `pipeline --model checked-components-v1` opts into the checked component preview. It derives unambiguous selections and supported structured mappings from a WSDL file or URL, acquires declared dependencies, and emits a client, OpenAPI, gateway, app and tests. The existing pipeline remains the default when `--model` is omitted.
+The checked component preview shipped in npm version 1.1.8 after the unpublished 1.1.6/1.1.7 candidates. `pipeline --model checked-components-v1` derives unambiguous selections and supported structured mappings from a WSDL file or URL, acquires declared dependencies, and emits a client, OpenAPI, gateway, app and tests. The existing pipeline remains the default when `--model` is omitted.
 
 Start with [Try Opt-in Checked Generation](checked-generation.md) for a bundled installed trial, endpoint configuration, missing-schema recovery and feedback instructions. Supported contracts get native request/response/fault checks; unsupported capabilities refuse rather than bypassing validation. This preview is buffered and separate from the legacy streaming workflow below.
 

@@ -176,7 +176,9 @@ Legacy tests need consumer test/runtime dependencies and use their emitted Vites
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--stream-config` | (none) | Path to a JSON stream-configuration file (ADR-002). Marks selected operations as streaming: client emits `AsyncIterable<RecordType>`, gateway serves NDJSON or JSON array output, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`. Buffered output is unchanged when the flag is omitted. |
+| `--stream-config` | (none) | Path to a JSON stream-configuration file; selects operations for mapped record streaming |
+
+Configured client methods return records through `AsyncIterable<RecordType>`; gateway routes serve NDJSON or JSON-array items, and OpenAPI carries `x-wsdl-tsc-stream` record metadata. Unselected operations retain the buffered API, while generated mapper/metadata output can still change across versions. See [1.2.0 migration](migration.md#from-11x-to-120) before regenerating.
 
 `--stream-config` is accepted on the `compile`, `client`, and `pipeline` commands. It is not accepted on `openapi`, `gateway`, or `app` because those consume a pre-compiled `catalog.json` that already carries the normalized stream metadata.
 
