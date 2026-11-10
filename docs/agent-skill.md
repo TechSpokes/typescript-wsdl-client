@@ -4,11 +4,11 @@ Standalone agent skill artifact for consumer projects using `@techspokes/typescr
 
 ## Purpose
 
-Consumer guidance selects legacy single-source, native legacy multi-service and checked/RPC profiles. The extracted composition reference includes services-config and typed `createClients` with explicit WSDL/source/security ownership; streaming references describe current mapped DTO transport rather than historical callback-only research.
+The skill is a light router to canonical product documentation. Its manual instructions cover input discovery, document selection and generated-file ownership; generation profiles, constructors, mappings, compatibility and transport rules remain in the core guides.
 
-Existing-project upgrades load the extracted [migration guide](migration.md#from-11x-to-120) before regeneration. It distinguishes package installation from generated-output changes, retains current profile selection, and covers compatibility impacts, consumer verification and rollback. The skill also distinguishes generator development tooling from the checked host's production runtime dependency.
+Agents prefer the installed package's documentation, which matches the code they are using. The ZIP also includes generated extracts of canonical docs for its recorded release version, including [migration](migration.md#from-11x-to-120), composition, checked generation and streaming. Those extracts are versioned snapshots, not separately authored sources of product truth.
 
-The instructions distinguish legacy client classes and operations-interface injection from checked client factories and source-backed host configuration. They preserve the frozen 1.1.5 direct-runtime protocol independently of npm version numbers, rather than requiring unnecessary regeneration to match a package version.
+Use a matching repository tag when the installed guide is unavailable, and use target-version docs deliberately during upgrades. Live `main` may contain unreleased behavior; a skill for a newer release must not establish capabilities of an older installed package. `references/SOURCE-MAP.json` records the snapshot's version, tag and source sections.
 
 Release assets include `typescript-wsdl-client-agent-skill-vX.Y.Z.zip` and `SHA256SUMS`. GitHub artifact provenance attests the ZIP, which contains an installable `typescript-wsdl-client/` skill folder for consumer projects.
 
@@ -37,7 +37,7 @@ typescript-wsdl-client/
 
 ## Evergreen Content
 
-Evergreen content lives under `agent-skill/` and is reviewed as source code. Update evergreen files only when stable agent workflow, architecture guidance, dependency rules, or generated-output safety rules change.
+Evergreen content lives under `agent-skill/` and supplies stable routing and ownership instructions. Update product contracts in the canonical docs and select their sections through the reference manifest; do not copy those details into hand-maintained skill summaries.
 
 The evergreen files are `agent-skill/SKILL.md`, `agent-skill/install.mjs`, `agent-skill/evergreen/architecture.md`, and `agent-skill/evergreen/consumer-workflows.md`.
 
