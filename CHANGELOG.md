@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-10
+
+- fix(checked): preserve SOAP 1.1 protocol faults and inspect operations from complete checked configurations.
+- feat(checked): apply external source corrections and inspect captured SOAP responses offline.
+
 ## [1.3.0] - 2026-11-10
 
 - feat(soap): execute checked SOAP 1.2 document/literal operations with binding-isolated actions and validated faults.

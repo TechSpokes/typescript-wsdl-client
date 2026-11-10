@@ -3,6 +3,7 @@ import {rm} from 'node:fs/promises';
 import {installIntakeTooling, type InstalledIntakeTooling} from '../helpers/installedIntakeTooling.js';
 import {qualifyLocalIntakeInstalled} from '../helpers/localIntakeInstalled.js';
 import {qualifyUrlIntakeInstalled} from '../helpers/urlIntakeInstalled.js';
+import {qualifyCorrectedIntakeInstalled} from '../helpers/correctedIntakeInstalled.js';
 
 let tooling: InstalledIntakeTooling;
 beforeAll(async () => {tooling = await installIntakeTooling();}, 480_000);
@@ -12,3 +13,5 @@ it('installs CLI/API local automatic generation and one-value recovery with inde
   context => qualifyLocalIntakeInstalled(tooling, context.signal), 1_200_000);
 it('acquires URL graphs and executes relocated separate gateways with metadata offline',
   context => qualifyUrlIntakeInstalled(tooling, context.signal), 1_200_000);
+it('installs completed-wrapper recipes and preserves corrected SOAP fields without runtime source or recipe access',
+  context => qualifyCorrectedIntakeInstalled(tooling, context.signal), 1_200_000);

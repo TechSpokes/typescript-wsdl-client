@@ -43,6 +43,8 @@ export type {ComposedOpenApiDocument, OpenApiCompositionEntry, OpenApiCompositio
 export type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
 export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';
 export type {CheckedComponentPlan, ComponentPlanBlocker} from './checkedPlanning.js';
+export {inspectCheckedResponse} from './checkedResponseInspection.js';
+export type {CheckedResponseInspectionOptions, CheckedResponseInspectionReport} from './checkedResponseInspection.js';
 export type {ComponentRecordProjectionSpec, ComponentRecordProjectionAssociation} from './compiler/componentRecordProjection.js';
 export {
   loadStreamConfigFile,
@@ -53,7 +55,7 @@ export {
   type StreamConfig,
 } from "./util/streamConfig.js";
 export {applyShapeCatalogs, type ApplyShapeCatalogsOptions} from "./compiler/shapeResolver.js";
-export {checkedDirectRuntimeV1, checkedComponentRuntimeV1, checkedComponentRuntimeV2} from './client/checkedDirectRuntime.js';
+export {checkedDirectRuntimeV1, checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3} from './client/checkedDirectRuntime.js';
 
 // noinspection JSUnusedGlobalSymbols
 /**

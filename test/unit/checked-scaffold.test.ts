@@ -40,7 +40,7 @@ describe('checked app/test scaffold ownership', () => {
     fs.mkdirSync(runtimePackage, {recursive: true});
     fs.writeFileSync(path.join(runtimePackage, 'package.json'), JSON.stringify({type: 'module', exports: './index.ts'}));
     fs.writeFileSync(path.join(runtimePackage, 'index.ts'),
-      `export {checkedComponentRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
+      `export {checkedComponentRuntimeV3} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
     try {
       const result = await promisify(execFile)(process.execPath, [path.resolve('node_modules/vitest/vitest.mjs'), 'run'], {cwd: options.appDir});
       expect(result.stdout).toContain('2 passed');
@@ -102,7 +102,7 @@ describe('checked app/test scaffold ownership', () => {
     fs.mkdirSync(runtimePackage, {recursive: true});
     fs.writeFileSync(path.join(runtimePackage, 'package.json'), JSON.stringify({type: 'module', exports: './index.ts'}));
     fs.writeFileSync(path.join(runtimePackage, 'index.ts'),
-      `export {checkedComponentRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
+      `export {checkedComponentRuntimeV3} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
     const {buildServer} = await import(pathToFileURL(path.join(options.appDir, 'server.ts')).href);
     const defaultHost = await buildServer();
     try {expect((await defaultHost.inject({method: 'GET', url: '/health'})).json()).toEqual({status: 'ok'});}

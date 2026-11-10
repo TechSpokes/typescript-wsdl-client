@@ -3,6 +3,7 @@ import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
 import {types} from 'node:util';
+import {xmlByteLength, snapshotXmlBytes} from '../util/xmlBytes.js';
 import {inspectDirectOperation, isRpcMessageRoot} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
 import {inspectDirectValueMapping, expandDirectValue, assessDirectScalars, inspectComponentValueMapping,
@@ -289,17 +290,10 @@ export function encodeComponentXml(contract: DirectOperationContract, mapping: u
 
 /** Retain the shared byte-copy, XML-version, entity and explicit capacity boundaries for both profiles. */
 function parseObservedXml(bytes: Uint8Array, {budget, limits, check}: Session, sourceUri?: string, componentResponseEncoding?: {charset?: string}): SyntaxElement {
-    if (!types.isUint8Array(bytes) || types.isProxy(bytes)) throw new TypeError('XML requires Uint8Array bytes');
-    // Use native internal-slot access, avoiding subclass/own length, buffer and
-    // iterator getters. Shared backing stores are outside the data-only contract.
-    const typed = Object.getPrototypeOf(Uint8Array.prototype) as object;
-    const length = Object.getOwnPropertyDescriptor(typed, 'byteLength')!.get!.call(bytes) as number;
-    const backing: unknown = Object.getOwnPropertyDescriptor(typed, 'buffer')!.get!.call(bytes);
-    if (types.isSharedArrayBuffer(backing)) throw new TypeError('Shared XML bytes are unsupported');
+    const length = xmlByteLength(bytes);
     if (length > limits.maxBytes) throw new Stop('resource-limit', 'XML byte limit');
     check();
-    const input = new Uint8Array(length);
-    Uint8Array.prototype.set.call(input, bytes);
+    const input = snapshotXmlBytes(bytes);
     const uri = sourceUri ?? 'urn:typescript-wsdl-client:observed-direct-xml';
     if (typeof uri !== 'string') throw new TypeError('XML source URI must be a string');
     check();

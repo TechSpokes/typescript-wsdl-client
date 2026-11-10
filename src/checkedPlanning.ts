@@ -6,11 +6,13 @@ import path from 'node:path';
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
-import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages} from './checkedPipeline.js';
-import type {CheckedComponentOptions} from './checkedPipeline.js';
+import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages, prepareCheckedSourceInputs} from './checkedPipeline.js';
+import type {CheckedComponentOptions, PreparedCheckedSourceInputs} from './checkedPipeline.js';
 import type {DirectOperationSelector} from './compiler/directOperation.js';
 import {inspectDirectOperation} from './compiler/directOperation.js';
 import {loadSemanticSchemaInput, prepareSchemaSnapshotFiles} from './loader/schemaInput.js';
+import type {SchemaInput} from './loader/schemaInput.js';
+import {SourceCorrectionError} from './compiler/sourceCorrections.js';
 import {resolveResourceUri} from './loader/schemaResources.js';
 import {syntaxElements, syntaxAttribute, resolveLexicalQName, WSDL_NAMESPACE, XSD_NAMESPACE, SchemaLoadingError} from './loader/orderedSyntax.js';
 import type {SyntaxDocument, SyntaxSource, ExpandedName} from './loader/orderedSyntax.js';
@@ -105,8 +107,11 @@ export function writeCheckedPlanningFile(file: string, value: unknown, force = f
 
 // @constraints Internal composition only. Native handles are never attached to the public report.
 export async function prepareCheckedComponentPlan(source: string, choices: unknown = {},
-  outputs?: {clientDir: string; gatewayDir: string; openapiFile: string; basePath: string}): Promise<{
+  outputs?: {clientDir: string; gatewayDir: string; openapiFile: string; basePath: string},
+  inspectionSelector?: DirectOperationSelector): Promise<{
   report: CheckedComponentPlan; config?: CheckedComponentOptions; native?: Awaited<ReturnType<typeof prepareComponentStages>>;
+  sources?: PreparedCheckedSourceInputs;
+  sourceInput?: SchemaInput;
 }> {
   const documents: SyntaxDocument[] = [], blockers: ComponentPlanBlocker[] = [];
   let complete = false, config: CheckedComponentOptions | undefined;
@@ -154,6 +159,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     order(candidates); order(operations);
   };
   let native: Awaited<ReturnType<typeof prepareComponentStages>> | undefined;
+  let correctedSources: PreparedCheckedSourceInputs | undefined;
+  let sourceInput: SchemaInput | undefined;
   let preparingNative = false;
   try {
     if (!choices || typeof choices !== 'object' || types.isProxy(choices) || ![null, Object.prototype].includes(Object.getPrototypeOf(choices) as object | null)) throw new TypeError('Data-only choices required');
@@ -179,7 +186,24 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         namespaceLocations: new Map(intake.namespaceLocations?.map(n => [n.namespace, n.location])),
         onDocument: (document: SyntaxDocument) => {documents.push(document);}};
       const prepared = Object.hasOwn(explicit, 'sourceResources') ? await prepareSchemaSnapshotFiles(source, intake.sourceResources, loading) : undefined;
-      const input = await loadSemanticSchemaInput(intake.sourceUri ?? prepared?.source ?? source, prepared?.loading ?? loading);
+      let input = await loadSemanticSchemaInput(intake.sourceUri ?? prepared?.source ?? source, prepared?.loading ?? loading);
+      sourceInput = input;
+      correctedSources = intake.sourceCorrectionsFile ? await prepareCheckedSourceInputs(source, intake, input) : undefined;
+      if (correctedSources) {
+        input = correctedSources.main;
+        sourceInput = input;
+        documents.splice(0, documents.length, ...input.documents);
+      }
+      // @why Correction pins authenticate the complete project closure. Narrow only
+      //   after preparation, so inspecting one operation cannot discard pinned companions.
+      if (inspectionSelector) {
+        const selected = (candidate: DirectOperationSelector) => candidate.operation === inspectionSelector.operation
+          && same(candidate.portType, inspectionSelector.portType) && same(candidate.binding, inspectionSelector.binding);
+        if (intake.selectors && !intake.selectors.some(selected)) throw new TypeError('Inspection selector is not a configured operation');
+        intake = {...intake, selectors: [inspectionSelector],
+          ...(intake.recordProjections ? {recordProjections: intake.recordProjections.filter(entry => selected(entry.selector))} : {})};
+        explicit.selectors = [inspectionSelector];
+      }
       complete = true;
       inventory();
       const possible = candidates.filter(c => (!Object.hasOwn(explicit, 'service') || intake!.service !== undefined && same(c.service, intake!.service))
@@ -215,7 +239,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         config = {...config, sourceResources: [...config.sourceResources, ...input.resources.filter(r => r.uri !== input.root.uri && !known.has(r.uri) && new URL(r.uri).protocol === 'file:')
           .map(r => ({uri: r.uri, file: fileURLToPath(r.uri)}))]};
         preparingNative = true;
-        native = await prepareComponentStages(source, config, !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined, outputs);
+        native = await prepareComponentStages(source, config, correctedSources ? input : !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined,
+          outputs, correctedSources);
         if (native.expected.length) {
           const fresh = inspectDirectOperation(native.expected[0]!.contract).source;
           if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest))) {
@@ -261,7 +286,12 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
   } catch (error) {
     if (!complete) {try {inventory();} catch { /* Partial malformed identities remain unassessed. */ }}
     if (intake?.signal?.aborted) add('cancelled', complete ? 'native-preparation' : 'loading', 'caller-cancelled', 'Rerun with an active signal.', 'signal');
-    else if (error instanceof SchemaLoadingError && error.message === 'Duplicate logical schema snapshot') {
+    else if (error instanceof SourceCorrectionError) {
+      add(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'cancelled' ? 'cancelled' : 'configuration',
+        'configuration', `source-corrections:${error.category}`,
+        'Review the pinned correction file against the original source inventory; regenerate stale drafts or supply replacement snapshots for unsupported edits.',
+        'checkedComponents.sourceCorrectionsFile', selectors);
+    } else if (error instanceof SchemaLoadingError && error.message === 'Duplicate logical schema snapshot') {
       add('configuration', 'configuration', 'duplicate-logical-snapshot', 'Supply unique logical snapshot identities.', 'checkedComponents.sourceResources');
     } else if (error instanceof SchemaLoadingError) {
       const http = /^Schema retrieval returned HTTP (\d{3})$/.exec(error.message)?.[1];
@@ -293,5 +323,6 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     ...(intake && blockers.some(b => b.category === 'missing-dependency' && b.reason.startsWith('locationless-import:')) ? {resolution: {
       instructions: 'Save configuration as checked JSON. Replace REQUIRED_SCHEMA_LOCATION with an authorized schema path; paths resolve from the invocation working directory. Rerun the same pipeline with --checked-config. Reports never authorize generation.',
       configuration: {...Object.fromEntries(Object.entries(explicit).filter(([key]) => key !== 'signal')), namespaceLocations: unresolved}}} : {})};
-  return {report, ...(config ? {config} : {}), ...(native ? {native} : {})};
+  return {report, ...(config ? {config} : {}), ...(native ? {native} : {}), ...(correctedSources ? {sources: correctedSources} : {}),
+    ...(sourceInput ? {sourceInput} : {})};
 }

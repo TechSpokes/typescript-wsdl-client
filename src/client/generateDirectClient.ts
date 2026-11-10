@@ -1,5 +1,5 @@
 import {directLimit} from '../compiler/directExecutionPolicy.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 /** Native-plan generator consumed by the opt-in checked pipeline. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync, mkdirSync} from 'node:fs';
@@ -167,9 +167,9 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       ...response.declarations, `export type Response = ${response.type};`,
       ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`])];
     const soap12 = expected.contract.binding.version === '1.2';
-    const runtimeVersion = soap12 ? COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION : COMPONENT_CLIENT_RUNTIME_VERSION;
+    const runtimeVersion = soap12 ? COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION;
     const lines = [
-      `// Checked component client; inject ${soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV1'} from the package root.`,
+      `// Checked component client; inject ${soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3'} from the package root.`,
       '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
       ...declarations,
       'export interface Usage {readonly nodes: number; readonly work: number}',
@@ -189,9 +189,9 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       '}',
       'export interface Failure {readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
       '  readonly rule: string; readonly repair?: string; readonly phase?: "input" | "response"; readonly usage: Usage}',
-      `export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"; readonly value${soap12 ? '?' : ''}: unknown; readonly admitted: false;`,
+      'export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"; readonly value?: unknown; readonly admitted: false;',
       '  readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
-      `  readonly fault?: {readonly name${soap12 ? '?' : ''}: string; readonly code: Name; readonly string: string; readonly actor?: string}}`,
+      '  readonly fault?: {readonly name?: string; readonly code: Name; readonly string: string; readonly actor?: string}}',
       `export interface Runtime {readonly version: ${literal(runtimeVersion)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(runtimeVersion)}): Promise<Failure | NativeSuccess>}`,
       'type Common = {readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array};',
       'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
@@ -200,8 +200,8 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
         return soap12 ? `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: Soap12Fault & {readonly name: ${literal(mapping.direction.name)}}})`
           : `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: {readonly name: ${literal(mapping.direction.name)}; readonly code: Name; readonly string: string; readonly actor?: string}})`;
       }),
-      ...(soap12 ? ['  | (Common & {readonly kind: "soap-fault"; readonly value?: never; readonly fault: Soap12Fault & {readonly name?: never}})']
-        : faults.length ? [] : ['  | (Common & {readonly kind: "soap-fault"; readonly value: never; readonly fault: {readonly name: never; readonly code: Name; readonly string: string; readonly actor?: string}})']),
+      soap12 ? '  | (Common & {readonly kind: "soap-fault"; readonly value?: never; readonly fault: Soap12Fault & {readonly name?: never}})'
+        : '  | (Common & {readonly kind: "soap-fault"; readonly value?: never; readonly fault: {readonly version: "1.1"; readonly name?: never; readonly code: Name; readonly string: string; readonly actor?: string}})',
       ';',
       `export const expectedCapsuleBase64 = ${literal(Buffer.from(capsule.bytes).toString('base64'))};`,
       `export const selection = ${literal(JSON.stringify({selector: expected.contract.selector, ...expected.selection}))};`,

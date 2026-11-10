@@ -1,7 +1,7 @@
 import {types} from 'node:util';
-import {directClientRuntime, componentClientRuntime, componentSoap12ClientRuntime} from './directClientRuntime.js';
-import type {ComponentClientResult} from './directClientRuntime.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {directClientRuntime, componentClientRuntime, componentSoap11ClientRuntime, componentSoap12ClientRuntime} from './directClientRuntime.js';
+import type {ComponentClientOptions, ComponentClientResult} from './directClientRuntime.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 
 interface Name { readonly namespace: string; readonly local: string }
 interface Usage { readonly nodes: number; readonly work: number }
@@ -86,6 +86,22 @@ export const checkedComponentRuntimeV1: Readonly<{
   },
 });
 
+function checkedProtocolRuntime<V extends typeof COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION, R>(
+  runtime: {version: V; execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => Promise<R>},
+) {
+  return Object.freeze({
+    version: runtime.version,
+    async execute(expectedBase64: string, input: unknown, options: ComponentOptions, version: V): Promise<Failure | R> {
+      if (version !== runtime.version) return Object.freeze({kind: 'incompatible-artifact',
+        rule: 'generated-runtime-version', repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({nodes: 0, work: 0})});
+      if (!dataOptions(options, ['localSource', 'fileRoots', 'capsule', 'soap', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources'])) {
+        return Object.freeze({kind: 'unsupported', rule: 'data-only checked component options required', usage: Object.freeze({nodes: 0, work: 0})});
+      }
+      return runtime.execute(expectedBase64, input, options);
+    },
+  });
+}
+
 /** Additive SOAP 1.2 binding permits protocol faults without declared application detail.
  * @since 1.3.0
  * @remarks Source reconstruction, endpoint restrictions and native validation use the shared component runtime.
@@ -94,14 +110,10 @@ export const checkedComponentRuntimeV1: Readonly<{
 export const checkedComponentRuntimeV2: Readonly<{
   version: typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION;
   execute(expectedBase64: string, input: unknown, options: ComponentOptions, version: typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION): Promise<ComponentClientResult>;
-}> = Object.freeze({
-  version: COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION,
-  async execute(expectedBase64: string, input: unknown, options: ComponentOptions, version: typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION): Promise<ComponentClientResult> {
-    if (version !== COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION) return Object.freeze({kind: 'incompatible-artifact',
-      rule: 'generated-runtime-version', repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({nodes: 0, work: 0})});
-    if (!dataOptions(options, ['localSource', 'fileRoots', 'capsule', 'soap', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources'])) {
-      return Object.freeze({kind: 'unsupported', rule: 'data-only checked component options required', usage: Object.freeze({nodes: 0, work: 0})});
-    }
-    return componentSoap12ClientRuntime.execute(expectedBase64, input, options);
-  },
-});
+}> = checkedProtocolRuntime(componentSoap12ClientRuntime);
+
+/** SOAP 1.1 binding for generated clients that distinguish protocol faults from declared detail values.
+ * @since 1.4.0
+ * @returns Native-validated values, SOAP 1.1 protocol faults with their original bytes, or explicit refusal.
+ */
+export const checkedComponentRuntimeV3 = checkedProtocolRuntime(componentSoap11ClientRuntime);

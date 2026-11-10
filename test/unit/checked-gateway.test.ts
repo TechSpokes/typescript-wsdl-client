@@ -10,8 +10,8 @@ import {generateComponentClient, writeDirectClient} from '../../src/client/gener
 import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway.js';
 
 // @constraints Deliberately dishonest runtime checks the HTTP response defense independently of SOAP validation.
-const runtime = vi.hoisted(() => ({version: 'checked-component-runtime-v2', execute: vi.fn()}));
-vi.mock('@techspokes/typescript-wsdl-client', () => ({checkedComponentRuntimeV1: runtime}));
+const runtime = vi.hoisted(() => ({version: 'checked-component-soap11-runtime-v1', execute: vi.fn()}));
+vi.mock('@techspokes/typescript-wsdl-client', () => ({checkedComponentRuntimeV3: runtime}));
 
 const namespace = 'urn:checked:forecast';
 const selection = {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort'};
@@ -65,6 +65,10 @@ describe('native checked gateway lowering', () => {
     expect(doc.openapi).toBe('3.1.1');
     expect(doc['x-checked-model'].selection).toEqual({selector: expected.contract.selector, ...selection});
     const schemas = JSON.parse(await readFile(path.join(scratch, 'gateway/schemas.json'), 'utf8'));
+    expect(schemas.fault.oneOf.at(-1)).toMatchObject({type: 'object', additionalProperties: false, required: ['fault'],
+      properties: {fault: {required: ['version', 'code', 'string'], properties: {version: {const: '1.1'}}}}});
+    const documented = doc.paths['/v1/forecast/GetForecast'].post.responses['502'].content['application/json'].schema;
+    expect(documented.oneOf[0].oneOf).toContainEqual(schemas.fault.oneOf.at(-1));
     expect(schemas.request.$schema).toBe('http://json-schema.org/draft-07/schema#');
     expect(schemas.request.definitions.Request_Record_0.properties.days).toEqual({type: 'integer', minimum: -2147483648, maximum: 2147483647});
     expect(schemas.response.definitions.Response_Record_0.required).toEqual(['city', 'temperature', 'complete']);
@@ -120,6 +124,21 @@ describe('native checked gateway lowering', () => {
         expect(bad.statusCode).toBe(502);
         expect(bad.json()).toEqual({kind: 'value-invalid', rule: 'http-response-shape'});
       }
+    } finally {await server.close();}
+  });
+
+  it('serializes SOAP 1.1 protocol metadata at HTTP 502 and rejects invented detail values', async () => {
+    const server = await app();
+    const fault = {version: '1.1', code: {namespace: 'http://schemas.xmlsoap.org/soap/envelope/', local: 'Client'},
+      string: 'Not implemented', actor: 'urn:owned:node'};
+    const request = {method: 'POST' as const, url: '/v1/forecast/GetForecast', payload: {city: 'A', days: 1}};
+    try {
+      runtime.execute.mockResolvedValueOnce({kind: 'soap-fault', fault, admitted: false, status: 500});
+      const response = await server.inject(request);
+      expect(response.statusCode).toBe(502);
+      expect(response.json()).toEqual({fault});
+      runtime.execute.mockResolvedValueOnce({kind: 'soap-fault', fault, value: {}, admitted: false, status: 500});
+      expect((await server.inject(request)).json()).toEqual({kind: 'value-invalid', rule: 'http-fault-shape'});
     } finally {await server.close();}
   });
 

@@ -16,6 +16,16 @@ These steps apply to every version upgrade:
 4. Regenerate matched generator-owned artifacts using the existing generation script and options.
 5. Review the generated diff and run the consumer project's TypeScript build and tests.
 
+## From 1.3.x to 1.4.0
+
+Package updates preserve existing SOAP 1.1 V1 and SOAP 1.2 V2 runtime contracts. Newly generated checked SOAP 1.1 clients use `checkedComponentRuntimeV3` and `checked-component-soap11-runtime-v1`; regenerate matched clients, capsules, OpenAPI and gateways together to adopt that binding. Legacy generation and direct preview remain unchanged.
+
+A V3 `soap-fault` can carry protocol metadata without a declared application `value` or fault `name`. Check whether a typed value exists before accessing it. Declared details still undergo native validation, and protocol faults remain gateway HTTP 502 responses.
+
+Checked projects can opt into `sourceCorrectionsFile` for digest-pinned consumer corrections. Preserve upstream originals, review source changes, and regenerate effective snapshots and dependent artifacts together. Runtime deployments need effective snapshots and capsules, not the correction recipe; see [contract correction maintenance](checked-gateway.md).
+
+Offline inspection accepts the complete multi-operation checked configuration and a full operation selector. Correction pins cover every project companion even when only one operation is inspected. XML-only reports do not establish HTTP status or media conformance without supplied response metadata.
+
 ## From 1.2.x to 1.3.0
 
 Version 1.3.0 adds checked SOAP 1.2 document/literal execution. Legacy generation remains the default. Existing SOAP 1.1 component clients keep `checkedComponentRuntimeV1` and `checked-component-runtime-v2`; the shipped direct runtime is unchanged. Updating the package alone does not adopt SOAP 1.2 or require regeneration of existing SOAP 1.1 clients.

@@ -14,7 +14,7 @@ import {exchangeComponentSoap} from '../../src/compiler/directSoap.js';
 import {createComponentSourceCapsule, reconstructComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
 import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway.js';
-import {checkedComponentRuntimeV1, checkedComponentRuntimeV2} from '../../src/index.js';
+import {checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3} from '../../src/index.js';
 import {acceptComponentRuntime} from '../conformance/fixtures/compatibility/v1.2.0/component-runtime-contract.js';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 
@@ -127,11 +127,63 @@ describe('SOAP 1.2 component binding and wire execution', () => {
       expect(await checkedComponentRuntimeV2.execute(Buffer.from(capsule.bytes).toString('base64'), input, options, checkedComponentRuntimeV2.version)).toMatchObject({kind: 'incompatible-artifact'});
       expect(await checkedComponentRuntimeV1.execute(Buffer.from(capsule.bytes).toString('base64'), input,
         {...options, soap: {...options.soap, ...selection('12')}}, checkedComponentRuntimeV1.version)).toMatchObject({kind: 'incompatible-artifact'});
+      expect(await checkedComponentRuntimeV3.execute(Buffer.from(capsule.bytes).toString('base64'), input,
+        {...options, soap: {...options.soap, ...selection('12')}}, checkedComponentRuntimeV3.version)).toMatchObject({kind: 'incompatible-artifact'});
       expect(server.requests).toHaveLength(0);
     });
     const changed = JSON.parse(Buffer.from(capsule.bytes).toString()) as {versions: {scope: string}};
     changed.versions.scope = 'component-soap11-utf8-graph-v1';
     expect(await reconstructComponentSourceCapsule(Buffer.from(JSON.stringify(changed)), v12.file, v12.options)).toMatchObject({kind: 'incompatible-artifact'});
+  });
+
+  it('returns SOAP 1.1 protocol faults with original bytes and preserves older runtime refusals', async () => {
+    const v11 = await source('11'), capsule = await createComponentSourceCapsule(v11.contract, selection('11'));
+    if (capsule.kind !== 'component-capsule') throw new Error(capsule.kind);
+    const literal = Buffer.from(capsule.bytes).toString('base64');
+    const code = '<faultcode>s:Client</faultcode>', reason = '<faultstring>Not implemented</faultstring>';
+    const envelope = (children: string) => `<s:Envelope xmlns:s="${soap11}" xmlns:t="${ns}"><s:Body><s:Fault>${children}</s:Fault></s:Body></s:Envelope>`;
+    await owned(async server => {
+      const soap = {...selection('11'), endpoint: server.endpoint + '/soap11'};
+      const options = {localSource: v11.file, fileRoots: [v11.root], sourceResources: [], sourceOrigins: [], capsule: capsule.bytes, soap};
+      for (const [suffix, legacyRule] of [
+        ['', 'SOAP Fault children'],
+        ['<detail/>', 'one declared SOAP Fault detail required'],
+        ['<detail><t:Unknown/></detail>', 'unknown or ambiguous SOAP Fault detail'],
+        ['<faultactor>urn:upstream</faultactor><detail><t:Unknown/><t:Other/></detail>', 'one declared SOAP Fault detail required'],
+      ] as const) {
+        const bytes = envelope(code + reason + suffix);
+        server.reply(bytes, 500);
+        const expected = {kind: 'soap-fault', admitted: false, status: 500, responseBytes: new Uint8Array(Buffer.from(bytes)),
+          fault: {version: '1.1', code: {namespace: soap11, local: 'Client'}, string: 'Not implemented',
+            ...(suffix.startsWith('<faultactor>') ? {actor: 'urn:upstream'} : {})}};
+        const native = await exchangeComponentSoap(v11.contract, v11.mapping, input, soap);
+        expect(native).toMatchObject(expected);
+        expect(native).not.toHaveProperty('decoded');
+        const generated = await checkedComponentRuntimeV3.execute(literal, input, options, checkedComponentRuntimeV3.version);
+        expect(generated).toMatchObject(expected);
+        expect(generated).not.toHaveProperty('value');
+        expect(generated).not.toHaveProperty('fault.name');
+        expect(await checkedComponentRuntimeV1.execute(literal, input, options, checkedComponentRuntimeV1.version)).toMatchObject({kind: 'protocol', rule: legacyRule});
+        expect(await checkedComponentRuntimeV2.execute(literal, input, options, checkedComponentRuntimeV2.version)).toMatchObject({kind: 'protocol', rule: legacyRule});
+      }
+      const declared = '<t:Problem><t:code>MISSING</t:code><t:message>Missing input</t:message></t:Problem>';
+      server.reply(envelope(code + reason + '<detail>' + declared + '</detail>'), 500);
+      expect(await checkedComponentRuntimeV3.execute(literal, input, options, checkedComponentRuntimeV3.version)).toMatchObject({
+        kind: 'soap-fault', fault: {name: 'Problem'}, value: {code: 'MISSING', message: 'Missing input'}});
+      for (const [children, kind] of [
+        [code + reason + '<detail><t:Problem/></detail>', 'mismatch'],
+        [code + reason + '<detail><t:Other/>' + declared + '</detail>', 'protocol'],
+        [code + reason + '<detail>' + declared + declared + '</detail>', 'protocol'],
+        [code + reason + '<detail>unmapped scalar</detail>', 'protocol'],
+        [code + reason + '<detail/><detail/>', 'protocol'],
+        [reason + code, 'protocol'], [code + code + reason, 'protocol'], [code.replace('s:Client', 'unbound:Client') + reason, 'protocol'],
+      ] as const) {
+        server.reply(envelope(children), 500);
+        const refused = await exchangeComponentSoap(v11.contract, v11.mapping, input, soap);
+        expect(refused).toMatchObject({kind});
+        expect(refused).not.toHaveProperty('decoded');
+      }
+    });
   });
 
   it('decodes declared detail, nested QName subcodes and ordered multilingual reasons on HTTP 400', async () => {
@@ -215,6 +267,38 @@ describe('SOAP 1.2 component binding and wire execution', () => {
         const generic = await app.inject({method: 'POST', url: '/v1/ping', payload: input});
         expect(generic.statusCode).toBe(502); expect(generic.json()).toMatchObject({fault: {version: '1.2', reasons: [{lang: 'en', text: 'Invalid request'}, {lang: 'fr', text: 'Requete invalide'}]}});
         expect(generic.json()).not.toHaveProperty('value');
+      } finally {await app.close();}
+    });
+  }, 120_000);
+
+  it('runs a generated SOAP 1.1 gateway with no declared faults against an owned protocol fault', async context => {
+    const text = original.replace(/<w:fault[^>]*\/>/g, '').replace(/<w:fault\b[\s\S]*?<\/w:fault>/g, '');
+    const selected = await source('11', text);
+    expect(selected.contract.faults).toHaveLength(0);
+    const capsule = await createComponentSourceCapsule(selected.contract, selection('11'));
+    if (capsule.kind !== 'component-capsule') throw new Error(capsule.kind);
+    const fresh = await reconstructComponentSourceCapsule(capsule.bytes, selected.file, selected.options);
+    if (fresh.kind !== 'reconstructed-component') throw new Error(fresh.kind);
+    const generated = await generateComponentClient(fresh);
+    if (generated.kind !== 'generated-component-client') throw new Error(generated.kind);
+    const clientDir = path.join(selected.root, 'client'), gatewayDir = path.join(selected.root, 'gateway');
+    await mkdir(clientDir); writeDirectClient(path.join(clientDir, 'client.ts'), generated);
+    await generateComponentGateway(fresh, {clientDir, gatewayDir, openapiFile: path.join(selected.root, 'openapi.json'), routePath: '/v1/ping'});
+    const config = path.join(selected.root, 'tsconfig.json');
+    await writeFile(config, JSON.stringify({extends: path.resolve('tsconfig.json'), compilerOptions: {noEmit: true, rootDir: process.cwd(),
+      paths: {'@techspokes/typescript-wsdl-client': [path.resolve('src/index.ts')]}}, include: ['client/*.ts', 'gateway/*.ts']}));
+    await runOwnedNode([path.resolve('node_modules/typescript/bin/tsc'), '-p', config], {cwd: process.cwd(), timeoutMs: 60_000, signal: context.signal});
+    await owned(async server => {
+      server.reply(`<s:Envelope xmlns:s="${soap11}"><s:Body><s:Fault><faultcode>s:Client</faultcode><faultstring>Owned protocol failure</faultstring></s:Fault></s:Body></s:Envelope>`, 500);
+      const options = {localSource: selected.file, fileRoots: [selected.root], sourceResources: [], sourceOrigins: [], capsule: capsule.bytes,
+        soap: {...selection('11'), endpoint: server.endpoint + '/soap11'}};
+      const plugin = (await import(pathToFileURL(path.join(gatewayDir, 'plugin.ts')).href)).default as FastifyPluginAsync<{clientOptions: typeof options}>;
+      const app = Fastify(); await app.register(plugin, {clientOptions: options});
+      try {
+        const result = await app.inject({method: 'POST', url: '/v1/ping', payload: input});
+        expect(result.statusCode).toBe(502);
+        expect(result.json()).toEqual({fault: {version: '1.1', code: {namespace: soap11, local: 'Client'}, string: 'Owned protocol failure'}});
+        expect(server.requests).toHaveLength(1);
       } finally {await app.close();}
     });
   }, 120_000);

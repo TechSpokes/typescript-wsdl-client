@@ -1,4 +1,7 @@
 import path from 'node:path';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
 import {beforeAll, describe, expect, it} from 'vitest';
 import {selectComponentOperation} from '../../src/compiler/directOperation.js';
 import type {DirectOperationContract} from '../../src/compiler/directOperation.js';
@@ -32,6 +35,38 @@ beforeAll(async () => {
 });
 
 describe('explicit native companion record scope', () => {
+  it('requires an unambiguous corrected contract before permitting absent metadata', async () => {
+    const file = path.join(directory, 'wrapper.wsdl');
+    const original = await readFile(file, 'utf8');
+    const optional = original.replace('ref="xs:schema"', 'ref="xs:schema" minOccurs="0"');
+    const select = (text: string) => {
+      const bytes = Buffer.from(text);
+      return selectComponentOperation(file, {portType: name('WrapperPortType'), binding: name('WrapperBinding'), operation: 'Fetch'}, {
+        loading: {policy: {fileRoots: [directory]}, offlineResources: new Map([[pathToFileURL(file).href,
+          {bytes, digest: createHash('sha256').update(bytes).digest('hex')}]])},
+        standardLibraries: [acquireStandardSchemaLibrary(SCHEMA_ELEMENT_LIBRARY)]});
+    };
+    // @why Optionality alone makes the following unrestricted wildcard ambiguous under XSD 1.0.
+    expect((await select(optional)).kind).toBe('invalid-schema');
+    const selected = await select(optional.replace('<xs:any/>', `<xs:any namespace="${ns}"/>`));
+    if (selected.kind !== 'selected') throw new Error(JSON.stringify(selected));
+    const corrected = createComponentRecordProjection(selected.contract, companion, recordScopeSpec);
+    if (corrected.kind !== 'component-record-projection') throw new Error(JSON.stringify(corrected));
+    for (const bytes of [xml(), xml(recordXml, '')]) {
+      const decoded = decodeComponentRecordXml(selected.contract, corrected, bytes);
+      expect(decoded.kind).toBe('component-record-decoded');
+      if (decoded.kind === 'component-record-decoded') expect(decoded.validated.recordCount).toBe(2);
+    }
+    expect(decodeComponentRecordXml(outer, projection, xml(recordXml, '')).kind).toBe('mismatch');
+    for (const bytes of [
+      xml(recordXml, `<xs:schema xmlns:xs="${xsd}"/><xs:schema xmlns:xs="${xsd}"/>`),
+      xml(recordXml, `<xs:schema xmlns:xs="${xsd}" invalid="true"/>`),
+      xml('', ''), xml(recordXml + recordXml, ''),
+      xml(recordXml, '<schema xmlns="urn:wrong"/>'),
+      Buffer.from(`<Envelope xmlns="${ns}">${recordXml}<xs:schema xmlns:xs="${xsd}"/></Envelope>`),
+      xml(recordXml.replace('<Active>true</Active>', '<Active>invalid</Active>'), ''),
+    ]) expect(decodeComponentRecordXml(selected.contract, corrected, bytes).kind).not.toBe('component-record-decoded');
+  });
   it('requests a recordPath for multiple declared associations and respects the supplied choice', async () => {
     const result = await selectComponentOperation(path.join(directory, 'records-ambiguous.wsdl'), {
       portType: name('RecordPortType'), binding: name('RecordBinding'), operation: 'Fetch'}, {loading: {policy: {fileRoots: [directory]}}});

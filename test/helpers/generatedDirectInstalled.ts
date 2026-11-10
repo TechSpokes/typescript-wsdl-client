@@ -141,18 +141,24 @@ const extra: Empty = {other: ''};
 const boolean: Response = {city: '', temperature: [], complete: 1};
 void [request, shape, empty, exact, message];
 ${binding === 'component' ? `import {acceptComponentRuntime} from './frozen-component-runtime.js';
-acceptComponentRuntime(checkedComponentRuntimeV1);
-import {checkedComponentRuntimeV2} from '@techspokes/typescript-wsdl-client';
+import {checkedComponentRuntimeV1, checkedComponentRuntimeV2} from '@techspokes/typescript-wsdl-client';
 import {createClient as createSoap12Client} from './soap12.js';
 createSoap12Client(checkedComponentRuntimeV2);
+acceptComponentRuntime(checkedComponentRuntimeV1);
+// @ts-expect-error an older SOAP 1.1 client requires declared application fault values
+acceptComponentRuntime(checkedComponentRuntimeV3);
+// @ts-expect-error a new SOAP 1.1 client requires the value-less fault protocol
+createClient(checkedComponentRuntimeV1);
+// @ts-expect-error SOAP 1.1 and SOAP 1.2 generated contracts use distinct bindings
+createClient(checkedComponentRuntimeV2);
 // @ts-expect-error the old component protocol cannot inject a SOAP 1.2 client
 createSoap12Client(checkedComponentRuntimeV1);
 // @ts-expect-error the additive component protocol cannot inject a frozen SOAP 1.1 client
 acceptComponentRuntime(checkedComponentRuntimeV2);` : ''}
-`.replaceAll(binding === 'component' ? 'checkedDirectRuntimeV1' : '\u0000', 'checkedComponentRuntimeV1')
+`.replaceAll(binding === 'component' ? 'checkedDirectRuntimeV1' : '\u0000', 'checkedComponentRuntimeV3')
       .replace(binding === 'component' ? "import type {Request, Response, DeclaredFault} from './forecast.js';" : '\u0000',
-        "import type {Request, Response, Result} from './forecast.js';\ntype DeclaredFault = Extract<Result, {kind: 'soap-fault'}>;")
-      .replaceAll(binding === 'component' ? 'checked-direct-runtime-v1' : '\u0000', 'checked-component-runtime-v2'));
+        "import type {Request, Response, Result} from './forecast.js';\ntype DeclaredFault = Extract<Result, {kind: 'soap-fault'; value: unknown}>;\ntype ProtocolFault = Extract<Result, {kind: 'soap-fault'; value?: never}>;\ndeclare const protocol: ProtocolFault;\nconst version: '1.1' = protocol.fault.version;\nconst absent: undefined = protocol.value;")
+      .replaceAll(binding === 'component' ? 'checked-direct-runtime-v1' : '\u0000', 'checked-component-soap11-runtime-v1'));
     await writeFile(path.join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {strict: true, exactOptionalPropertyTypes: true, target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'compiled', types: []}, include: variants.map(v => v.name + '.ts').concat('usage.ts')}));
     await run(['--permission', '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer,
       path.join(consumer, 'node_modules/typescript/bin/tsc'), '-p', path.join(consumer, 'tsconfig.json')]);

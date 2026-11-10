@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url';
 import {pathToFileURL} from 'node:url';
 import {types} from 'node:util';
 import {createHash} from 'node:crypto';
+import {constants as bufferConstants} from 'node:buffer';
 import {resolveResourceUri} from './loader/schemaResources.js';
 import type {PipelineOptions} from './pipeline.js';
 import {selectComponentOperations, inspectDirectOperation} from './compiler/directOperation.js';
@@ -18,8 +19,9 @@ import {inspectComponentSourceService} from './compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from './compiler/directSourceCapsule.js';
 import {generateComponentClient, writeComponentServiceClient} from './client/generateDirectClient.js';
 import type {GeneratedComponentClient} from './client/generateDirectClient.js';
-import {copyOriginalSchemaResource, prepareSchemaSnapshotFiles} from './loader/schemaInput.js';
-import type {SchemaInput} from './loader/schemaInput.js';
+import {copyOriginalSchemaResource, loadSemanticSchemaInput, prepareSchemaSnapshotFiles} from './loader/schemaInput.js';
+import type {SchemaInput, SchemaInputOptions} from './loader/schemaInput.js';
+import {prepareCorrectedSourceInputs, SourceCorrectionError} from './compiler/sourceCorrections.js';
 import {createApplicationBudget} from './compiler/semanticBudget.js';
 import {directLoadingLimits} from './compiler/directExecutionPolicy.js';
 import {generateComponentServiceGateway} from './gateway/generateCheckedGateway.js';
@@ -37,6 +39,7 @@ import {inspectComponentValueMapping} from './compiler/directValues.js';
 /** Explicit service operations and independently authorized snapshots for component generation. */
 export interface CheckedComponentOptions {
   readonly applicationGroups?: ApplicationGroupsOptions;
+  readonly sourceCorrectionsFile?: string;
   readonly service: {readonly namespace: string; readonly local: string};
   readonly port: string;
   readonly fileRoots: readonly string[];
@@ -118,7 +121,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'applicationGroups'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'applicationGroups', 'sourceCorrectionsFile'],
     resolved ? ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'] : []);
   if (['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => Object.hasOwn(data, key) && data[key] === undefined))
     throw new TypeError('Explicit component choices must not be undefined');
@@ -163,12 +166,103 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
   if (basePath && (!basePath.startsWith('/') || basePath.endsWith('/') || basePath.split('/').slice(1).some(segment => !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment)))) throw new TypeError('Literal nonempty route prefix required');
   if (data.signal !== undefined && !(data.signal instanceof AbortSignal)) throw new TypeError('Native AbortSignal required');
   return {...(selectors ? {selectors} : {}), ...(data.service === undefined ? {} : {service: name(data.service)}),
+    ...(data.sourceCorrectionsFile === undefined ? {} : {sourceCorrectionsFile: text(data.sourceCorrectionsFile)}),
     ...(Object.hasOwn(data, 'applicationGroups') ? {applicationGroups: parseApplicationGroups(data.applicationGroups)} : {}),
     ...(data.port === undefined ? {} : {port: text(data.port)}), ...(fileRoots ? {fileRoots} : {}),
     ...(sourceResources ? {sourceResources} : {}), ...(sourceOrigins ? {sourceOrigins} : {}),
     ...(data.sourceUri === undefined ? {} : {sourceUri: resolveResourceUri(text(data.sourceUri))}),
     ...(standardLibraries ? {standardLibraries} : {}), ...(recordProjections ? {recordProjections} : {}),
     ...(namespaceLocations ? {namespaceLocations} : {}), ...(basePath ? {basePath} : {}), ...(data.signal ? {signal: data.signal as AbortSignal} : {})};
+}
+
+export interface PreparedCheckedSourceInputs {
+  readonly main: SchemaInput;
+  readonly companions: ReadonlyMap<string, SchemaInput>;
+  readonly provenance: Awaited<ReturnType<typeof prepareCorrectedSourceInputs>>['provenance'] & {
+    readonly recipeFile: {readonly digest: string};
+  };
+}
+
+/**
+ * Acquire the complete authorized original source closure for correction and diagnostic inventory.
+ * @param source Main source location, retaining its configured logical URI.
+ * @param config Explicit loading scope and companion sources.
+ * @param acquiredMain Already acquired main closure, reused without another source read.
+ * @returns Original main and companion inputs with their shared loading policy and work accounting.
+ * @throws For unavailable or unauthorized sources and exhausted source limits.
+ * @constraints Acquisition does not qualify sources or grant response authority.
+ */
+export async function acquireCheckedSourceInputs(source: string, config: Pick<CheckedComponentOptions,
+  'fileRoots' | 'sourceOrigins' | 'sourceResources'> & Partial<CheckedComponentOptions>, acquiredMain?: SchemaInput) {
+  const tick = () => config.signal?.throwIfAborted();
+  const budget = createApplicationBudget();
+  tick();
+  const loading: SchemaInputOptions = {policy: {fileRoots: config.fileRoots, allowedOrigins: config.sourceOrigins},
+    namespaceLocations: new Map(config.namespaceLocations?.map(item => [item.namespace, item.location])), signal: config.signal,
+    limits: acquiredMain?.limits, chargeWork: amount => {tick(); budget.chargeWork(amount);}};
+  const acquire = async (reference: string, main: boolean): Promise<SchemaInput> => {
+    tick();
+    const prepared = await prepareSchemaSnapshotFiles(reference, config.sourceResources, {...loading,
+      ...(main && config.sourceUri ? {sourceUri: config.sourceUri} : {})});
+    return loadSemanticSchemaInput(main && config.sourceUri ? config.sourceUri : prepared.source, prepared.loading);
+  };
+  const main = acquiredMain ?? await acquire(source, true);
+  loading.limits = main.limits;
+  const companions = new Map<string, SchemaInput>();
+  for (const projection of config.recordProjections ?? []) {
+    tick();
+    const key = resolveResourceUri(projection.source);
+    if (!companions.has(key)) companions.set(key, key === main.root.uri ? main : await acquire(projection.source, false));
+  }
+  return {main, companions, loading};
+}
+
+/** Correct and reload the complete authorized project closure without mutating original sources. */
+export async function prepareCheckedSourceInputs(source: string, config: Pick<CheckedComponentOptions,
+  'fileRoots' | 'sourceOrigins' | 'sourceResources'> & Partial<CheckedComponentOptions>, acquiredMain?: SchemaInput): Promise<PreparedCheckedSourceInputs> {
+  if (!config.sourceCorrectionsFile) throw new TypeError('Source correction preparation requires sourceCorrectionsFile');
+  const {main, companions, loading} = await acquireCheckedSourceInputs(source, config, acquiredMain);
+  const tick = () => config.signal?.throwIfAborted();
+  const recipeFile = path.resolve(config.sourceCorrectionsFile);
+  tick();
+  const handle = await fs.promises.open(recipeFile, 'r');
+  let bytes: Buffer;
+  try {
+    const stat = await handle.stat();
+    const maximum = Math.min(main.limits.resourceBytes, bufferConstants.MAX_LENGTH - 1);
+    if (!stat.isFile() || !Number.isSafeInteger(stat.size) || stat.size > maximum) throw new RangeError('Source correction recipe exceeds the source resource byte capacity');
+    // @constraints One extra byte detects growth without permitting an unbounded read after the size check.
+    const buffer = Buffer.alloc(stat.size + 1);
+    let offset = 0;
+    while (offset < buffer.length) {
+      tick();
+      const result = await handle.read(buffer, offset, buffer.length - offset, null);
+      if (!result.bytesRead) break;
+      offset += result.bytesRead;
+    }
+    tick();
+    if (offset !== stat.size) throw new TypeError('Source correction recipe changed during acquisition');
+    bytes = buffer.subarray(0, offset);
+    loading.chargeWork?.(512 + bytes.byteLength * 8);
+  } finally {await handle.close();}
+  tick();
+  let recipe: unknown;
+  try {recipe = JSON.parse(bytes.toString('utf8')) as unknown;}
+  catch {throw new SourceCorrectionError('invalid-recipe', 'Source correction file must contain valid JSON');}
+  const corrected = prepareCorrectedSourceInputs([main, ...companions.values()], recipe, config.signal);
+  const effective = new Map<string, SchemaInput>();
+  const reload = async (input: SchemaInput): Promise<SchemaInput> => {
+    const previous = effective.get(input.root.uri);
+    if (previous) return previous;
+    const result = await loadSemanticSchemaInput(input.root.uri, {...loading, offlineResources: corrected.resources});
+    effective.set(input.root.uri, result);
+    return result;
+  };
+  const effectiveMain = await reload(main);
+  const effectiveCompanions = new Map<string, SchemaInput>();
+  for (const [key, input] of companions) effectiveCompanions.set(key, await reload(input));
+  return {main: effectiveMain, companions: effectiveCompanions, provenance: {...corrected.provenance,
+    recipeFile: {digest: createHash('sha256').update(bytes).digest('hex')}}};
 }
 
 /**
@@ -230,7 +324,10 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
 
 /** Prepare through native owners only; internal handles remain within this invocation. */
 export async function prepareComponentStages(wsdl: string, config: CheckedComponentOptions, acquired?: SchemaInput,
-  outputs = {clientDir: 'client', gatewayDir: 'gateway', openapiFile: 'openapi.json', basePath: '/v1/service'}) {
+  outputs = {clientDir: 'client', gatewayDir: 'gateway', openapiFile: 'openapi.json', basePath: '/v1/service'},
+  sourcePreparation?: PreparedCheckedSourceInputs) {
+  const correctedSources = sourcePreparation ?? (config.sourceCorrectionsFile ? await prepareCheckedSourceInputs(wsdl, config, acquired) : undefined);
+  acquired = correctedSources?.main ?? acquired;
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
   const namespaces = new Map(config.namespaceLocations?.map(location => [location.namespace, location.location]));
   if (namespaces.size !== (config.namespaceLocations?.length ?? 0)) throw new TypeError('Duplicate namespace location');
@@ -256,7 +353,13 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
   }
   for (const group of groups.values()) {
     tick(); const first = group[0]!;
-    const source = await prepareSchemaSnapshotFiles(first.source, config.sourceResources, {policy: {
+    const companionInput = correctedSources?.companions.get(resolveResourceUri(first.source));
+    const companionOffline = companionInput ? new Map([...companionInput.resourceAliases].map(([alias, uri]) => {
+      const resource = companionInput.resources.find(item => item.uri === uri)!;
+      return [alias, {bytes: copyOriginalSchemaResource(companionInput, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri}] as const;
+    })) : undefined;
+    const source = companionInput ? {source: companionInput.root.uri, loading: {...loading, offlineResources: companionOffline}}
+      : await prepareSchemaSnapshotFiles(first.source, config.sourceResources, {policy: {
       fileRoots: config.fileRoots, allowedOrigins: config.sourceOrigins}, namespaceLocations: namespaces,
       limits: directLoadingLimits(budget), signal: config.signal, chargeWork: amount => {tick(); budget.chargeWork(amount);}});
     const companions = await selectComponentOperations(source.source, group.map(item => item.recordSelector), {loading: source.loading,
@@ -321,7 +424,8 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       }
     }
   }
-  return {expected, projections, namespaces, refusals, layout, generatedClients, gateway, applicationGroups};
+  return {expected, projections, namespaces, refusals, layout, generatedClients, gateway, applicationGroups,
+    ...(correctedSources ? {sourceCorrections: correctedSources.provenance} : {})};
 }
 
 function prepareComponentLayout(expected: readonly ReconstructedComponentSource[], projections: ReadonlyMap<string, ComponentRecordProjection>, tick: () => void) {
@@ -394,6 +498,10 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     ...(native.applicationGroups ? {applicationGroups: native.applicationGroups} : {}),
     selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
   fs.writeFileSync(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
+  // @why This generator-owned manifest must describe the current generation, including removal of corrections.
+  const correctionManifest = path.join(clientDir, 'source-corrections.json');
+  if (native.sourceCorrections) fs.writeFileSync(correctionManifest, JSON.stringify(native.sourceCorrections, null, 2) + '\n');
+  else fs.rmSync(correctionManifest, {force: true});
   const component = {source: root, capsules: Object.fromEntries(Object.entries(contracts).map(([name, file]) => [name, path.resolve(clientDir, file)])),
     sourceResources, sourceOrigins: config.sourceOrigins, ...(new URL(input.root.uri).protocol === 'file:' ? {} : {sourceUri: input.root.uri}),
     ...(namespaceLocations.length ? {namespaceLocations} : {}),
