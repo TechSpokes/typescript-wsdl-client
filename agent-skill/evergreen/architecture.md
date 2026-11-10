@@ -28,9 +28,11 @@ Catalog paths matter. Keep the catalog co-located with generated output unless a
 
 ## Client
 
-The client output provides TypeScript types, a SOAP client class, helper utilities, and an operations interface. Consumer code should depend on the operations interface for tests and dependency injection when possible.
+Legacy client output provides TypeScript types, a SOAP client class, helper utilities, and an operations interface. Legacy consumer code should depend on that operations interface for tests and dependency injection when possible.
 
-The `soap` package is a runtime dependency because the generated client calls node-soap at runtime.
+Checked clients use generated operation contracts and `createClient(runtime)` factories rather than that legacy class/operations-interface layout. Use the matching checked runtime and source options from `references/checked-generation.md` instead of transplanting legacy construction code.
+
+The `soap` package is a runtime dependency for generated legacy clients. Checked hosts also retain the package runtime dependencies emitted by their app manifest.
 
 ## OpenAPI
 
@@ -40,7 +42,7 @@ The OpenAPI spec can include security schemes, operation tags, envelope schemas,
 
 ## Gateway
 
-Gateway output turns OpenAPI operations into Fastify route handlers. The generated plugin accepts a typed operations implementation and translates HTTP requests into SOAP operation calls.
+Legacy gateway output turns OpenAPI operations into Fastify route handlers; its plugin accepts a typed operations implementation. Checked gateways bind generated contracts to the checked runtime and source configuration, with native validation at invocation. The legacy `{client}` injection pattern does not configure a checked host.
 
 Gateway routes are generated artifacts. Customize authentication, authorization, observability, deployment, and business policy in surrounding Fastify code or middleware.
 
@@ -58,5 +60,7 @@ Legacy generated tests use the operations interface to avoid live SOAP calls. Ch
 
 Regenerate generator-owned client, gateway, OpenAPI and checked source/capsule artifacts from inputs and configuration instead of patching them. Preserve consumer-owned app/test scaffolds and deliberately merge changes when refreshing them. Classify files by ownership rather than their parent directory: a checked app contains both replaceable artifacts and maintained scaffolds.
 
-Package installation and regeneration are different events; consumer build/install scripts may connect them. Regeneration with a newer compiler can change generated names and mapper behavior even when legacy remains selected. Use `references/migration.md` for the versioned impacts and rollback boundary, and keep generator/runtime versions matched for checked artifacts.
+Package installation and regeneration are different events; consumer build/install scripts may connect them. Regeneration with a newer compiler can change generated names and mapper behavior even when legacy remains selected. Use `references/migration.md` for the versioned impacts and rollback boundary.
+
+Keep generator, component-runtime protocol and checked-component artifacts compatible when regenerating. Retained published 1.1.5 direct clients instead use their frozen `checkedDirectRuntimeV1` protocol, which is independent of npm package version; a newer compatible package binding does not require regenerating those artifacts merely to match version numbers.
 

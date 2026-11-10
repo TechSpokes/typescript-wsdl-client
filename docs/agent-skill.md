@@ -8,6 +8,8 @@ Consumer guidance selects legacy single-source, native legacy multi-service and 
 
 Existing-project upgrades load the extracted [migration guide](migration.md#from-11x-to-120) before regeneration. It distinguishes package installation from generated-output changes, retains current profile selection, and covers compatibility impacts, consumer verification and rollback. The skill also distinguishes generator development tooling from the checked host's production runtime dependency.
 
+The instructions distinguish legacy client classes and operations-interface injection from checked client factories and source-backed host configuration. They preserve the frozen 1.1.5 direct-runtime protocol independently of npm version numbers, rather than requiring unnecessary regeneration to match a package version.
+
 Release assets include `typescript-wsdl-client-agent-skill-vX.Y.Z.zip` and `SHA256SUMS`. GitHub artifact provenance attests the ZIP, which contains an installable `typescript-wsdl-client/` skill folder for consumer projects.
 
 The skill is for consumer-project agents. It tells agents how to choose `wsdl-tsc` commands, handle generated output boundaries, load reference material, and validate generated code without treating generated files as hand-maintained source.

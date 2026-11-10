@@ -12,6 +12,8 @@ If no usable WSDL or catalog is available, ask only for the source location and 
 
 Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, REST gateway, and optional runnable app from the same WSDL.
 
+The following sequence describes legacy adoption. For checked component generation, use the separate checked workflow below rather than substituting standalone legacy stages.
+
 1. Install the package as a development dependency and install `soap` as a runtime dependency.
 2. Choose generated output directories under the consumer project's source or generated-code area.
 3. Run `npx wsdl-tsc pipeline` with the WSDL source, client directory, OpenAPI file, gateway directory, service name, and version prefix.
@@ -45,7 +47,7 @@ Checked hosts require `@techspokes/typescript-wsdl-client` as a production runti
 
 Generation, startup and scaffold tests do not execute business SOAP. Independently specified owned-service wire checks and provider acceptance remain separate work. Unsupported source, wildcard or required declaration cases must not be routed through legacy behavior to bypass checked validation. Preserve explicit companion configuration and buffered scope where used.
 
-Keep generator, runtime, sources and checked artifacts matched when regenerating; preserve consumer-owned scaffold customizations unless replacement is deliberate. Generation offers legacy and `checked-components-v1`; v1.1.5 direct clients retain their shipped runtime contract. Generated source records supply ordinary host defaults, and an optional runtime file contains concise overrides. Load `references/checked-generation.md` for the installed trial, feedback path and boundaries.
+Keep generator, component runtime, sources and checked-component artifacts compatible when regenerating; preserve consumer-owned scaffold customizations unless replacement is deliberate. Generation offers legacy and `checked-components-v1`; v1.1.5 direct clients retain their frozen protocol and may use a newer compatible package binding without regenerating solely to match npm version numbers. Generated source records supply ordinary host defaults, and an optional runtime file contains concise overrides. Load `references/checked-generation.md` for the installed trial, feedback path and boundaries.
 
 ## Typed SOAP Client Only
 
@@ -55,19 +57,19 @@ Generate the client into a stable directory and consume the exported operations 
 
 ## OpenAPI Contract Only
 
-Use `openapi` when the project needs a REST contract or API documentation without generated Fastify routes.
+Use the legacy `openapi` command when the project needs a REST contract or API documentation without generated Fastify routes. Checked projects retain the source-backed checked pipeline and planning workflow.
 
 Prefer a catalog input when the project already generated and reviewed one. Keep the OpenAPI file path stable so downstream tools and gateway generation can reuse it.
 
 ## Gateway From Existing OpenAPI
 
-Use `gateway` when a project already has a generated OpenAPI file and needs Fastify route handlers.
+Use the legacy `gateway` command when a project already has a generated legacy OpenAPI file and needs Fastify route handlers. Do not use it to reconstruct a checked gateway from its OpenAPI projection alone.
 
 Generate the gateway from the OpenAPI file and point it at the generated client directory. Register the generated plugin from application-owned Fastify setup code.
 
 ## App Scaffold
 
-Use `app` or `pipeline --init-app` when the project wants a runnable service wrapper quickly.
+Use `app` or `pipeline --init-app` for a legacy app scaffold. For checked apps, request app generation through the checked pipeline.
 
 App files are editable consumer-owned scaffolds, preserved on regeneration unless app force replacement is selected. Keep long-lived service behavior in maintained server modules, middleware, configuration and deployment files; preserve those customizations when refreshing the scaffold. Regenerate embedded client/gateway artifacts separately according to their ownership, without deleting the app directory.
 
@@ -93,7 +95,7 @@ Use `--client-choice-mode union` when a project wants stricter generated models 
 
 ## Validation
 
-After generation, run the consumer project's typecheck and tests. For gateway work, add route tests around the generated plugin with a typed mock operations' implementation.
+After generation, run the consumer project's typecheck and tests. For legacy gateway work, add route tests around the generated plugin with a typed mock operations' implementation; checked projects follow their source-backed scaffold and independent owned-SOAP checks.
 
 Load `references/testing.md` for complete legacy and checked setup/run examples, emitted configuration and customization ownership. Legacy tests emit their own Vitest config but need consumer dependencies; the checked app supplies its own test/typecheck scripts and scaffold checks. Use existing project commands where appropriate, without adopting generator-repository locks or CI.
 

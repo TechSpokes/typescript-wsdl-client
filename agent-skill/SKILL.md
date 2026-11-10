@@ -26,6 +26,8 @@ For testing setup, load `references/testing.md` and choose legacy mock-route tes
 
 The development-dependency installation above describes generator tooling. Checked hosts, including retained direct-runtime clients, also import this package at runtime; preserve its production dependency when deploying with development dependencies omitted.
 
+Standalone legacy stages and their class/operations-interface integration are not the checked client contract. Use the checked pipeline and `references/checked-generation.md` for component clients and host configuration; preserve the versioned binding for retained direct clients.
+
 ## Missing Input Discovery
 
 Inspect the consumer project for WSDL files, XSD imports, existing `catalog.json` files, generator configuration, and established output paths before asking for input.
