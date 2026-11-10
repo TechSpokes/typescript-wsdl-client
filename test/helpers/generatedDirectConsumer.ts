@@ -41,7 +41,12 @@ export async function exerciseSoap12(runtime: typeof checkedComponentRuntimeV2):
     const success = await call({city: 'Paris', days: 2}, options);
     assert.equal(success.kind, 'soap-response', JSON.stringify(success));
     assert.deepEqual(captured.map(request => request.contentType), ['application/soap+xml; charset=utf-8; action="urn:checked:GetForecast"']);
-    assert.equal(captured[0]!.action, undefined); assert.ok(captured[0]!.xml.includes(namespace));
+    assert.equal(captured[0]!.action, undefined);
+    const parser = new SaxesParser({xmlns: true});
+    let envelope: {local: string; uri: string} | undefined;
+    parser.on('opentag', tag => {envelope ??= {local: tag.local, uri: tag.uri};});
+    parser.write(captured[0]!.xml).close();
+    assert.deepEqual(envelope, {local: 'Envelope', uri: namespace});
     status = 400;
     reply = `<e:Envelope xmlns:e="${namespace}"><e:Body><e:Fault><e:Code><e:Value>e:Sender</e:Value></e:Code><e:Reason><e:Text xml:lang="en">Invalid</e:Text></e:Reason></e:Fault></e:Body></e:Envelope>`;
     const protocol = await call({city: 'Paris', days: 2}, options);
