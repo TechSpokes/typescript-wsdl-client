@@ -2,9 +2,11 @@
 
 This document describes each file produced by the generator, what it contains, and how to work with it. For CLI flags that control output, see [CLI Reference](cli-reference.md).
 
+See the root [README](../README.md) for the documentation index. This catalog-based flow describes legacy output; [checked generation](checked-generation.md) emits source-backed artifacts with a separate value/validation contract.
+
 ## TypeScript File Preambles
 
-All complete emitted TypeScript files receive one [generated preamble](generated-code.md#generated-preambles-and-eslint), including optional helpers and `_typecheck.ts`. App and generated-test scaffolds use editable-source wording and retain their existing skip/force behavior. Data outputs and existing consumer source remain unchanged.
+All complete emitted TypeScript files receive one [generated preamble](generated-code.md#generated-preambles-and-eslint), including optional helpers and `_typecheck.ts`. App and generated-test scaffolds use editable-source wording and retain their existing skip/force behavior. Preambles do not alter data files or existing consumer source; regeneration compatibility follows the [version migration guide](migration.md#from-11x-to-120).
 
 ## Generation Flow
 
@@ -25,15 +27,15 @@ Generated into the directory specified by `--client-dir`.
 
 | File | Purpose |
 |------|---------|
-| types.ts | All TypeScript interfaces derived from WSDL/XSD types |
+| types.ts | TypeScript models projected from WSDL/XSD types |
 | client.ts | SOAP client class with one typed method per operation |
 | operations.ts | Pure interface matching client methods, for mocking without importing `soap` |
-| utils.ts | Runtime helpers including array unwrapping and type metadata |
+| utils.ts | JSON/SOAP conversion metadata |
 | catalog.json | Compiled WSDL data in JSON format, used by other generation stages |
 
 ### types.ts
 
-Contains one interface per WSDL complex type. Attributes and elements are flattened into peer properties. Inheritance is expressed with TypeScript `extends`. All numeric and date-time types map to `string` by default to prevent precision loss.
+Declares generated interfaces and aliases with flattened attribute and element properties. Inheritance can use TypeScript `extends`. Scalar types follow compiler policies: int64, arbitrary-size integers, decimal and date/time default to strings; ordinary numeric and Boolean types retain their projected types.
 
 ### client.ts
 
@@ -45,7 +47,7 @@ Exports a TypeScript interface with the same method signatures as the client cla
 
 ### utils.ts
 
-Contains runtime metadata and helper functions. Includes `unwrapArrayWrappers()` for bridging between SOAP array wrapper objects and flattened OpenAPI array schemas.
+Provides metadata used by the client's `toSoapArgs` and `fromSoapResult` methods. Optional array-wrapper flattening belongs to gateway `runtime.ts` and applies per record for streams.
 
 ### Stream Operations
 
@@ -61,7 +63,7 @@ export type StreamOperationResponse<RecordType, HeadersType = Record<string, unk
 };
 ```
 
-`client.ts` gains a protected `callStream()` transport. Stream methods bypass `node-soap` (which buffers the full response before invoking its callback, as confirmed in phase-0 research) and instead POST a hand-built SOAP envelope via global `fetch`, piping the response body through a SAX-driven record parser. `node-soap` remains the transport for buffered operations.
+`client.ts` gains a protected `callStream()` transport using node-soap's WSDL serializer and public HTTP `requestStream`. Completed parser records pass through the generated DTO mapper; iterator return, per-call abort/deadline and downstream disconnect release the upstream transport. See [stream transport settings](gateway-guide.md#streaming-transport-settings).
 
 Generated imports required at runtime: `saxes` for SAX parsing. The generated app scaffold pins `saxes ^6.0.0` automatically; manual consumers must install it explicitly.
 
@@ -73,7 +75,7 @@ Generated at the path specified by `--openapi-file`.
 |------|---------|
 | openapi.json (or .yaml) | Complete OpenAPI 3.1 specification |
 
-The spec includes one POST path per WSDL operation, request and response schemas in `components/schemas`, and descriptions derived from WSDL documentation annotations. Schemas are generated from the same catalog used for TypeScript types, so the two outputs stay aligned.
+The spec defaults to one POST path per WSDL operation, with request/response schemas in `components/schemas` and source documentation descriptions. Configured defaults and operation overrides can select other HTTP methods. Schemas and TypeScript models use the same catalog.
 
 CLI OpenAPI generation always validates the generated spec using `@apidevtools/swagger-parser`.
 
@@ -120,7 +122,7 @@ JSON array streams default to `application/json` and declare the record schema a
 }
 ```
 
-OpenAPI 3.1 cannot fully describe an NDJSON sequence as a standard JSON Schema document, so the extension makes the item schema explicit for generated gateways, documentation tools, and future SDK generators. JSON array streams use a normal array schema and keep the extension for downstream tooling. Error responses (400, 502, and the rest) still use the normal envelope.
+OpenAPI 3.1 cannot fully describe an NDJSON sequence as a standard JSON Schema document, so the extension makes the item schema explicit. JSON-array streams use an array schema and retain the extension. Errors handled before response commitment can use the legacy error envelope; later failures truncate output.
 
 ## Gateway Output
 
@@ -143,7 +145,7 @@ Each route file in `routes/` follows the same pattern: validate the JSON request
 
 ### Stream Routes
 
-Stream-configured operations generate a different route shape. The Fastify response serialization schema is omitted because the handler sends a `Readable` directly. NDJSON handlers set `reply.type("application/x-ndjson")` and return `reply.send(toNdjson(result.records))`; JSON array handlers set `reply.type("application/json")` and return `reply.send(toJsonArray(result.records))`. `runtime.ts` gains `toNdjson<T>(records: AsyncIterable<T>): Readable` and `toJsonArray<T>(records: AsyncIterable<T>): Readable` helpers. See the [Gateway Guide](gateway-guide.md#streaming-handlers) for the full handler example and terminal-error policy.
+Stream routes omit Fastify response serialization and deliver a `Readable` using `toNdjson` or `toJsonArray`. Completed records are mapped and optionally unwrapped per record; the route connects downstream disconnects to a per-call abort signal before waiting for upstream headers and throughout delivery. See [Streaming Handlers](gateway-guide.md#streaming-handlers) for the cancellable flow and pre-commit versus mid-stream failure policy.
 
 ### Generated Test Surface
 
@@ -155,26 +157,27 @@ The generated plugin exports a Fastify plugin function. Register it with your Fa
 
 ```typescript
 import Fastify from "fastify";
-import { myServiceGateway } from "./.generated/gateway/plugin.js";
-import { createMyServiceClient } from "./.generated/client/client.js";
+import gateway from "./.generated/gateway/plugin.js";
+import { Weather } from "./.generated/client/client.js";
 
 const app = Fastify();
-const client = await createMyServiceClient("https://soap-endpoint.example.com");
-await app.register(myServiceGateway, { client, prefix: "/v1/my-service" });
+const client = new Weather({source: "./weather.wsdl"});
+await app.register(gateway, { client, prefix: "/v1/weather" });
 ```
 
 ## App Output
 
-Generated when `--init-app` is passed. Creates a runnable Fastify application in a sibling `app/` directory.
+Generated with `pipeline --init-app` or the `app` command. `--app-dir` selects the output location; the default is a sibling `app/` directory.
 
 | File | Purpose |
 |------|---------|
-| index.ts | Application entry point with server startup |
+| server.ts | Application entry point with server startup |
+| config.ts | Environment-based configuration loader |
 | .env.example | Environment variable template for WSDL URL, port, host |
 | package.json | Dependencies and npm scripts |
 | tsconfig.json | TypeScript configuration for the app |
 
-App files have overwrite protection: they are written only if they do not already exist. This prevents regeneration from overwriting your customizations. Use `--force-app` to override this behavior.
+App scaffolds are preserved by default. Use `pipeline --force-init` or standalone `app --force` only for deliberate replacement after reviewing adopted customizations.
 
 ## What to Commit
 
@@ -182,6 +185,6 @@ All generated files are deterministic. Committing them to version control is saf
 
 ## What to Customize
 
-- App files (`index.ts`, `.env`): these are your entry points; customize freely after first generation
+- Adopted app files (`server.ts`, `config.ts`, `.env`) are consumer-owned customization points.
 - Gateway plugin, routes, and schemas: do not edit manually; they are overwritten on regeneration
 - Add custom middleware, auth, logging, and error handling in your app code, not in generated gateway files

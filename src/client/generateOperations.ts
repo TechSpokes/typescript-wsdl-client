@@ -4,6 +4,7 @@
  * Generates a fully-typed operations interface for the SOAP client.
  * This standalone interface enables mocking and testing without importing
  * the concrete SOAP client class or its runtime dependencies.
+ * @since Unreleased
  */
 import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import type { CompiledCatalog } from "../compiler/schemaCompiler.js";
@@ -35,21 +36,29 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
 
   // Collect type names used in method signatures for the import statement
   const importedTypes = new Set<string>();
+  const operationTypes = compiled.operations.map(operation => ({operation,
+    input: operation.inputTypeName ?? (operation.inputElement ? pascal(operation.inputElement.local) : undefined),
+    output: operation.outputTypeName ?? (operation.outputElement ? pascal(operation.outputElement.local) : undefined),
+  }));
+  const reservedTypes = new Set(["Promise", "AsyncIterable", "AbortSignal", "StreamCallOptions", "StreamOperationResponse", `${clientName}Operations`]);
+  // @constraints Qualify model references when their public names overlap generated helpers or native transport types.
+  const namespaceModels = operationTypes.some(({operation, input, output}) =>
+    [input, output, operation.stream?.recordTypeName].some(name => name !== undefined && reservedTypes.has(name)));
+  const modelType = (name: string) => namespaceModels ? `T.${name}` : name;
   const methods: string[] = [];
   // Does any operation opt into streaming? If so we also emit the
   // StreamOperationResponse helper type below.
   let anyStream = false;
 
-  for (const op of compiled.operations) {
-    const inTypeName = op.inputTypeName ?? (op.inputElement ? pascal(op.inputElement.local) : undefined);
-    const outTypeName = op.outputTypeName ?? (op.outputElement ? pascal(op.outputElement.local) : undefined);
+  for (const {operation: op, input: inTypeName, output: outTypeName} of operationTypes) {
 
     if (!inTypeName && !outTypeName) {
       continue;
     }
 
-    const inTs = inTypeName ?? "Record<string, unknown>";
-    const outTs = outTypeName ?? "unknown";
+    // @constraints WSDL DTOs may be named Record and shadow the built-in utility type.
+    const inTs = inTypeName ? modelType(inTypeName) : "{[key: string]: unknown}";
+    const outTs = outTypeName ? modelType(outTypeName) : "unknown";
 
     if (inTypeName) importedTypes.add(inTypeName);
     if (outTypeName) importedTypes.add(outTypeName);
@@ -65,8 +74,9 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
       importedTypes.add(recordTs);
       methods.push(
         `${docBlock}  ${op.name}(\n` +
-        `    args: ${inTs}\n` +
-        `  ): Promise<StreamOperationResponse<${recordTs}>>;\n`
+        `    args: ${inTs},\n` +
+        `    options?: StreamCallOptions\n` +
+        `  ): Promise<StreamOperationResponse<${modelType(recordTs)}>>;\n`
       );
     } else {
       methods.push(
@@ -80,17 +90,27 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
   // Build sorted import list for deterministic output
   const sortedImports = Array.from(importedTypes).sort();
   const typeImport = sortedImports.length > 0
-    ? `import type {\n${sortedImports.map((t) => `  ${t},`).join("\n")}\n} from "./types${suffix}";\n\n`
+    ? namespaceModels
+      ? `import type * as T from "./types${suffix}";\n\n`
+      : `import type {\n${sortedImports.map((t) => `  ${t},`).join("\n")}\n} from "./types${suffix}";\n\n`
     : "";
 
   // Emit the StreamOperationResponse helper type iff at least one operation
   // is stream-configured. Kept inside operations.ts so that mocks and gateway
   // code can import it without pulling in the SOAP runtime. The raw template
   // lives in a sibling .tpl file so the IDE does not try to parse embedded
-  // TypeScript type-parameter defaults (HeadersType = Record<...>) as
-  // JavaScript assignment expressions.
+  // TypeScript generic defaults as JavaScript assignment expressions.
   const streamHelper = anyStream
-    ? loadRuntimeSource("operationsStreamHelper.tpl.txt").replace(/__CLIENT_NAME__/g, clientName)
+    ? `/**
+ * Per-call stream cancellation and total request/response deadline.
+ * @since Unreleased
+ */
+export interface StreamCallOptions {
+  signal?: AbortSignal;
+  timeoutMs?: number;
+}
+
+` + loadRuntimeSource("operationsStreamHelper.tpl.txt").replace(/__CLIENT_NAME__/g, clientName)
     : "";
 
   const content = `/**

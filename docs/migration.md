@@ -1,23 +1,141 @@
 # Migration Guide
 
-This guide covers upgrade steps between major versions of `@techspokes/typescript-wsdl-client`.
+This guide covers package upgrades and generated-project compatibility for `@techspokes/typescript-wsdl-client`.
 
 Versions are listed newest first. Find your current version and follow the steps for each version you need to cross.
+
+See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
 ## General Upgrade Steps
 
 These steps apply to every version upgrade:
 
-1. Update the package: `npm install --save-dev @techspokes/typescript-wsdl-client@latest`
-2. Read the migration section for your version jump below
-3. Regenerate all output by running your generation script or pipeline command
-4. Run `tsc --noEmit` to verify the generated code compiles
-5. Test your application
+1. Read the migration section for the installed and intended versions before updating dependencies.
+2. Preserve the working dependency lockfile, inputs, generation settings and application customizations.
+3. Install an explicit target version in an upgrade branch.
+4. Regenerate matched generator-owned artifacts using the existing generation script and options.
+5. Review the generated diff and run the consumer project's TypeScript build and tests.
+
+## From 1.1.x to 1.2.0
+
+### Published starting points
+
+Both 1.1.5 and 1.1.8 were published to npm. Versions 1.1.6 and 1.1.7 were unpublished candidates whose preview work was carried into 1.1.8; their GitHub tags and release-note files do not make them installable npm versions. This publication history was checked against the [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) on 2026-11-10.
+
+Use these instructions for either published starting point. A project upgrading from 1.1.5 also crosses the checked-generation preview and legacy conversion corrections already shipped in 1.1.8. Historical release notes remain a record of their original candidates, not additional required installation steps.
+
+### Package installation versus regeneration
+
+Publishing a package does not change a deployed gateway. Installing a newer generator does not itself rewrite existing generated files; a consumer's install/build scripts may run generation, and dependency resolution or package-runtime imports can change behavior without regeneration.
+
+| Project action | Upgrade effect |
+|---|---|
+| Keep the installed package, lockfile and deployed build | No automatic switch to 1.2.0 |
+| Update the package without running generation | Existing generated files remain; runtime dependencies still need verification |
+| Run generation during a build or install | New output can appear in that next build |
+| Regenerate using the existing legacy command | Legacy remains selected; compiler and mapper corrections take effect |
+| Select checked generation or native composition | Deliberate adoption with separate contracts and configuration |
+
+A dependency range of `^1.1.5` or `^1.1.8` permits 1.2.0 when npm resolves an update. An exact version pin or a `~1.1.x` range does not permit this minor upgrade. Commit the lockfile and use `npm ci` to reproduce its recorded dependency tree; updating or replacing that lockfile is a separate deliberate step. See [npm version ranges](https://docs.npmjs.com/about-semantic-versioning/) and [npm ci](https://docs.npmjs.com/cli/v11/commands/npm-ci/).
+
+### Changes that can affect existing projects
+
+The 1.2.0 compiler correction separates declarations that previously collapsed into one generated type. Distinct inline `Entry` declarations under `Left` and `Right` now receive separate owner-qualified names. Non-colliding exported names and XML/JSON member names are preserved; residual Pascal-case or namespace collisions receive deterministic suffixes.
+
+This minor release includes corrective compatibility changes: affected exported DTO names can break source imports after regeneration, and stream records now use generated DTOs rather than lexical attribute bags. The 1.2.0 version number is not a guarantee of a drop-in regeneration upgrade; review the following impacts before deploying the regenerated project.
+
+| Existing use | What to review |
+|---|---|
+| Buffered legacy gateway | Keep its model and envelope; inspect regenerated schemas and DTO conversion |
+| Colliding declaration names | Update affected imports, type annotations and stream `recordType` references |
+| Legacy streaming | Update consumers expecting lexical strings or nested attribute bags |
+| Boolean attributes or simple content | Review corrected scalar conversion and `$value` objects |
+| Adopted app or test scaffolds | Merge intended updates; existing files are preserved by default |
+| Published 1.1.5 checked direct clients | Retain the versioned binding and its original execution restrictions |
+
+Regeneration can also change OpenAPI model names and generated SDK names that depend on them. Preserving an XML/JSON member name does not preserve a previously incorrect value shape or scalar conversion. Do not mix a newly generated client with an older catalog, metadata helper, gateway or OpenAPI document to suppress these changes.
+
+### Stream record migration
+
+Configured stream methods still return `records: AsyncIterable<RecordType>`, but each completed XML record now passes through generated DTO mapping. Flattened attributes, typed `$value` content, configured scalar policies, XML lists and repeated fields follow the generated model. The gateway sends those mapped records as NDJSON or JSON-array items without a legacy success envelope.
+
+For a record with Boolean `Enabled` and integer `Rank` attributes and an integer `Count` child, a previous parser-shaped record using the default output attribute key could look like this:
+
+```json
+{"attributes":{"Enabled":"1","Rank":"7"},"Count":"42"}
+```
+
+The corresponding mapped DTO fields are:
+
+```json
+{"Enabled":true,"Rank":7,"Count":42}
+```
+
+This is a field-level illustration, not a complete SOAP payload or a rule that all numbers become JavaScript numbers. Decimal and int64 policies remain configurable and string-first by default; JavaScript `bigint` still requires a consumer-owned JSON strategy. Update stream consumers and review their advertised OpenAPI schemas together.
+
+Stream calls add optional `{signal, timeoutMs}` and supported node-soap serializer/transport hooks. Requests now use the WSDL serializer and supported client endpoint/security settings; verify those settings against the intended backend. SOAP 1.2, functional SOAP headers, SOAP body attributes, MTOM and NTLM remain refused stream combinations. See the [stream API](api-reference.md#generated-stream-client-contract) and [transport boundaries](gateway-guide.md#streaming-transport-settings).
+
+### Buffered conversion corrections since 1.1.5
+
+The intervening published 1.1.8 includes corrections for Boolean XML attributes and simple-content responses. Valid Boolean spellings become actual Booleans; invalid spellings reject instead of producing misleading successful values. Text-only complex simple content retains its `$value` object, including when optional attributes are absent. Review application code that compensated for the previous incorrect results.
+
+The ordinary buffered legacy call still exposes its generated `.response` value, and its gateway retains the legacy success envelope. Omitting stream configuration does not promise byte-identical generated output: shared mapper and metadata corrections also apply to buffered clients.
+
+### Upgrade an existing legacy gateway
+
+Keep Node.js >= 24 and the existing ESM project setup. Keep the generator as a development dependency and `soap` as a runtime dependency; retain the gateway's other runtime dependencies. A separately maintained generated app has its own package and lockfile, so upgrading the generator in its parent project does not automatically refresh that app's dependencies.
+
+After 1.2.0 is published, install the explicit target in the project that owns generation:
+
+```bash
+npm install --save-dev --save-exact @techspokes/typescript-wsdl-client@1.2.0
+```
+
+Before publication, use a locally packed candidate as described in [checked-generation installation guidance](checked-generation.md#install-and-try-the-bundled-contract), rather than requesting an unpublished registry version. Do not add a checked model flag just to upgrade a legacy project.
+
+1. Preserve a known-working revision with its dependency lockfiles and generation inputs.
+2. Run the existing generation script with the same profile, paths, naming and mapping options.
+3. Regenerate matched catalog, client, metadata helpers, OpenAPI and gateway artifacts from original WSDL/XSD sources.
+4. Review generated type/schema names, buffered values and any configured stream records.
+5. Merge app/configuration/package and test scaffold updates deliberately.
+6. Run the consumer project's TypeScript check with generated files included and its maintained tests.
+7. Verify representative request, response and fault behavior against an authorized test backend before deployment.
+
+Existing app and generated-test scaffold files are skipped by default. `pipeline --force-init` and `--force-test` explicitly replace their respective scaffolds; standalone `app --force` has the app replacement role. Preserve custom server, authentication, environment, package and test changes before selecting any force option. Do not delete an entire app directory merely to refresh the replaceable client/gateway files inside it.
+
+The compiled catalog format remains unchanged. Old catalogs remain readable as stored, but cannot recover declarations lost through an earlier merge; loading one does not fetch its WSDL or reconstruct missing types. Companion catalogs retain their existing conservative same-name structural conflict checks.
+
+### Optional adoption of new capabilities
+
+| Capability | Adoption boundary |
+|---|---|
+| Native legacy multi-service gateway | Use `pipeline --services-config`; retain independent sources, clients and security |
+| Checked document/literal or bounded RPC | Trial `pipeline --model checked-components-v1` in separate output paths |
+| Existing manual gateway mounting | Continue registering single-source plugins in separate Fastify scopes |
+
+Native composition emits one aggregate plugin and OpenAPI document for legacy services; it does not supply an aggregate app/test scaffold or compose checked routes. See the [multi-service guide](gateway-guide.md#multi-service-setup). Check downstream tooling when adopting service-qualified OpenAPI components and operation identifiers.
+
+Checked generation is a bounded buffered preview, not an automatic replacement for a legacy gateway. Its JSON values, validation and fault contracts differ from legacy DTO/envelope behavior, and unsupported contracts refuse. Checked hosts import this package at runtime, so retain it as a production dependency according to the emitted app manifest; a generator-only development dependency is insufficient for that deployment. Keep runtime version, source snapshots and generated checked artifacts matched. Checked streaming remains outside this profile.
+
+Existing published 1.1.5-issued direct clients retain `checkedDirectRuntimeV1` and its original owned-loopback restrictions; installed compatibility fixtures exercise that specific binding. A deployed host importing that retained binding also needs this package as a production dependency, even when its generator tooling lives elsewhere. The unchanged direct protocol allows those retained artifacts to use the newer compatible package binding; it does not grant component-runtime capabilities.
+
+The unpublished `checked-direct-v1` generation choice is not a current generation mode. New checked generation uses components; moving an old direct client to components is deliberate regeneration and adoption, not a runtime capability upgrade. See [checked-generation upgrade guidance](checked-generation.md#upgrade-and-regenerate).
+
+### Consumer verification and rollback
+
+Release verification exercises representative generated/installed consumers, compatibility fixtures and owned SOAP exchanges. It cannot certify every existing consumer project or provider operation. Generated mock/scaffold tests do not replace maintained application tests, TypeScript checks or independent SOAP/provider acceptance; follow [consumer testing guidance](testing.md#for-consumer-projects).
+
+Verify affected type imports, OpenAPI/SDK changes, scalar and `$value` conversions, stream item shapes and cancellation/error handling. Retain endpoint, credentials, TLS trust and array-wrapper settings explicitly. The published preview does not provide a universal migration checker or a guarantee of complete WSDL/XSD support.
+
+For rollback, restore the known-working application revision, generator/app package manifests and lockfiles, matched generated artifacts and source/configuration inputs together, then reinstall with `npm ci` and rebuild. Projects that do not commit generated output should regenerate using the original pinned generator and inputs. Restoring only the generator version leaves newly generated code in place and is not a complete rollback.
 
 ## Version Compatibility
 
+The 1.2.0 scaffold row records the current legacy app template pins, not an automatic rewrite of an existing consumer's package. Follow the emitted manifest for new apps and review separately maintained runtime dependencies when upgrading older ones.
+
 | wsdl-tsc | Node.js | TypeScript | soap | Fastify | saxes |
 |----------|---------|------------|------|---------|-------|
+| 1.2.0 legacy scaffold | >= 24.0 | ^6.0.3 | ^1.14.0 | ^5.12.8 | ^6.0.0 |
 | 1.0.x | >= 24.0 | >= 6.0 | >= 1.9 | >= 5.10 | >= 6.0 |
 | 0.35.x and later | >= 24.0 | >= 6.0 | >= 1.9 | >= 5.8 | >= 6.0 |
 | 0.17.x | >= 20.0 | >= 6.0 | >= 1.9 | >= 5.8 | >= 6.0 |

@@ -17,6 +17,7 @@
  *   Q4 (saxes placement): runtime dependency of the wsdl-tsc package; the
  *        generated client imports the emitted copy of this module and
  *        inherits saxes via its own dependency tree.
+ * @since Unreleased
  */
 import {SaxesParser, type SaxesTagPlain} from "saxes";
 
@@ -42,6 +43,8 @@ export interface RecordParseSpec {
    * detection only.
    */
   childType?: Record<string, Record<string, string>>;
+  /** Explicit repeated XML properties; when supplied, child-type [] hints describe list values instead. */
+  repeatedElements?: Record<string, readonly string[]>;
   /**
    * Compiled-catalog prop-meta map: carries min/max/nillable/declaredType.
    * When present, `max > 1` or `max === "unbounded"` drives array emission
@@ -58,12 +61,12 @@ export interface PropMeta {
 }
 
 /**
- * Consume an async iterable of XML bytes/strings and yield parsed records.
- *
- * The returned iterator is single-pass; iteration must complete (or be
- * interrupted by the consumer via `break`/`return`) before the upstream
- * source is released. Errors from the source or from the SAX parser abort
- * the iteration via a rejected `next()`.
+ * Consume XML bytes or strings and yield complete legacy record nodes.
+ * @param source - Single-pass XML bytes or strings; UTF-8 byte boundaries may split characters.
+ * @param spec - Local-name record path and optional catalog metadata; attribute bags remain lexical strings.
+ * @returns Complete records without buffering the complete XML document.
+ * @throws Error for malformed XML, SOAP Body faults, or an empty record path.
+ * @constraints Exhaust or return the single-pass iterator to release its source; undeclared xsi:nil remains accepted for legacy compatibility.
  */
 export async function* parseRecords<T = unknown>(
   source: AsyncIterable<string | Uint8Array>,
@@ -75,9 +78,12 @@ export async function* parseRecords<T = unknown>(
     throw new Error("parseRecords: recordPath must not be empty");
   }
   const attrsKey = spec.attributesKey ?? "$attributes";
+  const decoder = new TextDecoder("utf-8");
 
   // Global tag stack, maintained across the entire document.
   const stack: string[] = [];
+  const namespaces: Array<Record<string, string>> = [];
+  const elementNamespaces: string[] = [];
   // Records materialized during the current chunk write, awaiting yield.
   const pending: T[] = [];
   // When a parser.on('error') fires we buffer the error for re-throw on the
@@ -102,11 +108,27 @@ export async function* parseRecords<T = unknown>(
   const openNodes: OpenNode[] = [];
 
   parser.on("opentag", (tag: SaxesTagPlain) => {
-    stack.push(tag.name);
+    const inherited = namespaces.at(-1);
+    const scope: Record<string, string> = Object.assign(Object.create(null) as Record<string, string>, inherited);
+    for (const [name, value] of Object.entries(tag.attributes)) {
+      if (name === "xmlns") scope[""] = value;
+      else if (name.startsWith("xmlns:")) scope[name.slice(6)] = value;
+    }
+    const localName = local(tag.name);
+    const prefix = tag.name.includes(":") ? tag.name.slice(0, tag.name.indexOf(":")) : "";
+    const namespace = scope[prefix] ?? "";
+    if (localName === "Fault" && namespace === elementNamespaces.at(-1) &&
+      (namespace === "http://schemas.xmlsoap.org/soap/envelope/" || namespace === "http://www.w3.org/2003/05/soap-envelope") &&
+      stack.at(-1) === "Body") {
+      parseError = new Error("SOAP Fault received in stream response");
+    }
+    namespaces.push(scope);
+    elementNamespaces.push(namespace);
+    stack.push(localName);
     if (openNodes.length === 0) {
       // Not yet inside a record. Check whether entering the path tail.
       if (tailMatches(stack, recordPath)) {
-        openNodes.push(newNode(tag, spec.recordTypeName, null, attrsKey));
+        openNodes.push(newNode(tag, spec.recordTypeName, null, attrsKey, scope));
       }
       return;
     }
@@ -114,9 +136,9 @@ export async function* parseRecords<T = unknown>(
     const parent = openNodes[openNodes.length - 1];
     parent.hadChildren = true;
     const parentType = parent.typeName;
-    const childTypeRaw = parentType ? spec.childType?.[parentType]?.[tag.name] : undefined;
+    const childTypeRaw = parentType ? spec.childType?.[parentType]?.[localName] : undefined;
     const childTypeName = childTypeRaw ? stripArraySuffix(childTypeRaw) : null;
-    openNodes.push(newNode(tag, childTypeName, tag.name, attrsKey));
+    openNodes.push(newNode(tag, childTypeName, localName, attrsKey, scope));
   });
 
   const appendText = (t: string) => {
@@ -139,6 +161,8 @@ export async function* parseRecords<T = unknown>(
       }
     }
     stack.pop();
+    namespaces.pop();
+    elementNamespaces.pop();
   });
 
   parser.on("error", (err: Error) => {
@@ -148,13 +172,14 @@ export async function* parseRecords<T = unknown>(
   try {
     for await (const chunk of source) {
       if (parseError) throw parseError;
-      const text = typeof chunk === "string" ? chunk : decodeUtf8(chunk);
+      const text = typeof chunk === "string" ? decoder.decode() + chunk : decoder.decode(chunk, {stream: true});
       parser.write(text);
       if (parseError) throw parseError;
       while (pending.length > 0) {
         yield pending.shift()!;
       }
     }
+    parser.write(decoder.decode());
     parser.close();
     if (parseError) throw parseError;
     while (pending.length > 0) {
@@ -176,6 +201,7 @@ function newNode(
   typeName: string | null,
   propName: string | null,
   attrsKey: string,
+  namespaces: Record<string, string>,
 ): {
   obj: Record<string, unknown>;
   typeName: string | null;
@@ -193,7 +219,11 @@ function newNode(
     // concern that should not pollute the user-visible record.
     const cleaned: Record<string, string> = {};
     for (const k of attrKeys) {
-      if ((k === "xsi:nil" || k === "nil") && attrs[k] === "true") {
+      if (k === "xmlns" || k.startsWith("xmlns:")) continue;
+      const prefix = k.includes(":") ? k.slice(0, k.indexOf(":")) : "";
+      const isNilAttribute = k === "nil" || k === "xsi:nil" && !namespaces.xsi ||
+        local(k) === "nil" && namespaces[prefix] === "http://www.w3.org/2001/XMLSchema-instance";
+      if (isNilAttribute && (attrs[k] === "true" || attrs[k] === "1")) {
         isNil = true;
         continue;
       }
@@ -241,16 +271,16 @@ function assignChild(
   const propMetaEntry = parentType ? spec.propMeta?.[parentType]?.[propName] : undefined;
   const childTypeHint = parentType ? spec.childType?.[parentType]?.[propName] : undefined;
 
-  // Array if: (a) propMeta says max > 1 or "unbounded", or (b) childType hint
-  // ends in `[]`, or (c) the slot is already occupied (implicit repetition).
+  // @constraints Explicit repetition metadata distinguishes inline xs:list values from repeated XML elements.
   const metaSaysArray =
     propMetaEntry?.max === "unbounded" ||
     (typeof propMetaEntry?.max === "number" && propMetaEntry.max > 1);
-  const hintSaysArray = !!childTypeHint && childTypeHint.endsWith("[]");
+  const hintSaysArray = spec.repeatedElements === undefined && !!childTypeHint && childTypeHint.endsWith("[]");
+  const declaredRepeated = parentType ? spec.repeatedElements?.[parentType]?.includes(propName) : false;
   const existing = parent.obj[propName];
   const slotTaken = existing !== undefined;
 
-  if (metaSaysArray || hintSaysArray) {
+  if (metaSaysArray || hintSaysArray || declaredRepeated) {
     if (Array.isArray(existing)) {
       existing.push(value);
     } else if (slotTaken) {
@@ -286,8 +316,6 @@ function tailMatches(stack: string[], path: string[]): boolean {
   return true;
 }
 
-const UTF8_DECODER = new TextDecoder("utf-8");
-
-function decodeUtf8(buf: Uint8Array): string {
-  return UTF8_DECODER.decode(buf);
+function local(name: string): string {
+  return name.slice(name.lastIndexOf(":") + 1);
 }

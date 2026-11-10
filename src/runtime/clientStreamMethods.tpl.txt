@@ -1,11 +1,18 @@
 
   /**
-   * Streaming transport for operations flagged with a stream configuration.
-   *
-   * node-soap buffers the full response before invoking the operation callback
-   * (verified empirically in ADR-002 / phase-0 research), so this method
-   * bypasses node-soap and POSTs a hand-built SOAP envelope directly, then
-   * pipes the response body through the SAX-driven record parser.
+   * Stream complete SOAP records through the legacy DTO mapper.
+   * @param args - Flat request DTO, serialized using the generated metadata.
+   * @param operation - SOAP operation name for diagnostics.
+   * @param requestType - Request metadata key.
+   * @param recordTypeName - Record metadata key, including companion catalog types.
+   * @param inputElementLocal - SOAP body element local name.
+   * @param inputElementNs - SOAP body element namespace.
+   * @param soapAction - SOAP 1.1 action.
+   * @param recordPath - Local-name path to repeated records.
+   * @param callOptions - Cancellation and total response deadline.
+   * @returns Single-pass records; callers must exhaust or return their iterator to release the connection.
+   * @throws Error for unsupported transport settings, HTTP errors, XML faults, or invalid mapped values.
+   * @constraints Streaming supports SOAP 1.1 document/literal requests, static SOAP headers, and ISecurity hooks.
    */
   protected async callStream<RequestType, RecordType, HeadersType>(
     args: RequestType,
@@ -15,169 +22,170 @@
     inputElementLocal: string,
     inputElementNs: string,
     soapAction: string,
-    recordPath: string[]
+    recordPath: string[],
+    callOptions?: StreamCallOptions
   ): Promise<StreamOperationResponse<RecordType, HeadersType>> {
+    callOptions?.signal?.throwIfAborted();
     const client = await this.soapClient();
-    const endpoint = this.resolveStreamEndpoint(client);
-    const envelope = this.buildSoapEnvelope(args, operation, requestType, inputElementLocal, inputElementNs);
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "content-type": "text/xml; charset=utf-8",
-        "soapaction": '"' + soapAction + '"',
-      },
-      body: envelope,
-    });
-    if (!res.ok) {
-      throw new Error(
-        operation + " stream request failed: " + res.status + " " + res.statusText
-      );
+    const soapOptions = client.wsdl.options;
+    if (soapOptions.forceSoap12Headers || soapOptions.envelopeSoapUrl && soapOptions.envelopeSoapUrl !== "http://schemas.xmlsoap.org/soap/envelope/") {
+      throw new Error("Streaming supports SOAP 1.1 only");
     }
-    if (!res.body) {
-      throw new Error(operation + " stream request returned an empty response body");
+    const envelopeKey = soapOptions.envelopeKey ?? "soap";
+    if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(envelopeKey) || envelopeKey === "xml" || envelopeKey === "xmlns") {
+      throw new Error("Streaming requires a supported XML envelope prefix");
     }
-    const headers: Record<string, string> = {};
-    res.headers.forEach((value, key) => { headers[key] = value; });
-    const spec: RecordParseSpec = {
-      recordPath,
-      recordTypeName,
-      attributesKey: this.attributesKeyOut,
-      childType: this.dataTypes?.ChildrenTypes,
+    const soapHeaders = client.getSoapHeaders() ?? [];
+    if (soapHeaders.some(header => typeof header !== "string")) {
+      throw new Error("Streaming requires static XML SOAP headers");
+    }
+    if (client.getBodyAttributes()?.length) {
+      throw new Error("Streaming does not support SOAP body attributes");
+    }
+    const transport = this.options?.httpClient ?? new __SOAP_HTTP_CLIENT__(this.options);
+    if (!transport.requestStream) throw new Error("Configured SOAP HTTP client does not support requestStream");
+    const security = (client as unknown as {security?: __SOAP_SECURITY__}).security ?? this.security;
+    const {endpoint, input} = this.resolveStreamBinding(client, operation, soapAction, inputElementLocal, inputElementNs);
+    const headers: Record<string, string> = {
+      "Content-Type": "text/xml; charset=utf-8",
+      SOAPAction: '"' + soapAction + '"',
     };
-    const records = parseRecords<RecordType>(
-      this.webStreamToAsyncIterable(res.body),
-      spec
-    );
-    return {
-      records,
-      headers: headers as unknown as HeadersType,
-      requestRaw: envelope,
+    const requestOptions: __SOAP_EX_OPTIONS__ = {...this.streamRequestOptions};
+    security?.addHeaders?.(headers);
+    security?.addOptions?.(requestOptions);
+    Object.assign(headers, client.getHttpHeaders());
+    if (requestOptions.forceMTOM || requestOptions.attachments?.length || requestOptions.ntlm) {
+      throw new Error("Streaming does not support MTOM attachments or NTLM transport");
+    }
+    // @why node-soap's schema serializer retains element qualification and foreign references that DTO type metadata omits.
+    const soapArgs = this.toSoapArgs(args, requestType);
+    const message = client.wsdl.objectToDocumentXML(input.$name, soapArgs, input.targetNSAlias, input.targetNamespace, input.$type || input.$lookupType, requestOptions);
+    let envelope = this.buildSoapEnvelope(message, envelopeKey, client);
+    const headerXml = soapHeaders.join(" ") + (security?.postProcess ? "" : security?.toXML?.() ?? "");
+    if (headerXml || security?.postProcess) {
+      const body = "<" + envelopeKey + ":Body>";
+      const headerNamespaces = client.wsdl.xmlnsInHeader ? " " + client.wsdl.xmlnsInHeader : "";
+      envelope = envelope.replace(body, "<" + envelopeKey + ":Header" + headerNamespaces + ">" + headerXml + "</" + envelopeKey + ":Header>" + body);
+    }
+    if (security?.postProcess) envelope = security.postProcess(envelope, envelopeKey);
+    if (typeof requestOptions.postProcess === "function") envelope = requestOptions.postProcess(envelope);
+    const controller = new AbortController();
+    const signals = [controller.signal, callOptions?.signal, requestOptions.signal].filter((signal): signal is AbortSignal => !!signal);
+    requestOptions.signal = AbortSignal.any(signals);
+    const timeoutMs = callOptions?.timeoutMs;
+    if (timeoutMs !== undefined && (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2_147_483_647)) {
+      throw new RangeError("Stream timeoutMs must be a positive safe timer duration");
+    }
+    const timer = timeoutMs === undefined ? undefined : setTimeout(() => controller.abort(new Error("Stream request timed out")), timeoutMs);
+    timer?.unref();
+    let body: (AsyncIterable<string | Uint8Array> & {destroy(): void}) | undefined;
+    const cleanup = () => {
+      if (timer) clearTimeout(timer);
+      if (typeof body?.destroy === "function") body.destroy();
+      controller.abort();
     };
+    try {
+      const res = await transport.requestStream(endpoint, envelope, headers, requestOptions, client);
+      body = res.data as unknown as typeof body;
+      if (!body || typeof body[Symbol.asyncIterator] !== "function" || typeof body.destroy !== "function") {
+        throw new Error(operation + " stream request returned an invalid response body");
+      }
+      if (res.status < 200 || res.status >= 300) {
+        throw new Error(operation + " stream request failed: " + res.status + " " + res.statusText);
+      }
+      const spec: RecordParseSpec = {
+        recordPath,
+        recordTypeName,
+        attributesKey: this.attributesKeyOut,
+        childType: this.dataTypes?.ChildrenTypes,
+        repeatedElements: this.dataTypes?.RepeatedElements,
+      };
+      const source = parseRecords(body, spec);
+      const self = this;
+      async function* mapped(): AsyncGenerator<RecordType> {
+        try {
+          for await (const record of source) yield self.fromSoapResult(record, recordTypeName) as RecordType;
+        } finally { cleanup(); }
+      }
+      const iterator = mapped();
+      // @constraints return() must close transport even before the generator's first next().
+      const records: AsyncIterable<RecordType> = {
+        [Symbol.asyncIterator]() {
+          return {
+            next: () => iterator.next(),
+            return: async () => { cleanup(); return iterator.return(undefined); },
+            throw: async error => { cleanup(); return iterator.throw(error); },
+          };
+        },
+      };
+      return {records, headers: res.headers as unknown as HeadersType, requestRaw: envelope};
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   }
 
   /**
-   * Walk the node-soap WSDL descriptor to locate the first service port's
-   * SOAP address. Falls back to the \`source\` URL when the descriptor is
-   * unavailable (e.g., \`source\` was given as a direct endpoint URL).
+   * Select one compatible live document/literal operation binding and endpoint.
+   * @param client - Initialized node-soap client.
+   * @param operation - Compiled operation name.
+   * @param soapAction - Compiled SOAP action, used to disambiguate live methods.
+   * @param inputElementLocal - Expected input element local name.
+   * @param inputElementNs - Expected input namespace.
+   * @returns Matched input descriptor and current override or owning port address.
+   * @throws Error for missing, ambiguous, or incompatible live operation bindings.
+   * @constraints Distinct bindings cannot be assumed equivalent after node-soap has processed shared port-type metadata.
    */
-  protected resolveStreamEndpoint(client: __SOAP_CLIENT_TYPE__): string {
+  protected resolveStreamBinding(
+    client: __SOAP_CLIENT_TYPE__,
+    operation: string,
+    soapAction: string,
+    inputElementLocal: string,
+    inputElementNs: string
+  ): {endpoint: string; input: {$name: string; targetNSAlias: string; targetNamespace: string; $type?: string; $lookupType?: string}} {
+    const override = (client as unknown as {endpoint?: string}).endpoint ?? this.options?.endpoint;
+    const candidates: Array<{endpoint: string; binding: unknown; method: any}> = [];
     const services = (client as any)?.wsdl?.definitions?.services ?? {};
     for (const svc of Object.values(services)) {
       const ports = (svc as any)?.ports ?? {};
       for (const port of Object.values(ports)) {
-        const location = (port as any)?.location;
-        if (typeof location === "string" && location) return location;
+        const binding = (port as any)?.binding;
+        const method = binding?.methods?.[operation];
+        if (!method || method.$name !== operation || (method.soapAction ?? "") !== soapAction) continue;
+        const endpoint = override || (port as any)?.location;
+        if (typeof endpoint !== "string" || !endpoint) throw new Error("No SOAP endpoint configured for stream request");
+        candidates.push({endpoint, binding, method});
       }
     }
-    return this.source;
+    if (candidates.length === 0) throw new Error("No matching SOAP operation binding for stream request: " + operation);
+    const selected = candidates[0];
+    if (candidates.some(candidate => candidate.binding !== selected.binding || candidate.method !== selected.method || candidate.endpoint !== selected.endpoint)) {
+      throw new Error("Ambiguous or incompatible SOAP operation bindings for stream request: " + operation);
+    }
+    const method = selected.method;
+    const input = method.input;
+    if (method.style && method.style !== "document" || method.inputSoap?.use && method.inputSoap.use !== "literal" ||
+      !input || input.parts || input.$name !== inputElementLocal || input.targetNamespace !== inputElementNs) {
+      throw new Error("Incompatible SOAP document/literal input binding for stream request: " + operation);
+    }
+    return {endpoint: selected.endpoint, input};
   }
 
   /**
-   * Build a SOAP 1.1 envelope around the operation's input element. Uses the
-   * existing attributes / children metadata so attribute bags render as XML
-   * attributes and child properties render as nested elements.
+   * Wrap the schema-serialized request using the initialized client's envelope namespace context.
+   * @param body - Document/literal XML from node-soap's public WSDL serializer.
+   * @param envelopeKey - Validated SOAP envelope prefix, also passed to security processing.
+   * @param client - Initialized client supplying the WSDL namespace declarations.
+   * @returns A SOAP 1.1 envelope ready for static headers and security hooks.
    */
   protected buildSoapEnvelope(
-    args: unknown,
-    operation: string,
-    requestType: string | undefined,
-    inputElementLocal: string,
-    inputElementNs: string
+    body: string,
+    envelopeKey: string,
+    client: __SOAP_CLIENT_TYPE__
   ): string {
-    const body = this.toXmlElement(args, requestType, inputElementLocal, inputElementNs);
     return '<?xml version="1.0" encoding="utf-8"?>' +
-      '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' +
-      '<soap:Body>' + body + '</soap:Body>' +
-      '</soap:Envelope>';
-  }
-
-  /**
-   * Serialize a value as a single XML element. The element namespace is only
-   * emitted when \`namespace\` is provided (i.e., the envelope's top-level body
-   * element). Nested elements inherit the namespace via XML scoping.
-   */
-  protected toXmlElement(
-    value: unknown,
-    typeName: string | undefined,
-    elementName: string,
-    namespace?: string
-  ): string {
-    const nsAttr = namespace ? ' xmlns="' + this.escapeXml(namespace) + '"' : "";
-    if (value === null || value === undefined) {
-      return '<' + elementName + nsAttr +
-        ' xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>';
-    }
-    if (typeof value !== "object") {
-      return '<' + elementName + nsAttr + '>' + this.escapeXml(String(value)) + '</' + elementName + '>';
-    }
-    if (Array.isArray(value)) {
-      return value.map((v) => this.toXmlElement(v, typeName, elementName, namespace)).join("");
-    }
-    const obj = value as Record<string, unknown>;
-    const attributesList = (typeName && this.dataTypes?.Attributes?.[typeName]) || [];
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
-    const attrPairs: Array<[string, string]> = [];
-    const bagIn = (obj as any)[this.attributesKeyIn] ?? (obj as any)["attributes"];
-    if (bagIn && typeof bagIn === "object") {
-      for (const [k, v] of Object.entries(bagIn)) attrPairs.push([k, this.normalizeAttr(v)]);
-    }
-    const childParts: string[] = [];
-    let textContent: string | undefined;
-    if ("$value" in obj) textContent = String(obj.$value ?? "");
-    for (const [k, v] of Object.entries(obj)) {
-      if (k === "$value" || k === this.attributesKeyIn || k === "attributes") continue;
-      if ((attributesList as readonly string[]).includes(k)) {
-        attrPairs.push([k, this.normalizeAttr(v)]);
-        continue;
-      }
-      const childTypeRaw = (childrenTypes as Record<string, string>)[k];
-      const childType = childTypeRaw?.endsWith("[]") ? childTypeRaw.slice(0, -2) : childTypeRaw;
-      if (Array.isArray(v)) {
-        for (const item of v) childParts.push(this.toXmlElement(item, childType, k));
-      } else {
-        childParts.push(this.toXmlElement(v, childType, k));
-      }
-    }
-    const attrStr = attrPairs.map(([k, val]) => ' ' + k + '="' + this.escapeXml(val) + '"').join("");
-    if (childParts.length === 0 && textContent === undefined) {
-      return '<' + elementName + nsAttr + attrStr + '/>';
-    }
-    const inner = childParts.join("") + (textContent !== undefined ? this.escapeXml(textContent) : "");
-    return '<' + elementName + nsAttr + attrStr + '>' + inner + '</' + elementName + '>';
-  }
-
-  protected normalizeAttr(v: unknown): string {
-    if (v === null || v === undefined) return "";
-    if (typeof v === "boolean") return v ? "true" : "false";
-    if (typeof v === "number") return Number.isFinite(v) ? String(v) : "";
-    return String(v);
-  }
-
-  protected escapeXml(s: string): string {
-    return s
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;");
-  }
-
-  /**
-   * Iterate an uploaded web ReadableStream as Uint8Array chunks. Node 24+
-   * ReadableStream implements Symbol.asyncIterator natively; this helper
-   * normalizes the types so TypeScript can drive it through \`for await\`.
-   */
-  protected async *webStreamToAsyncIterable(
-    body: ReadableStream<Uint8Array>
-  ): AsyncIterable<Uint8Array> {
-    const reader = body.getReader();
-    try {
-      while (true) {
-        const {value, done} = await reader.read();
-        if (done) return;
-        if (value) yield value;
-      }
-    } finally {
-      try { reader.releaseLock(); } catch { /* noop */ }
-    }
+      '<' + envelopeKey + ':Envelope xmlns:' + envelopeKey + '="http://schemas.xmlsoap.org/soap/envelope/" ' +
+      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + client.wsdl.xmlnsInEnvelope + '>' +
+      '<' + envelopeKey + ':Body>' + body + '</' + envelopeKey + ':Body>' +
+      '</' + envelopeKey + ':Envelope>';
   }

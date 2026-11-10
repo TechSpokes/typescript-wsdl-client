@@ -1,10 +1,12 @@
 # Programmatic API
 
-All CLI commands are available as TypeScript functions. This document covers each exported function, its usage, and its type signatures.
+This reference covers public generation, composition, stream and security APIs. Assessment and checked planning are separate diagnostic surfaces; see [checked generation](checked-generation.md#programmatic-planning-and-generation).
 
 See the main [README](../README.md) for installation, CLI usage, and project overview.
 
-All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Signatures and options are unchanged; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
+All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Adding a preamble does not change an API signature or option; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
+
+Generated-output compatibility is versioned separately from those preambles. Read the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) before regenerating existing clients or changing their selected profile.
 
 ## compileWsdlToProject
 
@@ -17,6 +19,8 @@ await compileWsdlToProject({
   wsdl: "./wsdl/Hotel.wsdl",
   outDir: "./src/services/hotel",
   options: {
+    wsdl: "./wsdl/Hotel.wsdl",
+    out: "./src/services/hotel",
     imports: "js",
     catalog: true,
     primitive: {
@@ -38,13 +42,13 @@ await compileWsdlToProject({
 declare function compileWsdlToProject(input: {
   wsdl: string;
   outDir: string;
-  options?: Partial<CompilerOptions>;
+  options?: CompilerOptions;
   streamConfigFile?: string;
   streamConfig?: StreamConfig;
 }): Promise<void>;
 ```
 
-`streamConfigFile` points at a JSON file parsed by `loadStreamConfigFile`. `streamConfig` accepts an already-parsed value; `streamConfigFile` takes precedence when both are set. Buffered generation is unchanged when both are omitted. See [Stream Configuration](configuration.md#stream-configuration) for the file format and [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for rationale.
+`streamConfigFile` points at raw JSON parsed by `loadStreamConfigFile`; `streamConfig` accepts normalized metadata from `parseStreamConfig`. The file takes precedence when both are set. Omitting both retains buffered API selection, without a byte-for-byte output guarantee across upgrades. See [Stream Configuration](configuration.md#stream-configuration).
 
 ### CompilerOptions
 
@@ -120,6 +124,7 @@ interface GenerateOpenAPIOptions {
   pathStyle?: "kebab" | "asis" | "lower";
   defaultMethod?: string;
   closedSchemas?: boolean;
+  flattenArrayWrappers?: boolean;
   pruneUnusedSchemas?: boolean;
   tagStyle?: "default" | "first" | "service";
   tagsFile?: string;
@@ -169,10 +174,17 @@ interface GenerateGatewayOptions {
   openapiDocument?: any;
   outDir: string;
   clientDir?: string;
-  versionSlug?: string;
-  serviceSlug?: string;
+  versionSlug: string;
+  serviceSlug: string;
   defaultResponseStatusCodes?: number[];
   imports?: "js" | "ts" | "bare";
+  clientClassName?: string;
+  clientDecoratorName?: string;
+  catalogFile?: string;
+  emitPlugin?: boolean;
+  emitRuntime?: boolean;
+  stubHandlers?: boolean;
+  flattenArrayWrappers?: boolean;
 }
 ```
 
@@ -231,8 +243,10 @@ await runGenerationPipeline({
 
 ```typescript
 declare function runGenerationPipeline(opts: PipelineOptions): Promise<{
-  compiled: CompiledCatalog;
+  compiled: any;
   openapiDoc?: any;
+  checked?: CheckedInventory;
+  planning?: CheckedComponentPlan;
 }>;
 ```
 
@@ -240,8 +254,10 @@ declare function runGenerationPipeline(opts: PipelineOptions): Promise<{
 
 ```typescript
 interface PipelineOptions {
+  model?: "legacy" | "checked-components-v1";
+  checkedComponents?: Partial<CheckedComponentOptions>;
   wsdl: string;
-  catalogOut: string;
+  catalogOut?: string;
   clientOutDir?: string;
   compiler?: Partial<CompilerOptions>;
   openapi?: Omit<GenerateOpenAPIOptions, "wsdl" | "catalogFile" | "compiledCatalog"> & {
@@ -249,13 +265,94 @@ interface PipelineOptions {
   };
   gateway?: Omit<GenerateGatewayOptions, "openapiFile" | "openapiDocument"> & {
     outDir?: string;
+    versionSlug: string;
+    serviceSlug: string;
   };
+  app?: {
+    appDir: string;
+    openapiMode?: "copy" | "reference";
+    force?: boolean;
+    host?: string;
+    port?: number;
+    prefix?: string;
+    securityConfigFile?: string;
+  };
+  test?: {testDir: string; force?: boolean; flattenArrayWrappers?: boolean};
   streamConfigFile?: string;
   streamConfig?: StreamConfig;
 }
 ```
 
 `streamConfigFile` and `streamConfig` are threaded through the compile step and into every downstream emitter via `catalog.json`. Relative paths in `shapeCatalogs` resolve against the stream-config file's directory when `streamConfigFile` is used, otherwise against the WSDL's directory.
+
+Legacy calls require `catalogOut` at runtime. Checked component calls use `model: "checked-components-v1"` and optional `checkedComponents`; they return checked inventory/planning instead of a legacy catalog contract. See [the complete programmatic checked example](checked-generation.md#programmatic-planning-and-generation) for source policy and planning before generation. Checked RPC outputs remain opaque strings and buffered checked values; legacy stream configuration does not activate checked streaming.
+
+## runMultiServicePipeline
+
+Generate independent legacy clients and service routers, then publish one aggregate gateway plugin and combined OpenAPI JSON document. The [multi-service guide](gateway-guide.md#multi-service-setup) supplies a complete configuration with explicit, disjoint outputs:
+
+```typescript
+import {loadMultiServiceConfig, runMultiServicePipeline} from "@techspokes/typescript-wsdl-client";
+
+const options = await loadMultiServiceConfig("./services.json");
+const result = await runMultiServicePipeline(options);
+```
+
+```typescript
+interface MultiServiceEntry {
+  key: string;
+  generation: PipelineOptions;
+}
+
+interface MultiServicePipelineOptions {
+  services: readonly MultiServiceEntry[];
+  openapi: OpenApiCompositionOptions & {outFile: string};
+  gateway: {
+    outDir: string;
+    imports?: "js" | "ts" | "bare";
+    openapiPath?: string | false;
+  };
+}
+
+interface MultiServicePipelineResult {
+  openapiDoc: ComposedOpenApiDocument;
+  services: Record<string, {compiled: CompiledCatalog; clientDir: string; gatewayDir: string}>;
+  pluginFile: string;
+  openapiFile: string;
+}
+
+declare function runMultiServicePipeline(options: MultiServicePipelineOptions): Promise<MultiServicePipelineResult>;
+declare function loadMultiServiceConfig(file: string): Promise<MultiServicePipelineOptions>;
+```
+
+`loadMultiServiceConfig` resolves filesystem paths against the JSON configuration file; direct API callers supply paths relative to their process working directory. Every service needs `wsdl`, `catalogOut`, `clientOutDir`, `openapi.outFile`, `openapi.basePath`, `gateway.outDir`, `gateway.serviceSlug` and `gateway.versionSlug`. Service keys use unique lowercase letters, digits and hyphens, starting with a letter; gateway service slugs and decorators must remain unique after normalization.
+
+The API preserves each source's compiler and stream settings, generated client, catalog and SOAP dispatch. It refuses overlapping output ownership, duplicate final paths, lost operation routes, and unsupported app/test/checked settings. A failed later service can leave earlier service artifacts, while the previously published aggregate spec/plugin pair remains intact.
+
+The generated aggregate plugin exports `createClients`, `MultiServiceClientOptions`, `MultiServiceClients` and `openapi`. `createClients` requires exactly the service keys, each with its generated client's constructor options, including an explicit runtime `source`; register the plugin with `{clients}`. Prefixes come from each service's `openapi.basePath`, and the aggregate refuses runtime Fastify prefixes.
+
+## composeOpenApiDocuments
+
+Compose existing OpenAPI 3.1 documents without generating clients or routers:
+
+```typescript
+interface OpenApiCompositionEntry {key: string; document: unknown}
+interface OpenApiCompositionOptions {
+  title?: string;
+  version?: string;
+  description?: string;
+  servers?: readonly string[];
+}
+
+declare function composeOpenApiDocuments(
+  entries: readonly OpenApiCompositionEntry[],
+  options?: OpenApiCompositionOptions,
+): ComposedOpenApiDocument;
+```
+
+Components become `serviceKey__ComponentName`, while operation IDs and tags become `serviceKey.originalName`. The merger rewrites supported reference-bearing positions, link operation targets, discriminator targets and security scheme names, preserving service-local security and server semantics. It also qualifies the known `x-wsdl-tsc-stream.itemSchema` reference so clients can discover the stream record contract.
+
+Literal examples and unrelated extension payloads remain data. Duplicate paths, unresolved local references, relative external references and unsupported schema resource/anchor contexts are refused.
 
 ## Stream Configuration Helpers
 
@@ -415,4 +512,25 @@ const streamOp = compiled.operations.find((op) => op.stream);
 console.log(streamOp?.stream?.mediaType); // "application/x-ndjson" by default
 ```
 
-The generated client exports a `StreamOperationResponse<RecordType>` type; each stream-configured operation returns `Promise<StreamOperationResponse<RecordType>>` with `records: AsyncIterable<RecordType>`.
+### Generated stream client contract
+
+Generated `operations.ts` exports `StreamOperationResponse<RecordType>` and `StreamCallOptions`; `client.ts` also re-exports `StreamCallOptions`. Each stream-configured operation accepts `(args, options?)` and returns `Promise<StreamOperationResponse<RecordType>>` with `records: AsyncIterable<RecordType>`:
+
+```typescript
+interface StreamCallOptions {
+  signal?: AbortSignal;
+  timeoutMs?: number;
+}
+
+interface StreamOperationResponse<RecordType, HeadersType = Record<string, unknown>> {
+  records: AsyncIterable<RecordType>;
+  headers: HeadersType;
+  requestRaw?: string;
+}
+```
+
+Records use the public legacy DTO mapping: flattened attributes, projected scalar values, typed simple content, XML lists and declared repeated-element arrays. Each record is mapped after its closing XML tag; the low-level parser still returns lexical values and attribute bags. Gateway wrapper flattening applies per record when enabled, and checked value shapes are unchanged.
+
+Only stream-enabled generated clients add constructor `streamRequestOptions?: IExOptions` from `soap`. These HTTP options are separate from WSDL loading and support a verified HTTPS agent, HTTP timeout and signal; `options.httpClient` must implement `requestStream`, or the standard node-soap HTTP client is used with `options.request`. Stream calls honor the current endpoint override, static headers and supported `ISecurity` hooks; see [transport support and refusals](gateway-guide.md#streaming-transport-settings).
+
+Per-call `timeoutMs` is a positive integer deadline for the upstream HTTP exchange and record consumption, starting after metadata initialization. A per-call signal already aborted rejects before metadata initialization. Exhaust or return the iterator to release transport resources; generated gateways connect downstream disconnects to that signal before waiting for SOAP headers and throughout delivery. Dates retain the existing type-level mapping, and `bigint` has no additional JSON encoding convention.

@@ -53,7 +53,9 @@ export function generateUtils(outFile: string, compiled: CompiledCatalog) {
     ]),
   );
   const metas = JSON.stringify(
-    {Attributes: attrSpec, AttributeTypes: compiled.meta.attrType ?? {}, ChildrenTypes: childType, RepeatedElements: repeatedElements},
+    {Attributes: attrSpec, AttributeTypes: compiled.meta.attrType ?? {}, ChildrenTypes: childType, RepeatedElements: repeatedElements,
+      NonNillableElements: Object.fromEntries(Object.entries(compiled.meta.propMeta ?? {}).sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, properties]) => [name, Object.keys(properties).filter(key => properties[key].nillable === false).sort()]))},
     null,
     2
   );
@@ -70,6 +72,8 @@ export interface ${clientName}DataTypes {
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
   /** Maps type names to repeated child properties; optional for custom metadata compatibility. */
   RepeatedElements?: Record<string, readonly string[]>;
+  /** Distinguishes empty complex nodes collapsed to null by node-soap from declared nullable children. */
+  NonNillableElements?: Record<string, readonly string[]>;
 }
 
 export const ${clientConstant}_DATA_TYPES: ${clientName}DataTypes = ${metas} as const;\n`;

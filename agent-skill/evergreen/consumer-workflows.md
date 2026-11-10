@@ -1,6 +1,6 @@
 # Consumer Workflows
 
-This reference gives stable workflows for agents using `@techspokes/typescript-wsdl-client` in consumer projects.
+Use this task-to-document map instead of duplicating product contracts in agent instructions.
 
 ## Input Discovery
 
@@ -8,75 +8,37 @@ Inspect the consumer project for WSDL files, imported XSD files, existing `catal
 
 If no usable WSDL or catalog is available, ask only for the source location and whether the task needs the full pipeline or a narrower generated surface. Never invent service URLs, input files, output paths, or generation scope.
 
+## Select Version-Matched Documentation
+
+Read the installed package version first. The canonical paths below are relative to `node_modules/@techspokes/typescript-wsdl-client/`; bundled extracts are relative to the skill folder. Prefer installed guides, then matching bundled extracts or the matching repository tag. Use live `main` only for development context or an explicitly selected future version.
+
+| Task | Canonical package guide | Bundled fallback |
+|---|---|---|
+| Upgrade or roll back | `docs/migration.md` | `references/migration.md` |
+| Choose commands and paths | `docs/cli-reference.md` | `references/cli-reference.md` |
+| Construct clients and inspect DTOs | `docs/generated-code.md` | `references/generated-code.md` |
+| Adopt checked generation | `docs/checked-generation.md` | `references/checked-generation.md` |
+| Compose legacy services | `docs/gateway-guide.md` | `references/composition.md` |
+| Configure streams | `docs/configuration.md` | `references/streaming.md` |
+| Set up consumer tests | `docs/testing.md` consumer sections | `references/testing.md` |
+| Diagnose failures | `docs/troubleshooting.md` | `references/troubleshooting.md` |
+
+Bundled extracts contain selected sections, not every advanced guide. Follow their source links when more context is needed, choosing the installed-version tag instead of assuming a link to `main` applies. An older installed package may not contain a newer guide or feature; consult the target-version migration guide before adopting it.
+
 ## Full SOAP-to-REST Adoption
 
 Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, REST gateway, and optional runnable app from the same WSDL.
 
-1. Install the package as a development dependency and install `soap` as a runtime dependency.
-2. Choose generated output directories under the consumer project's source or generated-code area.
-3. Run `npx wsdl-tsc pipeline` with the WSDL source, client directory, OpenAPI file, gateway directory, service name, and version prefix.
-4. Add configuration files for security, tags, operation overrides, or streaming only when the integration needs them.
-5. Run the consumer project's typecheck and tests.
-6. Commit the WSDL reference, configuration files, generated output policy, and tests according to the consumer project's conventions.
+Choose the profile and exact flags from its version-matched guide. Keep package upgrades separate from optional new-profile adoption, and keep consumer source, endpoint and credential choices explicit.
 
-## Opt-in Checked Component Trial
-
-Use `pipeline --model checked-components-v1` only when the consumer chooses the bounded checked preview. Start from WSDL sources, not a legacy catalog. Unambiguous sources need no authored selectors or resource maps; additional metadata origins and genuinely missing schema locations still require explicit input.
-
-Generate client, OpenAPI, gateway, app and tests together with explicit output paths. Inspect the component planning report and operation inventory, then install, typecheck and test the generated project. Runtime configuration keeps generated source snapshots; the selected WSDL endpoint or explicit override supplies routing intent, while optional restrictions narrow it, including empty deny-all.
-
-Generation, startup and scaffold tests do not execute business SOAP. Independently specified owned-service wire checks and provider acceptance remain separate work. Unsupported source, wildcard or required declaration cases must not be routed through legacy behavior to bypass checked validation. Preserve explicit companion configuration and buffered scope where used.
-
-Keep generator, runtime, sources and checked artifacts matched when regenerating; preserve consumer-owned scaffold customizations unless replacement is deliberate. Generation offers legacy and `checked-components-v1`; v1.1.5 direct clients retain their shipped runtime contract. Generated source records supply ordinary host defaults, and an optional runtime file contains concise overrides. Load `references/checked-generation.md` for the installed trial, feedback path and boundaries.
-
-## Typed SOAP Client Only
-
-Use the legacy `client` command when the project only needs TypeScript access to SOAP operations. For the checked component path, use the full checked pipeline rather than a standalone legacy command.
-
-Generate the client into a stable directory and consume the exported operations interface in application code or tests. Keep wrapper code outside the generated client directory.
-
-## OpenAPI Contract Only
-
-Use `openapi` when the project needs a REST contract or API documentation without generated Fastify routes.
-
-Prefer a catalog input when the project already generated and reviewed one. Keep the OpenAPI file path stable so downstream tools and gateway generation can reuse it.
-
-## Gateway From Existing OpenAPI
-
-Use `gateway` when a project already has a generated OpenAPI file and needs Fastify route handlers.
-
-Generate the gateway from the OpenAPI file and point it at the generated client directory. Register the generated plugin from application-owned Fastify setup code.
-
-## App Scaffold
-
-Use `app` or `pipeline --init-app` when the project wants a runnable service wrapper quickly.
-
-App files are editable consumer-owned scaffolds, preserved on regeneration unless app force replacement is selected. Keep long-lived service behavior in maintained server modules, middleware, configuration and deployment files; preserve those customizations when refreshing the scaffold. Regenerate embedded client/gateway artifacts separately according to their ownership, without deleting the app directory.
-
-## Catalog Debugging
+## Narrow Tasks
 
 Use `compile` when the project needs to inspect WSDL compilation output or isolate generation problems.
 
-Read the catalog to confirm service names, operations, type names, namespaces, and WSDL documentation before changing generator options.
+For other individual stages, use the CLI reference to confirm the selected profile supports that command. Read the client/gateway or checked guide before choosing constructors, injection seams or host configuration; do not transfer one profile's integration pattern into another.
 
-## Streaming Adoption
+## Regeneration and Verification
 
-Use stream configuration only for operations with large response payloads that should flush records incrementally.
+Use the migration and generated-code guides for matched artifacts, app/test ownership, force options and rollback. Preserve application customizations and the working lockfile/input revision before an upgrade.
 
-Use the default `ndjson` stream format unless downstream clients require one JSON document. Use `format: "json-array"` for clients that need an `application/json` array response.
-
-Regenerate the client, OpenAPI, gateway, and tests together after changing stream configuration. Streaming changes affect TypeScript return types, OpenAPI content types, gateway behavior, and generated test expectations.
-
-## Choice Modeling
-
-Use the default `all-optional` choice mode when a project needs backward-compatible generated shapes for existing SOAP payload code.
-
-Use `--client-choice-mode union` when a project wants stricter generated models for `xs:choice` groups. Regenerate the catalog, client, OpenAPI, gateway, and generated tests together because union mode affects TypeScript branch unions, OpenAPI validation constraints, generated mocks, and generated validation tests.
-
-## Validation
-
-After generation, run the consumer project's typecheck and tests. For gateway work, add route tests around the generated plugin with a typed mock operations' implementation.
-
-Load `references/testing.md` for complete legacy and checked setup/run examples, emitted configuration and customization ownership. Legacy tests emit their own Vitest config but need consumer dependencies; the checked app supplies its own test/typecheck scripts and scaffold checks. Use existing project commands where appropriate, without adopting generator-repository locks or CI.
-
-Keep independent SOAP wire expectations and provider/business acceptance separate from generated mock/scaffold checks. Preserve customized test/app scaffolds when regenerating; use their force options only for deliberate replacement after reviewing local changes.
+Use the consumer testing guide and existing project scripts for TypeScript and maintained checks. Generated mock/scaffold checks and successful generation do not establish independent SOAP wire, provider availability or business acceptance.

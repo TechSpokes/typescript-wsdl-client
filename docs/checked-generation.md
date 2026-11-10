@@ -1,16 +1,18 @@
 # Try opt-in checked generation
 
-Version 1.1.8 offers an opt-in WSDL-to-checked-gateway workflow for early testing and feedback. Choose `pipeline --model checked-components-v1` to generate a typed SOAP client, OpenAPI, Fastify gateway, runnable app and scaffold tests for supported document/literal SOAP 1.1 contracts. Omitting `--model` keeps the existing legacy behavior.
+The 1.2.0 candidate offers opt-in WSDL-to-checked-gateway generation for supported document/literal SOAP 1.1 contracts and the bounded RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. See the root [README](../README.md).
 
 This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. Generation exposes legacy and components only; the shipped v1.1.5 direct runtime remains a compatibility binding for existing clients. See the [checked gateway reference](checked-gateway.md).
 
 ## Install and try the bundled contract
 
+Version 1.2.0 is a release candidate until published. During candidate verification, install the locally packed 1.2.0 tarball instead of requesting an unpublished registry version. Earlier published previews retain their historical contracts.
+
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.1.8
+npm install --save-dev @techspokes/typescript-wsdl-client@1.2.0
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```
@@ -133,7 +135,7 @@ The older `assessSchemaSource` API and `assess` command retain the narrow `check
 
 The qualified component fragment includes imported schemas, nested/repeated and inherited records, attributes, simple content, ordered values and supported scalar restrictions. [Keyed mixed/namespace/open values](checked-gateway.md#mixed-namespaced-and-open-values) additionally preserve source-permitted wildcard data with native strict/lax/skip checks. Escapia qualification retains 15 Main operations and two Content operations against owned services. Content uses explicit companion configuration with scoped validation and buffered delivery; it is not automatic companion discovery or checked streaming.
 
-The [bounded SOAP 1.1 RPC/encoded profile](supported-patterns.md#checked-soap-11-rpc-string-profile) additionally supports typed scalar parts, native restrictions, flat required Boolean records and local string response references. The [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) covers all 12 operations against an owned server, with separate single-operation live evidence and no geographic correctness claim.
+The [bounded SOAP 1.1 RPC/encoded profile](supported-patterns.md#checked-soap-11-rpc-string-profile) supports typed scalar parts, native restrictions, one flat required Boolean record and one opaque string result. [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) covers all 12 operations against an owned server; ten live operations succeeded and two GML operations returned non-SOAP failures. There is no parsed DWML/GML or geographic correctness claim.
 
 General XSD, SOAP 1.2, general RPC encoding, broader authentication/security, arbitrary wildcard conversion and checked incremental streaming remain outside this preview. OpenAPI describes the JSON shape but does not express every native scalar/order/wildcard rule. Required declarations and strict wildcard failures cannot become successful unchecked replies.
 
@@ -160,4 +162,6 @@ With generated defaults, omitted restrictions retain the generated choices; expl
 
 Consumer-owned server/config/test files are preserved unless their existing `--force-init` or `--force-test` option is selected. Review customizations before deliberately refreshing older host scaffolds. Existing v1.1.5-issued direct clients continue using `checkedDirectRuntimeV1` unchanged; new generation uses components.
 
-Legacy users need no model change. Refresh existing consumer dependency lockfiles separately to pick up transitive security fixes.
+Legacy users need no model change. Follow the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) for affected generated names, stream values, buffered conversion fixes and rollback. The preview reached npm in 1.1.8; the earlier 1.1.6/1.1.7 candidates were unpublished.
+
+Checked hosts import `@techspokes/typescript-wsdl-client` at runtime. Retain it in production dependencies as emitted by the checked app manifest; do not omit it from a deployment that installs only production dependencies. Refresh separately maintained consumer package/lockfiles deliberately, and preserve adopted app/test customizations when regenerating.

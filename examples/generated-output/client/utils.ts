@@ -15,6 +15,8 @@ export interface WeatherDataTypes {
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
   /** Maps type names to repeated child properties; optional for custom metadata compatibility. */
   RepeatedElements?: Record<string, readonly string[]>;
+  /** Distinguishes empty complex nodes collapsed to null by node-soap from declared nullable children. */
+  NonNillableElements?: Record<string, readonly string[]>;
 }
 
 export const WEATHER_DATA_TYPES: WeatherDataTypes = {
@@ -122,5 +124,71 @@ export const WEATHER_DATA_TYPES: WeatherDataTypes = {
     "Temp": [],
     "WeatherDescription": [],
     "WeatherReturn": []
+  },
+  "NonNillableElements": {
+    "ArrayOfForecast": [],
+    "ArrayOfWeatherDescription": [
+      "WeatherDescription"
+    ],
+    "Forecast": [
+      "Date",
+      "Desciption",
+      "ProbabilityOfPrecipiation",
+      "Temperatures",
+      "WeatherID"
+    ],
+    "ForecastReturn": [
+      "City",
+      "ForecastResult",
+      "ResponseText",
+      "State",
+      "Success",
+      "WeatherStationCity"
+    ],
+    "GetCityForecastByZIP": [
+      "ZIP"
+    ],
+    "GetCityForecastByZIPResponse": [
+      "GetCityForecastByZIPResult"
+    ],
+    "GetCityWeatherByZIP": [
+      "ZIP"
+    ],
+    "GetCityWeatherByZIPResponse": [
+      "GetCityWeatherByZIPResult"
+    ],
+    "GetWeatherInformation": [],
+    "GetWeatherInformationResponse": [
+      "GetWeatherInformationResult"
+    ],
+    "POP": [
+      "Daytime",
+      "Nighttime"
+    ],
+    "Temp": [
+      "DaytimeHigh",
+      "MorningLow"
+    ],
+    "WeatherDescription": [
+      "Description",
+      "PictureURL",
+      "WeatherID"
+    ],
+    "WeatherReturn": [
+      "City",
+      "Description",
+      "Pressure",
+      "RelativeHumidity",
+      "Remarks",
+      "ResponseText",
+      "State",
+      "Success",
+      "Temperature",
+      "Visibility",
+      "WeatherID",
+      "WeatherStationCity",
+      "Wind",
+      "WindChill"
+    ]
   }
 } as const;

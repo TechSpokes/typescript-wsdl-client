@@ -2,6 +2,14 @@
   "references": [
     {
       "kind": "fluid",
+      "source": "docs/migration.md",
+      "output": "references/migration.md",
+      "sections": ["## General Upgrade Steps", "## From 1.1.x to 1.2.0"],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
       "source": "docs/checked-generation.md",
       "output": "references/checked-generation.md",
       "sections": [
@@ -42,7 +50,8 @@
         "## gateway",
         "## app",
         "## compile",
-        "## Common Workflows"
+        "## Common Workflows",
+        "## assess"
       ],
       "linkPolicy": "rewrite",
       "required": true
@@ -106,18 +115,21 @@
     },
     {
       "kind": "fluid",
-      "source": "docs/decisions/002-streamable-responses.md",
-      "output": "references/streaming.md",
+      "source": "docs/gateway-guide.md",
+      "output": "references/composition.md",
       "sections": [
-        "## Requirements",
-        "## Proposed Configuration Model",
-        "## CLI and Programmatic API",
-        "## Client Runtime",
-        "## XML to JSON Streaming Conversion",
-        "## OpenAPI Output",
-        "## Gateway Output",
-        "## Consequences"
+        "## Generated Handler Implementation",
+        "## Multi-Service Setup",
+        "## Contract Assumptions"
       ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/api-reference.md",
+      "output": "references/composition.md",
+      "sections": ["## runMultiServicePipeline", "## composeOpenApiDocuments", "## End-to-End Example"],
       "linkPolicy": "rewrite",
       "required": true
     }

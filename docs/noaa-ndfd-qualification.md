@@ -74,9 +74,31 @@ Typed inputs use `component-rpc-typed-values-v1` and a distinct source-capsule i
 
 ### Provider observation and live acceptance
 
+#### All-operation live retest on 2026-11-09
+
+The local checked gateway issued bounded read requests for all 12 operations at the verified HTTPS endpoint between 15:07 and 15:09 UTC. Current provider metadata returned HTTP 200 and matched the retained WSDL byte-for-byte. System certificate trust and TLS verification remained enabled; no authentication or automatic retries were added.
+
+| Operations | Live result |
+|---|---|
+| LatLonListZipCode, LatLonListSubgrid, LatLonListLine | Gateway 200 with XML string output |
+| LatLonListSquare, LatLonListCityNames, CornerPoints | Gateway 200 with XML string output |
+| NDFDgenByDay, NDFDgenByDayLatLonList | Gateway 200 with XML string output |
+| NDFDgen, NDFDgenLatLonList | Gateway 200 with XML string output |
+| GmlTimeSeries, GmlLatLonList | Gateway 502; provider returned a non-SOAP response |
+
+The initial GML calls returned HTTP 200 with bare OGC exception XML under `application/xml`. The provider rejected timezone-suffixed time spellings; it also rejected `IsEqual`, despite that value appearing in the retained WSDL enumeration and provider documentation. An explicit diagnostic repeat used timezone-free time strings, the schema-declared `Between` comparison and the documented `temp` parameter. Both GML operations then returned HTTP 200 with `text/html` and the body `Not connected : `.
+
+The gateway correctly refused those non-SOAP responses at its Content-Type boundary. Relaxing that check would not turn an exception document or plain text into a valid RPC SOAP response. The observations suggest an upstream GML backend availability problem after input validation; they do not establish its internal cause. No provider-specific schema patch or permissive decoder was added.
+
+The retained local evidence is under `tmp/conformance/noaa-live-20261109/all-operations/`, including the initial result inventory, diagnostic GML results and upstream response captures. Live requests used small geographic queries, one forecast point, one daily-summary day and all 73 Boolean flags explicitly supplied. XML payloads remain opaque public string results; no geographic accuracy or complete DWML/GML domain validation is claimed.
+
+Release qualification therefore distinguishes all-12 owned-server RPC execution from ten successful live operations and two live GML failures. Ordinary tests remain offline.
+
+#### Earlier ZIP-only observation
+
 The [portable evidence](../test/fixtures/wsdl/real-services/noaa-ndfd/live-zip-evidence.json), copied byte-exactly from [issue #460](https://github.com/TechSpokes/typescript-wsdl-client/issues/460), records the 2026-11-09 08:16 UTC authorized ZIP-code call. NOAA returned HTTP 200 with ISO-8859-1 header/declaration and an ASCII-only DWML string containing `39.203,-76.858 39.0138,-77.0242`; the previous gateway refused it with HTTP 502 at Content-Type. The installed owned-server harness replays those exact bytes offline and compares the complete output string, separately from authored non-ASCII controls.
 
-One controlled repeat of the same input at the explicit verified HTTPS endpoint is authorized for this implementation session. Its delivery result is recorded in the issue/PR handoff; ordinary tests, generation and startup never contact NOAA. One ZIP operation cannot establish live acceptance of the remaining 11, provider availability or geographic correctness.
+The earlier implementation session authorized one controlled ZIP repeat. The subsequent all-operation live retest above expands that observation; ordinary tests, generation and startup never contact NOAA. Neither observation establishes general provider availability or geographic correctness.
 
 ## Reproduction
 
@@ -143,7 +165,7 @@ An inconclusive report exits 2; a completed native-disproved report exits 3. Ori
 
 ### P2 readiness sample
 
-The [corpus](../test/conformance/readiness-corpus.json) now has eight inputs: one real metadata snapshot, two synthetic controls and five reference controls. Historical [default](../test/conformance/readiness-default.json) and [diagnostic](../test/conformance/readiness-diagnostic.json) outputs remain seven-input P2 evidence at their recorded revision.
+The maintained [corpus](../test/conformance/readiness-corpus.json) has nine inputs. Historical [default](../test/conformance/readiness-default.json) and [diagnostic](../test/conformance/readiness-diagnostic.json) outputs remain seven-input P2 evidence at their recorded revision.
 
 | Original reference | Evidence | Historical P2 result |
 |---|---|---|
@@ -153,7 +175,7 @@ The [corpus](../test/conformance/readiness-corpus.json) now has eight inputs: on
 | `repeated-composite` | Composite occurrence wrappers | Native established; correspondence inconclusive |
 | `deep-composition` | Nested composition | Native established; correspondence inconclusive |
 
-Weather and Forecast remain synthetic. NOAA adds authentic encoding/RPC metadata, all-12 bounded original-source owned-server execution, offline provider replay and separate single-operation live evidence.
+Weather and Forecast remain synthetic. NOAA adds authentic encoding/RPC metadata, all-12 bounded owned-server execution, offline provider replay, ten successful live operations and two refused non-SOAP GML responses.
 
 The historical eight-input default and diagnostic runs recorded a NOAA loading failure and unassessed operations. Current executable inventory checks use the maintained nine-input corpus and require NOAA's pinned closure to verify, its assessment to complete with native schema established and correspondence inconclusive, and all 12 operations to be inventoried without admission. The historical JSON files retain their original revision and are not current-head results.
 
@@ -166,7 +188,7 @@ The historical eight-input default and diagnostic runs recorded a NOAA loading f
 | Capsule compatibility | #185/#186 and #458 | Fresh reconstruction and stale/tampered refusal remain mandatory |
 | RPC/encoded typed parts | #458/#460 under #427 | All-12 owned execution; one flat Boolean record |
 | Whole-source direct correspondence | #195/#201 with semantic/scalar owners | Native schema established; correspondence inconclusive |
-| Production HTTPS/security | #190/#191 | Single ZIP-code live evidence; no general security acceptance |
+| Production HTTPS/security | #190/#191 | Ten live successes, two GML refusals; no general security acceptance |
 | Generated runtime | #458/#460 | All-12 installed HTTP routes and owned opaque string exchanges |
 
 Issue #458 delivers the bounded component string profile and unused-import correction while preserving original bytes and digests. Broader #427, #426 and #397 work, narrow direct correspondence, the provider request namespace discrepancy and production security retain their separate owners and acceptance. No default/version change, release, publication or universal research closure belongs to this qualification.

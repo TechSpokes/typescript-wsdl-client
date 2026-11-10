@@ -1,5 +1,7 @@
 # CLI Reference
 
+Commands and configuration for generation and assessment. See the root [README](../README.md).
+
 Generation offers legacy, the default, and opt-in `pipeline --model checked-components-v1`. Start with [Try Opt-in Checked Generation](checked-generation.md); the [checked gateway reference](checked-gateway.md) covers exact configuration and v1.1.5 runtime compatibility. Checked generation emits source-backed contracts rather than a legacy catalog and refuses unsupported compiler/streaming controls.
 
 The `wsdl-tsc` tool generates TypeScript SOAP clients, OpenAPI specifications, and Fastify gateways from WSDL files.
@@ -44,6 +46,18 @@ Checked modes require all three explicit outputs: `--client-dir`, `--openapi-fil
 
 Run the complete generation pipeline in one pass: WSDL parsing, TypeScript client, OpenAPI spec, Fastify gateway, and optional app. This is the recommended command for most use cases.
 
+### Multi-service configuration
+
+```bash
+npx wsdl-tsc pipeline --services-config ./services.json
+```
+
+`--services-config` selects native legacy composition and is exclusive with the single-source pipeline flags below. The JSON file contains `services: [{key, generation}]`, aggregate `openapi: {outFile}` and aggregate `gateway: {outDir}` settings. Each `generation` uses the programmatic `PipelineOptions` field names, including explicit `wsdl`, `catalogOut`, `clientOutDir`, `openapi.outFile`, `openapi.basePath`, `gateway.outDir`, `gateway.serviceSlug` and `gateway.versionSlug`.
+
+Paths resolve relative to the configuration file. Service keys, normalized gateway service slugs, route prefixes and generated ownership paths must remain distinct; source WSDLs must stay outside generated outputs. The aggregate OpenAPI file must be JSON, and its generated discovery route defaults to `/openapi.json`; set aggregate `gateway.openapiPath` to `false` to disable it.
+
+Keep compiler options, `streamConfigFile` or parsed `streamConfig`, and OpenAPI/gateway options inside the owning service entry. Runtime credentials and client sources belong to the generated `createClients` options, separate from generation configuration. Aggregate app/test scaffolding and checked composition are not supported in this mode; see the [complete configuration and runtime example](gateway-guide.md#multi-service-setup).
+
 ### Usage
 
 ```bash
@@ -56,11 +70,11 @@ npx wsdl-tsc pipeline \
   [options]
 ```
 
-### Required Flags
+### Required Single-Source Flags
 
 | Flag | Description |
 |------|-------------|
-| `--wsdl-source` | Path or URL to WSDL file |
+| `--wsdl-source` | Required WSDL path or URL; `--catalog-file` selects the catalog output |
 
 At least one of `--client-dir`, `--openapi-file`, or `--gateway-dir` must be provided.
 
@@ -162,7 +176,9 @@ Legacy tests need consumer test/runtime dependencies and use their emitted Vites
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--stream-config` | (none) | Path to a JSON stream-configuration file (ADR-002). Marks selected operations as streaming: client emits `AsyncIterable<RecordType>`, gateway serves NDJSON or JSON array output, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`. Buffered output is unchanged when the flag is omitted. |
+| `--stream-config` | (none) | Path to a JSON stream-configuration file; selects operations for mapped record streaming |
+
+Configured client methods return records through `AsyncIterable<RecordType>`; gateway routes serve NDJSON or JSON-array items, and OpenAPI carries `x-wsdl-tsc-stream` record metadata. Unselected operations retain the buffered API, while generated mapper/metadata output can still change across versions. See [1.2.0 migration](migration.md#from-11x-to-120) before regenerating.
 
 `--stream-config` is accepted on the `compile`, `client`, and `pipeline` commands. It is not accepted on `openapi`, `gateway`, or `app` because those consume a pre-compiled `catalog.json` that already carries the normalized stream metadata.
 
@@ -281,7 +297,7 @@ npx wsdl-tsc client --catalog-file <path> --client-dir <path> [options]
 
 | Flag | Description |
 |------|-------------|
-| `--wsdl-source` | Path or URL to WSDL file |
+| `--wsdl-source` or `--catalog-file` | WSDL source or precompiled catalog input |
 | `--client-dir` | Output directory for generated files |
 
 Provide either `--wsdl-source` (compile from WSDL) or `--catalog-file` (use pre-compiled catalog). When using `--wsdl-source`, the catalog is auto-generated in the client directory unless overridden with `--catalog-file`.
@@ -360,7 +376,7 @@ These flags are mutually exclusive.
 
 ### Response Envelope
 
-All responses are wrapped in a standard envelope (always-on since v0.7.1).
+Buffered legacy success responses use the standard envelope. Legacy streams emit NDJSON or a JSON array directly; checked component routes use checked values/faults. Errors after stream commitment truncate output.
 
 Base structure:
 
@@ -466,6 +482,8 @@ Route URLs are derived from OpenAPI paths, which include any base path from `--o
 Format: `urn:services:{serviceSlug}:{versionSlug}:schemas:{models|operations}:{schemaSlug}`
 
 ### Contract Assumptions
+
+These assumptions apply to buffered legacy gateway inputs. Stream response bodies and checked component schemas follow their separate contracts.
 
 - All request/response bodies must use `$ref` to `components.schemas`
 - Every operation must have a default response with `application/json`
@@ -586,6 +604,8 @@ npx wsdl-tsc compile --wsdl-source <file|url> --catalog-file <path> [options]
 | `--catalog-file` | Output path for catalog.json |
 
 ### Compiler Flags
+
+The shared [client/compiler flag table](#client-flags) documents import extensions, naming, scalar policies, unresolved references and optionality. `compile --help` lists the complete current surface, including stream configuration.
 
 | Flag | Default | Description |
 |------|---------|-------------|

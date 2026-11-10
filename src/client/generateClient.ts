@@ -71,6 +71,18 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
   const soapOptions = soapImport("IOptions");
   const soapSecurity = soapImport("ISecurity");
   const soapFactory = soapImport("createClientAsync");
+  const soapHttpClient = soapImport("HttpClient");
+  const soapExOptions = soapImport("IExOptions");
+  const aliases = new Map(compiled.aliases.map(alias => [alias.name, alias.tsType]));
+  const scalarTypes = Object.fromEntries(compiled.aliases.flatMap(alias => {
+    let type = alias.tsType;
+    const visited = new Set([alias.name]);
+    while (aliases.has(type) && !visited.has(type)) {
+      visited.add(type);
+      type = aliases.get(type)!;
+    }
+    return ["string", "number", "boolean", "bigint"].includes(type) || type.endsWith("[]") ? [[alias.name, type]] : [];
+  }));
   // Track whether any operation opts into streaming, so we can emit the
   // supporting runtime helpers only when they're actually used.
   let anyStream = false;
@@ -104,12 +116,14 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
    * Streams records from the ${m} operation of the ${clientName}.${opDocStr}${secHintsStr}
    *
    * @param args - The request arguments for the ${m} operation.
+   * @param options - Optional cancellation signal and total stream deadline in milliseconds.
    * @returns A promise resolving to a streaming response whose \`records\` is an
    *          async iterable of ${recordTs} objects parsed from the SOAP body as
    *          chunks arrive. Iteration pulls bytes on demand.
    */
   async ${m}<HeadersType = Record<string, string>>(
-    args: ${inTs}
+    args: ${inTs},
+    options?: StreamCallOptions
   ): Promise<StreamOperationResponse<T.${recordTs}, HeadersType>> {
     return this.callStream<${inTs}, T.${recordTs}, HeadersType>(
       args,
@@ -119,7 +133,8 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
       ${JSON.stringify(inputElementLocal)},
       ${JSON.stringify(inputElementNs)},
       ${JSON.stringify(op.soapAction ?? "")},
-      ${JSON.stringify(op.stream.recordPath)}
+      ${JSON.stringify(op.stream.recordPath)},
+      options
     );
   }`;
       methods.push(methodTemplate);
@@ -152,7 +167,11 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
   // inside this template literal (which would flag `this`, `await`, `yield`
   // outside-of-function false positives).
   const streamMethodsBlock = anyStream
-    ? "\n" + loadRuntimeSource("clientStreamMethods.tpl.txt").replace("__SOAP_CLIENT_TYPE__", soapClient.local)
+    ? "\n" + loadRuntimeSource("clientStreamMethods.tpl.txt")
+      .replaceAll("__SOAP_CLIENT_TYPE__", soapClient.local)
+      .replaceAll("__SOAP_HTTP_CLIENT__", soapHttpClient.local)
+      .replaceAll("__SOAP_EX_OPTIONS__", soapExOptions.local)
+      .replaceAll("__SOAP_SECURITY__", soapSecurity.local)
     : "";
   // noinspection JSFileReferences,JSUnresolvedReference,CommaExpressionJS,JSDuplicatedDeclaration,ReservedWordAsName,JSCommentMatchesSignature,JSValidateTypes,JSIgnoredPromiseFromCall,BadExpressionStatementJS,ES6UnusedImports,JSUnnecessarySemicolon,UnreachableCodeJS,JSUnusedLocalSymbols
   const classTemplate = `// noinspection JSAnnotator
@@ -161,13 +180,14 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
  * Generated ${clientName} client class.
  * This class wraps the node-soap client and provides strongly-typed methods for each operation.
  */
-import {${soapFactory.specifier}} from "soap";
-import type {${soapClient.specifier}, ${soapOptions.specifier}, ${soapSecurity.specifier}} from "soap";
+import {${soapFactory.specifier}${anyStream ? `, ${soapHttpClient.specifier}` : ""}} from "soap";
+import type {${soapClient.specifier}, ${soapOptions.specifier}, ${soapSecurity.specifier}${anyStream ? `, ${soapExOptions.specifier}` : ""}} from "soap";
 import type * as T from "./types${suffix}";
 import type {${clientName}DataTypes} from "./utils${suffix}";
 import {${clientConstant}_DATA_TYPES} from "./utils${suffix}";${anyStream ? `
 import {parseRecords, type RecordParseSpec} from "./streamXml${suffix}";
-import type {StreamOperationResponse} from "./operations${suffix}";` : ""}
+import type {StreamOperationResponse, StreamCallOptions} from "./operations${suffix}";
+export type {StreamCallOptions} from "./operations${suffix}";` : ""}
 
 /**
  * Represents the response structure for ${clientName} operations.
@@ -222,6 +242,8 @@ export class ${clientName} {
   protected attributesKeyOut: string;
   protected client?: ${soapClient.local};
   protected dataTypes: ${clientName}DataTypes = ${clientConstant}_DATA_TYPES;
+  protected scalarTypes: Readonly<Record<string, string>> = ${JSON.stringify(scalarTypes)};
+${anyStream ? `  protected streamRequestOptions: ${soapExOptions.local};\n` : ""}
 
   /**
    * Creates a new ${clientName} instance.
@@ -232,17 +254,20 @@ export class ${clientName} {
    * @param [options.security] - Optional SOAP security settings to apply.
    * @param [options.attributesKeyIn] - Key name for input attribute bags (default: "$attributes").
    * @param [options.attributesKeyOut] - Key name for output attribute bags (default: "attributes").
-   */
+${anyStream ? `   * @param [options.streamRequestOptions] - Stream HTTP options such as verified HTTPS agents, separate from WSDL options.\n` : ""}   */
   constructor(options: {
     source: string,
     options?: ${soapOptions.local},
     security?: ${soapSecurity.local},
     attributesKeyIn?: string,
-    attributesKeyOut?: string
+    attributesKeyOut?: string${anyStream ? `,
+    /** HTTP request options for stream calls, including HTTPS agents and timeouts; WSDL options stay separate. */
+    streamRequestOptions?: ${soapExOptions.local}` : ""}
   }) {
     this.source = options.source;
     this.attributesKeyIn = options.attributesKeyIn ?? "$attributes";
     this.attributesKeyOut = options.attributesKeyOut ?? "attributes";
+${anyStream ? `    this.streamRequestOptions = options.streamRequestOptions ?? {};\n` : ""}
     if (options.options) {
       this.options = options.options;
     }
@@ -410,12 +435,27 @@ ${methodsBody}
    *
    * @param node - The raw SOAP response node.
    * @param typeName - Optional metadata key to guide deserialization.
+   * @param nonNillable - Whether parent schema metadata rules out a nil child, permitting empty-object recovery.
    * @returns The deserialized object matching your DTO shape.
+   * @throws TypeError for invalid boolean, numeric, or bigint lexical values.
    */
-  protected fromSoapResult(node: any, typeName?: string): any {
-    // Pass through null/undefined unchanged
+  protected fromSoapResult(node: any, typeName?: string, nonNillable = false): any {
+    // @why node-soap collapses empty complex elements to null; only a declared non-nillable child permits recovering its object DTO.
+    // @constraints Nullable children and unknown/custom metadata retain null, including explicit xsi:nil responses.
+    if (node === null && nonNillable && typeName && Object.hasOwn(this.dataTypes.Attributes, typeName)
+      && Object.keys(this.dataTypes.ChildrenTypes[typeName] ?? {}).length === 0) return {};
     if (node == null) {
       return node;
+    }
+    if (typeName && Object.hasOwn(this.scalarTypes, typeName)) typeName = this.scalarTypes[typeName];
+    if (typeName?.endsWith("[]")) {
+      let itemType = typeName.slice(0, -2);
+      if (itemType.startsWith("(") && itemType.endsWith(")")) itemType = itemType.slice(1, -1);
+      if (typeof node === "string") {
+        const lexical = node.replace(/^[\\t\\r\\n ]+|[\\t\\r\\n ]+$/g, "");
+        return lexical === "" ? [] : lexical.split(/[\\t\\r\\n ]+/).map(item => this.fromSoapResult(item, itemType));
+      }
+      if (Array.isArray(node)) return node.map(item => this.fromSoapResult(item, itemType));
     }
     const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
     const attributeTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.AttributeTypes?.[typeName]) || {};
@@ -426,8 +466,22 @@ ${methodsBody}
       if (lexical === "false" || lexical === "0") return false;
       throw new TypeError("Invalid XML boolean response value");
     }
+    if (typeof node === "string" && (typeName === "number" || typeName === "bigint")) {
+      const lexical = node.replace(/^[\\t\\r\\n ]+|[\\t\\r\\n ]+$/g, "");
+      if (typeName === "bigint") {
+        if (!/^[+-]?\\d+$/.test(lexical)) throw new TypeError("Invalid XML bigint response value");
+        return BigInt(lexical);
+      }
+      if (!/^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$/.test(lexical)) {
+        throw new TypeError("Invalid XML numeric response value");
+      }
+      const number = Number(lexical);
+      if (!Number.isFinite(number)) throw new TypeError("Non-finite XML numeric response value");
+      return number;
+    }
     // A simple-content complex type retains its object shape when no attributes are present on the wire.
     if (typeof node !== "object") {
+      if (node === "" && typeName && Object.hasOwn(this.dataTypes.Attributes, typeName) && Object.keys(childrenTypes).length === 0) return {};
       return childrenTypes.$value ? {$value: this.fromSoapResult(node, childrenTypes.$value)} : node;
     }
     // Recursively process array elements
@@ -437,11 +491,12 @@ ${methodsBody}
 
     // Get child type mapping for recursive processing with correct types
     const repeatedElements: readonly string[] = (typeName && this.dataTypes?.RepeatedElements?.[typeName]) || [];
+    const nonNillableElements: readonly string[] = (typeName && this.dataTypes?.NonNillableElements?.[typeName]) || [];
     const result: any = {};
 
     // Preserve text content for mixed XML elements
-    if ("$value" in node) {
-      result.$value = (node as any).$value;
+    if ("$value" in node && (childrenTypes.$value || node.$value !== "")) {
+      result.$value = this.fromSoapResult(node.$value, childrenTypes.$value);
     }
 
     // Extract attributes from various node-soap attribute containers
@@ -463,10 +518,11 @@ ${methodsBody}
       // Recursively convert child elements with their specific type info
       const childType: string | undefined = childrenTypes[k];
       // node-soap can return a scalar when repetition is declared on a wrapping sequence (#141).
-      const value = v != null && !Array.isArray(v) && repeatedElements.includes(k) ? [v] : v;
-      result[k] = Array.isArray(value)
-        ? value.map(node => this.fromSoapResult(node, childType))
-        : this.fromSoapResult(value, childType);
+      const repeated = repeatedElements.includes(k);
+      const value = v != null && !Array.isArray(v) && repeated ? [v] : v;
+      result[k] = repeated && Array.isArray(value)
+        ? value.map(node => this.fromSoapResult(node, childType, nonNillableElements.includes(k)))
+        : this.fromSoapResult(value, childType, nonNillableElements.includes(k));
     }
 
     return result;

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:stream-mapping" targetNamespace="urn:stream-mapping">
+  <wsdl:types><xs:schema targetNamespace="urn:stream-mapping" elementFormDefault="qualified">
+    <xs:element name="Read"><xs:complexType><xs:sequence>
+      <xs:element name="Options" type="tns:Child" minOccurs="0"/><xs:element name="RequestLabel" type="tns:Label" minOccurs="0"/>
+    </xs:sequence><xs:attribute name="Enabled" type="xs:boolean"/></xs:complexType></xs:element>
+    <xs:element name="ReadResponse"><xs:complexType><xs:sequence><xs:element name="Record" type="tns:Record" maxOccurs="unbounded"/></xs:sequence></xs:complexType></xs:element>
+    <xs:complexType name="Record"><xs:sequence>
+      <xs:element name="Count" type="xs:int"/><xs:element name="Total" type="xs:decimal"/><xs:element name="Large" type="xs:long"/>
+      <xs:element name="Label" type="tns:Label"/><xs:element name="BareLabel" type="tns:Label"/>
+      <xs:element name="Tag" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="Nil" type="xs:string" nillable="true"/><xs:element name="Children" type="tns:ArrayOfChild"/>
+      <xs:element name="Words" type="tns:WordList" minOccurs="0"/><xs:element name="Numbers" type="tns:NumberList" minOccurs="0"/>
+      <xs:element name="Flags" type="tns:BooleanList" minOccurs="0"/><xs:element name="EmptyList" type="tns:WordList" minOccurs="0"/>
+      <xs:element name="InlineList" minOccurs="0"><xs:simpleType><xs:list itemType="xs:int"/></xs:simpleType></xs:element>
+      <xs:element name="RepeatedList" type="tns:NumberList" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="RepeatedInlineList" minOccurs="0" maxOccurs="unbounded"><xs:simpleType><xs:list itemType="xs:int"/></xs:simpleType></xs:element>
+      <xs:element name="EnumList" type="tns:EnumList" minOccurs="0"/><xs:element name="ListContent" type="tns:ListContent" minOccurs="0"/>
+      <xs:element name="Success" type="tns:Empty" minOccurs="0"/><xs:element name="EmptyString" type="xs:string" minOccurs="0"/>
+      <xs:element name="NilEmpty" type="tns:Empty" nillable="true" minOccurs="0"/>
+      <xs:element name="EmptyContent" type="tns:TextContent" minOccurs="0"/>
+    </xs:sequence><xs:attribute name="Enabled" type="xs:boolean"/><xs:attribute name="Rank" type="xs:int"/></xs:complexType>
+    <xs:complexType name="Label"><xs:simpleContent><xs:extension base="xs:decimal"><xs:attribute name="Active" type="xs:boolean"/></xs:extension></xs:simpleContent></xs:complexType>
+    <xs:complexType name="ArrayOfChild"><xs:sequence><xs:element name="Child" type="tns:Child" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+    <xs:complexType name="Child"><xs:attribute name="Active" type="xs:boolean"/></xs:complexType>
+    <xs:complexType name="Empty"/>
+    <xs:simpleType name="WordList"><xs:list itemType="xs:string"/></xs:simpleType>
+    <xs:simpleType name="NumberItem"><xs:restriction base="xs:int"/></xs:simpleType>
+    <xs:simpleType name="NumberList"><xs:list itemType="tns:NumberItem"/></xs:simpleType>
+    <xs:simpleType name="BooleanList"><xs:list itemType="xs:boolean"/></xs:simpleType>
+    <xs:simpleType name="NumericEnum"><xs:restriction base="xs:int"><xs:enumeration value="1"/><xs:enumeration value="2"/></xs:restriction></xs:simpleType>
+    <xs:simpleType name="EnumList"><xs:list itemType="tns:NumericEnum"/></xs:simpleType>
+    <xs:complexType name="ListContent"><xs:simpleContent><xs:extension base="tns:WordList"><xs:attribute name="Flags" type="tns:BooleanList"/></xs:extension></xs:simpleContent></xs:complexType>
+    <xs:complexType name="TextContent"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  </xs:schema></wsdl:types>
+  <wsdl:message name="ReadIn"><wsdl:part name="parameters" element="tns:Read"/></wsdl:message>
+  <wsdl:message name="ReadOut"><wsdl:part name="parameters" element="tns:ReadResponse"/></wsdl:message>
+  <wsdl:portType name="MappingPort"><wsdl:operation name="Read"><wsdl:input message="tns:ReadIn"/><wsdl:output message="tns:ReadOut"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="MappingBinding" type="tns:MappingPort"><soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/><wsdl:operation name="Read"><soap:operation soapAction="urn:stream-mapping:read"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+  <wsdl:service name="StreamMapping"><wsdl:port name="MappingPort" binding="tns:MappingBinding"><soap:address location="http://127.0.0.1:1/must-override"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

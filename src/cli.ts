@@ -61,6 +61,7 @@ function loadStreamConfigOrExit(filePath: string | undefined): StreamConfig | un
 
 // Process command line arguments, removing the first two elements (node executable and script path)
 const rawArgs = hideBin(process.argv);
+const hasServicesConfig = rawArgs.some(argument => argument === "--services-config" || argument.startsWith("--services-config="));
 
 // Available commands
 const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline", "assess"] as const;
@@ -674,10 +675,23 @@ if (rawArgs[0] === "app") {
   process.exit(0);
 }
 
-if (rawArgs[0] === "pipeline") {
+if (rawArgs[0] === "pipeline" && hasServicesConfig) {
+  const argv = await yargs(rawArgs.slice(1)).version(false).scriptName("wsdl-tsc pipeline")
+    .option("services-config", {type: "string", demandOption: true, desc: "Multi-service generation configuration; exclusive with single-source pipeline flags"})
+    .strict().help().parse();
+  try {
+    const {loadMultiServiceConfig, runMultiServicePipeline} = await import("./multiServicePipeline.js");
+    const result = await runMultiServicePipeline(await loadMultiServiceConfig(argv["services-config"]));
+    success(`Composed gateway written to ${result.pluginFile}`);
+    success(`Combined OpenAPI specification written to ${result.openapiFile}`);
+  } catch (error) {handleCLIError(error);}
+}
+
+if (rawArgs[0] === "pipeline" && !hasServicesConfig) {
   const pipelineArgv = await yargs(rawArgs.slice(1))
     .version(false)
     .scriptName("wsdl-tsc pipeline")
+    .option("services-config", {type: "string", desc: "Compose independent service pipelines from JSON; exclusive with single-source flags"})
     .usage("$0 --wsdl-source <file|url> [--client-dir <dir>] [--openapi-file <path>] [--gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug>] [--catalog-file <path>] [options]")
     .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
     .option("model", {type: "string", choices: ["legacy", "checked-components-v1"], default: "legacy", desc: "Generation model; components derive unambiguous WSDL selections"})

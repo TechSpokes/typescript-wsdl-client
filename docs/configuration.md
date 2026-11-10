@@ -102,8 +102,7 @@ Per-operation overrides for method, summary, description, and deprecation.
 ## Stream Configuration
 
 The `--stream-config <file>` flag (available on `compile`, `client`, `pipeline`)
-opts selected WSDL operations into streaming. Buffered output is unchanged for
-operations not listed in the file.
+opts selected WSDL operations into streaming. Unlisted operations retain their buffered API selection; 1.2.0 can still change generated mapper and metadata output.
 
 ```json
 {
@@ -140,7 +139,15 @@ operations not listed in the file.
 See [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) for rationale and the
 terminal-error policy.
 
-## Example Files
+## Multi-service configuration
+
+Use `pipeline --services-config services.json` exclusively, without single-source CLI flags. Each `services[].generation` uses programmatic `PipelineOptions` names, not CLI flag names. The canonical schema/example and typed runtime registry are in [Multi-Service Setup](gateway-guide.md#multi-service-setup).
+
+Paths in the services file resolve relative to that file; companion paths inside `streamConfigFile` resolve relative to the stream file. Programmatic `streamConfig` requires normalized metadata from `parseStreamConfig`, whereas raw JSON uses `recordType` and `shapeCatalog`. Do not interchange those shapes.
+
+Use unique lowercase service keys, normalized service slugs, decorators and static base paths, with explicit disjoint output ownership. Aggregate output is JSON only; `gateway.openapiPath` selects discovery or disables it with `false`. Bind runtime WSDL sources and security separately for every client. Checked services and aggregate app/test scaffolding are refused.
+
+## Example configuration files
 
 Example configuration files are available in the `examples/config/` directory:
 

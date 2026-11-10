@@ -1,5 +1,7 @@
 /** Internal, language-neutral S04 contract. S05 resolves and composes these references. */
-import {createHash} from "node:crypto";
+import type {Identity, NodeId, SymbolRole} from "./declarationIdentity.js";
+export {globalId, scopedId} from "./declarationIdentity.js";
+export type {Identity, NodeId, SymbolRole} from "./declarationIdentity.js";
 import type {ExpandedName, SyntaxAttribute, SyntaxElement, SyntaxSource} from "../loader/orderedSyntax.js";
 import {WSDL_NAMESPACE} from "../loader/orderedSyntax.js";
 
@@ -7,12 +9,6 @@ export const GRAPH_MODEL = "xsd10-faithful-v1" as const;
 export const DEFAULT_GRAPH_NODES = 100_000;
 const builtinTypes = new Set("anyType anySimpleType string boolean decimal float double duration dateTime time date gYearMonth gYear gMonthDay gDay gMonth hexBinary base64Binary anyURI QName NOTATION normalizedString token language NMTOKEN NMTOKENS Name NCName ID IDREF IDREFS ENTITY ENTITIES integer nonPositiveInteger negativeInteger long int short byte nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte positiveInteger".split(" "));
 export const isBuiltinType = (local: string): boolean => builtinTypes.has(local);
-export type NodeId = string;
-export type SymbolRole = "element" | "attribute" | "type" | "group" | "attributeGroup" | "message" | "portType" | "binding" | "service";
-export type Identity = Readonly<
-  {kind: "global"; role: SymbolRole; name: ExpandedName} |
-  {kind: "scoped"; owner: NodeId; path: string; role: string}
->;
 export type GraphContext = Readonly<{
   namespaces: Readonly<Record<string, string>>;
   baseUri: string;
@@ -100,12 +96,6 @@ export class GraphError extends Error {
   constructor(readonly category: "invalid-schema" | "resource-limit", message: string, readonly source?: SyntaxSource) {
     super(message); this.name = "GraphError";
   }
-}
-export function globalId(role: SymbolRole, name: ExpandedName): NodeId {
-  return JSON.stringify(["global", role, name.namespace, name.local]);
-}
-export function scopedId(owner: NodeId, path: string, role: string): NodeId {
-  return "scoped:" + createHash("sha256").update(JSON.stringify([owner, path, role])).digest("hex");
 }
 export function wsdlReferenceRoles(node: SyntaxElement): Record<string, SymbolRole> {
   if (node.name.namespace !== WSDL_NAMESPACE) return {};

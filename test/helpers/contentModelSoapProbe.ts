@@ -4,7 +4,7 @@ import {readFileSync, mkdirSync, mkdtempSync, writeFileSync, rmSync} from "node:
 import {join, resolve} from "node:path";
 import {pathToFileURL} from "node:url";
 import {SaxesParser, type SaxesTagNS} from "saxes";
-import type {Client, IOptions, ISecurity} from "soap";
+import {HttpClient, type Client, type IHttpClient, type IOptions, type ISecurity} from "soap";
 import {runGenerationPipeline} from "../../src/pipeline.js";
 
 export const fixtureDir = resolve("test/conformance/fixtures/soap/content-model");
@@ -93,8 +93,9 @@ export interface GeneratedProbe {
   StreamSubmit(args: unknown): Promise<StreamResult>;
   soapClient(): Promise<Client>;
   buildSoapEnvelope(...args: unknown[]): string;
-  webStreamToAsyncIterable(body: ReadableStream<Uint8Array>): AsyncIterable<Uint8Array>;
 }
+
+const probeTransports = new WeakMap<GeneratedProbe, IHttpClient>();
 
 // Pin one generated operation once, forwarding action as per-call headers.
 // This avoids setSOAPAction's shared mutable state during concurrent calls.
@@ -104,12 +105,24 @@ export function pinBufferedPort(dependency: Client, port: "First11" | "Second11"
   dependency.Submit = (args: unknown, callback: (...args: unknown[]) => void) => invoke(args, callback, {}, headers);
 }
 
-export async function generateProbe(url: string) {
+/**
+ * Generate clients for the independent ordered-wire probe.
+ * @param url Owned HTTP or TLS listener replacing the fixture's placeholder endpoints.
+ * @param bindings Preserve the mixed fixture or isolate SOAP 1.1 for positive transport qualification.
+ * @returns Client factory and cleanup for the generated temporary project.
+ * @throws For WSDL compilation, generation, or module loading failures.
+ * @sideEffects Writes a disposable project under tmp/conformance.
+ */
+export async function generateProbe(url: string, bindings: "mixed" | "single-soap11" = "mixed") {
   mkdirSync("tmp/conformance", {recursive: true});
   const directory = mkdtempSync(resolve("tmp/conformance/soap-feasibility-"));
   const wsdl = join(directory, "probe.wsdl");
-  writeFileSync(wsdl, readFileSync(join(fixtureDir, "probe.wsdl"), "utf8")
-    .replaceAll("http://127.0.0.1:1", url));
+  let source = readFileSync(join(fixtureDir, "probe.wsdl"), "utf8").replaceAll("http://127.0.0.1:1", url);
+  // @constraints Positive transport checks isolate one binding; the original mixed fixture remains independent library-limit evidence.
+  if (bindings === "single-soap11") source = source
+    .replace(/<wsdl:binding name="Soap12"[\s\S]*?<\/wsdl:binding>/, "")
+    .replace(/<wsdl:port name="(?:Second11|Port12)"[\s\S]*?<\/wsdl:port>/g, "");
+  writeFileSync(wsdl, source);
   await runGenerationPipeline({
     wsdl, catalogOut: join(directory, "client/catalog.json"), clientOutDir: join(directory, "client"),
     compiler: {imports: "js"},
@@ -122,7 +135,10 @@ export async function generateProbe(url: string) {
   const Probe = module.SoapProbe as new(options: {source: string; options: IOptions; security?: ISecurity}) => GeneratedProbe;
   return {
     create(options: IOptions = {}, security?: ISecurity) {
-      return new Probe({source: wsdl, options: {disableCache: true, ...options}, security});
+      const transport = options.httpClient ?? new HttpClient(options);
+      const client = new Probe({source: wsdl, options: {disableCache: true, ...options, httpClient: transport}, security});
+      probeTransports.set(client, transport);
+      return client;
     },
     cleanup() {rmSync(directory, {recursive: true, force: true});},
   };
@@ -185,35 +201,50 @@ export function children(node: OrderedNode, local?: string): OrderedNode[] {
   return node.content.filter((entry): entry is OrderedNode => "name" in entry && (!local || entry.name.local === local));
 }
 
-// Override two existing protected hooks on the generated instance. The actual
-// generated callStream still owns endpoint/action/fetch/status/parseRecords.
+/**
+ * Inject the independent ordered body and capture the actual streamed XML bytes.
+ * @param client Probe with a supplied public HTTP transport.
+ * @param body Complete preencoded SOAP body element for independent order validation.
+ * @returns Ordered syntax evidence and observed completion, failure, or cancellation.
+ * @throws When the probe lacks a streaming HTTP transport or received XML is malformed.
+ * @constraints Generated code retains endpoint, security, response parsing, and transport cleanup ownership.
+ */
 export function installOrderedStreamSeams(client: GeneratedProbe, body = orderedBody) {
   const originalEnvelope = client.buildSoapEnvelope.bind(client);
   client.buildSoapEnvelope = (...args) => originalEnvelope(...args)
     .replace(/(<soap:Body>)[\s\S]*(<\/soap:Body>)/, `$1${body}$2`);
   const capture = orderedCapture();
   const lifecycle: {outcome: "pending" | "success" | "failure" | "cancelled"} = {outcome: "pending"};
-  client.webStreamToAsyncIterable = async function* (source) {
-    const reader = source.getReader();
-    try {
-      while (true) {
-        const step = await reader.read();
-        if (step.done) {
-          capture.close();
-          lifecycle.outcome = "success";
-          return;
+  const transport = probeTransports.get(client);
+  if (!transport?.requestStream) throw new Error("Generated probe requires the supplied streaming HTTP transport");
+  const requestStream = transport.requestStream.bind(transport);
+  transport.requestStream = async (...args) => {
+    const response = await requestStream(...args);
+    const source = response.data;
+    const iterator = source[Symbol.asyncIterator].bind(source);
+    source.once("close", () => {if (lifecycle.outcome === "pending") lifecycle.outcome = "cancelled";});
+    source[Symbol.asyncIterator] = async function* (): AsyncGenerator<string | Uint8Array, undefined, unknown> {
+      const input = iterator();
+      try {
+        while (true) {
+          const step = await input.next();
+          if (step.done) {
+            capture.close();
+            lifecycle.outcome = "success";
+            return;
+          }
+          capture.write(step.value);
+          yield step.value;
         }
-        capture.write(step.value);
-        yield step.value;
+      } catch (error) {
+        lifecycle.outcome = "failure";
+        throw error;
+      } finally {
+        if (lifecycle.outcome === "pending") lifecycle.outcome = "cancelled";
+        if (lifecycle.outcome !== "success") await input.return?.();
       }
-    } catch (error) {
-      lifecycle.outcome = "failure";
-      throw error;
-    } finally {
-      if (lifecycle.outcome === "pending") lifecycle.outcome = "cancelled";
-      if (lifecycle.outcome !== "success") await reader.cancel();
-      reader.releaseLock();
-    }
+    };
+    return response;
   };
   return {capture, lifecycle};
 }

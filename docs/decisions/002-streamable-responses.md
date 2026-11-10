@@ -6,6 +6,8 @@ See the root [README](../../README.md) for the authoritative documentation index
 
 ## Status
 
+Current implementation note (2026-11-09): 1.2.0 uses node-soap's WSDL serializer and public HTTP `requestStream`, with DTO mapping and cancellation. Historical callback-only research below does not describe the current transport. Consumer contracts are in [generated code](../generated-code.md#calling-stream-operations) and [gateway transport settings](../gateway-guide.md#streaming-transport-settings).
+
 Accepted (2026-04-20). Implementation shipped in 0.17.0 across five phases
 (Phase 0 research → Phase 5 integration). See
 `scratches/plans/v017/streamable-responses.plan.yaml` for phase-by-phase
@@ -320,7 +322,7 @@ Captured after the 0.17.0 ship for future maintainers:
 
 - `--stream-config` is wired onto the `compile`, `client`, and `pipeline` CLI commands. It is intentionally not accepted on `openapi`, `gateway`, or `app` because those commands consume a pre-compiled `catalog.json` that already carries the normalized `OperationStreamMetadata`. The original proposal text that listed the flag on every command reflected the design intent; the shipped surface is narrower for that reason.
 - `GenerateOpenAPIOptions` and `GenerateGatewayOptions` in the programmatic API do not carry stream-config fields for the same reason. `compileWsdlToProject` and `runGenerationPipeline` (PipelineOptions) do.
-- The client stream transport is emitted from two templates (`clientStreamMethods.tpl.txt`, `operationsStreamHelper.tpl.txt`). They embed the `StreamOperationResponse<T>` type and a `callStream()` method that POSTs a hand-built SOAP envelope via global `fetch`, bypassing `node-soap` as required by the phase-0 finding.
+- The original 0.17.0 templates emitted fetch-based requests based on the callback-only phase-0 finding. The dated current-implementation note above supersedes that transport description for 1.2.0; historical measurements remain evidence of that earlier callback path.
 - `saxes ^6.0.0` was promoted from devDependency to runtime dependency on the package, and added as a pinned dependency in the generated app scaffold so stream-enabled consumers install it automatically.
 - The `json-array` format is implemented in `0.28.0`. The helper prefetches the first record before emitting `[`, which preserves normal error envelopes for failures before the first record and documents truncation or invalid JSON for failures after streaming starts.
 
