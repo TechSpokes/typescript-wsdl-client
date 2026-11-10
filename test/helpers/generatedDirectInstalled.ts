@@ -34,8 +34,10 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
     {name: 'shapes', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'createClient'},
     {name: 'scalar', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
     {name: 'empty', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'value-list'},
+    ...(binding === 'component' ? [{name: 'soap12', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'}] : []),
   ].map(async variant => ({...variant, source: await readFile(variant.name === 'forecast' ? fixture
-    : path.join(root, 'test/conformance/fixtures/assessment/direct-variants', variant.name + '.wsdl'), 'utf8')})));
+    : variant.name === 'soap12' ? fixture : path.join(root, 'test/conformance/fixtures/assessment/direct-variants', variant.name + '.wsdl'), 'utf8').then(text => variant.name === 'soap12'
+      ? text.replaceAll('http://schemas.xmlsoap.org/wsdl/soap/', 'http://schemas.xmlsoap.org/wsdl/soap12/') : text)})));
 
   const npm = process.env.npm_execpath;
   if (!npm) throw new Error('Use npm test');
@@ -106,6 +108,7 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
     await run([npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', path.join(evidence, filename), 'typescript@6.0.3']);
     await copyFile(path.join(root, binding === 'component' ? 'test/helpers/checkedComponentInstalledProcess.ts' : binding === 'root' ? 'test/helpers/checkedDirectInstalledProcess.ts' : 'test/helpers/generatedDirectInstalledProcess.ts'), path.join(consumer, 'process.ts'));
     await copyFile(path.join(root, 'test/helpers/generatedDirectConsumer.ts'), path.join(consumer, 'generatedDirectConsumer.ts'));
+    if (binding === 'component') await copyFile(path.join(root, 'test/conformance/fixtures/compatibility/v1.2.0/component-runtime-contract.ts'), path.join(consumer, 'frozen-component-runtime.ts'));
     await writeFile(path.join(consumer, 'usage.ts'), `import type {Request, Response, DeclaredFault} from './forecast.js';
 ${binding !== 'private' ? `import {checkedDirectRuntimeV1} from '@techspokes/typescript-wsdl-client';
 import {createClient} from './forecast.js';
@@ -137,6 +140,15 @@ const extra: Empty = {other: ''};
 // @ts-expect-error invalid boolean
 const boolean: Response = {city: '', temperature: [], complete: 1};
 void [request, shape, empty, exact, message];
+${binding === 'component' ? `import {acceptComponentRuntime} from './frozen-component-runtime.js';
+acceptComponentRuntime(checkedComponentRuntimeV1);
+import {checkedComponentRuntimeV2} from '@techspokes/typescript-wsdl-client';
+import {createClient as createSoap12Client} from './soap12.js';
+createSoap12Client(checkedComponentRuntimeV2);
+// @ts-expect-error the old component protocol cannot inject a SOAP 1.2 client
+createSoap12Client(checkedComponentRuntimeV1);
+// @ts-expect-error the additive component protocol cannot inject a frozen SOAP 1.1 client
+acceptComponentRuntime(checkedComponentRuntimeV2);` : ''}
 `.replaceAll(binding === 'component' ? 'checkedDirectRuntimeV1' : '\u0000', 'checkedComponentRuntimeV1')
       .replace(binding === 'component' ? "import type {Request, Response, DeclaredFault} from './forecast.js';" : '\u0000',
         "import type {Request, Response, Result} from './forecast.js';\ntype DeclaredFault = Extract<Result, {kind: 'soap-fault'}>;")

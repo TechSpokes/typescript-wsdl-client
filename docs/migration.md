@@ -16,6 +16,16 @@ These steps apply to every version upgrade:
 4. Regenerate matched generator-owned artifacts using the existing generation script and options.
 5. Review the generated diff and run the consumer project's TypeScript build and tests.
 
+## From 1.2.x to 1.3.0
+
+Version 1.3.0 adds checked SOAP 1.2 document/literal execution. Legacy generation remains the default. Existing SOAP 1.1 component clients keep `checkedComponentRuntimeV1` and `checked-component-runtime-v2`; the shipped direct runtime is unchanged. Updating the package alone does not adopt SOAP 1.2 or require regeneration of existing SOAP 1.1 clients.
+
+To adopt SOAP 1.2, use `--model checked-components-v1` and the source-selected SOAP 1.2 service/port/binding. Ambiguous sources still require explicit checked configuration. Regenerate matched clients, capsules, OpenAPI and gateways with 1.3.0; the generated client uses `checkedComponentRuntimeV2` and `checked-component-soap12-runtime-v1`. Do not mix runtime handshakes or substitute artifacts across ports.
+
+SOAP 1.2 `soap-fault` results can contain protocol metadata without a declared application `value` or fault `name`. Narrow the result before accessing typed detail. Declared detail retains native validation; gateway faults remain HTTP 502. Keep consumer-owned server/config/test files under the existing skip/force rules.
+
+Qualification uses owned HTTP services, generated gateways and isolated installed consumers. It does not establish live-provider acceptance. SOAP 1.2 streaming, RPC/encoded and broader authentication/header capabilities remain separate work; see the [checked gateway contract](checked-gateway.md#component-service-generation).
+
 ## From 1.1.x to 1.2.0
 
 ### Published starting points

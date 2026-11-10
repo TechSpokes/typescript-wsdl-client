@@ -35,7 +35,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   inspectReconstructedComponentSource(expected);
   const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
-  const runtime = 'checkedComponentRuntimeV1';
+  const runtime = expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV1';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
     .some(segment => !segment || !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment))) {
     throw new TypeError('Checked routePath requires literal nonempty path segments');
@@ -50,17 +50,27 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     }).schema;
   };
   const request = schema(input, 'Request'), response = schema(output, 'Response');
+  const soap12 = expected.contract.binding.version === '1.2';
+  const nameSchema = {type: 'object', additionalProperties: false, required: ['namespace', 'local'],
+    properties: {namespace: {type: 'string'}, local: {type: 'string'}}};
+  const protocolFaultProperties = {
+    version: {const: '1.2'}, code: nameSchema, string: {type: 'string'},
+    subcodes: {type: 'array', items: nameSchema},
+    reasons: {type: 'array', minItems: 1, items: {type: 'object', additionalProperties: false, required: ['lang', 'text'],
+      properties: {lang: {type: 'string'}, text: {type: 'string'}}}},
+    node: {type: 'string'}, role: {type: 'string'},
+  };
   const faults = expected.mappings.filter(mapping => mapping.direction.kind === 'fault').map(mapping => {
     if (mapping.direction.kind !== 'fault') throw new TypeError('Declared fault mapping required');
     return {name: mapping.direction.name, value: schema(mapping, `Fault_${expected.mappings.filter(item => item.direction.kind === 'fault').indexOf(mapping)}`)};
   });
-  const faultVariants = faults.map(fault => ({
+  const faultVariants: Schema[] = faults.map(fault => ({
     type: 'object', additionalProperties: false, required: ['fault', 'value'],
     properties: {
       value: fault.value,
       fault: {
-        type: 'object', additionalProperties: false, required: ['name', 'code', 'string'],
-        properties: {
+        type: 'object', additionalProperties: false, required: ['name', 'code', 'string', ...(soap12 ? ['version', 'subcodes', 'reasons'] : [])],
+        properties: soap12 ? {...protocolFaultProperties, name: {const: fault.name}} : {
           name: {const: fault.name}, string: {type: 'string'}, actor: {type: 'string'},
           code: {type: 'object', additionalProperties: false, required: ['namespace', 'local'],
             properties: {namespace: {type: 'string'}, local: {type: 'string'}}},
@@ -68,6 +78,10 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       },
     },
   }));
+  if (soap12) faultVariants.push({type: 'object', additionalProperties: false, required: ['fault'], properties: {
+    fault: {type: 'object', additionalProperties: false, required: ['version', 'code', 'string', 'subcodes', 'reasons'],
+      properties: protocolFaultProperties},
+  }});
   const fault: Schema = faultVariants.length ? {oneOf: faultVariants} : {not: {}};
   const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault}};
   const grouped = expected.mappings.some(mapping => mapping.kind === 'component-mapping'
@@ -97,7 +111,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     openapi: '3.1.1', jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
     info: {title: expected.selection.service.local, version: '1.0.0'},
     ...(grouped ? {components:{schemas:components}} : {}),
-    'x-checked-model': {model: 'checked-components-v1', scope: 'native-component-structured-soap11',
+    'x-checked-model': {model: 'checked-components-v1', scope: soap12 ? 'native-component-structured-soap12' : 'native-component-structured-soap11',
       ...(expected.responseProjection
         ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
       documentationDialect: '2020-12', runtimeDialect: 'draft-07', jsonShapeComplete: false,
@@ -170,9 +184,14 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
         return reply.type('application/json').serializer(value => JSON.stringify(value)).send(result.value);
       }
       if (result.kind === 'soap-fault') {
-        const fault = {name: result.fault.name, code: {namespace: result.fault.code.namespace, local: result.fault.code.local},
+        ${soap12 ? `const fault = {version: result.fault.version, code: result.fault.code, string: result.fault.string,
+          subcodes: result.fault.subcodes, reasons: result.fault.reasons,
+          ...(result.fault.name === undefined ? {} : {name: result.fault.name}),
+          ...(result.fault.node === undefined ? {} : {node: result.fault.node}),
+          ...(result.fault.role === undefined ? {} : {role: result.fault.role})};
+        const value = result.fault.name === undefined ? {fault} : {fault, value: result.value};` : `const fault = {name: result.fault.name, code: {namespace: result.fault.code.namespace, local: result.fault.code.local},
           string: result.fault.string, ...(result.fault.actor === undefined ? {} : {actor: result.fault.actor})};
-        const value = {fault, value: result.value};
+        const value = {fault, value: result.value};`}
         if (!validateFault(value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-fault-shape'});
         return reply.code(502).type('application/json').serializer(value => JSON.stringify(value)).send(value);
       }

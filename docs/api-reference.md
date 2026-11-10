@@ -6,7 +6,7 @@ See the main [README](../README.md) for installation, CLI usage, and project ove
 
 All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Adding a preamble does not change an API signature or option; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
 
-Generated-output compatibility is versioned separately from those preambles. Read the [1.1.x-to-1.2.0 migration guide](migration.md#from-11x-to-120) before regenerating existing clients or changing their selected profile.
+Generated-output compatibility is versioned separately from those preambles. Read the [migration guide for the intended version](migration.md), including [1.2.x-to-1.3.0 SOAP binding adoption](migration.md#from-12x-to-130), before regenerating existing clients or changing their selected profile.
 
 ## compileWsdlToProject
 

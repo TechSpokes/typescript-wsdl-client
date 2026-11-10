@@ -251,6 +251,8 @@ export function checkDirectSourceCompatibility(expected: unknown, contract: Dire
 const componentVersions = Object.freeze({...versions, scope: 'component-soap11-utf8-graph-v1', mapping: 'component-values-v1',
   runtimePolicy: 'explicit-http-verified-https-transport-v1'} as const);
 const scopedComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-utf8-graph-v2', mapping: 'component-values-and-record-scope-v1'} as const);
+const soap12ComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap12-document-literal-v1'} as const);
+const scopedSoap12ComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap12-document-literal-record-v1'} as const);
 const rpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-strings-v1', mapping: 'component-rpc-string-values-v1'} as const);
 const typedRpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-typed-latin1-v1', mapping: 'component-rpc-typed-values-v1'} as const);
 type ComponentRoot = Readonly<{element: ExpandedName; message: ExpandedName; part: string}> | Readonly<{
@@ -263,11 +265,12 @@ interface ComponentRecordSource {
 }
 interface ComponentProjectionData {readonly spec: ComponentRecordProjectionSpec; readonly source: ComponentRecordSource}
 interface ComponentCompatibility extends DirectSourceSelection {
+  readonly binding?: Readonly<{version: '1.2'; actionRequired: boolean}>;
   readonly selector: DirectOperationSelector; readonly action: string;
   readonly input: ComponentRoot; readonly output: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
 }
 interface ComponentCapsule {
-  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions;
+  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions;
   readonly resources: readonly ComponentResource[];
   readonly libraries?: readonly string[]; readonly projection?: ComponentProjectionData | null;
   readonly compatibility: ComponentCompatibility; readonly fingerprint: string;
@@ -329,6 +332,7 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
   const input = make({kind: 'input'}), output = make({kind: 'output'});
   const faults = contract.faults.map(fault => ({name: fault.name, root: make({kind: 'fault', name: fault.name})}));
   const compatibility: ComponentCompatibility = {selector: contract.selector, service: owned.service, port: owned.port,
+    ...(contract.binding.version === '1.2' ? {binding: {version: '1.2' as const, actionRequired: contract.binding.actionRequired!}} : {}),
     action: contract.binding.action, input, output, faults};
   let projection: ComponentProjectionData | null = null;
   if (responseProjection) {
@@ -377,7 +381,7 @@ function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescr
   const rpc = 'kind' in compatibility.input && compatibility.input.kind === 'rpc-typed-parts-v1';
   const typedRpc = rpc && compatibility.input.parts.some(part => part.type.namespace !== 'http://www.w3.org/2001/XMLSchema' || part.type.local !== 'string');
   if (rpc && (extended || derived.applicationGroups)) throw new Stop('unsupported', 'rpc-artifact-extension');
-  const value = {versions: typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
+  const value = {versions: compatibility.binding?.version === '1.2' ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
     ...(extended ? {libraries, projection} : {}), ...(derived.applicationGroups ? {applicationGroups: derived.applicationGroups,applicationGroupIdentity:derived.applicationGroupIdentity} : {})};
   return {...value, fingerprint: hash(json(value, budget))};
 }
@@ -431,7 +435,8 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
   const typedRpc = !!parsed.versions && typeof parsed.versions === 'object' && (parsed.versions as Record<string, unknown>).scope === typedRpcComponentVersions.scope;
   const rpc = typedRpc || !!parsed.versions && typeof parsed.versions === 'object' && (parsed.versions as Record<string, unknown>).scope === rpcComponentVersions.scope;
   if (rpc && (extended || grouped)) reject('rpc-artifact-extension');
-  const expectedVersions = typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
+  const soap12 = !!parsed.versions && typeof parsed.versions === 'object' && ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1'].includes((parsed.versions as Record<string, unknown>).scope as string);
+  const expectedVersions = soap12 ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
   const actual = record(parsed.versions, Object.keys(expectedVersions));
   for (const key of Object.keys(expectedVersions) as (keyof typeof expectedVersions)[]) if (actual[key] !== expectedVersions[key]) reject('unsupported-version-mode-or-policy');
   validateComponentResources(parsed.resources, budget, signal);
@@ -471,7 +476,11 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
     }
     if (!(parsed.libraries as string[]).length && parsed.projection === null) reject('empty-component-extension');
   }
-  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', 'output', 'faults']);
+  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', 'output', 'faults', ...(soap12 ? ['binding'] : [])]);
+  if (soap12) {
+    const binding = record(c.binding, ['version', 'actionRequired']);
+    if (binding.version !== '1.2' || typeof binding.actionRequired !== 'boolean') reject('soap12-binding');
+  }
   selector(c.selector); name(c.service); ncname(c.port); text(c.action);
   root(c.input); root(c.output);
   if (rpc) {

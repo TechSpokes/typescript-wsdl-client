@@ -6,6 +6,12 @@ The matrix describes the existing legacy generator. The unreleased opt-in [check
 
 The qualified checked domain includes [keyed mixed, namespace-collision and source-permitted open values](checked-gateway.md#mixed-namespaced-and-open-values), with production conformance and installed request/response/fault evidence. Native strict/lax/skip checks remain distinct from schema-source wildcard checks and from the legacy rows below.
 
+## Checked SOAP 1.2 document/literal
+
+Checked component generation executes supported SOAP 1.2 document/literal operations through the existing buffered adapter. The selected service/port/binding determines version and action; mixed SOAP 1.1/1.2 ports remain independent. [The checked gateway reference](checked-gateway.md#component-service-generation) describes fault results, artifact compatibility and header processing. The legacy matrix below continues to describe binding detection rather than checked execution.
+
+SOAP 1.2 RPC/encoded, streaming, authentication and outgoing application/security headers remain separate capabilities. Owned-server evidence establishes the exercised protocol combinations, not general provider qualification.
+
 ## Checked SOAP 1.1 RPC string profile
 
 Checked component generation supports the bounded RPC/encoded profile below. The [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) distinguishes all-12 owned-server execution, offline provider-response replay and the 2026-11-09 live retest: ten operations succeeded, while two GML operations returned non-SOAP provider errors. No geographic correctness claim follows.

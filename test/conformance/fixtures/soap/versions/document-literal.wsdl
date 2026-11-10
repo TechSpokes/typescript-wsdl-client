@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:conformance:soap12" targetNamespace="urn:conformance:soap12">
+  <w:types><x:schema targetNamespace="urn:conformance:soap12" elementFormDefault="qualified">
+    <x:element name="Ping"><x:complexType><x:sequence><x:element name="value" type="x:string"/></x:sequence></x:complexType></x:element>
+    <x:element name="PingResponse"><x:complexType><x:sequence><x:element name="value" type="x:string"/></x:sequence></x:complexType></x:element>
+    <x:element name="Problem"><x:complexType><x:sequence><x:element name="code" type="x:string"/><x:element name="message" type="x:string"/></x:sequence></x:complexType></x:element>
+  </x:schema></w:types>
+  <w:message name="Input"><w:part name="parameters" element="t:Ping"/></w:message>
+  <w:message name="Output"><w:part name="parameters" element="t:PingResponse"/></w:message>
+  <w:message name="ProblemMessage"><w:part name="detail" element="t:Problem"/></w:message>
+  <w:portType name="PingType"><w:operation name="Ping"><w:input message="t:Input"/><w:output message="t:Output"/><w:fault name="Problem" message="t:ProblemMessage"/></w:operation></w:portType>
+  <w:binding name="Soap12" type="t:PingType"><s12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Ping"><s12:operation soapAction="urn:ping:12"/><w:input><s12:body use="literal"/></w:input><w:output><s12:body use="literal"/></w:output><w:fault name="Problem"><s12:fault name="Problem" use="literal"/></w:fault></w:operation></w:binding>
+  <w:binding name="Soap11" type="t:PingType"><s:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Ping"><s:operation soapAction="urn:ping:11"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output><w:fault name="Problem"><s:fault name="Problem" use="literal"/></w:fault></w:operation></w:binding>
+  <w:service name="PingService"><w:port name="Port12" binding="t:Soap12"><s12:address location="http://127.0.0.1:1/soap12"/></w:port><w:port name="Port11" binding="t:Soap11"><s:address location="http://127.0.0.1:1/soap11"/></w:port></w:service>
+</w:definitions>

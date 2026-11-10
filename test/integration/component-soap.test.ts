@@ -231,7 +231,7 @@ describe('component SOAP exchange through the existing dependency and native che
       else {
         expect(result).toMatchObject({kind: 'soap-fault', fault: {name: 'ForecastError'},
           decoded: {kind: 'component-decoded', validated: {value: {code: 'NOT_FOUND', message: 'Unknown city'}}}});
-        if (result.kind !== 'soap-fault') throw new Error(result.kind);
+        if (result.kind !== 'soap-fault' || !('decoded' in result)) throw new Error('Native decoded declared fault detail required');
         expect(JSON.parse(JSON.stringify(result.decoded.validated.value))).toEqual({code: 'NOT_FOUND', message: 'Unknown city'});
       }
     });

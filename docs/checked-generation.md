@@ -1,18 +1,18 @@
 # Try opt-in checked generation
 
-The 1.2.0 candidate offers opt-in WSDL-to-checked-gateway generation for supported document/literal SOAP 1.1 contracts and the bounded RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. See the root [README](../README.md).
+Opt-in checked generation supports qualified SOAP 1.1 and SOAP 1.2 document/literal contracts and the bounded SOAP 1.1 RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. SOAP 1.2 execution is available starting with 1.3.0; see the [binding and artifact contract](checked-gateway.md#component-service-generation). See the root [README](../README.md).
 
 This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. Generation exposes legacy and components only; the shipped v1.1.5 direct runtime remains a compatibility binding for existing clients. See the [checked gateway reference](checked-gateway.md).
 
 ## Install and try the bundled contract
 
-Version 1.2.0 is a release candidate until published. During candidate verification, install the locally packed 1.2.0 tarball instead of requesting an unpublished registry version. Earlier published previews retain their historical contracts.
+The examples target 1.3.0. Before that version is published, install a locally packed 1.3.0 tarball instead of requesting an unpublished registry version. After publication, use the explicit registry version below. Earlier releases retain their own documented contracts.
 
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.2.0
+npm install --save-dev @techspokes/typescript-wsdl-client@1.3.0
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```
@@ -137,7 +137,7 @@ The qualified component fragment includes imported schemas, nested/repeated and 
 
 The [bounded SOAP 1.1 RPC/encoded profile](supported-patterns.md#checked-soap-11-rpc-string-profile) supports typed scalar parts, native restrictions, one flat required Boolean record and one opaque string result. [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) covers all 12 operations against an owned server; ten live operations succeeded and two GML operations returned non-SOAP failures. There is no parsed DWML/GML or geographic correctness claim.
 
-General XSD, SOAP 1.2, general RPC encoding, broader authentication/security, arbitrary wildcard conversion and checked incremental streaming remain outside this preview. OpenAPI describes the JSON shape but does not express every native scalar/order/wildcard rule. Required declarations and strict wildcard failures cannot become successful unchecked replies.
+General XSD, general RPC encoding, broader authentication/security, arbitrary wildcard conversion and checked incremental streaming remain outside this preview. SOAP 1.2 document/literal uses the separately versioned binding described in the [checked gateway reference](checked-gateway.md#component-service-generation); live-provider acceptance is separate from owned-server protocol evidence. OpenAPI describes the JSON shape but does not express every native scalar/order/wildcard rule. Required declarations and strict wildcard failures cannot become successful unchecked replies.
 
 [#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) supplies the bounded mixed/namespace/open mapping and its schema/serialization slice of [#410](https://github.com/TechSpokes/typescript-wsdl-client/issues/410). Representative unrelated contract qualification remains under [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397); broader HTTP translation, source, scalar, group/naming, security and streaming work retains its existing owners. Legacy defaults and full-profile activation remain unchanged. See the [roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) for direction and [development checkpoint](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/docs/content-model-development-checkpoint.md) for detailed evidence.
 

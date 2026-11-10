@@ -16,6 +16,7 @@ export class DirectSoapSourceError extends Error {
 }
 function validateSoapSelection(source: SchemaInput, contract: DirectOperationContract,
   config: {service: ExpandedName; port: string}, check: () => void): void {
+  const addressNamespace = contract.binding.version === '1.2' ? 'http://schemas.xmlsoap.org/wsdl/soap12/' : WSDL_SOAP;
   const elements = (node: SyntaxElement) => {check(); return node.children.filter((child): child is SyntaxElement => child.kind === 'element');};
   const definitions = source.root.root;
   if (definitions.name.namespace !== WSDL_NAMESPACE || definitions.name.local !== 'definitions') throw new DirectSoapSourceError('WSDL definitions required');
@@ -26,8 +27,8 @@ function validateSoapSelection(source: SchemaInput, contract: DirectOperationCon
   if (ports.length !== 1) throw new DirectSoapSourceError('SOAP port mismatch');
   const binding = syntaxAttribute(ports[0]!, 'binding');
   if (!binding || !same(resolveLexicalQName(binding, ports[0]!), contract.selector.binding)) throw new DirectSoapSourceError('SOAP binding mismatch');
-  const addresses = elements(ports[0]!).filter(n => n.name.namespace === WSDL_SOAP && n.name.local === 'address');
-  if (addresses.length !== 1 || elements(ports[0]!).some(n => !(n.name.namespace === WSDL_SOAP && n.name.local === 'address')
+  const addresses = elements(ports[0]!).filter(n => n.name.namespace === addressNamespace && n.name.local === 'address');
+  if (addresses.length !== 1 || elements(ports[0]!).some(n => !(n.name.namespace === addressNamespace && n.name.local === 'address')
     && !(n.name.namespace === WSDL_NAMESPACE && n.name.local === 'documentation'))) throw new DirectSoapSourceError('SOAP port extension');
 }
 export function prepareDirectSoapSource(contract: DirectOperationContract, config: {service: ExpandedName; port: string}, check: () => void) {

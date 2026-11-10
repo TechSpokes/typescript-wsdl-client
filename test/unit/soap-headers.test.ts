@@ -19,3 +19,23 @@ describe('SOAP 1.1 component response headers', () => {
     expect(assess(xml).kind).toBe(kind);
   });
 });
+
+describe('SOAP 1.2 component response header roles', () => {
+  const namespace = 'http://www.w3.org/2003/05/soap-envelope';
+  const assess12 = (body: string) => assessComponentSoapHeader(parseOrderedSyntax(Buffer.from(
+    `<s:Header xmlns:s="${namespace}" xmlns:t="urn:owned:trace">${body}</s:Header>`), 'urn:owned:soap12-header').root, () => {}, '1.2');
+  it.each(['0', 'false'])('ignores qualified optional ultimate-receiver blocks with mustUnderstand=%s', value => {
+    expect(assess12(`<t:Trace s:mustUnderstand="${value}" s:relay="true"/>`).kind).toBe('ignored-optional-headers');
+  });
+  it.each(['1', 'true'])('refuses mandatory unknown blocks targeted at this receiver with mustUnderstand=%s', value => {
+    expect(assess12(`<t:Trace s:mustUnderstand="${value}"/>`).kind).toBe('unsupported');
+    expect(assess12(`<t:Trace s:mustUnderstand="${value}" s:role="${namespace}/role/next"/>`).kind).toBe('unsupported');
+    expect(assess12(`<t:Trace s:mustUnderstand="${value}" s:role="${namespace}/role/ultimateReceiver"/>`).kind).toBe('unsupported');
+  });
+  it.each([namespace + '/role/none', 'urn:owned:other'])('does not assume the role %s', role => {
+    expect(assess12(`<t:Trace s:mustUnderstand="true" s:role="${role}"/>`).kind).toBe('ignored-optional-headers');
+  });
+  it.each(['<t:Trace s:mustUnderstand="yes"/>', '<t:Trace s:relay="yes"/>', '<t:Trace s:role="relative"/>', '<Trace/>'])('refuses malformed SOAP 1.2 header %s', xml => {
+    expect(assess12(xml).kind).toBe('protocol');
+  });
+});

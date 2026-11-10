@@ -53,7 +53,7 @@ export {
   type StreamConfig,
 } from "./util/streamConfig.js";
 export {applyShapeCatalogs, type ApplyShapeCatalogsOptions} from "./compiler/shapeResolver.js";
-export {checkedDirectRuntimeV1, checkedComponentRuntimeV1} from './client/checkedDirectRuntime.js';
+export {checkedDirectRuntimeV1, checkedComponentRuntimeV1, checkedComponentRuntimeV2} from './client/checkedDirectRuntime.js';
 
 // noinspection JSUnusedGlobalSymbols
 /**

@@ -6,7 +6,7 @@ Implemented legacy composition and deferred checked scope. See the root [README]
 
 Native legacy composition is implemented through `runMultiServicePipeline`, `loadMultiServiceConfig` and `pipeline --services-config`. Each independent WSDL retains its generated client, catalog, SOAP binding/action metadata and service router; the aggregate emits one Fastify plugin and one OpenAPI 3.1 JSON document.
 
-This implementation belongs to the [1.2.0 candidate](../releases/v1.2.0.md), not a claim that composition shipped in the earlier 1.1.8 npm package. The [current roadmap](../../ROADMAP.md#release-availability-and-upgrade-impact) separates published, candidate and deferred capabilities; the historical 1.0 plans remain unchanged.
+This implementation belongs to [1.2.0](../releases/v1.2.0.md), which is available as an explicit npm version; composition did not ship in the earlier 1.1.8 package. The [current roadmap](../../ROADMAP.md#release-availability-and-upgrade-impact) separates released, candidate and deferred capabilities; the historical 1.0 plans remain unchanged.
 
 The [gateway guide](../gateway-guide.md#multi-service-setup) defines the consumer configuration and runtime client registry. The [API reference](../api-reference.md#runmultiservicepipeline) documents exported types, and the [CLI reference](../cli-reference.md#multi-service-configuration) covers invocation. These are the current contracts; the configuration examples previously proposed here are superseded.
 
