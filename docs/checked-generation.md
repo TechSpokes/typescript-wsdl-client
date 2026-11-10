@@ -1,6 +1,6 @@
 # Try opt-in checked generation
 
-The 1.2.0 candidate offers opt-in WSDL-to-checked-gateway generation for supported document/literal SOAP 1.1 contracts and the bounded RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. See the root [README](../README.md).
+Opt-in checked generation supports qualified SOAP 1.1 and SOAP 1.2 document/literal contracts and the bounded SOAP 1.1 RPC/encoded string profile. Choose `pipeline --model checked-components-v1`; omitting `--model` keeps legacy generation. SOAP 1.2 execution is new since 1.2.0; see the [binding and artifact contract](checked-gateway.md#component-service-generation). See the root [README](../README.md).
 
 This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. Generation exposes legacy and components only; the shipped v1.1.5 direct runtime remains a compatibility binding for existing clients. See the [checked gateway reference](checked-gateway.md).
 

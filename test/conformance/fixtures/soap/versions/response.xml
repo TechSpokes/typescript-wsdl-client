@@ -1,0 +1,1 @@
+<e:Envelope xmlns:e="http://www.w3.org/2003/05/soap-envelope"><e:Body><t:PingResponse xmlns:t="urn:conformance:soap12"><t:value>owned &amp; independent</t:value></t:PingResponse></e:Body></e:Envelope>

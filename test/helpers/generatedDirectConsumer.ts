@@ -7,10 +7,56 @@ import {createServer} from 'node:http';
 import {once} from 'node:events';
 import {createHash} from 'node:crypto';
 import {SaxesParser} from 'saxes';
-import type {checkedDirectRuntimeV1} from '@techspokes/typescript-wsdl-client';
+import type {checkedDirectRuntimeV1, checkedComponentRuntimeV2} from '@techspokes/typescript-wsdl-client';
 type DirectClientRuntime = typeof checkedDirectRuntimeV1;
 type DirectClientOptions = Parameters<DirectClientRuntime['execute']>[2];
 type DirectClientResult = Awaited<ReturnType<DirectClientRuntime['execute']>>;
+
+/** Qualify the additional SOAP 1.2 artifact in the existing isolated component consumer.
+ * @param runtime Installed public component runtime, never a source-tree import.
+ * @returns Resolves after actual wire and declared/protocol fault assertions.
+ * @throws For mismatched native results, captured requests or missing artifacts.
+ * @sideEffects Starts and closes an owned loopback server.
+ */
+export async function exerciseSoap12(runtime: typeof checkedComponentRuntimeV2): Promise<void> {
+  const root = await realpath(process.cwd()), namespace = 'http://www.w3.org/2003/05/soap-envelope';
+  const captured: {contentType?: string; action?: string; xml: string}[] = [];
+  let reply = `<e:Envelope xmlns:e="${namespace}"><e:Body><f:GetForecastResponse xmlns:f="urn:checked:forecast"><f:city>Paris</f:city><f:complete>true</f:complete></f:GetForecastResponse></e:Body></e:Envelope>`;
+  let status = 200;
+  const server = createServer(async (request, response) => {
+    let xml = ''; for await (const chunk of request) xml += String(chunk);
+    captured.push({xml, contentType: request.headers['content-type'], action: request.headers.soapaction as string | undefined});
+    response.writeHead(status, {'content-type': 'application/soap+xml; charset=utf-8'}); response.end(reply);
+  });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  const address = server.address(); assert.ok(address && typeof address !== 'string');
+  try {
+    const module = await import(pathToFileURL(path.join(root, 'compiled/soap12.js')).href) as {
+      createClient(runtime: typeof checkedComponentRuntimeV2): {GetForecast(input: unknown, options: object): Promise<Awaited<ReturnType<typeof checkedComponentRuntimeV2.execute>>>};
+    };
+    const capsule = await readFile(path.join(root, 'soap12.json'));
+    const options = {localSource: path.join(root, 'authorized/soap12.wsdl'), fileRoots: [path.join(root, 'authorized')], sourceResources: [], sourceOrigins: [], capsule,
+      soap: {service: {namespace: 'urn:checked:forecast', local: 'ForecastService'}, port: 'ForecastPort', endpoint: `http://127.0.0.1:${address.port}/owned`}};
+    const call = module.createClient(runtime).GetForecast;
+    const success = await call({city: 'Paris', days: 2}, options);
+    assert.equal(success.kind, 'soap-response', JSON.stringify(success));
+    assert.deepEqual(captured.map(request => request.contentType), ['application/soap+xml; charset=utf-8; action="urn:checked:GetForecast"']);
+    assert.equal(captured[0]!.action, undefined); assert.ok(captured[0]!.xml.includes(namespace));
+    status = 400;
+    reply = `<e:Envelope xmlns:e="${namespace}"><e:Body><e:Fault><e:Code><e:Value>e:Sender</e:Value></e:Code><e:Reason><e:Text xml:lang="en">Invalid</e:Text></e:Reason></e:Fault></e:Body></e:Envelope>`;
+    const protocol = await call({city: 'Paris', days: 2}, options);
+    assert.equal(protocol.kind, 'soap-fault', JSON.stringify(protocol)); assert.equal('value' in protocol, false);
+    assert.deepEqual(Buffer.from('responseBytes' in protocol ? protocol.responseBytes : []).toString(), reply);
+    reply = reply.replace('</e:Fault>', '<e:Detail><f:ForecastFault xmlns:f="urn:checked:forecast"><f:code>BAD</f:code><f:message>Invalid</f:message></f:ForecastFault></e:Detail></e:Fault>');
+    const declared = await call({city: 'Paris', days: 2}, options);
+    assert.equal(declared.kind, 'soap-fault', JSON.stringify(declared));
+    assert.deepEqual(JSON.parse(JSON.stringify('value' in declared ? declared.value : undefined)), {code: 'BAD', message: 'Invalid'});
+    const count = captured.length;
+    assert.equal((await call({city: 'Paris', days: 2}, {...options, capsule: await readFile(path.join(root, 'forecast.json'))})).kind, 'incompatible-artifact');
+    assert.equal(captured.length, count);
+  } finally {server.closeAllConnections(); server.close(); await once(server, 'close');}
+}
+
 export async function exerciseGenerated(directClientRuntime: DirectClientRuntime, privateProfiling = false, component = false): Promise<void> {
   const root = await realpath(process.cwd());
   await assert.rejects(readFile(process.argv[2]!), {code: 'ERR_ACCESS_DENIED'});

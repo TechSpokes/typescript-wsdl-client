@@ -18,6 +18,7 @@ import type {WsdlPolicyRequirements, BindingPolicyRequirements} from './wsdlPoli
 import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
+const SOAP12 = 'http://schemas.xmlsoap.org/wsdl/soap12/';
 const HTTP = 'http://schemas.xmlsoap.org/soap/http';
 const ADDRESSING_WSDL = 'http://www.w3.org/2006/05/addressing/wsdl';
 export interface DirectOperationSelector {
@@ -56,7 +57,7 @@ export interface DirectOperationContract {
   readonly contextId: string;
   readonly basis: 'native-direct-premises-v1' | 'native-component-premises-v1';
   readonly correspondence: 'dated-XSD-2004-direct-v1' | 'dated-XSD-2004-components-v1';
-  readonly binding: Readonly<{version: '1.1'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; source: SyntaxSource}>;
+  readonly binding: Readonly<{version: '1.1' | '1.2'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; actionRequired?: boolean; source: SyntaxSource}>;
   readonly input: DirectMessageRoot | RpcMessageRoot;
   readonly output: DirectMessageRoot | RpcMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
@@ -223,13 +224,14 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         }
       };
       const ws = (local: string) => `${WSDL_NAMESPACE}#${local}`;
-      const soap = (local: string) => `${SOAP}#${local}`;
+      let soapNamespace = SOAP;
+      const soap = (local: string) => `${soapNamespace}#${local}`;
       const attrs = (node: SyntaxElement, allowed: readonly string[]) => {
         children(node);
         for (const a of node.attributes) if (!addressingAttribute(node, a.name.namespace, a.name.local)
           && (a.name.namespace !== '' || !allowed.includes(a.name.local))) refuse('unsupported', 'binding-attribute-shape');
       };
-      // Conservative extension policy: only known WSDL 1.1/SOAP 1.1 syntax, even when optional.
+      // @constraints Component selection admits known SOAP 1.2 syntax; the direct profile remains SOAP 1.1 only.
       // Documentation payload and XSD syntax are inert here and owned separately.
       budget.chargeWork(64 + input.schemas.length * 32);
       const qualifiedSchemas = new Set(input.schemas.map(schema => schema.syntax));
@@ -247,13 +249,15 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
           if (qualifiedSchemas.has(node)) continue;
           if (policyOwner?.isPolicyMetadata(node)) continue;
           if (node.name.namespace === WSDL_NAMESPACE && node.name.local === 'documentation') continue;
-          const allowed = node.name.namespace === WSDL_NAMESPACE ? attributes[node.name.local] : node.name.namespace === SOAP ? soapAttributes[node.name.local] : undefined;
+          const soap12 = profile === 'components' && node.name.namespace === SOAP12;
+          const allowed = node.name.namespace === WSDL_NAMESPACE ? attributes[node.name.local] : node.name.namespace === SOAP || soap12
+            ? soap12 && node.name.local === 'operation' ? [...soapAttributes.operation!, 'soapActionRequired'] : soapAttributes[node.name.local] : undefined;
           if (!allowed) return refuse('unsupported', 'wsdl-extension');
           for (const a of node.attributes) {
             // @why The May 2006 WSDL binding assigns no normative intent to Action without UsingAddressing.
             //   UsingAddressing remains unsupported, so these attributes are retained metadata, never SOAP header instructions.
             if (addressingAttribute(node, a.name.namespace, a.name.local)) continue;
-            if (a.name.namespace === WSDL_NAMESPACE && a.name.local === 'required' && node.name.namespace === SOAP && ['true', '1', 'false', '0'].includes(a.value)) continue;
+            if (a.name.namespace === WSDL_NAMESPACE && a.name.local === 'required' && (node.name.namespace === SOAP || soap12) && ['true', '1', 'false', '0'].includes(a.value)) continue;
             if (a.name.namespace !== '' || !allowed.includes(a.name.local)) refuse('unsupported', 'wsdl-attribute');
             if (a.name.local === 'name' && !isXmlNCName(a.value)) refuse('selection-refused', 'wsdl-name');
           }
@@ -289,17 +293,26 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         return matches[0]!;
       };
       const abstract = operation(portType), bound = operation(binding);
+      const bindingExtensions = children(binding.syntax).filter(node => [SOAP, SOAP12].includes(node.name.namespace) && node.name.local === 'binding');
+      if (bindingExtensions.length !== 1) return refuse('selection-refused', 'expected-one-binding');
+      soapNamespace = bindingExtensions[0]!.name.namespace;
       attrs(bound, ['name']);
       shape(binding.syntax, [soap('binding'), ws('operation'), ws('documentation')]);
-      const soapBinding = exactly(binding.syntax, SOAP, 'binding');
-      const soapOperation = exactly(bound, SOAP, 'operation');
+      const soapBinding = exactly(binding.syntax, soapNamespace, 'binding');
+      const soapOperation = exactly(bound, soapNamespace, 'operation');
       shape(soapBinding, []); shape(soapOperation, []);
       if (!['document', 'rpc'].includes(attr(soapBinding, 'style') ?? 'document')) return refuse('unsupported', 'soap-binding-style');
       if (attr(soapBinding, 'transport') !== HTTP) return refuse('unsupported', 'soap-transport');
       const style = attr(soapOperation, 'style') ?? attr(soapBinding, 'style') ?? 'document';
-      if (style !== 'document' && !(profile === 'components' && style === 'rpc')) return refuse('unsupported', 'soap-style');
-      const action = attr(soapOperation, 'soapAction');
-      if (action === undefined) return refuse('unsupported', 'soap-action-required');
+      if (style !== 'document' && !(profile === 'components' && style === 'rpc' && soapNamespace === SOAP)) return refuse('unsupported', 'soap-style');
+      const required = attr(soapOperation, 'soapActionRequired');
+      if (required !== undefined && !['true', 'false', '1', '0'].includes(required)) return refuse('unsupported', 'soap-action-required-boolean');
+      const actionRequired = required !== 'false' && required !== '0';
+      const selectedAction = attr(soapOperation, 'soapAction');
+      if (selectedAction === undefined && (soapNamespace === SOAP || actionRequired)) return refuse('unsupported', 'soap-action-required');
+      if (soapNamespace === SOAP12 && selectedAction !== undefined && !/^[A-Za-z][A-Za-z0-9+.-]*:[^\s]*$/.test(selectedAction)) return refuse('unsupported', 'soap-action-absolute-uri');
+      // @why SOAP 1.2 permits an absent optional action; the existing string contract uses an empty value to omit it on HTTP.
+      const action = selectedAction ?? '';
       shape(abstract, [ws('input'), ws('output'), ws('fault'), ws('documentation')]);
       shape(bound, [soap('operation'), ws('input'), ws('output'), ws('fault'), ws('documentation')]);
       const abstractInput = exactly(abstract, WSDL_NAMESPACE, 'input'), abstractOutput = exactly(abstract, WSDL_NAMESPACE, 'output');
@@ -315,7 +328,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         attrs(messageSyntax, ['name', 'message']); attrs(boundSyntax, ['name']);
         shape(messageSyntax, [ws('documentation')]);
         shape(boundSyntax, [soap(faultName === undefined ? 'body' : 'fault'), ws('documentation')]);
-        const body = exactly(boundSyntax, SOAP, faultName === undefined ? 'body' : 'fault');
+        const body = exactly(boundSyntax, soapNamespace, faultName === undefined ? 'body' : 'fault');
         shape(body, []);
         attrs(body, faultName === undefined ? ['use', 'parts'] : ['use', 'name']);
         if (attr(body, 'use') !== 'literal') return refuse('unsupported', 'literal-required');
@@ -394,7 +407,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId,
         basis: profile === 'direct' ? 'native-direct-premises-v1' : 'native-component-premises-v1',
         correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
-        binding: {version: '1.1', style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
+        binding: {version: soapNamespace === SOAP12 ? '1.2' : '1.1', ...(soapNamespace === SOAP12 ? {actionRequired} : {}), style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
           ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
         input: requestRoot, output: responseRoot, faults,
         ...(policyOwner ? {policy: policyOwner.forBinding(binding.syntax), addressingActions: {required: false as const,

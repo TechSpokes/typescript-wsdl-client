@@ -1,5 +1,5 @@
 import {directLimit} from '../compiler/directExecutionPolicy.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR} from './directClientVersion.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 /** Native-plan generator consumed by the opt-in checked pipeline. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync, mkdirSync} from 'node:fs';
@@ -166,12 +166,15 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       ...request.declarations, `export type Request = ${request.type};`,
       ...response.declarations, `export type Response = ${response.type};`,
       ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`])];
+    const soap12 = expected.contract.binding.version === '1.2';
+    const runtimeVersion = soap12 ? COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION : COMPONENT_CLIENT_RUNTIME_VERSION;
     const lines = [
-      '// Checked component client; inject checkedComponentRuntimeV1 from the package root.',
+      `// Checked component client; inject ${soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV1'} from the package root.`,
       '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
       ...declarations,
       'export interface Usage {readonly nodes: number; readonly work: number}',
       'export interface Name {readonly namespace: string; readonly local: string}',
+      ...(soap12 ? ['export interface Soap12Fault {readonly version: "1.2"; readonly code: Name; readonly subcodes: readonly Name[]; readonly reasons: readonly {readonly lang: string; readonly text: string}[]; readonly string: string; readonly node?: string; readonly role?: string}'] : []),
       'export interface Options {',
       '  readonly localSource: string; readonly fileRoots: readonly string[]; readonly capsule: Uint8Array;',
       '  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[]; readonly sourceOrigins: readonly string[];',
@@ -186,25 +189,27 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       '}',
       'export interface Failure {readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
       '  readonly rule: string; readonly repair?: string; readonly phase?: "input" | "response"; readonly usage: Usage}',
-      'export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"; readonly value: unknown; readonly admitted: false;',
+      `export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"; readonly value${soap12 ? '?' : ''}: unknown; readonly admitted: false;`,
       '  readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
-      '  readonly fault?: {readonly name: string; readonly code: Name; readonly string: string; readonly actor?: string}}',
-      `export interface Runtime {readonly version: ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}): Promise<Failure | NativeSuccess>}`,
+      `  readonly fault?: {readonly name${soap12 ? '?' : ''}: string; readonly code: Name; readonly string: string; readonly actor?: string}}`,
+      `export interface Runtime {readonly version: ${literal(runtimeVersion)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(runtimeVersion)}): Promise<Failure | NativeSuccess>}`,
       'type Common = {readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array};',
       'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
       ...faults.map(({mapping}, index) => {
         if (mapping.direction.kind !== 'fault') throw new TypeError('Native fault mapping required');
-        return `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: {readonly name: ${literal(mapping.direction.name)}; readonly code: Name; readonly string: string; readonly actor?: string}})`;
+        return soap12 ? `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: Soap12Fault & {readonly name: ${literal(mapping.direction.name)}}})`
+          : `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: {readonly name: ${literal(mapping.direction.name)}; readonly code: Name; readonly string: string; readonly actor?: string}})`;
       }),
-      ...(faults.length ? [] : ['  | (Common & {readonly kind: "soap-fault"; readonly value: never; readonly fault: {readonly name: never; readonly code: Name; readonly string: string; readonly actor?: string}})']),
+      ...(soap12 ? ['  | (Common & {readonly kind: "soap-fault"; readonly value?: never; readonly fault: Soap12Fault & {readonly name?: never}})']
+        : faults.length ? [] : ['  | (Common & {readonly kind: "soap-fault"; readonly value: never; readonly fault: {readonly name: never; readonly code: Name; readonly string: string; readonly actor?: string}})']),
       ';',
       `export const expectedCapsuleBase64 = ${literal(Buffer.from(capsule.bytes).toString('base64'))};`,
       `export const selection = ${literal(JSON.stringify({selector: expected.contract.selector, ...expected.selection}))};`,
       'export function createClient(runtime: Runtime) {',
       '  return Object.freeze({',
       `    [${literal(expected.contract.selector.operation)}]: async (input: Request, options: Options): Promise<Result> => {`,
-      `      if (runtime.version !== ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}) return {kind: "incompatible-artifact", rule: "generated-runtime-version", repair: ${literal(COMPONENT_CLIENT_RUNTIME_REPAIR)}, usage: {nodes: 0, work: 0}};`,
-      `      return await runtime.execute(expectedCapsuleBase64, input, options, ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}) as Result;`,
+      `      if (runtime.version !== ${literal(runtimeVersion)}) return {kind: "incompatible-artifact", rule: "generated-runtime-version", repair: ${literal(COMPONENT_CLIENT_RUNTIME_REPAIR)}, usage: {nodes: 0, work: 0}};`,
+      `      return await runtime.execute(expectedCapsuleBase64, input, options, ${literal(runtimeVersion)}) as Result;`,
       '    },', '  });', '}', '',
     ];
     const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client'));

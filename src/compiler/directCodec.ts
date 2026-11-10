@@ -103,7 +103,7 @@ function runMapping<M extends CodecMapping, T extends {readonly usage: ResolverU
         && contract.binding.style === 'rpc' && contract.binding.use === 'encoded' && contract.binding.encoding === 'http://schemas.xmlsoap.org/soap/encoding/';
       if ((!rpc && mapping.version !== profile.version) || mapping.contextId !== contract.contextId
         || contract.basis !== profile.basis || contract.correspondence !== profile.correspondence
-        || contract.binding.version !== '1.1' || !rpc && (contract.binding.style !== 'document' || contract.binding.use !== 'literal')
+        || !(contract.binding.version === '1.1' || profile === componentProfile && contract.binding.version === '1.2' && !rpc) || !rpc && (contract.binding.style !== 'document' || contract.binding.use !== 'literal')
         || contract.binding.transport !== 'http://schemas.xmlsoap.org/soap/http') throw new Stop('unsupported', profile.rule);
       const direction = mapping.direction;
       const root = direction.kind === 'fault' ? contract.faults.find(f => {

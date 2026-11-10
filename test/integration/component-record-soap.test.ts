@@ -82,6 +82,7 @@ beforeAll(async () => {
       endpoint, ca: trusted ? cert : undefined, allowEndpoint: url => url.href === endpoint}, projection);
     if ('decoded' in result) return result.kind === 'soap-response' ? response.send(result.decoded.validated.value)
       : response.code(502).send({fault: true, value: result.decoded.validated.value});
+    if (result.kind === 'soap-fault') throw new Error('SOAP 1.1 fixture requires native decoded declared fault detail');
     return response.code(result.phase === 'input' ? 400 : 502).send({kind: result.kind, rule: result.rule});
   });
   gateway = await app.listen({host: '127.0.0.1', port: 0});
