@@ -9,6 +9,10 @@ Turn legacy WSDL/SOAP services into typed TypeScript clients and optional REST A
 
 Created from production integration work at [TechSpokes](https://www.techspokes.com); built for teams modernizing real enterprise SOAP integrations.
 
+## Upgrading to 1.4.0
+
+Version 1.4.0 adds explicit JSON source corrections, offline SOAP response inspection, and checked SOAP 1.1 protocol faults without invented application values. Existing runtime bindings remain available; regenerate matched SOAP 1.1 artifacts to adopt the additive V3 binding. Read the [1.3.x migration guidance](docs/migration.md#from-13x-to-140).
+
 ## Upgrading to 1.3.0
 
 Version 1.3.0 adds opt-in checked SOAP 1.2 document/literal execution through the existing adapter. Existing SOAP 1.1 and direct-runtime bindings retain their contracts. SOAP 1.2 clients use an additive runtime handshake; regenerate matched artifacts when adopting that binding. Read the [1.2.x migration guidance](docs/migration.md#from-12x-to-130) for adoption and evidence limits.
@@ -254,8 +258,10 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 | [1.2.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, consumer compatibility and bounded RPC qualification |
+| [1.4.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.0.md) | Contract corrections, offline inspection and SOAP 1.1 protocol faults |
 | [1.3.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.3.0.md) | Checked SOAP 1.2 execution and preserved SOAP 1.1 compatibility |
 | [XML/JSON Mapping Contract](docs/mapping-contract.md) | Checked keyed, namespace, nil and group representations |
+| [Protocol Fault Compatibility](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/005-checked-protocol-fault-compatibility.md) | Runtime adoption and complete-source inspection decisions |
 | [Product Corpus](docs/corpus.md) | Representative public inputs and their executable evidence |
 
 ### Contributing
@@ -327,6 +333,8 @@ Built and maintained by [TechSpokes](https://www.techspokes.com). Created by [Se
 - Commercial support and integration consulting: [techspokes.com/contact](https://www.techspokes.com/contact/)
 
 ## Schema assessment diagnostics
+
+For saved SOAP responses, use `wsdl-tsc inspect-response` to assess a checked contract offline and optionally produce a source correction draft. XML-only reports leave HTTP checks unassessed. Checked generation accepts consumer-owned external JSON corrections through `sourceCorrectionsFile`; generated runtime artifacts use the effective metadata without needing the recipe. See [source corrections and response inspection](docs/checked-gateway.md#consumer-owned-source-corrections) for configuration, limits and the update workflow.
 
 `assess` is an additive diagnostic command. It writes a versioned JSON report without generating artifacts or dispatching SOAP.
 

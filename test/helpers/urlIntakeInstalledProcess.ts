@@ -48,7 +48,7 @@ for (const scenario of ['declared', 'override', 'allowed', 'empty', 'denied', 'o
   }
 }
 // @constraints Dynamic imports resolve only the installed package and generated project, never the checkout.
-const {checkedComponentRuntimeV1} = await import('@techspokes/typescript-wsdl-client');
+const {checkedComponentRuntimeV3} = await import('@techspokes/typescript-wsdl-client');
 const {createClient} = await import(pathToFileURL(path.join(root, 'dist/client/client.js')).href) as {
   createClient(runtime: unknown): {SubmitImported(input: unknown, options: unknown): Promise<{kind: string; value?: unknown}>};
 };
@@ -66,7 +66,7 @@ const options = {...record.runtime, localSource: path.resolve(sourceBase, record
   ...(record.runtime.namespaceLocations ? {namespaceLocations: record.runtime.namespaceLocations.map(location => ({...location, location: uri(location.location)}))} : {}),
   soap: {service: {namespace: 'urn:owned:w2', local: 'Entry'}, port: 'Port', ca: await readFile('test-cert.pem', 'utf8')}};
 for (const key of ['host', 'port', 'capsuleFiles']) delete (options as Record<string, unknown>)[key];
-const result = await createClient(checkedComponentRuntimeV1).SubmitImported(input, {...options, capsule: capsules.SubmitImported});
+const result = await createClient(checkedComponentRuntimeV3).SubmitImported(input, {...options, capsule: capsules.SubmitImported});
 assert.equal(result.kind, 'soap-response', JSON.stringify(result));
 assert.deepEqual(Object.entries(result.value as Record<string, unknown>), [['accepted', true]]); exchanges++;
 console.log(JSON.stringify({kind: 'w2-installed-wire', exchanges, scenarios: 7, checkoutReadable: false, invalidHttpRejected: true, offlineMetadata: true}));

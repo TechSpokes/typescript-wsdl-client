@@ -11,6 +11,10 @@
  * command with legacy flags.
  */
 import {assessSchemaSource, serializeAssessmentReport, assessmentExitCode} from "./compiler/checkedAssessment.js";
+import {inspectCheckedResponse} from './checkedResponseInspection.js';
+import {readBoundedFile} from './util/readBoundedFile.js';
+import {parseCheckedComponentChoices} from './checkedPipeline.js';
+import {writeCheckedPlanningFile} from './checkedPlanning.js';
 import yargs from "yargs/yargs";
 import {hideBin} from "yargs/helpers";
 import fs from "node:fs";
@@ -64,7 +68,7 @@ const rawArgs = hideBin(process.argv);
 const hasServicesConfig = rawArgs.some(argument => argument === "--services-config" || argument.startsWith("--services-config="));
 
 // Available commands
-const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline", "assess"] as const;
+const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline", "assess", "inspect-response"] as const;
 
 // ---------------------------------------------------------------------------
 // Show help if no subcommand provided
@@ -76,6 +80,7 @@ if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
     .scriptName("wsdl-tsc")
     .usage("$0 <command> [options]")
     .command("assess", "Assess narrow direct-schema obligations; component readiness uses pipeline --checked-report")
+    .command('inspect-response', 'Inspect a captured SOAP response offline against a checked contract')
     .command("compile", "Compile WSDL to catalog.json")
     .command("client", "Generate TypeScript SOAP client from WSDL or catalog")
     .command("openapi", "Generate OpenAPI specification from WSDL or catalog")
@@ -90,6 +95,50 @@ if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
 }
 
 // Assessment is deliberately independent of every generation command.
+if (rawArgs[0] === 'inspect-response') {
+  const argv = await yargs(rawArgs.slice(1)).version(false).scriptName('wsdl-tsc inspect-response')
+    .fail(() => {console.error('Invalid inspection arguments; use inspect-response --help'); process.exit(2);})
+    .option('wsdl-source', {type: 'string', demandOption: true})
+    .option('checked-config', {type: 'string', demandOption: true})
+    .option('operation', {type: 'string', demandOption: true})
+    .option('response-file', {type: 'string', demandOption: true})
+    .option('response-metadata', {type: 'string'})
+    .option('report', {type: 'string', demandOption: true})
+    .option('corrections-draft', {type: 'string'})
+    .strict().help().parse();
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  process.on('SIGINT', cancel);
+  try {
+    const read = (file: string): Buffer => readBoundedFile(file, 1024 * 1024);
+    const choices = parseCheckedComponentChoices(JSON.parse(read(argv['checked-config']).toString('utf8')));
+    const selectors = choices.selectors?.filter(selector => selector.operation === argv.operation) ?? [];
+    if (selectors.length !== 1) {
+      console.error('Set checked-config selectors to exactly one matching operation; narrow the binding when operation names collide');
+      throw new TypeError('Ambiguous or missing inspection selector');
+    }
+    const metadata: unknown = argv['response-metadata'] ? JSON.parse(read(argv['response-metadata']).toString('utf8')) : undefined;
+    if (metadata !== undefined && (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)
+      || Object.keys(metadata).some(key => !['status', 'contentType', 'contentEncoding'].includes(key))
+      || !('status' in metadata) || !Number.isInteger(metadata.status) || Number(metadata.status) < 100 || Number(metadata.status) > 599
+      || !('contentType' in metadata) || typeof metadata.contentType !== 'string'
+      || ('contentEncoding' in metadata && typeof metadata.contentEncoding !== 'string'))) throw new TypeError('Invalid response metadata');
+    const report = await inspectCheckedResponse(argv['wsdl-source'], {checkedComponents: choices, selector: selectors[0]!,
+      responseBytes: read(argv['response-file']), signal: controller.signal,
+      includeCorrectionDraft: argv['corrections-draft'] !== undefined,
+      ...(metadata === undefined ? {} : {responseMetadata: metadata as {status: number; contentType: string; contentEncoding?: string}})});
+    // @why Exact local source pins belong only in the explicitly requested draft artifact.
+    const {correctionDraft, ...diagnostics} = report;
+    writeCheckedPlanningFile(argv.report, diagnostics, false);
+    if (argv['corrections-draft'] && correctionDraft) writeCheckedPlanningFile(argv['corrections-draft'], correctionDraft, false);
+    console.error(`Response inspection: ${report.kind}; see the report for assessment scope`);
+    process.exitCode = report.kind === 'conforming' ? 0 : 1;
+  } catch {
+    console.error('Inspection invocation or file operation failed; verify configuration, input capacities and exclusive output paths');
+    process.exitCode = 2;
+  } finally {process.off('SIGINT', cancel);}
+}
+
 if (rawArgs[0] === "assess") {
   const argv = await yargs(rawArgs.slice(1)).version(false).scriptName("wsdl-tsc assess")
     .option("wsdl-source", {type: "string", demandOption: true, desc: "Authorized local WSDL/XSD source"})

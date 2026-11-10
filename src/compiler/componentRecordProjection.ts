@@ -54,7 +54,7 @@ export interface ComponentRecordDecodedXml {
   readonly payload: SyntaxElement; readonly mapping: ComponentRecordProjection; readonly validated: ComponentRecordValue;
   readonly usage: ResolverUsage;
 }
-type Leaf = Readonly<{kind: 'standard'; declaration: StandardSchemaElementDeclaration} |
+type Leaf = Readonly<{kind: 'standard'; declaration: StandardSchemaElementDeclaration; optional: boolean} |
   {kind: 'boundary'; namespace: NamespaceConstraint}>;
 type Owned = Readonly<{outer: DirectOperationContract; companion: DirectOperationContract;
   parser: ComponentValueMapping; mapping: ComponentValueMapping; leaves: readonly Leaf[]}>;
@@ -167,9 +167,11 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
       let boundaries = 0;
       while (pending.length) {
         check(); const particle = pending.pop()!;
-        if (particle.occurs.min !== '1' || particle.occurs.max !== '1') stop('record-wrapper-unit-occurrence');
+        // @why Only metadata may be absent, and only when the authenticated source declares it optional.
+        if (particle.occurs.max !== '1' || (particle.occurs.min !== '1'
+          && !(particle.standardElement && particle.occurs.min === '0'))) stop('record-wrapper-unit-occurrence');
         if (particle.kind === 'sequence') for (let index = particle.children.length - 1; index >= 0; index--) {check(); pending.push(particle.children[index]!);}
-        else if (particle.standardElement) leaves.push(Object.freeze({kind: 'standard', declaration: particle.standardElement}));
+        else if (particle.standardElement) leaves.push(Object.freeze({kind: 'standard', declaration: particle.standardElement, optional: particle.occurs.min === '0'}));
         else if (particle.kind === 'any' && particle.wildcard?.processContents === 'strict') {
           if (++boundaries > 1 || !namespaceAllows(particle.wildcard.namespace, spec.payloadPath[0]!.namespace, budget.chargeWork)) stop('record-wrapper-wildcard-boundary');
           leaves.push(Object.freeze({kind: 'boundary', namespace: particle.wildcard.namespace}));
@@ -256,10 +258,15 @@ export function decodeComponentRecordXml(outer: DirectOperationContract, project
       if (wrapper.attributes.length || wrapper.children.some(node => node.kind === 'text' && /[^\t\r\n ]/.test(node.value)))
         throw new ScopeStop('mismatch', 'record-wrapper-attributes-or-text');
       const children = syntaxElements(wrapper);
-      if (children.length !== owned.leaves.length) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
+      const required = owned.leaves.filter(leaf => leaf.kind === 'boundary' || !leaf.optional).length;
+      if (children.length < required || children.length > owned.leaves.length) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
       let payload: SyntaxElement | undefined;
+      let cursor = 0;
       for (let index = 0; index < owned.leaves.length; index++) {
-        check(); const leaf = owned.leaves[index]!, child = children[index]!;
+        check(); const leaf = owned.leaves[index]!, child = children[cursor];
+        if (leaf.kind === 'standard' && leaf.optional && (!child || !same(child.name, leaf.declaration.name))) continue;
+        if (!child) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
+        cursor++;
         if (leaf.kind === 'standard') {
           if (!same(child.name, leaf.declaration.name)) throw new ScopeStop('mismatch', 'record-wrapper-standard-order');
           const assessed = assessStandardSchemaElement(leaf.declaration, child, budget, {signal: options.signal, check});
@@ -271,6 +278,7 @@ export function decodeComponentRecordXml(outer: DirectOperationContract, project
           payload = child;
         }
       }
+      if (cursor !== children.length) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
       if (!payload) throw new TypeError('Native record boundary unavailable');
       const decoded = assessObservedComponentPayload(owned.companion, owned.mapping, observation, payload, options);
       if (decoded.kind !== 'component-decoded') return decoded;

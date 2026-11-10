@@ -4,9 +4,36 @@ This reference covers public generation, composition, stream and security APIs. 
 
 See the main [README](../README.md) for installation, CLI usage, and project overview.
 
+## Captured checked SOAP responses
+
+`inspectCheckedResponse(source, options)` returns versioned diagnostic data without generating files or dispatching SOAP. Supply an authorized local WSDL, closed snapshots in `checkedComponents`, a full operation selector, and `responseBytes`. Optional `responseMetadata` supplies the actual HTTP `status`, `contentType` and `contentEncoding`. Omission leaves HTTP duties unassessed. `signal` and `limits` retain cancellation and XML capacity controls.
+
+```typescript
+import {inspectCheckedResponse} from '@techspokes/typescript-wsdl-client';
+
+const report = await inspectCheckedResponse('./sources/service.wsdl', {
+  checkedComponents: configuration,
+  selector: configuration.selectors[0],
+  responseBytes: capturedBytes,
+});
+console.log(report.kind);
+```
+
+The report separates wrapper and companion outcomes and excludes raw XML and decoded values. Configuration can select a consumer-owned `sourceCorrectionsFile`; the same effective contract is used for planning, inspection and generation. A correction draft does not authorize execution until its semantic choices are completed. See [source corrections and offline inspection](checked-gateway.md#consumer-owned-source-corrections).
+
+Set `includeCorrectionDraft: true` to request an available correction draft. Its exact resource pins can contain local source URIs; default reports retain only diagnostic resource labels.
+
+Pass the complete multi-operation checked configuration unchanged. Inspection authenticates the complete correction-source closure before selecting the requested operation and its projection; inactive companions retain their freshness checks.
+
+## Checked runtime bindings
+
+New SOAP 1.1 component clients inject package-root `checkedComponentRuntimeV3` with handshake `checked-component-soap11-runtime-v1`. SOAP 1.2 keeps `checkedComponentRuntimeV2`, and existing SOAP 1.1 artifacts keep their V1 binding. These injection contracts are separate from package and capsule versions.
+
+A V3 protocol `soap-fault` exposes version `1.1`, expanded `code`, `string`, optional `actor`, response bytes and transport status without a declared application `value` or fault `name`. A uniquely declared fault detail retains native decoding; malformed declared content is refused. See [runtime compatibility](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/005-checked-protocol-fault-compatibility.md) and [migration](migration.md#from-13x-to-140).
+
 All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Adding a preamble does not change an API signature or option; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
 
-Generated-output compatibility is versioned separately from those preambles. Read the [migration guide for the intended version](migration.md), including [1.2.x-to-1.3.0 SOAP binding adoption](migration.md#from-12x-to-130), before regenerating existing clients or changing their selected profile.
+Generated-output compatibility is versioned separately from those preambles. Read the [migration guide for the intended version](migration.md), including [1.3.x-to-1.4.0 runtime adoption](migration.md#from-13x-to-140), before regenerating existing clients or changing their selected profile.
 
 ## compileWsdlToProject
 

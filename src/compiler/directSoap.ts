@@ -17,7 +17,7 @@ import {decodeDirectXml, encodeDirectXml, decodeComponentXml, encodeComponentXml
 import type {DirectCodecFailure, DirectDecodedXml, ComponentDecodedXml, DirectXmlLimits} from './directCodec.js';
 import {prepareDirectSoapSource, prepareComponentSoapWsdl, DirectSoapSourceError} from './directSoapSource.js';
 import {isXmlNCName, resolveLexicalQName, SchemaLoadingError, syntaxElements, syntaxAttribute, WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
-import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
+import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import type {ResolverUsage} from './semanticBudget.js';
 import {decodeComponentRecordXml, inspectComponentRecordProjection} from './componentRecordProjection.js';
 import type {ComponentRecordProjection, ComponentRecordDecodedXml} from './componentRecordProjection.js';
@@ -41,6 +41,9 @@ export interface DirectSoapFailure {
   readonly rule: string;
   readonly usage: ResolverUsage;
   readonly phase?: 'input' | 'response';
+  readonly source?: SyntaxSource;
+  readonly schemaPath?: string;
+  readonly payloadPath?: string;
 }
 /** Version-specific protocol metadata; application detail remains owned by native mappings.
  * @since 1.3.0
@@ -54,14 +57,24 @@ export interface Soap12FaultMetadata {
   readonly node?: string;
   readonly role?: string;
 }
+/** SOAP 1.1 protocol fields retained when the selected operation supplies no matching detail.
+ * @since 1.4.0
+ */
+export interface Soap11FaultMetadata {
+  readonly version: '1.1';
+  readonly code: ExpandedName;
+  readonly string: string;
+  readonly actor?: string;
+}
+type ProtocolFaultMetadata = Soap11FaultMetadata | Soap12FaultMetadata;
 export type DeclaredSoapFault = Readonly<{name: string; code: ExpandedName; codeNode: SyntaxElement; string: string; actor?: string}> & Partial<Soap12FaultMetadata>;
-/** A valid SOAP 1.2 fault without a uniquely declared application detail.
+/** A valid protocol fault without an application detail mapped by the selected operation.
  * @since 1.3.0
  * @constraints Unassessed detail remains only in responseBytes; no native value receipt is issued.
  */
-export interface ComponentProtocolFault {
+export interface ComponentProtocolFault<F extends ProtocolFaultMetadata = ProtocolFaultMetadata> {
   readonly kind: 'soap-fault'; readonly admitted: false;
-  readonly fault: Soap12FaultMetadata;
+  readonly fault: F;
   readonly responseBytes: Uint8Array; readonly status: number; readonly usage: ResolverUsage;
   readonly ignoredHeaders?: readonly ExpandedName[];
 }
@@ -135,14 +148,14 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
 export function exchangeComponentSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
   options: ComponentSoapOptions): Promise<ComponentSoapResult>;
 export function exchangeComponentSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
-  options: ComponentSoapOptions, responseProjection: ComponentRecordProjection): Promise<ComponentRecordSoapResult>;
+  options: ComponentSoapOptions, responseProjection: ComponentRecordProjection | undefined, soap11ProtocolFaults?: boolean): Promise<ComponentRecordSoapResult>;
 export async function exchangeComponentSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
-  options: ComponentSoapOptions, responseProjection?: ComponentRecordProjection): Promise<ComponentRecordSoapResult> {
+  options: ComponentSoapOptions, responseProjection?: ComponentRecordProjection, soap11ProtocolFaults = true): Promise<ComponentRecordSoapResult> {
   const {mapping: input} = inspectComponentValueMapping(inputMapping, contract);
   if (responseProjection !== undefined) {
     inspectComponentRecordProjection(responseProjection, contract);
     return exchangeSoap<ComponentValueMapping | ComponentRecordProjection, ComponentDecodedXml | ComponentRecordDecodedXml>(contract, input, application, options, {
-      component: true,
+      component: true, soap11ProtocolFaults,
       encode(owner, mapping, value, controls) {
         if (mapping.kind !== 'component-mapping') throw new TypeError('SOAP input requires the native input mapping');
         return encodeComponentXml(owner, mapping, value, controls);
@@ -162,7 +175,7 @@ export async function exchangeComponentSoap(contract: DirectOperationContract, i
     });
   }
   return exchangeSoap<ComponentValueMapping, ComponentDecodedXml>(contract, input, application, options, {
-    component: true, encode: encodeComponentXml, decode: decodeComponentXml,
+    component: true, soap11ProtocolFaults, encode: encodeComponentXml, decode: decodeComponentXml,
     create: (owner,direction,controls)=>createComponentDirectionalMapping(owner,input,direction,controls),
     prepare: (selection, check) => prepareComponentSoapWsdl(contract, selection, check),
   });
@@ -171,6 +184,7 @@ export async function exchangeComponentSoap(contract: DirectOperationContract, i
 interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection,
   D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml> {
   component: boolean;
+  soap11ProtocolFaults?: boolean;
   encode(contract: DirectOperationContract, mapping: M, value: unknown, options: {signal?: AbortSignal; limits: DirectXmlLimits}):
     {bytes: Uint8Array} | DirectCodecFailure;
   decode(contract: DirectOperationContract, mapping: M, bytes: Uint8Array, options: {signal?: AbortSignal; limits: DirectXmlLimits;
@@ -184,7 +198,6 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
   contract: DirectOperationContract, input: M, application: unknown, options: ComponentSoapOptions,
   profile: ExchangeProfile<M, D>): Promise<SoapResult<D>> {
   const soap12 = profile.component && contract.binding.version === '1.2';
-  const SOAP = soap12 ? 'http://www.w3.org/2003/05/soap-envelope' : SOAP11;
   const {context} = inspectDirectOperation(contract);
   if (input.direction.kind !== 'input') throw new TypeError('SOAP request requires the exact input mapping');
   const {budget} = context;
@@ -250,11 +263,6 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     const rpc = contract.binding.style === 'rpc';
 
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');
-    const elements = (node: SyntaxElement): SyntaxElement[] => {
-     check();
-      return node.children.filter((child): child is SyntaxElement => child.kind === 'element');
-    };
-
     const encoded = profile.encode(contract, input, application, {signal, limits});
     if (!('bytes' in encoded)) return fail(encoded.kind, encoded.rule, 'input');
     const output = profile.create(contract, {kind: 'output'}, {signal});
@@ -265,30 +273,7 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
       if (!('direction' in mapping)) return fail(mapping.kind, mapping.rule);
       faults.set(fault.name, mapping);
     }
-    const shape = (node: SyntaxElement, encodedScope = false): SyntaxElement[] => {
-      const children = elements(node);
-      if (node.attributes.some(a => !(encodedScope && a.name.namespace === SOAP && a.name.local === 'encodingStyle'
-        && a.value === 'http://schemas.xmlsoap.org/soap/encoding/')) || node.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP protocol attributes or text');
-      return children;
-    };
-    const ignoredHeaders: ExpandedName[] = [];
-    const bodyRoot = (root: SyntaxElement, incoming = false): SyntaxElement => {
-      if (!same(root.name, {namespace: SOAP, local: 'Envelope'})) stop('protocol', `SOAP ${contract.binding.version} Envelope required`);
-      const children = shape(root, rpc);
-      if (children[0]?.name.namespace === SOAP && children[0].name.local === 'Header') {
-        if (profile.component && incoming) {
-          const assessed = assessComponentSoapHeader(children[0], check, contract.binding.version);
-          if (assessed.kind !== 'ignored-optional-headers') stop(assessed.kind, assessed.rule);
-          else for (const name of assessed.headers) {check(); ignoredHeaders.push(name);}
-        } else if (shape(children[0]).length) stop('unsupported', 'incoming SOAP headers');
-        children.shift();
-      }
-      if (children.length !== 1 || !same(children[0]!.name, {namespace: SOAP, local: 'Body'})) stop('protocol', 'one SOAP Body required');
-      const body = shape(children[0]!, rpc);
-      if (rpc && !body.some(n => same(n.name, {namespace: SOAP, local: 'Fault'}))) return children[0]!;
-      if (body.length !== 1) stop('protocol', 'one SOAP Body payload required');
-      return body[0]!;
-    };
+    const {bodyRoot} = soapProtocolSelection(contract, profile.component, check, stop);
     const wsdl = await profile.prepare(config, check);
     check();
     // @why node-soap's RPC writer would wrap `_xml` as a parameter. This private
@@ -359,34 +344,151 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (hookFailure) throw hookFailure;
     if (!response) return fail('transport', 'incomplete HTTP response');
     const observed: {bytes: Buffer; status: number; contentType: string; encoding: string} = response;
-    if (observed.encoding && observed.encoding.toLowerCase() !== 'identity') return fail('unsupported', 'HTTP compression');
+    const assessed = assessSoapResponse(contract, output, faults, observed.bytes, profile, {signal, limits, uri: endpoint.href,
+      responseMetadata: {status: observed.status, contentType: observed.contentType, contentEncoding: observed.encoding}});
+    if (!('admitted' in assessed)) return assessed;
+    if (assessed.decoded === undefined) {
+      if (!profile.component || !assessed.fault || 'name' in assessed.fault) throw new TypeError('Missing decoded SOAP response');
+      return Object.freeze({kind: 'soap-fault' as const, admitted: false as const, fault: assessed.fault,
+        responseBytes: new Uint8Array(observed.bytes), status: observed.status, usage: assessed.usage,
+        ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
+    }
+    if (assessed.fault && !('name' in assessed.fault)) throw new TypeError('Decoded fault requires its declared application mapping');
+    return Object.freeze({kind: assessed.kind, admitted: false as const, decoded: assessed.decoded,
+      responseBytes: new Uint8Array(observed.bytes), status: observed.status, usage: assessed.usage,
+      ...(assessed.fault && 'name' in assessed.fault ? {fault: assessed.fault} : {}),
+      ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
+  } catch (error) {
+    if (budget.exhausted()) return fail('resource-limit', 'request-budget');
+    if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message);
+    if (signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
+    if (error instanceof DirectSoapSourceError) return fail(error.kind, error.message);
+    if (error instanceof Stop) return fail(error.kind, error.rule);
+    if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML');
+    if (error instanceof Error && 'code' in error) {
+      if (error.code === 'ERR_BAD_RESPONSE' && error.message.startsWith('maxContentLength size of ')) return fail('resource-limit', 'HTTP response byte limit');
+      return fail('transport', error.code === 'ERR_CANCELED' ? 'SOAP deadline exceeded' : 'HTTP exchange failed');
+    }
+    throw error;
+  } finally {
+    if (deadline) clearTimeout(deadline);
+    signal?.removeEventListener('abort', abort);
+    controller?.abort(); agent?.destroy();
+  }
+}
+
+
+/** Actual HTTP entity metadata; omission leaves HTTP status and media duties unassessed.
+ * @since Unreleased
+ */
+export interface ObservedSoapResponseMetadata {
+  readonly status: number;
+  readonly contentType: string;
+  readonly contentEncoding?: string;
+}
+export type ComponentSoapResponseAssessment = DirectSoapFailure | Readonly<{
+  kind: 'soap-response' | 'soap-fault'; admitted: false;
+  decoded?: ComponentDecodedXml | ComponentRecordDecodedXml;
+  fault?: DeclaredSoapFault | ProtocolFaultMetadata;
+  ignoredHeaders?: readonly ExpandedName[];
+  usage: ResolverUsage;
+}>;
+type ResponseAssessment<D> = DirectSoapFailure | Readonly<{
+  kind: 'soap-response' | 'soap-fault'; admitted: false; decoded?: D;
+  fault?: DeclaredSoapFault | ProtocolFaultMetadata; ignoredHeaders?: readonly ExpandedName[]; usage: ResolverUsage;
+}>;
+type ResponseControls = Readonly<{signal?: AbortSignal; limits: DirectXmlLimits; uri?: string; responseMetadata?: ObservedSoapResponseMetadata}>;
+
+/** Assess caller-observed response bytes through the same protocol and native decoder used by real exchanges.
+ * @param contract Authenticated selected component operation.
+ * @param inputMapping Exact operation input mapping, used only to derive response/fault mappings.
+ * @param bytes Actual observed SOAP entity bytes; no request or transport is constructed.
+ * @param options XML controls, optional actual HTTP metadata and exact response projection.
+ * @returns Native response/fault assessment or semantic failure; HTTP remains unassessed when metadata is absent.
+ * @throws TypeError For foreign native handles; RangeError for invalid explicit XML limits.
+ * @constraints This response-only helper performs no transport, endpoint authorization or request-value assessment.
+ */
+export function inspectComponentSoapResponse(contract: DirectOperationContract, inputMapping: unknown, bytes: Uint8Array,
+  options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; responseMetadata?: ObservedSoapResponseMetadata;
+    responseProjection?: ComponentRecordProjection}> = {}): ComponentSoapResponseAssessment {
+  const {mapping: input} = inspectComponentValueMapping(inputMapping, contract);
+  const {context} = inspectDirectOperation(contract);
+  const failure = (kind: DirectSoapFailure['kind'], rule: string): DirectSoapFailure => Object.freeze({kind, rule, phase: 'response', usage: context.budget.usage()});
+  if (options.signal?.aborted) return failure('cancelled', 'cooperative-cancellation');
+  const limits = {...DIRECT_XML_LIMITS, ...options.limits};
+  for (const [key, value] of Object.entries(limits)) {
+    if (!['maxBytes', 'maxDepth', 'maxNodes', 'maxText'].includes(key) || !Number.isSafeInteger(value) || value < 1) throw new RangeError('Invalid SOAP XML limit');
+  }
+  if (options.responseProjection) inspectComponentRecordProjection(options.responseProjection, contract);
+  const output = options.responseProjection ?? createComponentDirectionalMapping(contract, input, {kind: 'output'}, {signal: options.signal});
+  if (!('direction' in output)) return output;
+  const faults = new Map<string, ComponentValueMapping | ComponentRecordProjection>();
+  for (const fault of contract.faults) {
+    const mapping = createComponentDirectionalMapping(contract, input, {kind: 'fault', name: fault.name}, {signal: options.signal});
+    if (mapping.kind !== 'component-mapping') return mapping;
+    faults.set(fault.name, mapping);
+  }
+  return assessSoapResponse(contract, output, faults, bytes, {component: true, soap11ProtocolFaults: true,
+    decode(owner, mapping, observed, controls) {
+      if (mapping.kind === 'component-record-projection') return decodeComponentRecordXml(owner, mapping, observed, controls);
+      return decodeComponentXml(owner, mapping, observed, {...controls, selectPayload(root) {
+        const selected = controls.selectPayload(root);
+        if (selected.mapping.kind !== 'component-mapping') throw new TypeError('Normal component decoding requires its exact mapping');
+        return {payload: selected.payload, mapping: selected.mapping};
+      }});
+    },
+  }, {...options, limits});
+}
+
+/** Shared response episode for offline inspection and actual HTTP exchanges. */
+function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection,
+  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml>(
+  contract: DirectOperationContract, output: M, faults: ReadonlyMap<string, M>, bytes: Uint8Array,
+  profile: Pick<ExchangeProfile<M, D>, 'component' | 'soap11ProtocolFaults' | 'decode'>, options: ResponseControls): ResponseAssessment<D> {
+  const {context} = inspectDirectOperation(contract), {budget} = context;
+  const signal = options.signal, limits = options.limits;
+  const soap12 = profile.component && contract.binding.version === '1.2';
+  const SOAP = soap12 ? 'http://www.w3.org/2003/05/soap-envelope' : SOAP11;
+  const fail = (kind: DirectSoapFailure['kind'], rule: string, phase?: 'input' | 'response'): DirectSoapFailure =>
+    Object.freeze({kind, rule, ...(phase ? {phase} : {}), usage: Object.freeze({...budget.usage()})});
+  const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
+  const stop = (kind: DirectSoapFailure['kind'], rule: string): never => {throw new Stop(kind, rule);};
+  try {
+    check();
+    const {elements, shape, bodyRoot, ignoredHeaders} = soapProtocolSelection(contract, profile.component, check, stop);
+    let charset: string | undefined;
+    const metadata = options.responseMetadata;
+    if (metadata) {
+    if ((metadata.contentEncoding ?? '') && (metadata.contentEncoding ?? '').toLowerCase() !== 'identity') return fail('unsupported', 'HTTP compression');
     let soap12Charset: string | undefined;
     let validSoap12Media = false;
     if (soap12) {
       try {
-        const mime = new MIMEType(observed.contentType);
+        const mime = new MIMEType(metadata.contentType);
         soap12Charset = mime.params.get('charset')?.toLowerCase();
         validSoap12Media = mime.essence === 'application/soap+xml' && (!soap12Charset || ['utf-8', 'utf-16', 'utf-16le', 'utf-16be', 'iso-8859-1'].includes(soap12Charset));
       } catch { /* Invalid media types are refused below. */ }
     }
-    const media = soap12 ? validSoap12Media ? ['', soap12Charset] : null : /^text\/xml(?:\s*;\s*charset\s*=\s*(?:"(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)"|(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)))?\s*$/i.exec(observed.contentType);
+    const media = soap12 ? validSoap12Media ? ['', soap12Charset] : null : /^text\/xml(?:\s*;\s*charset\s*=\s*(?:"(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)"|(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)))?\s*$/i.exec(metadata.contentType);
     if (!media) return fail('protocol', 'SOAP response Content-Type');
-    if (observed.status !== 200 && observed.status !== 500 && !(soap12 && observed.status === 400)) return fail('transport', 'SOAP HTTP status');
+    if (metadata.status !== 200 && metadata.status !== 500 && !(soap12 && metadata.status === 400)) return fail('transport', 'SOAP HTTP status');
     // Header charset is a protocol assertion, checked against actual BOM bytes.
-    const charset = (media[1] ?? media[2])?.toLowerCase();
+    charset = (media[1] ?? media[2])?.toLowerCase();
     if (!profile.component && charset === 'iso-8859-1') return fail('protocol', 'SOAP response Content-Type');
-    const bom = observed.bytes[0] === 0xff && observed.bytes[1] === 0xfe ? 'utf-16le'
-      : observed.bytes[0] === 0xfe && observed.bytes[1] === 0xff ? 'utf-16be' : 'utf-8';
+    const bom = bytes[0] === 0xff && bytes[1] === 0xfe ? 'utf-16le'
+      : bytes[0] === 0xfe && bytes[1] === 0xff ? 'utf-16be' : 'utf-8';
     if (!profile.component && charset && charset !== bom && !(charset === 'utf-16' && bom.startsWith('utf-16'))) return fail('protocol', 'SOAP charset disagrees with bytes');
+
+    }
     let faultInfo: DeclaredSoapFault | undefined;
-    let protocolFault: Soap12FaultMetadata | undefined;
-    const protocolFaultSignal = new Error('SOAP 1.2 protocol fault assessed');
-    const decodeResponse = () => profile.decode(contract, output, observed.bytes, {signal, limits, uri: endpoint.href,
+    let protocolFault: ProtocolFaultMetadata | undefined;
+    const protocolFaultSignal = new Error('SOAP protocol fault assessed');
+    const decodeResponse = () => profile.decode(contract, output, bytes, {signal, limits, uri: options.uri ?? 'urn:typescript-wsdl-client:observed-soap-response',
       ...(profile.component ? {componentResponseEncoding: {charset}} : {}),
       selectPayload: root => {
         const payload = bodyRoot(root, true);
         if (!same(payload.name, {namespace: SOAP, local: 'Fault'})) {
-          if (observed.status !== 200) stop('protocol', 'HTTP 500 requires SOAP Fault');
+          if (options.responseMetadata && options.responseMetadata.status !== 200) stop('protocol', 'HTTP 500 requires SOAP Fault');
           return {payload, mapping: output};
         }
         if (soap12) {
@@ -424,7 +526,7 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
           const code = codes[0]!;
           if (code.namespace !== SOAP || !['VersionMismatch', 'MustUnderstand', 'DataEncodingUnknown', 'Sender', 'Receiver'].includes(code.local))
             stop('protocol', 'SOAP 1.2 Fault code');
-          if (observed.status === 400 && code.local !== 'Sender') stop('protocol', 'HTTP 400 requires SOAP Sender Fault');
+          if (options.responseMetadata?.status === 400 && code.local !== 'Sender') stop('protocol', 'HTTP 400 requires SOAP Sender Fault');
           const reasonChildren = shape(children[1]!);
           if (!reasonChildren.length) stop('protocol', 'SOAP 1.2 Fault Reason');
           const reasons = reasonChildren.map(node => {
@@ -460,7 +562,10 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
         }
         const children = shape(payload);
         const names = children.map(n => n.name.namespace === '' ? n.name.local : '');
-        if (names.join(',') !== 'faultcode,faultstring,detail' && names.join(',') !== 'faultcode,faultstring,faultactor,detail') stop('protocol', 'SOAP Fault children');
+        const hasDetail = names.at(-1) === 'detail';
+        if (!/^faultcode,faultstring(?:,faultactor)?(?:,detail)?$/.test(names.join(',')) || !hasDetail && !profile.soap11ProtocolFaults) {
+          stop('protocol', 'SOAP Fault children');
+        }
         const text = (node: SyntaxElement) => {
           if (node.attributes.some(a => !(node.name.local === 'faultstring' && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')) || elements(node).length) stop('protocol', 'SOAP Fault scalar child');
 
@@ -474,10 +579,14 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
         if (!code.namespace) stop('protocol', 'SOAP Fault code namespace required');
         const string = text(children[1]!);
         const actor = names[2] === 'faultactor' ? text(children[2]!) : undefined;
-        const detail = shape(children.at(-1)!);
-        if (detail.length !== 1) stop('protocol', 'one declared SOAP Fault detail required');
-        const matches = contract.faults.filter(f => same(f.root.element.name, detail[0]!.name));
-        if (matches.length !== 1) stop('protocol', 'unknown or ambiguous SOAP Fault detail');
+        const detail = hasDetail ? shape(children.at(-1)!) : [];
+        if (!profile.soap11ProtocolFaults && detail.length !== 1) stop('protocol', 'one declared SOAP Fault detail required');
+        const matches = contract.faults.filter(f => detail.some(node => same(f.root.element.name, node.name)));
+        if (!matches.length && profile.soap11ProtocolFaults) {
+          protocolFault = directDataOwnership(budget).freeze({version: '1.1', code, string, ...(actor === undefined ? {} : {actor})});
+          throw protocolFaultSignal;
+        }
+        if (detail.length !== 1 || matches.length !== 1) stop('protocol', 'unknown or ambiguous SOAP Fault detail');
         faultInfo = {name: matches[0]!.name, code, codeNode: children[0]!, string, ...(actor === undefined ? {} : {actor})};
        directDataOwnership(budget).freeze(faultInfo);
         return {payload: detail[0]!, mapping: faults.get(faultInfo.name)!};
@@ -489,30 +598,59 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (protocolFault && decoded === undefined) {
       check();
       return Object.freeze({kind: 'soap-fault', admitted: false, fault: protocolFault,
-        responseBytes: new Uint8Array(observed.bytes), status: observed.status,
         ...(ignoredHeaders.length ? {ignoredHeaders: Object.freeze(ignoredHeaders)} : {}), usage: Object.freeze({...budget.usage()})});
     }
     if (!decoded) throw new TypeError('Missing decoded SOAP response');
-    if (!('validated' in decoded)) return fail(decoded.kind, decoded.rule, 'response');
+    if (!('validated' in decoded)) return profile.component ? Object.freeze({...decoded, phase: 'response' as const}) : fail(decoded.kind, decoded.rule);
     check(); check();
     return Object.freeze({kind: faultInfo ? 'soap-fault' : 'soap-response', admitted: false, decoded,
-      responseBytes: new Uint8Array(observed.bytes), status: observed.status, ...(faultInfo ? {fault: faultInfo} : {}),
+      ...(faultInfo ? {fault: faultInfo} : {}),
       ...(ignoredHeaders.length ? {ignoredHeaders: Object.freeze(ignoredHeaders)} : {}), usage: Object.freeze({...budget.usage()})});
   } catch (error) {
-    if (budget.exhausted()) return fail('resource-limit', 'request-budget');
-    if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message);
-    if (signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
-    if (error instanceof DirectSoapSourceError) return fail(error.kind, error.message);
-    if (error instanceof Stop) return fail(error.kind, error.rule);
-    if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML');
-    if (error instanceof Error && 'code' in error) {
-      if (error.code === 'ERR_BAD_RESPONSE' && error.message.startsWith('maxContentLength size of ')) return fail('resource-limit', 'HTTP response byte limit');
-      return fail('transport', error.code === 'ERR_CANCELED' ? 'SOAP deadline exceeded' : 'HTTP exchange failed');
-    }
+    if (budget.exhausted()) return fail('resource-limit', 'response-budget', 'response');
+    if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message, 'response');
+    if (signal?.aborted) return fail('cancelled', 'cooperative-cancellation', 'response');
+    if (error instanceof Stop) return fail(error.kind, error.rule, 'response');
+    if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML', 'response');
     throw error;
-  } finally {
-    if (deadline) clearTimeout(deadline);
-    signal?.removeEventListener('abort', abort);
-    controller?.abort(); agent?.destroy();
   }
+}
+
+/** Select protocol-owned nodes without relabeling observed XML or granting value authority. */
+function soapProtocolSelection(contract: DirectOperationContract, component: boolean, check: () => void,
+  stop: (kind: DirectSoapFailure['kind'], rule: string) => never) {
+  const soap12 = component && contract.binding.version === '1.2';
+  const SOAP = soap12 ? 'http://www.w3.org/2003/05/soap-envelope' : SOAP11;
+  const rpc = contract.binding.style === 'rpc';
+    const elements = (node: SyntaxElement): SyntaxElement[] => {
+     check();
+      return node.children.filter((child): child is SyntaxElement => child.kind === 'element');
+    };
+
+    const shape = (node: SyntaxElement, encodedScope = false): SyntaxElement[] => {
+      const children = elements(node);
+      if (node.attributes.some(a => !(encodedScope && a.name.namespace === SOAP && a.name.local === 'encodingStyle'
+        && a.value === 'http://schemas.xmlsoap.org/soap/encoding/')) || node.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP protocol attributes or text');
+      return children;
+    };
+    const ignoredHeaders: ExpandedName[] = [];
+    const bodyRoot = (root: SyntaxElement, incoming = false): SyntaxElement => {
+      if (!same(root.name, {namespace: SOAP, local: 'Envelope'})) stop('protocol', `SOAP ${contract.binding.version} Envelope required`);
+      const children = shape(root, rpc);
+      if (children[0]?.name.namespace === SOAP && children[0].name.local === 'Header') {
+        if (component && incoming) {
+          const assessed = assessComponentSoapHeader(children[0], check, contract.binding.version);
+          if (assessed.kind !== 'ignored-optional-headers') stop(assessed.kind, assessed.rule);
+          else for (const name of assessed.headers) {check(); ignoredHeaders.push(name);}
+        } else if (shape(children[0]).length) stop('unsupported', 'incoming SOAP headers');
+        children.shift();
+      }
+      if (children.length !== 1 || !same(children[0]!.name, {namespace: SOAP, local: 'Body'})) stop('protocol', 'one SOAP Body required');
+      const body = shape(children[0]!, rpc);
+      if (rpc && !body.some(n => same(n.name, {namespace: SOAP, local: 'Fault'}))) return children[0]!;
+      if (body.length !== 1) stop('protocol', 'one SOAP Body payload required');
+      return body[0]!;
+    };
+
+  return {elements, shape, bodyRoot, ignoredHeaders};
 }

@@ -8,10 +8,10 @@ import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudg
 import {reconstructDirectSourceCapsuleInRequest, reconstructComponentSourceCapsuleInRequest, checkDirectSourceCompatibility, DIRECT_CAPSULE_LIMITS} from '../compiler/directSourceCapsule.js';
 import type {DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
 import {exchangeDirectSoap, exchangeComponentSoap, directSoapOptionsShape} from '../compiler/directSoap.js';
-import type {DirectSoapOptions, ComponentSoapOptions, DirectSoapFailure, ComponentRecordSoapResult, ComponentProtocolFault, DeclaredSoapFault} from '../compiler/directSoap.js';
+import type {DirectSoapOptions, ComponentSoapOptions, DirectSoapFailure, ComponentRecordSoapResult, ComponentProtocolFault, DeclaredSoapFault, Soap11FaultMetadata, Soap12FaultMetadata} from '../compiler/directSoap.js';
 import type {DirectOperationSelector} from '../compiler/directOperation.js';
 import type {DirectApplicationValue} from '../compiler/directValues.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 import {prepareSchemaSnapshotFiles} from '../loader/schemaInput.js';
 import {SchemaLoadingError} from '../loader/orderedSyntax.js';
 
@@ -51,7 +51,7 @@ export interface DirectClientRuntime {
 /** Component-only protocol faults retain raw bytes without claiming an application value.
  * @since 1.3.0
  */
-export type ComponentClientResult = Exclude<DirectClientResult, {kind: 'soap-fault'}> | ComponentProtocolFault
+export type ComponentClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap12FaultMetadata> = Exclude<DirectClientResult, {kind: 'soap-fault'}> | ComponentProtocolFault<F>
   | Readonly<Omit<Extract<DirectClientResult, {kind: 'soap-fault'}>, 'fault'> & {fault: Omit<DeclaredSoapFault, 'codeNode'>}>;
 /** The generated literal is the expected artifact; caller bytes never choose its static contract. */
 export const directClientRuntime: DirectClientRuntime = Object.freeze({
@@ -68,13 +68,21 @@ export const componentClientRuntime = Object.freeze({
  */
 export const componentSoap12ClientRuntime = Object.freeze({
   version: COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION,
-  execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions): Promise<ComponentClientResult> => executeClient(expectedBase64, input, options, true, true),
+  execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions): Promise<ComponentClientResult> => executeClient(expectedBase64, input, options, true, '1.2'),
+});
+/** SOAP 1.1 protocol faults require a generated client that can represent a missing application value.
+ * @since 1.4.0
+ */
+export const componentSoap11ClientRuntime = Object.freeze({
+  version: COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION,
+  execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => executeClient(expectedBase64, input, options, true, '1.1'),
 });
 function executeClient(expectedBase64: string, input: unknown, options: DirectClientOptions, component: false): Promise<DirectClientResult>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true): Promise<DirectClientResult>;
-function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, allowSoap12: true): Promise<ComponentClientResult>;
+function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.2'): Promise<ComponentClientResult<Soap12FaultMetadata>>;
+function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.1'): Promise<ComponentClientResult<Soap11FaultMetadata>>;
 async function executeClient(expectedBase64: string, input: unknown, options: DirectClientOptions | ComponentClientOptions,
-  component: boolean, allowSoap12 = false): Promise<ComponentClientResult> {
+  component: boolean, protocol?: '1.1' | '1.2'): Promise<ComponentClientResult<Soap11FaultMetadata | Soap12FaultMetadata>> {
     // Constant-sized entry introspection precedes budget configuration and all reads.
     const entryFailure = (): DirectClientFailure => ({kind: 'unsupported', rule: 'data-only client options required', usage: {nodes: 0, work: 0}});
     if (!options || typeof options !== 'object' || types.isProxy(options)
@@ -158,11 +166,10 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         const fresh = await reconstructComponentSourceCapsuleInRequest(bytes, prepared.source, {loading: prepared.loading, signal,
           standardLibraries: sources.standards, recordSources: sources.records}, budget);
         if (fresh.kind !== 'reconstructed-component') return fresh;
-        if (fresh.contract.binding.version === '1.2' && !allowSoap12) return fail('incompatible-artifact', 'SOAP 1.2 runtime binding required');
+        if (fresh.contract.binding.version === '1.2' && protocol !== '1.2') return fail('incompatible-artifact', 'SOAP 1.2 runtime binding required');
         if (fresh.selection.port !== options.soap.port || fresh.selection.service.namespace !== options.soap.service.namespace
           || fresh.selection.service.local !== options.soap.service.local) return fail('incompatible-artifact', 'explicit source selection mismatch');
-        result = fresh.responseProjection ? await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap, fresh.responseProjection)
-          : await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap);
+        result = await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap, fresh.responseProjection, protocol === '1.1');
       } else {
         const fresh = await reconstructDirectSourceCapsuleInRequest(bytes, options.localSource,
         {policy: {fileRoots: options.fileRoots}, limits: options.budget, signal: options.soap.signal}, budget);
@@ -175,7 +182,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         result = await exchangeDirectSoap(fresh.contract, fresh.mappings[0], input, options.soap);
       }
       if (!('decoded' in result)) {
-        if (result.kind === 'soap-fault' && !allowSoap12) return fail('incompatible-artifact', 'SOAP 1.2 runtime binding required');
+        if (result.kind === 'soap-fault' && result.fault.version !== protocol) throw new TypeError('Protocol fault requires its generated runtime binding');
         return result;
       }
 

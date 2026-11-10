@@ -35,7 +35,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   inspectReconstructedComponentSource(expected);
   const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
-  const runtime = expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV1';
+  const runtime = expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
     .some(segment => !segment || !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment))) {
     throw new TypeError('Checked routePath requires literal nonempty path segments');
@@ -78,11 +78,11 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       },
     },
   }));
-  if (soap12) faultVariants.push({type: 'object', additionalProperties: false, required: ['fault'], properties: {
-    fault: {type: 'object', additionalProperties: false, required: ['version', 'code', 'string', 'subcodes', 'reasons'],
-      properties: protocolFaultProperties},
+  faultVariants.push({type: 'object', additionalProperties: false, required: ['fault'], properties: {
+    fault: {type: 'object', additionalProperties: false, required: ['version', 'code', 'string', ...(soap12 ? ['subcodes', 'reasons'] : [])],
+      properties: soap12 ? protocolFaultProperties : {version: {const: '1.1'}, code: nameSchema, string: {type: 'string'}, actor: {type: 'string'}}},
   }});
-  const fault: Schema = faultVariants.length ? {oneOf: faultVariants} : {not: {}};
+  const fault: Schema = {oneOf: faultVariants};
   const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault}};
   const grouped = expected.mappings.some(mapping => mapping.kind === 'component-mapping'
     && inspectComponentValueMapping(mapping, expected.contract).applicationGroups);
@@ -123,7 +123,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
       responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
-        '502': {description: 'Declared SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentation.fault,
+        '502': {description: 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentation.fault,
           {type: 'object', additionalProperties: false, required: ['kind', 'rule'], properties: {kind: {type: 'string'}, rule: {type: 'string'}}}]}}}},
         '500': {description: 'Incompatible artifacts or gateway configuration'}}}}},
   };
@@ -189,9 +189,9 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
           ...(result.fault.name === undefined ? {} : {name: result.fault.name}),
           ...(result.fault.node === undefined ? {} : {node: result.fault.node}),
           ...(result.fault.role === undefined ? {} : {role: result.fault.role})};
-        const value = result.fault.name === undefined ? {fault} : {fault, value: result.value};` : `const fault = {name: result.fault.name, code: {namespace: result.fault.code.namespace, local: result.fault.code.local},
+        const value = result.fault.name === undefined ? {fault} : {fault, value: result.value};` : `const fault = {...(result.fault.name === undefined ? {version: result.fault.version} : {name: result.fault.name}), code: {namespace: result.fault.code.namespace, local: result.fault.code.local},
           string: result.fault.string, ...(result.fault.actor === undefined ? {} : {actor: result.fault.actor})};
-        const value = {fault, value: result.value};`}
+        const value = 'value' in result ? {fault, value: result.value} : {fault};`}
         if (!validateFault(value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-fault-shape'});
         return reply.code(502).type('application/json').serializer(value => JSON.stringify(value)).send(value);
       }

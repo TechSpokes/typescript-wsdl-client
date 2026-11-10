@@ -7,8 +7,9 @@ const repoRoot = path.resolve(".");
 const commandNames = ["compile", "client", "openapi", "gateway", "app", "pipeline"] as const;
 
 function extractCliFlags(source: string): string[] {
-  const optionNames = [...source.matchAll(/\.option\("([^"]+)"/g)].map((match) => match[1]);
-  const aliases = [...source.matchAll(/alias:\s*"([^"]+)"/g)].map((match) => match[1]);
+  // @why Quote style and line breaks do not change the public option/documentation contract.
+  const optionNames = [...source.matchAll(/\.option\(\s*(['"])([^'"]+)\1/g)].map((match) => match[2]);
+  const aliases = [...source.matchAll(/alias:\s*(['"])([^'"]+)\1/g)].map((match) => match[2]);
   return [...new Set([...optionNames, ...aliases].filter((flag) => flag !== "generate-app"))].sort();
 }
 
@@ -67,7 +68,7 @@ describe("CLI contract documentation", () => {
       expect(commandHelp(command)).toContain("--client-choice-mode");
     }
 
-    for (const command of ["openapi", "gateway", "app"] as const) {
+    for (const command of ["openapi", "gateway", "app", "assess", "inspect-response"] as const) {
       expect(commandHelp(command)).not.toContain("--client-choice-mode");
     }
     const composition = commandHelp("pipeline", "--services-config", "unused-services.json");

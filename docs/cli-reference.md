@@ -10,7 +10,7 @@ Generation paths are explicit. Examples use the git-ignored `.generated/` direct
 
 ## Commands Overview
 
-The tool provides six generation commands and the assessment-only `assess` command.
+The tool provides six generation commands and the diagnostic commands `assess` and `inspect-response`.
 
 TypeScript outputs automatically receive [generated preambles](generated-code.md#generated-preambles-and-eslint), including app/test scaffolds when actually written. Command syntax is unchanged and there is no preamble flag. `compile` and `openapi` data outputs remain unchanged.
 
@@ -23,6 +23,21 @@ TypeScript outputs automatically receive [generated preambles](generated-code.md
 | app | Runnable Fastify app from client + gateway + OpenAPI | Local testing, demos |
 | compile | Parse WSDL to catalog.json only | Debugging, multi-stage builds |
 | assess | Source schema diagnostic report | Checked evidence and unresolved duties |
+| inspect-response | Offline captured SOAP response inspection | Scoped mismatches and source correction drafts |
+
+## inspect-response
+
+Inspect saved SOAP XML using an authorized local checked source and closed snapshots. This command never dispatches SOAP or reads credentials.
+
+Required inputs are `--wsdl-source`, `--checked-config`, `--operation`, `--response-file` and `--report`.
+
+```bash
+npx wsdl-tsc inspect-response --wsdl-source ./sources/service.wsdl --checked-config ./checked.json --operation Fetch --response-file ./captures/fetch.xml --report .generated/inspection.json
+```
+
+The checked configuration must list exactly one matching selector for `--operation`. Narrow `selectors` when different bindings expose the same operation name. Optional `--response-metadata` points to JSON containing actual `status`, `contentType` and optional `contentEncoding`; omission selects XML-only scope with HTTP checks unassessed. Optional `--corrections-draft` writes a draft when the inspector can derive one. Reports and drafts use exclusive creation; create the destination directory and choose unused filenames. Input files have a 1 MiB CLI capacity.
+
+Exit 0 establishes conformance only within the report's assessment scope; 1 reports mismatch/refusal and 2 identifies invocation/file errors. SOAP faults remain faults even when their declared shape conforms. See [checked source corrections](checked-gateway.md#consumer-owned-source-corrections) for draft completion and regeneration.
 
 ## pipeline
 

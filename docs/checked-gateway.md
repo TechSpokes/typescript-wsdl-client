@@ -8,6 +8,8 @@ SOAP 1.2 document/literal operations use the selected binding's envelope namespa
 
 Generated SOAP 1.2 clients use the additive `checkedComponentRuntimeV2` package-root binding with protocol `checked-component-soap12-runtime-v1`. Existing SOAP 1.1 clients keep `checkedComponentRuntimeV1` and `checked-component-runtime-v2`, including their TypeScript injection contract. The older binding refuses SOAP 1.2 artifacts before SOAP dispatch.
 
+Regenerated SOAP 1.1 clients use `checkedComponentRuntimeV3` and `checked-component-soap11-runtime-v1`. Valid SOAP 1.1 faults without declared application detail retain protocol metadata and original response bytes without inventing a typed value. Declared application detail still requires native validation; mixed or ambiguous declared detail refuses. Gateways expose protocol faults as HTTP 502 without a `value` member. Existing V1/V2 injection contracts remain available; see [ADR-005](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/005-checked-protocol-fault-compatibility.md).
+
 SOAP 1.2 faults retain code, nested subcodes, language-tagged reasons and optional Node/Role metadata. Declared application detail uses the existing native mapping and gateway fault validation. A valid protocol fault without declared application detail carries fault metadata without a typed application value; the client retains original response bytes. Gateways return HTTP 502 for upstream faults, including SOAP Sender faults received on HTTP 400. SOAP 1.2 protocol rules follow [the messaging framework](https://www.w3.org/TR/soap12-part1/#soapfault) and [HTTP binding](https://www.w3.org/TR/soap12-part2/#soapinhttp).
 
 SOAP 1.2 header processing uses the default ultimate receiver and next roles. Unknown mandatory blocks targeted at this receiver refuse; other-role and optional blocks may be ignored. The `mustUnderstand` and `relay` attributes accept SOAP 1.2 Boolean lexical forms. This does not enable outgoing application headers, WS-Security, streaming or RPC/encoded SOAP 1.2.
@@ -95,6 +97,48 @@ The component client and gateway use the selected WSDL service/port address when
 Previously, ordinary setup authored `sourceResources`, selectors, `endpoint` and a duplicate `allowedEndpoints` entry. Now supported URL intake needs only WSDL/model/output options, plus one `sourceOrigins` decision for each additional origin; ordinary runtime configuration uses generated source records and the selected address. Optional overrides and restrictions remain explicit. Generation, startup and scaffold tests make no business SOAP calls.
 
 This component injection change uses `checked-component-runtime-v2`; regenerate clients, capsules, gateways and server scaffolds together when upgrading. The exported binding name remains `checkedComponentRuntimeV1` for existing imports, and existing explicit endpoint callbacks remain valid after regeneration. Consumer server/config/test files retain skip/force ownership rules; use existing force options deliberately to refresh those scaffolds. The v1.1.5 direct runtime protocol and legacy defaults are unchanged.
+
+### Consumer-owned source corrections
+
+Set `sourceCorrectionsFile` in checked generation configuration to apply a versioned JSON correction file to the project's outer and companion sources. Paths follow the existing generation convention: resolve them from the invocation working directory. Corrections are generation inputs; do not put them in HTTP request bodies or runtime endpoint configuration.
+
+Maintain upstream snapshots unchanged and keep the correction file under version control. The correction file pins the complete original resource set by logical URI and digest. Refreshing upstream metadata requires regenerating and reviewing the correction draft. Scoped targets identify original declarations and particles, not generated TypeScript names. All edits resolve against the original inventory before application.
+
+The bounded operations change particle occurrence bounds, narrow element wildcard namespaces, or insert a typed element into an existing sequence. Insertions require an existing named type or global element reference. Corrections do not define new complex types, rewrite imports, or change incoming SOAP XML. Use replacement snapshots for unsupported restructuring or sources that cannot construct a canonical inventory.
+
+The correction document has `version: 1`, `resources: [{uri, digest}]`, and `corrections`. Retain every original resource pin supplied by the tool. A target is `{id, uri, digest}` copied from the inventory or draft; do not replace it with a generated DTO name. Complete unresolved draft values before passing the file to generation.
+
+| Correction kind | Required settings |
+| --- | --- |
+| `set-occurs` | `target`, `min`, and `max`; bounds are canonical decimal strings, with `"unbounded"` also permitted for `max` |
+| `set-wildcard-namespaces` | `target` and `namespaces`; use explicit namespace strings and `""` for the no-namespace case; the original `processContents` is preserved |
+| `insert-element` | Sequence `target`, `position`, and `element`; position is `"append"` or `{kind: "before" or "after", target: originalChildTarget}` |
+
+For a local inserted declaration, `element` contains `{kind: "declaration", name, type: {namespace, local}, min, max}`. The type must be a built-in XSD type or an existing named type. A global element reference instead uses `{kind: "reference", target: globalElementTarget, min, max}`. For example, a reviewed new scalar can use `type: {namespace: "http://www.w3.org/2001/XMLSchema", local: "string"}`; selecting that type is a contract decision, not an inference from one text value. Local declarations follow the containing schema's element-form rules.
+
+Inserting a no-namespace type or reference beneath a nonempty default namespace currently refuses rather than changing QName meaning. Use a replacement snapshot for that case. Two insertions at the same original source position also refuse; choose distinct original anchors or supply a replacement snapshot for a larger restructuring.
+
+Making metadata optional can make a following unrestricted wildcard ambiguous. Review both declarations: an explicit payload namespace constraint may be necessary to preserve native XSD 1.0 qualification. Narrowing changes the accepted contract, so confirm every intended payload namespace rather than copying the wrapper namespace by assumption.
+
+Effective metadata is freshly parsed and checked before generation. Native decoding, SOAP bootstrap, generated types, OpenAPI, and runtime source reconstruction use those same effective bytes. Generated provenance distinguishes upstream and effective digests; successful validation establishes conformance to the consumer's effective contract, not upstream approval. Runtime needs the generated effective snapshots, not the correction file or upstream network access. Regenerate clients, contracts and gateways together after changes, and refresh source-derived presentation targets when necessary.
+
+One generated project retains one effective byte sequence per logical URI. Shared declarations change for all their uses in that project. Conflicting URI contents and interpretation-specific edits to shared chameleon declarations refuse; separate replacement snapshots are required for those cases. This feature does not extend checked multi-service composition or legacy generation.
+
+### Offline response inspection
+
+Use `inspect-response` with a local WSDL, closed snapshot configuration, one configured operation and a saved SOAP response. It does not acquire missing remote metadata, dispatch SOAP, or read credentials. Create the output directory first; existing report or draft files are not overwritten.
+
+```bash
+npx wsdl-tsc inspect-response --wsdl-source ./sources/service.wsdl --checked-config ./checked.json --operation Fetch --response-file ./captures/fetch.xml --report .generated/inspection.json --corrections-draft .generated/corrections-draft.json
+```
+
+XML-only inspection leaves HTTP status and media checks unassessed. To assess an actual full response, add `--response-metadata ./captures/fetch-metadata.json` containing `status`, `contentType`, and optional `contentEncoding`. Do not invent metadata for a capture that did not retain it.
+
+Reports separate wrapper and companion assessment. A valid inner payload cannot rescue an invalid wrapper. Reports omit decoded values and raw XML. Correction drafts provide pinned targets and existing values, but leave type, occurrence and namespace decisions unresolved until a developer reviews and completes them. Drafts may be unavailable when source loading or target inventory construction fails.
+
+Drafts retain exact logical source URIs, which can include local filesystem paths, because those identities are needed to apply corrections. The CLI writes them only to the explicitly requested draft file. Programmatic callers must select `includeCorrectionDraft: true` to receive those additional local identities; ordinary diagnostic reports use resource labels.
+
+Exit codes are 0 for conformance within the reported scope, 1 for mismatch/refusal, and 2 for invocation/file errors. A conforming SOAP fault remains identified as a fault. The package-root `inspectCheckedResponse` API accepts the same checked choices, a full operation selector, response bytes, optional actual response metadata, cancellation and XML limits; it returns diagnostic data without writing files.
 
 ### Planning and missing-schema recovery
 
