@@ -14,6 +14,7 @@ import {encodeComponentXml} from '../../src/compiler/directCodec.js';
 import {selectComponentOperation} from '../../src/compiler/directOperation.js';
 import {createComponentValueMapping,inspectComponentValueMapping} from '../../src/compiler/directValues.js';
 import {exchangeComponentSoap} from '../../src/compiler/directSoap.js';
+import {composeCheckedDocumentation, validateCheckedDocumentation} from '../helpers/checkedDocumentation.js';
 
 vi.mock('@techspokes/typescript-wsdl-client',()=>import('../../src/index.js'));
 const source=path.resolve('test/conformance/fixtures/assessment/application-groups.wsdl');
@@ -74,6 +75,21 @@ describe('combined application-group generation',()=>{
     const {project}=await generate({names});
     const generated=await readFile(path.join(project,'client/operations/0/client.ts'),'utf8').catch(()=>readFile(path.join(project,'client/client.ts'),'utf8'));
     expect(generated).toContain('PaymentMethod');
+    const document=JSON.parse(await readFile(path.join(project,'openapi.json'),'utf8'));
+    for (const name of ['PaymentMethod','CardPayment','BankPayment']) {
+      expect(Object.hasOwn(document.components.schemas,name)).toBe(true);
+      expect(generated).toContain(`export type ${name} =`);
+    }
+    const composed=composeCheckedDocumentation(document);
+    for (const name of ['PaymentMethod','CardPayment','BankPayment']) expect(Object.hasOwn(composed.components.schemas,'checked__'+name)).toBe(true);
+    for (const role of ['request','response'] as const) {
+      const validate=validateCheckedDocumentation(composed,'/v1/payment/Submit',role);
+      expect(validate({id:'one',$payment:[{A:1,B:'card'}]})).toBe(true);
+      expect(validate({id:'one',$choice:[{A:1,B:'card'}]})).toBe(false);
+      expect(validate({id:'one',$payment:[{A:'1',B:'card'}]})).toBe(false);
+      expect(validate({id:'one',$payment:[{A:1,B:'card'}],tree:{$choice:{branch:{$choice:{leaf:'end'}}}}})).toBe(true);
+      expect(validate({id:'one',$payment:[{A:1,B:'card'}],tree:{$choice:{branch:{$choice:{leaf:7}}}}})).toBe(false);
+    }
     const schemas=JSON.parse(await readFile(path.join(project,'gateway/routes/0/schemas.json'),'utf8')) as Record<string,object>;
     const validate=new Ajv({strict:true,coerceTypes:false,useDefaults:false,removeAdditional:false}).compile(schemas.request!);
     expect(validate({id:'one',$payment:[{A:1,B:'card'}]})).toBe(true);

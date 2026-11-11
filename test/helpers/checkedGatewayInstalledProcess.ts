@@ -88,7 +88,8 @@ const start = async (overrides: Record<string, unknown> = {}): Promise<string> =
     current.once('exit', code => {clearTimeout(timer); reject(new Error(`Gateway exited ${code}: ${output}`));});
   });
 };
-const route = '/v1/forecast/' + (process.argv[3] === 'noaa' ? 'LatLonListZipCode' : 'GetForecast');
+const route = (process.argv[3] === 'scalar' ? '/v1/forecast-scalar/' : '/v1/forecast/')
+  + (process.argv[3] === 'noaa' ? 'LatLonListZipCode' : 'GetForecast');
 let calls = 0, refusals = 0;
 try {
   let url = await start();

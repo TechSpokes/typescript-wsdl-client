@@ -362,6 +362,8 @@ The generated aggregate plugin exports `createClients`, `MultiServiceClientOptio
 
 Compose existing OpenAPI 3.1 documents without generating clients or routers:
 
+Checked documents regenerated with 1.4.1 or later support this API. Regeneration relocates generator-owned local schema resources while preserving configured names and native supplemental-validation metadata. Archived resource-bearing documents remain unsupported; composition does not replace native XML validation.
+
 ```typescript
 interface OpenApiCompositionEntry {key: string; document: unknown}
 interface OpenApiCompositionOptions {

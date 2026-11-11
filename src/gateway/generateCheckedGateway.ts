@@ -8,6 +8,7 @@ import path from 'node:path';
 import {componentSourceCapsuleBytes, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from '../compiler/directSourceCapsule.js';
 import {lowerComponentShape} from '../generation/componentShape.js';
+import {lowerCheckedDocumentation} from './checkedDocumentation.js';
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectComponentValueMapping} from '../compiler/directValues.js';
@@ -43,13 +44,19 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   const input = expected.mappings.find(mapping => mapping.direction.kind === 'input');
   const output = expected.mappings.find(mapping => mapping.direction.kind === 'output');
   if (!input || !output) throw new TypeError('Issued input and output mappings required');
-  const schema = (mapping: typeof input, role: string): Schema => {
-    const {budget} = inspectDirectOperation(expected.contract).context;
-    return lowerComponentShape(expected.contract, mapping, role, () => {
-      checkSemanticBudget(budget); if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
-    }).schema;
+  const {budget} = inspectDirectOperation(expected.contract).context;
+  const check = () => {
+    checkSemanticBudget(budget); if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   };
+  const schema = (mapping: typeof input, role: string): Schema => lowerComponentShape(expected.contract, mapping, role, check).schema;
+  const components: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
+  const documented = (value: Schema, mapping: typeof input, role: string): Schema => lowerCheckedDocumentation(value,
+    expected.contract.selector, role, mapping.kind === 'component-mapping'
+      && !!inspectComponentValueMapping(mapping, expected.contract).applicationGroups, components, () => {
+        budget.chargeWork(); check();
+      });
   const request = schema(input, 'Request'), response = schema(output, 'Response');
+  const documentation = {request: documented(request, input, 'Request'), response: documented(response, output, 'Response')};
   const soap12 = expected.contract.binding.version === '1.2';
   const nameSchema = {type: 'object', additionalProperties: false, required: ['namespace', 'local'],
     properties: {namespace: {type: 'string'}, local: {type: 'string'}}};
@@ -62,12 +69,14 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   };
   const faults = expected.mappings.filter(mapping => mapping.direction.kind === 'fault').map(mapping => {
     if (mapping.direction.kind !== 'fault') throw new TypeError('Declared fault mapping required');
-    return {name: mapping.direction.name, value: schema(mapping, `Fault_${expected.mappings.filter(item => item.direction.kind === 'fault').indexOf(mapping)}`)};
+    const role = `Fault_${expected.mappings.filter(item => item.direction.kind === 'fault').indexOf(mapping)}`;
+    const value = schema(mapping, role);
+    return {name: mapping.direction.name, value, documented: documented(value, mapping, role)};
   });
-  const faultVariants: Schema[] = faults.map(fault => ({
+  const faultVariants = (documentationOnly: boolean): Schema[] => faults.map(fault => ({
     type: 'object', additionalProperties: false, required: ['fault', 'value'],
     properties: {
-      value: fault.value,
+      value: documentationOnly ? fault.documented : fault.value,
       fault: {
         type: 'object', additionalProperties: false, required: ['name', 'code', 'string', ...(soap12 ? ['version', 'subcodes', 'reasons'] : [])],
         properties: soap12 ? {...protocolFaultProperties, name: {const: fault.name}} : {
@@ -78,39 +87,17 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       },
     },
   }));
-  faultVariants.push({type: 'object', additionalProperties: false, required: ['fault'], properties: {
+  const protocolFault = {type: 'object', additionalProperties: false, required: ['fault'], properties: {
     fault: {type: 'object', additionalProperties: false, required: ['version', 'code', 'string', ...(soap12 ? ['subcodes', 'reasons'] : [])],
       properties: soap12 ? protocolFaultProperties : {version: {const: '1.1'}, code: nameSchema, string: {type: 'string'}, actor: {type: 'string'}}},
-  }});
-  const fault: Schema = {oneOf: faultVariants};
+  }};
+  const fault: Schema = {oneOf: [...faultVariants(false), protocolFault]};
+  const documentedFault: Schema = {oneOf: [...faultVariants(true), protocolFault]};
   const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault}};
-  const grouped = expected.mappings.some(mapping => mapping.kind === 'component-mapping'
-    && inspectComponentValueMapping(mapping, expected.contract).applicationGroups);
-  const components: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
-  const documented = (value: unknown, dictionary = false): unknown => {
-    if (Array.isArray(value)) return value.map(item=>documented(item));
-    if (!value || typeof value !== 'object') return value;
-    const record = value as Record<string,unknown>, result: Record<string,unknown> = Object.create(null) as Record<string,unknown>;
-    // @why Property names belong to the application; definitions and $id are keywords only at schema nodes.
-    if (dictionary) {for (const [key,item] of Object.entries(record)) result[key]=documented(item);return result;}
-    if (Object.hasOwn(record,'definitions')) for (const [key,definition] of Object.entries(record.definitions as Record<string,Schema>)) {
-      const resolved = documented(definition) as Schema;
-      if (components[key] && JSON.stringify(components[key])!==JSON.stringify(resolved)) throw new TypeError(`applicationGroups OpenAPI component collision ${key}`);
-      components[key] = resolved;
-    }
-    for (const [key,item] of Object.entries(record)) {
-      if (key==='definitions' || key==='$id') continue;
-      result[key] = ['const','enum','default','examples'].includes(key) ? item
-        : key==='$ref' && typeof item==='string' && item.startsWith('#/definitions/') ? item.replace('#/definitions/','#/components/schemas/')
-        : documented(item,['properties','patternProperties','dependencies','dependentSchemas'].includes(key));
-    }
-    return result;
-  };
-  const documentation = grouped ? {request: documented(request),response: documented(response),fault: documented(fault)} : {request,response,fault};
   const doc = {
     openapi: '3.1.1', jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
     info: {title: expected.selection.service.local, version: '1.0.0'},
-    ...(grouped ? {components:{schemas:components}} : {}),
+    ...(Object.keys(components).length ? {components:{schemas:components}} : {}),
     'x-checked-model': {model: 'checked-components-v1', scope: soap12 ? 'native-component-structured-soap12' : 'native-component-structured-soap11',
       ...(expected.responseProjection
         ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
@@ -123,7 +110,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
       responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
-        '502': {description: 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentation.fault,
+        '502': {description: 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
           {type: 'object', additionalProperties: false, required: ['kind', 'rule'], properties: {kind: {type: 'string'}, rule: {type: 'string'}}}]}}}},
         '500': {description: 'Incompatible artifacts or gateway configuration'}}}}},
   };

@@ -98,6 +98,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     await run('regenerate and preserve scaffolds', installedGenerate, tooling);
     expect(await readFile(scaffold, 'utf8')).toBe(customized);
     expect(await readFile(path.join(project, 'client/client.ts'), 'utf8')).toBe(clientBefore);
+    await copyFile(path.join(project, 'openapi.json'), path.join(project, 'composition-first.json'));
     const inventory = JSON.parse(await readFile(path.join(project, 'client/inventory.json'), 'utf8')) as {
       selection: unknown; operations: {requested: boolean; selected: boolean; generated: boolean; executed: boolean}[];
     };
@@ -186,7 +187,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       let groupOptions: {names?: {target:string;propertyName?:string;typeName?:string}[]} | undefined = grouped ? {} : undefined;
       const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents:{...checkedComponents,...(grouped?{applicationGroups:groupOptions}:{})},
         clientOutDir: path.join(project, 'client'), openapi: {outFile: path.join(project, 'openapi.json')},
-        gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: 'forecast'},
+        gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: mode === 'scalar' ? 'forecast-scalar' : 'forecast'},
         app: {appDir: project}, test: {testDir: path.join(project, 'test')}};
       await run(mode + ' installed API generation', ['--permission', '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer,
         '--input-type=module', '-e',
@@ -208,6 +209,24 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       }
       await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);
+      if (mode === 'scalar') {
+        const composition = await run('compose independent installed checked services', ['--permission', '--allow-fs-read=' + project,
+          '--input-type=module', '-e',
+          'import assert from "node:assert/strict"; import {readFile} from "node:fs/promises"; '
+          + 'import {composeOpenApiDocuments} from "@techspokes/typescript-wsdl-client"; import {Ajv} from "ajv"; '
+          + 'const first=JSON.parse(await readFile("composition-first.json","utf8")); const second=JSON.parse(await readFile("openapi.json","utf8")); '
+          + 'const inputs=[{key:"first",document:first},{key:"second",document:second}]; const before=JSON.stringify(inputs); '
+          + 'const doc=composeOpenApiDocuments(inputs); assert.equal(JSON.stringify(inputs),before); '
+          + 'for(const [route,good,bad] of [["/v1/forecast/GetForecast",{city:"Oslo",days:2},true], '
+          + '["/v1/forecast-scalar/GetForecast",true,{city:"Oslo",days:2}]]) {'
+          + 'const schema=doc.paths[route].post.requestBody.content["application/json"].schema; '
+          + 'const validate=new Ajv({strict:false,coerceTypes:false,useDefaults:false,removeAdditional:false}).compile({...schema,components:doc.components}); '
+          + 'assert.equal(validate(good),true); assert.equal(validate(bad),false); } '
+          + 'process.stdout.write(JSON.stringify({kind:"installed-checked-composition",paths:Object.keys(doc.paths)}));'], project);
+        expect(JSON.parse(composition.stdout)).toMatchObject({kind: 'installed-checked-composition',
+          paths: ['/v1/forecast-scalar/GetForecast', '/v1/forecast/GetForecast']});
+        await writeFile(path.join(evidence, 'composition.log'), composition.stdout + composition.stderr);
+      }
       const checked = await run(mode + ' independent HTTP/SOAP contract', ['--permission', '--allow-child-process', ...networkPermission,
         '--allow-fs-read=' + project, '--allow-fs-write=' + project,
         path.join(project, 'qualification.ts'), fixture, mode], project);
