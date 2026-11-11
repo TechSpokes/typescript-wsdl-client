@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-11-11
+
+- fix(openapi): emit composable checked documentation with scoped schema references.
+
 ## [1.4.0] - 2026-11-10
 
 - fix(checked): preserve SOAP 1.1 protocol faults and inspect operations from complete checked configurations.

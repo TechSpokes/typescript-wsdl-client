@@ -258,6 +258,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 | [1.2.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, consumer compatibility and bounded RPC qualification |
+| [1.4.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.1.md) | Composable checked OpenAPI documentation |
 | [1.4.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.0.md) | Contract corrections, offline inspection and SOAP 1.1 protocol faults |
 | [1.3.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.3.0.md) | Checked SOAP 1.2 execution and preserved SOAP 1.1 compatibility |
 | [XML/JSON Mapping Contract](docs/mapping-contract.md) | Checked keyed, namespace, nil and group representations |

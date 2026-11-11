@@ -255,6 +255,10 @@ Generated `buildServer` accepts runtime cancellation, timeout and XML limits. Or
 
 ## Validation and coverage evidence
 
+Regenerate with 1.4.1 or later to compose checked OpenAPI documents through `composeOpenApiDocuments`. Documentation definitions are relocated into operation- and role-scoped components for ungrouped shapes; configured grouped names remain unchanged. Runtime draft-07 schemas, capsules and native supplemental validation retain their existing contracts.
+
+Composition preserves structural JSON documentation, not complete native XML equivalence. Archived 1.4.0 documents with embedded schema resources still refuse composition; updating the runtime package alone does not repair those documents.
+
 OpenAPI documentation uses 3.1.1 with separate draft-07 HTTP runtime plans. Route-local Ajv disables coercion, default insertion and property removal, and preserves unrelated host policy. The native runtime explicitly converts validated HTTP values through the issued mapping, performs actual SOAP execution and independently validates response/fault XML. HTTP response validation also runs independently of serializer selection; JSON serialization preserves the validated values.
 
 `client/inventory.json` and the API result's `checked` field list every discovered portType operation, selected service/port/binding, requested/generated operation and unselected operations. Generation records `executed:false`; it does not claim a SOAP call occurred. Refused selection diagnostics name the requested operation and zero generated/executed operations. Unselected operations remain unassessed.

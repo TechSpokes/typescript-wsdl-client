@@ -12,6 +12,7 @@ import {parseCheckedComponentOptions} from '../../src/checkedPipeline.js';
 import type {PipelineOptions} from '../../src/pipeline.js';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 import {readGeneratedSourceConfiguration} from '../helpers/generatedSourceConfiguration.js';
+import {composeCheckedDocumentation, validateCheckedDocumentation} from '../helpers/checkedDocumentation.js';
 
 // @constraints Source integration resolves the actual public runtime; installed acceptance uses a separately packed consumer.
 vi.mock('@techspokes/typescript-wsdl-client', () => import('../../src/index.js'));
@@ -170,6 +171,15 @@ describe('public component service pipeline', () => {
     const document = JSON.parse(await readFile(path.join(project, 'openapi.json'), 'utf8')) as {paths: Record<string, {post: Record<string, unknown>}>};
     expect(document.paths['/api/v2/catalog/Fetch']!.post['x-response-projection']).toMatchObject({delivery: 'buffered', retainedValue: 'complete-companion-payload',
       spec: {scope: 'records-with-declared-wrapper-scope'}});
+    const composed=composeCheckedDocumentation(document);
+    const validateResponse=validateCheckedDocumentation(composed,'/api/v2/catalog/Fetch','response');
+    const validResponse={Stamp:'synthetic',Notice:'preserved',Records:{Record:[{Code:'0007',Name:'A & B',Active:true,Quantity:2}]}};
+    expect(validateResponse(validResponse)).toBe(true);
+    expect(validateResponse({...validResponse,Records:{Record:[{Code:'0007',Name:'A & B',Active:'true',Quantity:2}]}})).toBe(false);
+    const validateFault=validateCheckedDocumentation(composed,'/api/v2/catalog/Fetch','fault');
+    const declaredFault={fault:{name:'Problem',code:{namespace:soap,local:'Server'},string:'Synthetic fault'},value:'Synthetic detail'};
+    expect(validateFault(declaredFault)).toBe(true);
+    expect(validateFault({...declaredFault,value:7})).toBe(false);
     const exampleFile = path.join(project, 'checked-gateway.example.json'), before = await readFile(exampleFile, 'utf8');
     await runGenerationPipeline(pipeline); expect(await readFile(exampleFile, 'utf8')).toBe(before);
     const scope = path.join(project, 'node_modules/@techspokes'); await mkdir(scope, {recursive: true});
@@ -245,6 +255,18 @@ describe('public component service pipeline', () => {
     expect(result.checked).toMatchObject({model: 'checked-components-v1', operations: [
       {operation: 'SubmitImported', generated: true}, {operation: 'Other', generated: true},
     ]});
+    const composed=composeCheckedDocumentation(JSON.parse(await readFile(path.join(project,'openapi.json'),'utf8')));
+    for (const operation of ['SubmitImported','Other']) {
+      const validate=validateCheckedDocumentation(composed,'/api/v2/catalog/'+operation,'request');
+      expect(validate({payload:{name:'owned'}})).toBe(true);
+      expect(validate({payload:{name:7}})).toBe(false);
+      expect(validate({payload:{}})).toBe(false);
+    }
+    const runtimeDefinitions=await Promise.all([0,1].map(async index=>{
+      const schemas=JSON.parse(await readFile(path.join(project,`gateway/routes/${index}/schemas.json`),'utf8')) as {request:{definitions:object}};
+      return Object.keys(schemas.request.definitions);
+    }));
+    expect(runtimeDefinitions[0]).toEqual(runtimeDefinitions[1]);
     const before = await readFile(path.join(project, 'client/client.ts'), 'utf8');
     const scaffold = path.join(project, 'server.ts'); await writeFile(scaffold, (await readFile(scaffold, 'utf8')) + '\n// consumer-owned marker\n');
     await runGenerationPipeline(options);

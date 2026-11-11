@@ -6,6 +6,12 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.4.0 to 1.4.1
+
+Regenerate checked specifications to compose them with `composeOpenApiDocuments`. Ungrouped documentation uses operation- and role-scoped components; configured grouped names remain stable. Archived 1.4.0 specifications containing embedded resources remain explicitly refused by composition.
+
+Existing runtime artifacts remain usable. Runtime draft-07 validation, capsules and native supplemental validation are unchanged; structural documentation parity does not establish complete native XML equivalence.
+
 ## General Upgrade Steps
 
 These steps apply to every version upgrade:

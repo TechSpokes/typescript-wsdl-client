@@ -17,6 +17,7 @@ import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway
 import {checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3} from '../../src/index.js';
 import {acceptComponentRuntime} from '../conformance/fixtures/compatibility/v1.2.0/component-runtime-contract.js';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
+import {composeCheckedDocumentation, validateCheckedDocumentation} from '../helpers/checkedDocumentation.js';
 
 // @constraints Only package resolution is substituted; all source, runtime, HTTP and XML owners are production code.
 vi.mock('@techspokes/typescript-wsdl-client', () => import('../../src/index.js'));
@@ -247,6 +248,13 @@ describe('SOAP 1.2 component binding and wire execution', () => {
     const clientDir = path.join(selected.root, 'client'), gatewayDir = path.join(selected.root, 'gateway');
     await mkdir(clientDir); writeDirectClient(path.join(clientDir, 'client.ts'), generated);
     await generateComponentGateway(fresh, {clientDir, gatewayDir, openapiFile: path.join(selected.root, 'openapi.json'), routePath: '/v1/ping'});
+    const composed=composeCheckedDocumentation(JSON.parse(await readFile(path.join(selected.root,'openapi.json'),'utf8')));
+    const validateFault=validateCheckedDocumentation(composed,'/v1/ping','fault');
+    const faultMetadata={name:'Problem',version:'1.2',code:{namespace:soap12,local:'Sender'},string:'Invalid request',
+      subcodes:[],reasons:[{lang:'en',text:'Invalid request'}]};
+    expect(validateFault({fault:faultMetadata,value:{code:'MISSING',message:'Missing input'}})).toBe(true);
+    expect(validateFault({fault:faultMetadata,value:{code:7,message:'Missing input'}})).toBe(false);
+    expect(validateFault({fault:{...faultMetadata,reasons:[]},value:{code:'MISSING',message:'Missing input'}})).toBe(false);
     const config = path.join(selected.root, 'tsconfig.json');
     await writeFile(config, JSON.stringify({extends: path.resolve('tsconfig.json'), compilerOptions: {noEmit: true, rootDir: process.cwd(),
       paths: {'@techspokes/typescript-wsdl-client': [path.resolve('src/index.ts')]}}, include: ['client/*.ts', 'gateway/*.ts']}));
