@@ -23,6 +23,8 @@ import type {ResolverUsage} from './semanticBudget.js';
 import {decodeComponentRecordXml, inspectComponentRecordProjection} from './componentRecordProjection.js';
 import type {ComponentRecordProjection, ComponentRecordDecodedXml} from './componentRecordProjection.js';
 import {assessComponentSoapHeader} from './soapHeaders.js';
+import {decodeComponentResponseBranchesXml, inspectComponentResponseBranches} from './componentResponseBranches.js';
+import type {ComponentResponseBranches, ComponentApplicationErrorDecodedXml} from './componentResponseBranches.js';
 
 const SOAP11 = 'http://schemas.xmlsoap.org/soap/envelope/';
 export interface DirectSoapOptions {
@@ -91,10 +93,17 @@ type DecodedSoapResult<D> = DirectSoapFailure | Readonly<{
   ignoredHeaders?: readonly ExpandedName[];
   usage: ResolverUsage;
 }>;
-type SoapResult<D> = DecodedSoapResult<D> | ComponentProtocolFault;
+export interface ComponentApplicationErrorSoapResult {
+  readonly kind: 'application-error'; readonly branch: string; readonly admitted: false;
+  readonly decoded: ComponentApplicationErrorDecodedXml;
+  readonly responseBytes: Uint8Array; readonly status: number; readonly usage: ResolverUsage;
+  readonly ignoredHeaders?: readonly ExpandedName[];
+}
+type SoapResult<D> = DecodedSoapResult<Exclude<D, ComponentApplicationErrorDecodedXml>> | ComponentProtocolFault | ComponentApplicationErrorSoapResult;
 export type DirectSoapResult = DecodedSoapResult<DirectDecodedXml>;
-export type ComponentSoapResult = SoapResult<ComponentDecodedXml>;
-export type ComponentRecordSoapResult = SoapResult<ComponentDecodedXml | ComponentRecordDecodedXml>;
+export type ComponentSoapResult = DecodedSoapResult<ComponentDecodedXml> | ComponentProtocolFault;
+export type ComponentRecordSoapResult = DecodedSoapResult<ComponentDecodedXml | ComponentRecordDecodedXml> | ComponentProtocolFault;
+export type ComponentResponseBranchesSoapResult = ComponentRecordSoapResult | ComponentApplicationErrorSoapResult;
 export interface ComponentSoapOptions extends Omit<DirectSoapOptions, 'endpoint' | 'allowEndpoint'> {
   readonly endpoint?: string;
   /** Optional restriction; omission permits only the configured or selected address. */
@@ -136,6 +145,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     },
   });
   if (result.kind === 'soap-fault' && !('decoded' in result)) throw new TypeError('Component fault on direct profile');
+  if (result.kind === 'application-error') throw new TypeError('Component application error on direct profile');
   return result;
 }
 
@@ -151,9 +161,36 @@ export function exchangeComponentSoap(contract: DirectOperationContract, inputMa
   options: ComponentSoapOptions): Promise<ComponentSoapResult>;
 export function exchangeComponentSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
   options: ComponentSoapOptions, responseProjection: ComponentRecordProjection | undefined, soap11ProtocolFaults?: boolean): Promise<ComponentRecordSoapResult>;
+export function exchangeComponentSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
+  options: ComponentSoapOptions, responseProjection: ComponentRecordProjection | undefined, soap11ProtocolFaults: boolean,
+  responseBranches: ComponentResponseBranches): Promise<ComponentResponseBranchesSoapResult>;
 export async function exchangeComponentSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
-  options: ComponentSoapOptions, responseProjection?: ComponentRecordProjection, soap11ProtocolFaults = true): Promise<ComponentRecordSoapResult> {
+  options: ComponentSoapOptions, responseProjection?: ComponentRecordProjection, soap11ProtocolFaults = true,
+  responseBranches?: ComponentResponseBranches): Promise<ComponentResponseBranchesSoapResult> {
   const {mapping: input} = inspectComponentValueMapping(inputMapping, contract);
+  if (responseBranches !== undefined) {
+    const owned = inspectComponentResponseBranches(responseBranches, contract);
+    if (responseProjection !== owned.success) throw new TypeError('Response branches require their exact success projection');
+    return exchangeSoap<ComponentValueMapping | ComponentResponseBranches, ComponentDecodedXml | ComponentRecordDecodedXml | ComponentApplicationErrorDecodedXml>(contract, input, application, options, {
+      component: true, soap11ProtocolFaults,
+      encode(owner, mapping, value, controls) {
+        if (mapping.kind !== 'component-mapping') throw new TypeError('SOAP input requires the native input mapping');
+        return encodeComponentXml(owner, mapping, value, controls);
+      },
+      decode(owner, mapping, bytes, controls) {
+        if (mapping.kind === 'component-response-branches') return decodeComponentResponseBranchesXml(owner, mapping, bytes, controls);
+        return decodeComponentXml(owner, mapping, bytes, {...controls, selectPayload(root) {
+          const selected = controls.selectPayload(root);
+          if (selected.mapping.kind !== 'component-mapping') throw new TypeError('Normal component decoding requires its exact mapping');
+          return {payload: selected.payload, mapping: selected.mapping};
+        }});
+      },
+      create(owner, direction, controls) {
+        return direction.kind === 'output' ? responseBranches : createComponentDirectionalMapping(owner, input, direction, controls);
+      },
+      prepare: (selection, check) => prepareComponentSoapWsdl(contract, selection, check),
+    });
+  }
   if (responseProjection !== undefined) {
     inspectComponentRecordProjection(responseProjection, contract);
     return exchangeSoap<ComponentValueMapping | ComponentRecordProjection, ComponentDecodedXml | ComponentRecordDecodedXml>(contract, input, application, options, {
@@ -183,8 +220,8 @@ export async function exchangeComponentSoap(contract: DirectOperationContract, i
   });
 }
 
-interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection,
-  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml> {
+interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection | ComponentResponseBranches,
+  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml | ComponentApplicationErrorDecodedXml> {
   component: boolean;
   soap11ProtocolFaults?: boolean;
   encode(contract: DirectOperationContract, mapping: M, value: unknown, options: {signal?: AbortSignal; limits: DirectXmlLimits}):
@@ -195,8 +232,8 @@ interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping |
   create(contract: DirectOperationContract, direction: M['direction'], options: {signal?: AbortSignal}): M | DirectCodecFailure;
   prepare(selection: {service: ExpandedName; port: string}, check: () => void): Promise<WSDL>;
 }
-async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection,
-  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml>(
+async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection | ComponentResponseBranches,
+  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml | ComponentApplicationErrorDecodedXml>(
   contract: DirectOperationContract, input: M, application: unknown, options: ComponentSoapOptions,
   profile: ExchangeProfile<M, D>): Promise<SoapResult<D>> {
   const soap12 = profile.component && contract.binding.version === '1.2';
@@ -349,6 +386,12 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     const assessed = assessSoapResponse(contract, output, faults, observed.bytes, profile, {signal, limits, uri: endpoint.href,
       responseMetadata: {status: observed.status, contentType: observed.contentType, contentEncoding: observed.encoding}});
     if (!('admitted' in assessed)) return assessed;
+    if (assessed.kind === 'application-error') {
+      if (assessed.decoded?.kind !== 'component-application-error-decoded') throw new TypeError('Native application error receipt required');
+      return Object.freeze({kind: 'application-error', branch: assessed.decoded.branch, admitted: false,
+        decoded: assessed.decoded as ComponentApplicationErrorDecodedXml, responseBytes: new Uint8Array(observed.bytes), status: observed.status,
+        usage: assessed.usage, ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
+    }
     if (assessed.decoded === undefined) {
       if (!profile.component || !assessed.fault || 'name' in assessed.fault) throw new TypeError('Missing decoded SOAP response');
       return Object.freeze({kind: 'soap-fault' as const, admitted: false as const, fault: assessed.fault,
@@ -356,7 +399,7 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
         ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
     }
     if (assessed.fault && !('name' in assessed.fault)) throw new TypeError('Decoded fault requires its declared application mapping');
-    return Object.freeze({kind: assessed.kind, admitted: false as const, decoded: assessed.decoded,
+    return Object.freeze({kind: assessed.kind, admitted: false as const, decoded: assessed.decoded as Exclude<D, ComponentApplicationErrorDecodedXml>,
       responseBytes: new Uint8Array(observed.bytes), status: observed.status, usage: assessed.usage,
       ...(assessed.fault && 'name' in assessed.fault ? {fault: assessed.fault} : {}),
       ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
@@ -395,10 +438,20 @@ export type ComponentSoapResponseAssessment = DirectSoapFailure | Readonly<{
   ignoredHeaders?: readonly ExpandedName[];
   usage: ResolverUsage;
 }>;
+export type ComponentResponseBranchesSoapResponseAssessment = ComponentSoapResponseAssessment | ComponentApplicationErrorSoapResponseAssessment;
+
+/** A complete native application-error outcome from response-only assessment.
+ * @since 1.6.0
+ */
+export interface ComponentApplicationErrorSoapResponseAssessment {
+  readonly kind: 'application-error'; readonly admitted: false; readonly branch: string;
+  readonly decoded: ComponentApplicationErrorDecodedXml;
+  readonly ignoredHeaders?: readonly ExpandedName[]; readonly usage: ResolverUsage;
+}
 type ResponseAssessment<D> = DirectSoapFailure | Readonly<{
-  kind: 'soap-response' | 'soap-fault'; admitted: false; decoded?: D;
+  kind: 'soap-response' | 'soap-fault'; admitted: false; decoded?: Exclude<D, ComponentApplicationErrorDecodedXml>;
   fault?: DeclaredSoapFault | ProtocolFaultMetadata; ignoredHeaders?: readonly ExpandedName[]; usage: ResolverUsage;
-}>;
+}> | ComponentApplicationErrorSoapResponseAssessment;
 type ResponseControls = Readonly<{signal?: AbortSignal; limits: DirectXmlLimits; uri?: string; responseMetadata?: ObservedSoapResponseMetadata}>;
 
 /** Assess caller-observed response bytes through the same protocol and native decoder used by real exchanges.
@@ -412,7 +465,13 @@ type ResponseControls = Readonly<{signal?: AbortSignal; limits: DirectXmlLimits;
  */
 export function inspectComponentSoapResponse(contract: DirectOperationContract, inputMapping: unknown, bytes: Uint8Array,
   options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; responseMetadata?: ObservedSoapResponseMetadata;
-    responseProjection?: ComponentRecordProjection}> = {}): ComponentSoapResponseAssessment {
+    responseProjection?: ComponentRecordProjection; responseBranches: ComponentResponseBranches}>): ComponentResponseBranchesSoapResponseAssessment;
+export function inspectComponentSoapResponse(contract: DirectOperationContract, inputMapping: unknown, bytes: Uint8Array,
+  options?: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; responseMetadata?: ObservedSoapResponseMetadata;
+    responseProjection?: ComponentRecordProjection}>): ComponentSoapResponseAssessment;
+export function inspectComponentSoapResponse(contract: DirectOperationContract, inputMapping: unknown, bytes: Uint8Array,
+  options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; responseMetadata?: ObservedSoapResponseMetadata;
+    responseProjection?: ComponentRecordProjection; responseBranches?: ComponentResponseBranches}> = {}): ComponentResponseBranchesSoapResponseAssessment {
   const {mapping: input} = inspectComponentValueMapping(inputMapping, contract);
   const {context} = inspectDirectOperation(contract);
   const failure = (kind: DirectSoapFailure['kind'], rule: string): DirectSoapFailure => Object.freeze({kind, rule, phase: 'response', usage: context.budget.usage()});
@@ -422,9 +481,13 @@ export function inspectComponentSoapResponse(contract: DirectOperationContract, 
     if (!['maxBytes', 'maxDepth', 'maxNodes', 'maxText'].includes(key) || !Number.isSafeInteger(value) || value < 1) throw new RangeError('Invalid SOAP XML limit');
   }
   if (options.responseProjection) inspectComponentRecordProjection(options.responseProjection, contract);
-  const output = options.responseProjection ?? createComponentDirectionalMapping(contract, input, {kind: 'output'}, {signal: options.signal});
+  if (options.responseBranches) {
+    const owned = inspectComponentResponseBranches(options.responseBranches, contract);
+    if (options.responseProjection !== undefined && owned.success !== options.responseProjection) throw new TypeError('Response branches require their exact success projection');
+  }
+  const output = options.responseBranches ?? options.responseProjection ?? createComponentDirectionalMapping(contract, input, {kind: 'output'}, {signal: options.signal});
   if (!('direction' in output)) return output;
-  const faults = new Map<string, ComponentValueMapping | ComponentRecordProjection>();
+  const faults = new Map<string, ComponentValueMapping | ComponentRecordProjection | ComponentResponseBranches>();
   for (const fault of contract.faults) {
     const mapping = createComponentDirectionalMapping(contract, input, {kind: 'fault', name: fault.name}, {signal: options.signal});
     if (mapping.kind !== 'component-mapping') return mapping;
@@ -432,7 +495,16 @@ export function inspectComponentSoapResponse(contract: DirectOperationContract, 
   }
   return assessSoapResponse(contract, output, faults, bytes, {component: true, soap11ProtocolFaults: true,
     decode(owner, mapping, observed, controls) {
-      if (mapping.kind === 'component-record-projection') return decodeComponentRecordXml(owner, mapping, observed, controls);
+      if (mapping.kind === 'component-response-branches') return decodeComponentResponseBranchesXml(owner, mapping, observed, {...controls, selectPayload(root) {
+        const selected = controls.selectPayload(root);
+        if (selected.mapping.kind === 'component-record-projection') throw new TypeError('Response branches require their exact mapping');
+        return {payload: selected.payload, mapping: selected.mapping};
+      }});
+      if (mapping.kind === 'component-record-projection') return decodeComponentRecordXml(owner, mapping, observed, {...controls, selectPayload(root) {
+        const selected = controls.selectPayload(root);
+        if (selected.mapping.kind === 'component-response-branches') throw new TypeError('Record decoding requires its exact mapping');
+        return {payload: selected.payload, mapping: selected.mapping};
+      }});
       return decodeComponentXml(owner, mapping, observed, {...controls, selectPayload(root) {
         const selected = controls.selectPayload(root);
         if (selected.mapping.kind !== 'component-mapping') throw new TypeError('Normal component decoding requires its exact mapping');
@@ -443,8 +515,8 @@ export function inspectComponentSoapResponse(contract: DirectOperationContract, 
 }
 
 /** Shared response episode for offline inspection and actual HTTP exchanges. */
-function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection,
-  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml>(
+function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection | ComponentResponseBranches,
+  D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml | ComponentApplicationErrorDecodedXml>(
   contract: DirectOperationContract, output: M, faults: ReadonlyMap<string, M>, bytes: Uint8Array,
   profile: Pick<ExchangeProfile<M, D>, 'component' | 'soap11ProtocolFaults' | 'decode'>, options: ResponseControls): ResponseAssessment<D> {
   const {context} = inspectDirectOperation(contract), {budget} = context;
@@ -606,7 +678,13 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
     if (!('validated' in decoded)) return profile.component ? Object.freeze({...decoded, phase: 'response' as const})
       : Object.freeze({...fail(decoded.kind, decoded.rule), ...(decoded.diagnostic ? {diagnostic: decoded.diagnostic} : {})});
     check(); check();
-    return Object.freeze({kind: faultInfo ? 'soap-fault' : 'soap-response', admitted: false, decoded,
+    if (decoded.kind === 'component-application-error-decoded') {
+      if (faultInfo) throw new TypeError('Protocol fault cannot carry an application-error receipt');
+      return Object.freeze({kind: 'application-error', admitted: false, decoded: decoded as ComponentApplicationErrorDecodedXml,
+        branch: decoded.branch, ...(ignoredHeaders.length ? {ignoredHeaders: Object.freeze(ignoredHeaders)} : {}),
+        usage: Object.freeze({...budget.usage()})});
+    }
+    return Object.freeze({kind: faultInfo ? 'soap-fault' : 'soap-response', admitted: false, decoded: decoded as Exclude<D, ComponentApplicationErrorDecodedXml>,
       ...(faultInfo ? {fault: faultInfo} : {}),
       ...(ignoredHeaders.length ? {ignoredHeaders: Object.freeze(ignoredHeaders)} : {}), usage: Object.freeze({...budget.usage()})});
   } catch (error) {

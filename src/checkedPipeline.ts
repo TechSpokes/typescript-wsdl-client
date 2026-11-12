@@ -12,7 +12,7 @@ import {createHash} from 'node:crypto';
 import {constants as bufferConstants} from 'node:buffer';
 import {resolveResourceUri} from './loader/schemaResources.js';
 import type {PipelineOptions} from './pipeline.js';
-import {selectComponentOperations, inspectDirectOperation} from './compiler/directOperation.js';
+import {selectComponentOperations, selectComponentOperationInRequest, inspectDirectOperation} from './compiler/directOperation.js';
 import type {DirectOperationSelector} from './compiler/directOperation.js';
 import {prepareComponentSourceForOperation} from './compiler/directSourceCapsule.js';
 import {inspectComponentSourceService} from './compiler/directSourceCapsule.js';
@@ -30,6 +30,9 @@ import {generateCheckedTests} from './test/generateCheckedTests.js';
 import {commonSourceDirectory, assertCanonicalSourceLayout} from './generation/sourceLayout.js';
 import {createComponentRecordProjection, inspectComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import type {ComponentRecordProjectionSpec, ComponentRecordProjectionAssociation, ComponentRecordProjection} from './compiler/componentRecordProjection.js';
+import {createComponentResponseBranches, inspectComponentResponseBranches, COMPONENT_RESPONSE_BRANCH_LIMITS} from './compiler/componentResponseBranches.js';
+import type {ComponentResponseBranches} from './compiler/componentResponseBranches.js';
+import {isXmlNCName} from './loader/orderedSyntax.js';
 import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from './compiler/standardSchemaComponents.js';
 import {ComponentSoapPreparation} from './compiler/componentSoapPreparation.js';
 import {parseApplicationGroups} from './compiler/applicationGroups.js';
@@ -52,6 +55,20 @@ export interface CheckedComponentOptions {
   readonly basePath?: string;
   readonly standardLibraries?: readonly string[];
   readonly recordProjections?: readonly CheckedComponentRecordProjection[];
+  readonly responseBranches?: readonly CheckedComponentResponseBranches[];
+}
+
+/** Explicit pinned full-output grammars for the bounded response-branch family.
+ * @since 1.6.0
+ * @constraints Each outer selector retains its existing success record projection.
+ */
+export interface CheckedComponentResponseBranches {
+  readonly version: 'component-response-branches-v1';
+  readonly selector: DirectOperationSelector;
+  readonly branches: readonly Readonly<{id: string; source: string; selector: DirectOperationSelector;
+    path: readonly {readonly namespace: string; readonly local: string}[];
+    resources: readonly Readonly<{uri: string; digest: string}>[];
+    standardLibraries?: readonly string[]}>[];
 }
 type CheckedComponentRecordProjection = Readonly<{selector: DirectOperationSelector; source: string;
   recordSelector: DirectOperationSelector; standardLibraries?: readonly string[]}> & (
@@ -121,7 +138,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'applicationGroups', 'sourceCorrectionsFile'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile'],
     resolved ? ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'] : []);
   if (['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => Object.hasOwn(data, key) && data[key] === undefined))
     throw new TypeError('Explicit component choices must not be undefined');
@@ -158,6 +175,34 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (new Set(keys).size !== keys.length || selectors && keys.some(key => !selectors.some(selector => JSON.stringify(selector) === key)))
       throw new TypeError('Record projections require unique requested outer selectors');
   }
+  const responseBranches = data.responseBranches === undefined ? undefined : array(data.responseBranches).map<CheckedComponentResponseBranches>(input => {
+    const entry = record(input, ['version', 'selector', 'branches']);
+    if (entry.version !== 'component-response-branches-v1') throw new TypeError('Supported response branch configuration version required');
+    const branches = array(entry.branches);
+    if (!branches.length || branches.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxBranches) throw new TypeError('One to eight response branches required');
+    const ids = new Set<string>();
+    return {version: entry.version, selector: selector(entry.selector), branches: branches.map(raw => {
+      const branch = record(raw, ['id', 'source', 'selector', 'path', 'resources', 'standardLibraries'], ['id', 'source', 'selector', 'path', 'resources']);
+      const id = text(branch.id);
+      if (!isXmlNCName(id) || id.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxIdLength || id === 'success' || ids.has(id)) throw new TypeError('Unique bounded application-error branch identifiers required');
+      ids.add(id);
+      const path = array(branch.path).map(name);
+      if (!path.length || path.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxPath || path.some(step => !isXmlNCName(step.local))) throw new TypeError('Bounded exact response branch path required');
+      const resources = array(branch.resources).map(pin => {
+        const resource = record(pin, ['uri', 'digest']), digest = text(resource.digest);
+        if (!/^[a-f0-9]{64}$/.test(digest)) throw new TypeError('Original response branch SHA256 pin required');
+        return {uri: resolveResourceUri(text(resource.uri)), digest};
+      });
+      if (!resources.length || resources.length > 256 || new Set(resources.map(pin => pin.uri)).size !== resources.length) throw new TypeError('Bounded unique complete response branch resource pins required');
+      return {id, source: text(branch.source), selector: selector(branch.selector), path, resources,
+        ...(branch.standardLibraries === undefined ? {} : {standardLibraries: libraries(branch.standardLibraries)})};
+    })};
+  });
+  if (responseBranches) {
+    const keys = responseBranches.map(entry => JSON.stringify(entry.selector));
+    if (new Set(keys).size !== keys.length || keys.some(key => !recordProjections?.some(entry => JSON.stringify(entry.selector) === key)))
+      throw new TypeError('Response branches require unique existing success record projections');
+  }
   const namespaceLocations = data.namespaceLocations === undefined ? undefined : array(data.namespaceLocations).map(input => {
     const r = record(input, ['namespace', 'location']); if (typeof r.namespace !== 'string') throw new TypeError('Namespace string required');
     return {namespace: r.namespace, location: text(r.location)};
@@ -171,7 +216,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     ...(data.port === undefined ? {} : {port: text(data.port)}), ...(fileRoots ? {fileRoots} : {}),
     ...(sourceResources ? {sourceResources} : {}), ...(sourceOrigins ? {sourceOrigins} : {}),
     ...(data.sourceUri === undefined ? {} : {sourceUri: resolveResourceUri(text(data.sourceUri))}),
-    ...(standardLibraries ? {standardLibraries} : {}), ...(recordProjections ? {recordProjections} : {}),
+    ...(standardLibraries ? {standardLibraries} : {}), ...(recordProjections ? {recordProjections} : {}), ...(responseBranches ? {responseBranches} : {}),
     ...(namespaceLocations ? {namespaceLocations} : {}), ...(basePath ? {basePath} : {}), ...(data.signal ? {signal: data.signal as AbortSignal} : {})};
 }
 
@@ -215,14 +260,32 @@ export async function acquireCheckedSourceInputs(source: string, config: Pick<Ch
     const key = resolveResourceUri(projection.source);
     if (!companions.has(key)) companions.set(key, key === main.root.uri ? main : await acquire(projection.source, false));
   }
+  for (const entry of config.responseBranches ?? []) for (const branch of entry.branches) {
+    tick(); const key = resolveResourceUri(branch.source);
+    if (!companions.has(key)) companions.set(key, key === main.root.uri ? main : await acquire(branch.source, false));
+    assertResponseBranchPins(companions.get(key)!, branch.resources);
+  }
   return {main, companions, loading};
+}
+
+/** Authenticate every original grammar byte before applying any explicit source correction.
+ * @param source Independently acquired original error closure.
+ * @param pins Complete original URI/digest inventory, never refreshed from observed responses.
+ * @returns Nothing when the exact closed original inventory agrees.
+ * @throws TypeError For a stale, incomplete, extra or ambiguous resource pin.
+ */
+function assertResponseBranchPins(source: SchemaInput, pins: CheckedComponentResponseBranches['branches'][number]['resources']): void {
+  const expected = new Map(pins.map(pin => [pin.uri, pin.digest]));
+  if (expected.size !== source.resources.length || source.resources.some(resource => expected.get(resource.uri) !== resource.digest))
+    throw new TypeError('responseBranches: stale or incomplete original source closure pins');
 }
 
 /** Correct and reload the complete authorized project closure without mutating original sources. */
 export async function prepareCheckedSourceInputs(source: string, config: Pick<CheckedComponentOptions,
-  'fileRoots' | 'sourceOrigins' | 'sourceResources'> & Partial<CheckedComponentOptions>, acquiredMain?: SchemaInput): Promise<PreparedCheckedSourceInputs> {
+  'fileRoots' | 'sourceOrigins' | 'sourceResources'> & Partial<CheckedComponentOptions>, acquiredMain?: SchemaInput,
+  originals?: Awaited<ReturnType<typeof acquireCheckedSourceInputs>>): Promise<PreparedCheckedSourceInputs> {
   if (!config.sourceCorrectionsFile) throw new TypeError('Source correction preparation requires sourceCorrectionsFile');
-  const {main, companions, loading} = await acquireCheckedSourceInputs(source, config, acquiredMain);
+  const {main, companions, loading} = originals ?? await acquireCheckedSourceInputs(source, config, acquiredMain);
   const tick = () => config.signal?.throwIfAborted();
   const recipeFile = path.resolve(config.sourceCorrectionsFile);
   tick();
@@ -326,9 +389,10 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
 /** Prepare through native owners only; internal handles remain within this invocation. */
 export async function prepareComponentStages(wsdl: string, config: CheckedComponentOptions, acquired?: SchemaInput,
   outputs = {clientDir: 'client', gatewayDir: 'gateway', openapiFile: 'openapi.json', basePath: '/v1/service'},
-  sourcePreparation?: PreparedCheckedSourceInputs) {
-  const correctedSources = sourcePreparation ?? (config.sourceCorrectionsFile ? await prepareCheckedSourceInputs(wsdl, config, acquired) : undefined);
-  acquired = correctedSources?.main ?? acquired;
+  sourcePreparation?: PreparedCheckedSourceInputs, originals?: Awaited<ReturnType<typeof acquireCheckedSourceInputs>>) {
+  const branchInputs = originals ?? (!sourcePreparation && config.responseBranches?.length ? await acquireCheckedSourceInputs(wsdl, config, acquired) : undefined);
+  const correctedSources = sourcePreparation ?? (config.sourceCorrectionsFile ? await prepareCheckedSourceInputs(wsdl, config, acquired, branchInputs) : undefined);
+  acquired = correctedSources?.main ?? branchInputs?.main ?? acquired;
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
   const namespaces = new Map(config.namespaceLocations?.map(location => [location.namespace, location.location]));
   if (namespaces.size !== (config.namespaceLocations?.length ?? 0)) throw new TypeError('Duplicate namespace location');
@@ -347,6 +411,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
   const refusals: {selector: DirectOperationSelector; kind: string; rule: string; dimension: 'qualification-and-correspondence' | 'mapping-and-artifact'}[] = selected.flatMap((result, index) => result.kind === 'selected' ? [] : [{selector: config.selectors[index]!, kind: result.kind, rule: result.rule, dimension: 'qualification-and-correspondence' as const}]);
   const expected: ReconstructedComponentSource[] = [];
   const projections = new Map<string, ComponentRecordProjection>();
+  const responseBranches = new Map<string, ComponentResponseBranches>();
   const groups = new Map<string, NonNullable<CheckedComponentOptions['recordProjections']>[number][]>();
   for (const projection of config.recordProjections ?? []) {
     const key = JSON.stringify([resolveResourceUri(projection.source), projection.standardLibraries ?? []]);
@@ -354,7 +419,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
   }
   for (const group of groups.values()) {
     tick(); const first = group[0]!;
-    const companionInput = correctedSources?.companions.get(resolveResourceUri(first.source));
+    const companionInput = (correctedSources?.companions ?? branchInputs?.companions)?.get(resolveResourceUri(first.source));
     const companionOffline = companionInput ? new Map([...companionInput.resourceAliases].map(([alias, uri]) => {
       const resource = companionInput.resources.find(item => item.uri === uri)!;
       return [alias, {bytes: copyOriginalSchemaResource(companionInput, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri}] as const;
@@ -366,8 +431,13 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     const companions = await selectComponentOperations(source.source, group.map(item => item.recordSelector), {loading: source.loading,
       signal: config.signal, standardLibraries: first.standardLibraries?.map(acquireStandardSchemaLibrary)});
     for (const [index, entry] of group.entries()) {
-      tick(); const companion = companions[index]!, outer = selected[config.selectors.findIndex(selector => JSON.stringify(selector) === JSON.stringify(entry.selector))]!;
+      tick(); let companion = companions[index]!;
+      const outer = selected[config.selectors.findIndex(selector => JSON.stringify(selector) === JSON.stringify(entry.selector))]!;
       if (outer.kind !== 'selected') continue;
+      if (config.responseBranches?.some(branches => JSON.stringify(branches.selector) === JSON.stringify(entry.selector))) {
+        companion = await selectComponentOperationInRequest(source.source, entry.recordSelector, {loading: source.loading,
+          signal: config.signal, standardLibraries: first.standardLibraries?.map(acquireStandardSchemaLibrary)}, inspectDirectOperation(outer.contract).context.budget);
+      }
       if (companion.kind !== 'selected') {refusals.push({selector: entry.selector, kind: companion.kind, rule: `record-source:${companion.rule}`, dimension: 'mapping-and-artifact'}); continue;}
       const native = createComponentRecordProjection(outer.contract, companion.contract, entry.spec ?? {
         scope: entry.scope, ...(entry.recordPath ? {recordPath: entry.recordPath} : {})}, {signal: config.signal});
@@ -375,12 +445,45 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       projections.set(JSON.stringify(entry.selector), native);
     }
   }
+  for (const entry of config.responseBranches ?? []) {
+    tick(); const key = JSON.stringify(entry.selector), projection = projections.get(key);
+    const outer = selected[config.selectors.findIndex(selector => JSON.stringify(selector) === key)];
+    if (!projection || outer?.kind !== 'selected') continue;
+    const {budget: branchBudget} = inspectDirectOperation(outer.contract).context;
+    const errors = [];
+    for (const branch of entry.branches) {
+      tick(); const input = (correctedSources?.companions ?? branchInputs?.companions)?.get(resolveResourceUri(branch.source));
+      if (!input) throw new TypeError('responseBranches: original pinned source was not acquired');
+      const offline = new Map([...input.resourceAliases].map(([alias, uri]) => {
+        const resource = input.resources.find(item => item.uri === uri)!;
+        return [alias, {bytes: copyOriginalSchemaResource(input, uri, amount => {tick(); branchBudget.chargeWork(amount);}),
+          digest: resource.digest, canonicalUri: uri}] as const;
+      }));
+      const error = await selectComponentOperationInRequest(input.root.uri, branch.selector,
+        {loading: {...loading, offlineResources: offline}, signal: config.signal,
+          standardLibraries: branch.standardLibraries?.map(acquireStandardSchemaLibrary)}, branchBudget);
+      if (error.kind !== 'selected') {
+        refusals.push({selector: entry.selector, kind: error.kind, rule: `response-branch-source:${error.rule}`, dimension: 'mapping-and-artifact'});
+        continue;
+      }
+      errors.push({id: branch.id, path: branch.path, contract: error.contract});
+    }
+    if (errors.length !== entry.branches.length) continue;
+    const branches = createComponentResponseBranches(outer.contract, projection, errors, {signal: config.signal});
+    if (branches.kind !== 'component-response-branches') {
+      refusals.push({selector: entry.selector, kind: branches.kind, rule: branches.rule, dimension: 'mapping-and-artifact'});
+      continue;
+    }
+    responseBranches.set(key, branches);
+  }
   const preparation = new ComponentSoapPreparation();
   for (const result of selected) {
     tick(); if (result.kind !== 'selected') continue;
     const projection = projections.get(JSON.stringify(result.contract.selector));
     if (!projection && config.recordProjections?.some(entry => JSON.stringify(entry.selector) === JSON.stringify(result.contract.selector))) continue;
-    const native = await prepareComponentSourceForOperation(result.contract, {service: config.service, port: config.port}, preparation, config.signal, projection, config.applicationGroups);
+    const branches = responseBranches.get(JSON.stringify(result.contract.selector));
+    if (!branches && config.responseBranches?.some(entry => JSON.stringify(entry.selector) === JSON.stringify(result.contract.selector))) continue;
+    const native = await prepareComponentSourceForOperation(result.contract, {service: config.service, port: config.port}, preparation, config.signal, projection, config.applicationGroups, branches);
     if (native.kind !== 'reconstructed-component') {refusals.push({selector: result.contract.selector, kind: native.kind, rule: native.rule, dimension: 'mapping-and-artifact'}); continue;}
     expected.push(native);
   }
@@ -425,7 +528,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       }
     }
   }
-  return {expected, projections, namespaces, refusals, layout, generatedClients, gateway, applicationGroups,
+  return {expected, projections, responseBranches, namespaces, refusals, layout, generatedClients, gateway, applicationGroups,
     ...(correctedSources ? {sourceCorrections: correctedSources.provenance} : {})};
 }
 
@@ -433,6 +536,8 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
   const inspection = inspectDirectOperation(expected[0]!.contract), input = inspection.source;
   const inputs = new Set<SchemaInput>([input]);
   for (const projection of projections.values()) inputs.add(inspectDirectOperation(inspectComponentRecordProjection(projection).companion).source);
+  for (const operation of expected) if (operation.responseBranches) for (const branch of inspectComponentResponseBranches(operation.responseBranches, operation.contract).errors)
+    inputs.add(inspectDirectOperation(branch.contract).source);
   const resources = new Map<string, {input: SchemaInput; resource: SchemaInput['resources'][number]}>();
   for (const source of inputs) {
     // @constraints Local symlink aliases still require explicit consumer configuration; HTTP aliases are recorded offline.
@@ -508,8 +613,13 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     ...(namespaceLocations.length ? {namespaceLocations} : {}),
     ...(projections.size ? {recordSources: expected.filter(item => item.responseProjection).map(item => ({selector: item.contract.selector,
       source: copied.get(inspectDirectOperation(inspectComponentRecordProjection(item.responseProjection!).companion).source.root.uri)!}))} : {}),
-    ...((config.standardLibraries?.length || config.recordProjections?.some(item => item.standardLibraries?.length))
-      ? {standardLibraries: [...new Set([...(config.standardLibraries ?? []), ...(config.recordProjections ?? []).flatMap(item => item.standardLibraries ?? [])])].sort()} : {})};
+    ...(native.responseBranches.size ? {branchSources: expected.flatMap(item => item.responseBranches
+      ? inspectComponentResponseBranches(item.responseBranches, item.contract).errors.map(branch => ({selector: item.contract.selector, branch: branch.id,
+        source: copied.get(inspectDirectOperation(branch.contract).source.root.uri)!})) : [])} : {}),
+    ...((config.standardLibraries?.length || config.recordProjections?.some(item => item.standardLibraries?.length)
+      || config.responseBranches?.some(item => item.branches.some(branch => branch.standardLibraries?.length)))
+      ? {standardLibraries: [...new Set([...(config.standardLibraries ?? []), ...(config.recordProjections ?? []).flatMap(item => item.standardLibraries ?? []),
+        ...(config.responseBranches ?? []).flatMap(item => item.branches.flatMap(branch => branch.standardLibraries ?? []))])].sort()} : {})};
   const relativeFile = (file: string) => path.relative(clientDir, file).replaceAll('\\', '/') || '.';
   const logical = (uri: string) => new URL(uri).protocol === 'file:' ? relativeFile(fileURLToPath(uri)) : uri;
   fs.writeFileSync(path.join(clientDir, 'source-resources.json'), JSON.stringify({version: 'checked-source-resources-v2', resources: sourceRecords,
@@ -520,6 +630,7 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
       ...(component.sourceUri === undefined ? {} : {sourceUri: component.sourceUri}),
       ...(component.namespaceLocations ? {namespaceLocations: component.namespaceLocations.map(location => ({...location, location: logical(location.location)}))} : {}),
       ...(component.recordSources ? {recordSources: component.recordSources.map(record => ({...record, source: relativeFile(record.source)}))} : {}),
+      ...(component.branchSources ? {branchSources: component.branchSources.map(branch => ({...branch, source: relativeFile(branch.source)}))} : {}),
       ...(component.standardLibraries ? {standardLibraries: component.standardLibraries} : {})}}, null, 2) + '\n');
   if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
   if (opts.test && opts.app) await generateCheckedTests({clientDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,

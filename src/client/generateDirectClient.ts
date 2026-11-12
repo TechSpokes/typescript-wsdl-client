@@ -12,6 +12,8 @@ import type {ReconstructedDirectSource, ReconstructedComponentSource, DirectCaps
 import {lowerComponentShape} from '../generation/componentShape.js';
 import type {ResolverUsage, SemanticBudget} from '../compiler/semanticBudget.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
+import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
+import {COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 
 const MAX_SOURCE_BYTES = 512 * 1024;
 const generatedArtifacts = new WeakMap<object, SemanticBudget>();
@@ -158,6 +160,8 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
     const response = lowerComponentShape(expected.contract, output, 'Response', check);
     const faults = mappings.filter(mapping => mapping.direction.kind === 'fault').map((mapping, index) => ({mapping,
       shape: lowerComponentShape(expected.contract, mapping, `Fault_${index}`, check)}));
+    const errors = expected.responseBranches ? inspectComponentResponseBranches(expected.responseBranches).errors.map((branch, index) => ({id: branch.id,
+      shape: lowerComponentShape(branch.contract, branch.mapping, `ApplicationError_${index}`, check)})) : [];
     const grouped = mappings.some(mapping => mapping.kind === 'component-mapping'
       && inspectComponentValueMapping(mapping,expected.contract).applicationGroups);
     const declarations = grouped ? [...new Set([...request.declarations,...response.declarations,...faults.flatMap(({shape})=>shape.declarations)]),
@@ -167,11 +171,14 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       ...response.declarations, `export type Response = ${response.type};`,
       ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`])];
     const soap12 = expected.contract.binding.version === '1.2';
-    const runtimeVersion = soap12 ? COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION;
+    const runtimeVersion = expected.responseBranches
+      ? soap12 ? COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION
+      : soap12 ? COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION;
     const lines = [
-      `// Checked component client; inject ${soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3'} from the package root.`,
+      `// Checked component client; inject ${expected.responseBranches ? soap12 ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4' : soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3'} from the package root.`,
       '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
       ...declarations,
+      ...errors.flatMap(({shape}, index) => [...shape.declarations, `export type ApplicationError_${index} = ${shape.type};`]),
       'export interface Usage {readonly nodes: number; readonly work: number}',
       'export interface Name {readonly namespace: string; readonly local: string}',
       ...(soap12 ? ['export interface Soap12Fault {readonly version: "1.2"; readonly code: Name; readonly subcodes: readonly Name[]; readonly reasons: readonly {readonly lang: string; readonly text: string}[]; readonly string: string; readonly node?: string; readonly role?: string}'] : []),
@@ -182,6 +189,7 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       '  readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];',
       '  readonly standardLibraries?: readonly string[];',
       '  readonly recordSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly source: string}[];',
+      ...(expected.responseBranches ? ['  readonly branchSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly branch: string; readonly source: string}[];'] : []),
       '  readonly soap: {readonly service: Name; readonly port: string; readonly endpoint?: string;',
       '    readonly allowEndpoint?: (endpoint: URL) => boolean; readonly signal?: AbortSignal; readonly timeoutMs?: number;',
       '    readonly capabilities?: readonly string[]; readonly ca?: string;',
@@ -189,12 +197,13 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       '}',
       'export interface Failure {readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
       '  readonly rule: string; readonly repair?: string; readonly phase?: "input" | "response"; readonly usage: Usage; readonly diagnostic?: import("@techspokes/typescript-wsdl-client").CheckedPayloadDiagnostic}',
-      'export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"; readonly value?: unknown; readonly admitted: false;',
+      `export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"${expected.responseBranches ? ' | "application-error"; readonly branch?: string' : ''}; readonly value?: unknown; readonly admitted: false;`,
       '  readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
       '  readonly fault?: {readonly name?: string; readonly code: Name; readonly string: string; readonly actor?: string}}',
       `export interface Runtime {readonly version: ${literal(runtimeVersion)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(runtimeVersion)}): Promise<Failure | NativeSuccess>}`,
       'type Common = {readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array};',
       'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
+      ...errors.map(({id}, index) => `  | (Common & {readonly kind: "application-error"; readonly branch: ${literal(id)}; readonly value: ApplicationError_${index}})`),
       ...faults.map(({mapping}, index) => {
         if (mapping.direction.kind !== 'fault') throw new TypeError('Native fault mapping required');
         return soap12 ? `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: Soap12Fault & {readonly name: ${literal(mapping.direction.name)}}})`
@@ -247,11 +256,33 @@ export async function writeComponentServiceClient(expected: readonly Reconstruct
     `import {createClient as operation_${index}} from './operations/${index}/client.js';`,
     `export * as Operation_${index} from './operations/${index}/client.js';`,
   ]);
-  lines.push("import type {Runtime, Options as OperationOptions} from './operations/0/client.js';",
-    "export type Options = Omit<OperationOptions, 'capsule'>;",
+  const branched = operations.some(operation => operation.responseBranches);
+  const mixed = branched && operations.some(operation => !!operation.responseBranches !== !!operations[0]!.responseBranches);
+  if (mixed) lines.push("import {types} from 'node:util';");
+  if (branched) lines.push(...operations.map((_, index) => `import type {Runtime as Runtime_${index}, Options as Options_${index}} from './operations/${index}/client.js';`));
+  lines.push(...(branched ? [
+    `export type Options = Omit<${operations.map((_, index) => `Options_${index}`).join(' & ')}, 'capsule'>;`,
+    mixed ? `export type Runtime = {${operations.map((operation, index) => `readonly ${JSON.stringify(operation.contract.selector.operation)}: Runtime_${index}`).join('; ')}};`
+      : 'export type Runtime = Runtime_0;',
+  ] : ["import type {Runtime, Options as OperationOptions} from './operations/0/client.js';", "export type Options = Omit<OperationOptions, 'capsule'>;"]),
     `export const selection = ${JSON.stringify(JSON.stringify(operations[0]!.selection))};`,
-    'export function createClient(runtime: Runtime) {', '  return Object.freeze({',
-    ...operations.map((_, index) => `    ...operation_${index}(runtime),`), '  });', '}', '');
+    ...(mixed ? [
+      '// @constraints Only branchSources is service-owned; preserve all other fields for retained runtime validation.',
+      'function retainedOptions<T extends object>(options: T): T {',
+      "  if (!options || typeof options !== 'object' || types.isProxy(options) || ![Object.prototype, null].includes(Object.getPrototypeOf(options) as object | null)) return options;",
+      '  const descriptors = Object.getOwnPropertyDescriptors(options);',
+      "  if (Reflect.ownKeys(descriptors).some(key => typeof key !== 'string' || !Object.hasOwn(descriptors[key]!, 'value'))) return options;",
+      '  delete descriptors.branchSources;',
+      '  return Object.create(Object.getPrototypeOf(options), descriptors) as T;',
+      '}',
+    ] : []),
+    'export function createClient(runtime: Runtime) {',
+    ...(mixed ? operations.flatMap((operation, index) => operation.responseBranches ? []
+      : [`  const retained_${index} = operation_${index}(runtime[${JSON.stringify(operation.contract.selector.operation)}]);`]) : []),
+    '  return Object.freeze({',
+    ...operations.map((operation, index) => mixed && !operation.responseBranches
+      ? `    [${JSON.stringify(operation.contract.selector.operation)}]: (input: Parameters<typeof retained_${index}[${JSON.stringify(operation.contract.selector.operation)}]>[0], options: Options & {readonly capsule: Uint8Array}) => retained_${index}[${JSON.stringify(operation.contract.selector.operation)}](input, retainedOptions(options)),`
+      : `    ...operation_${index}(${mixed ? `runtime[${JSON.stringify(operation.contract.selector.operation)}]` : 'runtime'}),`), '  });', '}', '');
   for (const [index, operation] of operations.entries()) {
     const dir = path.join(directory, 'operations', String(index));
     mkdirSync(dir, {recursive: true}); writeDirectClient(path.join(dir, 'client.ts'), generated[index]!);

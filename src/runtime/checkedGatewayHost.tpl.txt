@@ -18,7 +18,7 @@ export interface CheckedGatewayConfig {
   readonly sourceUri?: string;
   readonly namespaceLocations?: Options['namespaceLocations'];
   readonly standardLibraries?: Options['standardLibraries'];
-  readonly recordSources?: Options['recordSources'];
+  readonly recordSources?: Options['recordSources'];__BRANCH_CONFIG__
   readonly caFile?: string;
   readonly host?: string;
   readonly port?: number;
@@ -65,7 +65,7 @@ function generatedSources(): SourceConfig {
   const logical = (value: string): string => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)
     ? value : pathToFileURL(sourceFile(value)).href;
   const supplied = record.runtime;
-  const sourceKeys = ['localSource', 'fileRoots', 'capsuleFiles', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'recordSources', 'standardLibraries'];
+  const sourceKeys = ['localSource', 'fileRoots', 'capsuleFiles', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'recordSources', __BRANCH_KEY__'standardLibraries'];
   if (Object.keys(supplied).some(key => !sourceKeys.includes(key))) throw new Error('Generated bookkeeping may contain only source and artifact records');
   if (JSON.stringify(supplied.fileRoots) !== '["."]' || !Array.isArray(supplied.sourceResources) || !Array.isArray(supplied.sourceOrigins))
     throw new Error('Generated source permissions require the owned closed snapshots');
@@ -74,7 +74,7 @@ function generatedSources(): SourceConfig {
     sourceResources: supplied.sourceResources.map(resource => ({uri: logical(resource.uri), file: sourceFile(resource.file),
       ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})),
     ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: logical(location.location)}))} : {}),
-    ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),
+    ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),__BRANCH_GENERATED__
   };
 }
 
@@ -85,13 +85,13 @@ function generatedSources(): SourceConfig {
  */
 export async function buildServer(supplied: CheckedGatewayConfig = {}) {
   const supported = ['localSource', 'fileRoots', 'endpoint', 'allowedEndpoints', 'capsuleFiles', 'sourceResources', 'sourceOrigins',
-    'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', 'caFile', 'host', 'port', 'timeoutMs', 'limits', 'capabilities', 'signal'];
+    'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', __BRANCH_KEY__'caFile', 'host', 'port', 'timeoutMs', 'limits', 'capabilities', 'signal'];
   if (!supplied || typeof supplied !== 'object' || types.isProxy(supplied)
     || ![null, Object.prototype].includes(Object.getPrototypeOf(supplied) as object | null)
     || Reflect.ownKeys(supplied).some(key => typeof key !== 'string' || !supported.includes(key)
       || !Object.hasOwn(Object.getOwnPropertyDescriptor(supplied, key)!, 'value')))
     throw new Error('Unsupported checked gateway configuration field');
-  const advanced = ['localSource', 'sourceUri', 'namespaceLocations', 'recordSources', 'capsuleFiles'].some(key => Object.hasOwn(supplied, key));
+  const advanced = ['localSource', 'sourceUri', 'namespaceLocations', 'recordSources', __BRANCH_KEY__'capsuleFiles'].some(key => Object.hasOwn(supplied, key));
   if (advanced && ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => !Object.hasOwn(supplied, key)))
     throw new Error('Conflicting or incomplete advanced source configuration; supply localSource, fileRoots, sourceResources and sourceOrigins together');
   const config = (advanced ? {...supplied} : {...generatedSources(), ...supplied}) as SourceConfig;
@@ -109,7 +109,7 @@ export async function buildServer(supplied: CheckedGatewayConfig = {}) {
     ...(config.sourceUri === undefined ? {} : {sourceUri: config.sourceUri}),
     ...(config.namespaceLocations ? {namespaceLocations: config.namespaceLocations} : {}),
     ...(config.standardLibraries ? {standardLibraries: config.standardLibraries} : {}),
-    ...(config.recordSources ? {recordSources: config.recordSources} : {}),
+    ...(config.recordSources ? {recordSources: config.recordSources} : {}),__BRANCH_OPTIONS__
     soap: {service: selected.service, port: selected.port,
       ...(config.endpoint === undefined ? {} : {endpoint: config.endpoint}),
       ...(allowed === undefined ? {} : {allowEndpoint: (endpoint: URL) => allowed.has(endpoint.href)}),
@@ -141,7 +141,7 @@ async function start(): Promise<void> {
     ...(supplied.sourceResources === undefined ? {} : {sourceResources: supplied.sourceResources.map(resource => ({uri: uri(resource.uri),
       file: path.resolve(base, resource.file), ...(resource.canonicalUri === undefined ? {} : {canonicalUri: uri(resource.canonicalUri)})}))}),
     ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: uri(location.location)}))} : {}),
-    ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),
+    ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),__BRANCH_EXPLICIT__
     ...(supplied.caFile ? {caFile: path.resolve(base, supplied.caFile)} : {}),
     ...(supplied.capsuleFiles ? {capsuleFiles: Object.fromEntries(Object.entries(supplied.capsuleFiles).map(([name, file]) => [name, path.resolve(base, file)]))} : {}),
   };

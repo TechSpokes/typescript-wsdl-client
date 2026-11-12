@@ -13,6 +13,7 @@ import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectComponentValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
+import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
 
 interface CheckedGatewayOptions {
   /** Internal non-writing preparation; native qualification and lowering still run. */
@@ -36,7 +37,9 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   inspectReconstructedComponentSource(expected);
   const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
-  const runtime = expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3';
+  const branched = !!expected.responseBranches;
+  const runtime = branched ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4'
+    : expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
     .some(segment => !segment || !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment))) {
     throw new TypeError('Checked routePath requires literal nonempty path segments');
@@ -57,6 +60,14 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       });
   const request = schema(input, 'Request'), response = schema(output, 'Response');
   const documentation = {request: documented(request, input, 'Request'), response: documented(response, output, 'Response')};
+  const errors = expected.responseBranches ? inspectComponentResponseBranches(expected.responseBranches).errors.map((branch, index) => {
+    const role = `ApplicationError_${index}`;
+    const value = lowerComponentShape(branch.contract, branch.mapping, role, check).schema;
+    const documented = lowerCheckedDocumentation(value, expected.contract.selector, role, false, components, check);
+    const envelope = (shape: Schema): Schema => ({type: 'object', additionalProperties: false, required: ['kind', 'branch', 'value'],
+      properties: {kind: {const: 'application-error'}, branch: {const: branch.id}, value: shape}});
+    return {runtime: envelope(value), documented: envelope(documented)};
+  }) : [];
   const soap12 = expected.contract.binding.version === '1.2';
   const nameSchema = {type: 'object', additionalProperties: false, required: ['namespace', 'local'],
     properties: {namespace: {type: 'string'}, local: {type: 'string'}}};
@@ -74,8 +85,9 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     return {name: mapping.direction.name, value, documented: documented(value, mapping, role)};
   });
   const faultVariants = (documentationOnly: boolean): Schema[] => faults.map(fault => ({
-    type: 'object', additionalProperties: false, required: ['fault', 'value'],
+    type: 'object', additionalProperties: false, required: [...(branched ? ['kind'] : []), 'fault', 'value'],
     properties: {
+      ...(branched ? {kind: {const: 'soap-fault'}} : {}),
       value: documentationOnly ? fault.documented : fault.value,
       fault: {
         type: 'object', additionalProperties: false, required: ['name', 'code', 'string', ...(soap12 ? ['version', 'subcodes', 'reasons'] : [])],
@@ -87,7 +99,8 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       },
     },
   }));
-  const protocolFault = {type: 'object', additionalProperties: false, required: ['fault'], properties: {
+  const protocolFault = {type: 'object', additionalProperties: false, required: [...(branched ? ['kind'] : []), 'fault'], properties: {
+    ...(branched ? {kind: {const: 'soap-fault'}} : {}),
     fault: {type: 'object', additionalProperties: false, required: ['version', 'code', 'string', ...(soap12 ? ['subcodes', 'reasons'] : [])],
       properties: soap12 ? protocolFaultProperties : {version: {const: '1.1'}, code: nameSchema, string: {type: 'string'}, actor: {type: 'string'}}},
   }};
@@ -107,8 +120,10 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       unknownField: {const: true}, truncated: {const: true},
     }};
   const failureSchema = {type: 'object', additionalProperties: false, required: ['kind', 'rule'],
-    properties: {kind: {type: 'string'}, rule: {type: 'string'}, diagnostic: diagnosticSchema}};
-  const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault}};
+    properties: {kind: branched ? {enum: ['incompatible-artifact', 'unsupported', 'missing-authority', 'resource-limit', 'cancelled', 'inconclusive',
+      'invalid-schema', 'scalar-invalid', 'value-invalid', 'xml-invalid', 'mismatch', 'transport', 'protocol']} : {type: 'string'}, rule: {type: 'string'}, diagnostic: diagnosticSchema}};
+  const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault},
+    ...(branched ? {applicationError: {$schema: draft07, oneOf: errors.map(error => error.runtime)}} : {})};
   const doc = {
     openapi: '3.1.1', jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
     info: {title: expected.selection.service.local, version: '1.0.0'},
@@ -116,17 +131,19 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     'x-checked-model': {model: 'checked-components-v1', scope: soap12 ? 'native-component-structured-soap12' : 'native-component-structured-soap11',
       ...(expected.responseProjection
         ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
+      ...(expected.responseBranches ? {responseBranches: {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
       documentationDialect: '2020-12', runtimeDialect: 'draft-07', jsonShapeComplete: false,
       supplementalValidation: ['native-source-compatibility', 'native-xml-scalar-and-particle'], admitted: false,
       selection: {selector: expected.contract.selector, ...expected.selection}},
     paths: {[options.routePath]: {post: {operationId: expected.contract.selector.operation,
       ...(expected.responseProjection
         ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
+      ...(expected.responseBranches ? {'x-response-branches': {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
       requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
       responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
-        '502': {description: 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
-          failureSchema]}}}},
+        '502': {description: branched ? 'Validated application error, SOAP fault or refused upstream response' : 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
+          ...errors.map(error => error.documented), failureSchema]}}}},
         '499': {description: 'Cancelled request', content: {'application/json': {schema: failureSchema}}},
         '500': {description: 'Incompatible artifacts or gateway configuration', content: {'application/json': {schema: failureSchema}}}}}}},
   };
@@ -142,7 +159,7 @@ import {createClient, expectedCapsuleBase64, type Options, type Request} from ${
 
 export interface CheckedGatewayOptions { readonly clientOptions: Options }
 // @constraints JSON parsing preserves XML names such as __proto__ as ordinary own data properties.
-export const schemas = JSON.parse(${literal(JSON.stringify(schemas))}) as {request: Record<string, unknown>; response: Record<string, unknown>; fault: Record<string, unknown>};
+export const schemas = JSON.parse(${literal(JSON.stringify(schemas))}) as {request: Record<string, unknown>; response: Record<string, unknown>; fault: Record<string, unknown>${branched ? '; applicationError: Record<string, unknown>' : ''}};
 export const expectedOpenApiJson = ${literal(JSON.stringify(doc))};
 
 // @constraints Read only data properties before composing per-request cancellation.
@@ -165,7 +182,7 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
   const validateRequest = ajv.compile(schemas.request);
   const validateResponse = ajv.compile(schemas.response);
   const validateFault = ajv.compile(schemas.fault);
-  const base = dataCopy(options.clientOptions);
+${branched ? '  const validateApplicationError = ajv.compile(schemas.applicationError);\n' : ''}  const base = dataCopy(options.clientOptions);
   const soap = dataCopy(base.soap);
   fastify.post(${literal(options.routePath)}, {
     schema: {body: schemas.request},
@@ -195,10 +212,15 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
         const value = result.fault.name === undefined ? {fault} : {fault, value: result.value};` : `const fault = {...(result.fault.name === undefined ? {version: result.fault.version} : {name: result.fault.name}), code: {namespace: result.fault.code.namespace, local: result.fault.code.local},
           string: result.fault.string, ...(result.fault.actor === undefined ? {} : {actor: result.fault.actor})};
         const value = 'value' in result ? {fault, value: result.value} : {fault};`}
-        if (!validateFault(value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-fault-shape'});
+        ${branched ? "const envelope = {kind: 'soap-fault', ...value};\n        " : ''}if (!validateFault(${branched ? 'envelope' : 'value'})) return reply.code(502).send({kind: 'value-invalid', rule: 'http-fault-shape'});
+        return reply.code(502).type('application/json').serializer(value => JSON.stringify(value)).send(${branched ? 'envelope' : 'value'});
+      }
+${branched ? `      if (result.kind === 'application-error') {
+        const value = {kind: 'application-error', branch: result.branch, value: result.value};
+        if (!validateApplicationError(value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-application-error-shape'});
         return reply.code(502).type('application/json').serializer(value => JSON.stringify(value)).send(value);
       }
-      const status = result.kind === 'incompatible-artifact' || result.kind === 'missing-authority' ? 500
+` : ''}      const status = result.kind === 'incompatible-artifact' || result.kind === 'missing-authority' ? 500
         : result.kind === 'cancelled' ? 499 : result.phase === 'input' ? 400 : 502;
       return reply.code(status).send({kind: result.kind, rule: result.rule, ...(result.diagnostic ? {diagnostic: result.diagnostic} : {})});
     } finally {
@@ -252,8 +274,8 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
       paths[route] = value;
     }
   }
-  const {responseProjection: firstProjection, ...serviceModel} = documents[0]!['x-checked-model'] as Record<string, unknown>;
-  void firstProjection;
+  const {responseProjection: firstProjection, responseBranches: firstBranches, ...serviceModel} = documents[0]!['x-checked-model'] as Record<string, unknown>;
+  void firstProjection; void firstBranches;
   const componentSchemas: Record<string,unknown> = Object.create(null) as Record<string,unknown>;
   for (const document of documents) {
     const schemas = (document.components as {schemas?:Record<string,unknown>} | undefined)?.schemas ?? {};
@@ -269,6 +291,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   if (!clientImport.startsWith('.')) clientImport = './' + clientImport;
   const literal = (value: unknown) => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   const names = operations.map(operation => operation.contract.selector.operation);
+  const mixed = operations.some(operation => operation.responseBranches) && operations.some(operation => !operation.responseBranches);
   const lines = ["import type {FastifyPluginAsync} from 'fastify';", "import {types} from 'node:util';",
     `import type {Options} from ${literal(clientImport)};`,
     ...operations.map((_, index) => `import operation_${index} from './routes/${index}/plugin.js';`),
@@ -283,10 +306,11 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
     '    result[key] = descriptor.value;', '  }', '  return result;', '}',
     'const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {',
     "  const outer = data(options, ['clientOptions', 'capsules', 'prefix']);",
-    "  const clientOptions = data(outer.clientOptions, ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', 'soap']) as unknown as Options;",
+    `  const clientOptions = data(outer.clientOptions, ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', ${operations.some(operation => operation.responseBranches) ? "'branchSources', " : ''}'soap']) as unknown as Options;`,
+    ...(mixed ? ['  const {branchSources, ...retainedClientOptions} = clientOptions;', '  void branchSources;'] : []),
     `  const capsules = data(outer.capsules, ${literal(names)});`,
     ...operations.map((operation, index) => `  if (!Object.hasOwn(capsules, ${literal(operation.contract.selector.operation)})) throw new TypeError('Missing operation capsule');
-  await fastify.register(operation_${index}, {clientOptions: {...clientOptions, capsule: capsules[${literal(operation.contract.selector.operation)}] as Uint8Array}});`),
+  await fastify.register(operation_${index}, {clientOptions: {...${mixed && !operation.responseBranches ? 'retainedClientOptions' : 'clientOptions'}, capsule: capsules[${literal(operation.contract.selector.operation)}] as Uint8Array}});`),
     '};', 'export default plugin;', '',
   ];
   tick();

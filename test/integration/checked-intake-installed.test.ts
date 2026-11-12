@@ -5,6 +5,7 @@ import {qualifyLocalIntakeInstalled} from '../helpers/localIntakeInstalled.js';
 import {qualifyUrlIntakeInstalled} from '../helpers/urlIntakeInstalled.js';
 import {qualifyCorrectedIntakeInstalled} from '../helpers/correctedIntakeInstalled.js';
 import {qualifyScopedMaintenanceInstalled} from '../helpers/scopedMaintenanceInstalled.js';
+import {qualifyResponseBranchesInstalled} from '../helpers/responseBranchesInstalled.js';
 
 let tooling: InstalledIntakeTooling;
 beforeAll(async () => {tooling = await installIntakeTooling();}, 480_000);
@@ -18,3 +19,5 @@ it('installs completed-wrapper recipes and preserves corrected SOAP fields witho
   context => qualifyCorrectedIntakeInstalled(tooling, context.signal), 1_200_000);
 it('authors scoped type corrections and executes relocated installed gateways with safe diagnostics',
   context => qualifyScopedMaintenanceInstalled(tooling, context.signal), 1_200_000);
+it('executes independently pinned response branches through relocated installed SOAP gateways',
+  context => qualifyResponseBranchesInstalled(tooling, context.signal), 1_200_000);

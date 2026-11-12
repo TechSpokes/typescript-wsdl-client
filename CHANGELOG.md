@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-12
+
+- feat(checked): validate independently pinned application-error response branches with typed HTTP 502 outcomes.
+
 ## [1.5.0] - 2026-11-12
 
 - feat(checked): expose scoped redacted failure diagnostics and trusted original correction targets.

@@ -1,8 +1,10 @@
 import {types} from 'node:util';
 import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
-import {directClientRuntime, componentClientRuntime, componentSoap11ClientRuntime, componentSoap12ClientRuntime} from './directClientRuntime.js';
+import {directClientRuntime, componentClientRuntime, componentSoap11ClientRuntime, componentSoap12ClientRuntime,
+  componentSoap11BranchClientRuntime, componentSoap12BranchClientRuntime} from './directClientRuntime.js';
 import type {ComponentClientOptions, ComponentClientResult} from './directClientRuntime.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION,
+  COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 
 interface Name { readonly namespace: string; readonly local: string }
 interface Usage { readonly nodes: number; readonly work: number }
@@ -40,6 +42,13 @@ type ComponentOptions = Omit<Options, 'soap'> & {
   readonly recordSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly source: string}[];
   readonly soap: Omit<Options['soap'], 'endpoint' | 'allowEndpoint'> & {readonly ca?: string; readonly endpoint?: string; readonly allowEndpoint?: (endpoint: URL) => boolean};
 };
+type ComponentBranchOptions = ComponentOptions & {
+  readonly branchSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly branch: string; readonly source: string}[];
+};
+type ProtocolVersion = typeof COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION
+  | typeof COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION;
+type ProtocolOptions<V extends ProtocolVersion> = V extends typeof COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION
+  ? ComponentBranchOptions : ComponentOptions;
 
 function dataOptions(options: unknown, allowed: readonly string[]): boolean {
   return !!options && typeof options === 'object' && !types.isProxy(options)
@@ -88,15 +97,16 @@ export const checkedComponentRuntimeV1: Readonly<{
   },
 });
 
-function checkedProtocolRuntime<V extends typeof COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION, R>(
+function checkedProtocolRuntime<V extends ProtocolVersion, R>(
   runtime: {version: V; execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => Promise<R>},
 ) {
   return Object.freeze({
     version: runtime.version,
-    async execute(expectedBase64: string, input: unknown, options: ComponentOptions, version: V): Promise<Failure | R> {
+    async execute(expectedBase64: string, input: unknown, options: ProtocolOptions<V>, version: V): Promise<Failure | R> {
       if (version !== runtime.version) return Object.freeze({kind: 'incompatible-artifact',
         rule: 'generated-runtime-version', repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({nodes: 0, work: 0})});
-      if (!dataOptions(options, ['localSource', 'fileRoots', 'capsule', 'soap', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources'])) {
+      if (!dataOptions(options, ['localSource', 'fileRoots', 'capsule', 'soap', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources',
+        ...(runtime.version === COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION || runtime.version === COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION ? ['branchSources'] : [])])) {
         return Object.freeze({kind: 'unsupported', rule: 'data-only checked component options required', usage: Object.freeze({nodes: 0, work: 0})});
       }
       return runtime.execute(expectedBase64, input, options);
@@ -119,3 +129,14 @@ export const checkedComponentRuntimeV2: Readonly<{
  * @returns Native-validated values, SOAP 1.1 protocol faults with their original bytes, or explicit refusal.
  */
 export const checkedComponentRuntimeV3 = checkedProtocolRuntime(componentSoap11ClientRuntime);
+
+/** Opt-in SOAP 1.1 binding with independently validated application-error outcomes.
+ * @since 1.6.0
+ * @constraints Existing bindings never reinterpret this capsule or outcome profile.
+ */
+export const checkedComponentRuntimeV4 = checkedProtocolRuntime(componentSoap11BranchClientRuntime);
+
+/** Opt-in SOAP 1.2 binding with the same separately versioned branch outcome contract.
+ * @since 1.6.0
+ */
+export const checkedComponentRuntimeV5 = checkedProtocolRuntime(componentSoap12BranchClientRuntime);
