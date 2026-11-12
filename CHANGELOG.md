@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-12
+
+- feat(checked): expose scoped redacted failure diagnostics and trusted original correction targets.
+- feat(checked): guard declared element and attribute type corrections with original digests and expected types.
+- docs(research): investigate alternate companion response branches without enabling a new runtime contract.
+
 ## [1.4.1] - 2026-11-11
 
 - fix(openapi): emit composable checked documentation with scoped schema references.

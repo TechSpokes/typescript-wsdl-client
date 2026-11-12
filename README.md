@@ -9,6 +9,10 @@ Turn legacy WSDL/SOAP services into typed TypeScript clients and optional REST A
 
 Created from production integration work at [TechSpokes](https://www.techspokes.com); built for teams modernizing real enterprise SOAP integrations.
 
+## Upgrading to 1.5.0
+
+Version 1.5.0 adds scoped, value-redacted checked payload diagnostics and explicit digest-pinned declared-type corrections. Trusted local inspection can supply original correction targets; changed effective contracts need fresh qualification and matched artifact regeneration. Read the [1.4.x migration guidance](docs/migration.md#from-14x-to-150).
+
 ## Upgrading to 1.4.0
 
 Version 1.4.0 adds explicit JSON source corrections, offline SOAP response inspection, and checked SOAP 1.1 protocol faults without invented application values. Existing runtime bindings remain available; regenerate matched SOAP 1.1 artifacts to adopt the additive V3 binding. Read the [1.3.x migration guidance](docs/migration.md#from-13x-to-140).
@@ -257,6 +261,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
+| [1.5.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.5.0.md) | Scoped diagnostics and explicit declared-type corrections |
 | [1.2.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, consumer compatibility and bounded RPC qualification |
 | [1.4.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.1.md) | Composable checked OpenAPI documentation |
 | [1.4.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.0.md) | Contract corrections, offline inspection and SOAP 1.1 protocol faults |

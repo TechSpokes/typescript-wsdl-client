@@ -14,6 +14,7 @@ import type {StandardSchemaElementDeclaration} from './standardSchemaComponents.
 import {namespaceAllows} from './wildcardAlgebra.js';
 import type {NamespaceConstraint} from './wildcardAlgebra.js';
 import {directDataOwnership} from './directExecutionPolicy.js';
+import {createPayloadDiagnostic, diagnosticName} from './payloadDiagnostics.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
 import {isXmlNCName, syntaxElements} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
@@ -293,7 +294,18 @@ export function decodeComponentRecordXml(outer: DirectOperationContract, project
     return result.kind === 'resource-limit' && !('rule' in result) ? failure('resource-limit', 'record-projection-budget') : result;
   } catch (error) {
     if (budget.exhausted()) return failure('resource-limit', 'record-projection-budget');
-    if (error instanceof ScopeStop) return failure(error.kind, error.rule);
+    if (error instanceof ScopeStop) {
+      if (error.kind !== 'mismatch' || 'parts' in outer.output) return failure(error.kind, error.rule);
+      const declaration = outer.output.element;
+      // @constraints Native metadata lookups consume the same budget and retain its terminal resource result.
+      const diagnosed = budget.guard(() => {
+        const diagnostic = createPayloadDiagnostic(context, declaration,
+          '/' + diagnosticName(declaration.name) + '/[unknown-field]', {unknownField: true});
+        return Object.freeze({...failure(error.kind, error.rule), diagnostic});
+      });
+      return diagnosed.kind === 'resource-limit' && !('rule' in diagnosed)
+        ? failure('resource-limit', 'record-projection-budget') : diagnosed;
+    }
     throw error;
   }
 }

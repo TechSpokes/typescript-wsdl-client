@@ -1,4 +1,6 @@
 import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
+import {createPayloadDiagnostic, diagnosticName} from './payloadDiagnostics.js';
+import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
 import {types} from 'node:util';
 /** Internal direct value chain. No XML encoding, transport or runtime admission. */
 import {checkSemanticBudget} from './semanticBudget.js';
@@ -73,6 +75,7 @@ export interface ProjectionExpandedValue {
 export interface DirectValueFailure {
   readonly kind: 'scalar-invalid' | 'value-invalid' | 'unsupported' | 'cancelled' | 'resource-limit';
   readonly rule: string; readonly schemaPath?: string; readonly payloadPath?: string; readonly usage: ResolverUsage;
+  readonly diagnostic?: CheckedPayloadDiagnostic;
 }
 type Options = Readonly<{signal?: AbortSignal; maxText?: number; maxItems?: number}>;
 const mappings = new WeakMap<object, DirectOperationContract>();
@@ -112,7 +115,8 @@ export function inspectDirectExpandedValue(value: unknown, contract: DirectOpera
   return authentic(expansions, value, contract, 'expansion');
 }
 class Stop extends Error {
-  constructor(readonly kind: DirectValueFailure['kind'], readonly rule: string, readonly schemaPath?: string, readonly payloadPath?: string) {super(rule);}
+  constructor(readonly kind: DirectValueFailure['kind'], readonly rule: string, readonly schemaPath?: string, readonly payloadPath?: string,
+    readonly diagnostic?: CheckedPayloadDiagnostic) {super(rule);}
 }
 interface Session {budget: SemanticBudget; check(): void; publish<T extends object>(value: T): Readonly<T> & {usage: ResolverUsage}}
 function run<T>(contract: DirectOperationContract, options: Options, work: (s: Session) => T): T | DirectValueFailure {
@@ -136,7 +140,7 @@ function runContext<T>(context: SemanticContext, options: Options, work: (s: Ses
     if (budget.exhausted()) return {kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()};
     if (error instanceof DataOwnershipLimitError) return {kind: 'resource-limit', rule: error.message, usage: budget.usage()};
     if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, schemaPath: error.schemaPath,
-      payloadPath: error.payloadPath, usage: Object.freeze({...budget.usage()})});
+      payloadPath: error.payloadPath, ...(error.diagnostic ? {diagnostic: error.diagnostic} : {}), usage: Object.freeze({...budget.usage()})});
     if (error instanceof ApplicationGroupValueError) return Object.freeze({kind: 'value-invalid', rule: error.message, usage: Object.freeze({...budget.usage()})});
     throw error;
   }
@@ -229,8 +233,9 @@ export function inspectComponentValueMapping(value: unknown, contract: DirectOpe
 }
 function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): DirectAssessedScalar {
   const {budget, check} = s;
-  const fail = (_owner: DirectScalarDuty, rule: string): never => {throw new Stop('scalar-invalid', rule, duty.schemaPath, duty.payloadPath);};
-  const unavailable = (): never => {throw new Stop('unsupported', 'direct-datatype-prerequisite', duty.schemaPath, duty.payloadPath);};
+  const diagnostic = () => createPayloadDiagnostic(context, duty.declaration, duty.knownLocation ?? '/' + diagnosticName(duty.declaration.name), {builtin: duty.builtin});
+  const fail = (_owner: DirectScalarDuty, rule: string): never => {throw new Stop('scalar-invalid', rule, duty.schemaPath, duty.payloadPath, diagnostic());};
+  const unavailable = (): never => {throw new Stop('unsupported', 'direct-datatype-prerequisite', duty.schemaPath, duty.payloadPath, diagnostic());};
 
   // This is a neutral lexical operand, not a schema LexicalValue or checked receipt.
   const core = datatypeValues<DirectScalarDuty>({
@@ -245,11 +250,11 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
     const assessed = assessProjectionScalarOperand(context, duty.declaration, lexical, check);
     check();
     if (assessed.kind !== 'projection-scalar-operand') throw new Stop(assessed.kind === 'scalar-invalid' ? 'scalar-invalid' : assessed.kind === 'resource-limit' ? 'resource-limit' : 'unsupported',
-      'rule' in assessed ? assessed.rule : 'request-budget', duty.schemaPath, duty.payloadPath);
+      'rule' in assessed ? assessed.rule : 'request-budget', duty.schemaPath, duty.payloadPath, diagnostic());
     result = assessed.operand;
   }
   if (duty.fixedCanonical !== undefined && budget.compareText(result.canonical, duty.fixedCanonical) !== 0)
-    throw new Stop('scalar-invalid', duty.declaration.kind === 'attribute' ? 'fixed-attribute-value' : 'fixed-element-value', duty.schemaPath, duty.payloadPath);
+    throw new Stop('scalar-invalid', duty.declaration.kind === 'attribute' ? 'fixed-attribute-value' : 'fixed-element-value', duty.schemaPath, duty.payloadPath, diagnostic());
 
   const normalized = result.normalized ?? normalizeWhitespace(duty.lexical, whitespaceFor(duty.builtin.local));
   const present = (operand: DatatypeOperand, builtin: ExpandedName, lexical: string, retainLexical?: true): DirectPrimitive => {
@@ -920,13 +925,13 @@ export function expandProjectionValue(context: SemanticContext, root: ElementNod
     const structural = matchDirectProjection(context, root, payload, options);
     if (structural.kind !== 'projection-match') {
       if (structural.kind === 'mismatch') {
-        if (structural.rule === 'ordered-particle-language') throw new Stop('value-invalid', structural.rule, structural.schemaPath, structural.payloadPath);
+        if (structural.rule === 'ordered-particle-language') throw new Stop('value-invalid', structural.rule, structural.schemaPath, structural.payloadPath, structural.diagnostic);
         throw new Error('Internal projection expansion violated its source mapping');
       }
-      throw new Stop(structural.kind, structural.rule, structural.schemaPath, structural.payloadPath);
+      throw new Stop(structural.kind, structural.rule, structural.schemaPath, structural.payloadPath, structural.diagnostic);
     }
     const validated = assessProjectionScalars(context, structural, options, mapping);
-    if (validated.kind !== 'projection-value') throw new Stop(validated.kind, validated.rule, validated.schemaPath, validated.payloadPath);
+    if (validated.kind !== 'projection-value') throw new Stop(validated.kind, validated.rule, validated.schemaPath, validated.payloadPath, validated.diagnostic);
     const expanded = s.publish({kind: 'projection-expanded' as const, provenance: 'generated-direct-value' as const, admitted: false as const, payload, validated});
     projectionExpansions.set(expanded, context);
     return expanded;
@@ -943,7 +948,7 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
     const structural = matchDirectOperation(contract, mapping.direction, payload, options);
     if (structural.kind !== 'structural-match') {
       if (structural.kind === 'mismatch') throw new Error('Internal direct expansion violated its source mapping');
-      throw new Stop(structural.kind, structural.rule, structural.schemaPath, structural.payloadPath);
+      throw new Stop(structural.kind, structural.rule, structural.schemaPath, structural.payloadPath, structural.diagnostic);
     }
     const validated = assessed(contract, structural, mapping, s);
     const expanded = s.publish({kind: 'direct-expanded' as const, provenance: 'generated-direct-value' as const, admitted: false as const, payload, validated});

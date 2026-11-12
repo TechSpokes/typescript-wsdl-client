@@ -6,6 +6,18 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.4.x to 1.5.0
+
+Checked payload failures gain optional `checked-payload-diagnostic-v1` metadata with opaque source/universe identities, source digests, declaration and datatype names, and bounded locations. Existing failure kinds, HTTP statuses and strict validation remain the same. Regenerate matched clients, capsules, gateways and OpenAPI to obtain the new generated diagnostic declarations and serialized fields; existing runtime bindings remain supported.
+
+Offline inspection retains `checked-response-inspection-v1` and adds optional metadata. Request `includeCorrectionTargets: true` only in a trusted local authoring workflow: its original selectors contain source locators that must not be forwarded to HTTP clients or logs. An unavailable target requires an explicit authoring decision; an effective ordinal path is not an original selector.
+
+Use `set-declared-type` in the existing pinned recipe only for a supported authored element or attribute `@type`. Preserve the original URI/digest and guard the expected original expanded type name, then qualify the changed effective sources and regenerate all matching artifacts. A shared declaration changes every use in its project, so review those uses before adoption.
+
+Changing `xs:anyURI` to `xs:string` admits embed text and removes URI validation. Changing `xs:dateTime` to string also accepts nonsense; an existing constrained string type can enforce a layout without proving calendar validity or normalizing timezones. No observed response weakens validation automatically or refreshes source pins.
+
+Alternate companion response branches remain a design investigation. This release does not add an application-error branch API or reinterpret an error payload as record data.
+
 ## From 1.4.0 to 1.4.1
 
 Regenerate checked specifications to compose them with `composeOpenApiDocuments`. Ungrouped documentation uses operation- and role-scoped components; configured grouped names remain stable. Archived 1.4.0 specifications containing embedded resources remain explicitly refused by composition.

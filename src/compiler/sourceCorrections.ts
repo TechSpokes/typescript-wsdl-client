@@ -2,13 +2,14 @@
 import {createHash} from "node:crypto";
 import {copyOriginalSchemaResource} from "../loader/schemaInput.js";
 import type {SchemaInput} from "../loader/schemaInput.js";
-import {decodeMetadataXml, isXmlNCName, syntaxElements, XSD_NAMESPACE} from "../loader/orderedSyntax.js";
-import type {SyntaxElement} from "../loader/orderedSyntax.js";
+import {decodeMetadataXml, isXmlNCName, syntaxAttribute, syntaxElements, XSD_NAMESPACE} from "../loader/orderedSyntax.js";
+import type {SyntaxElement, SyntaxSource} from "../loader/orderedSyntax.js";
 import type {OfflineSchemaResource} from "../loader/schemaResources.js";
 import {DEFAULT_GRAPH_NODES, GraphError, isBuiltinType} from "./canonicalGraph.js";
 import type {CanonicalGraph, GraphNode, NodeId, Identity} from "./canonicalGraph.js";
 import {buildCanonicalGraph} from "./buildCanonicalGraph.js";
 import {namespaceAllows, wildcardNamespaces} from './wildcardAlgebra.js';
+import {normalizeWhitespace} from '../util/xmlWhitespace.js';
 
 const RECIPE_VERSION = 1 as const;
 const MAX_RECIPE_BYTES = 256 * 1024;
@@ -39,6 +40,7 @@ export type SourceCorrectionInventoryNode = Readonly<{
   parent?: NodeId;
   chameleon: boolean;
   ambiguousContext: boolean;
+  declaredType?: Readonly<{namespace: string; local: string}>;
 }>;
 export type SourceCorrectionInventory = Readonly<{
   version: 1;
@@ -54,10 +56,12 @@ type InsertElement = Readonly<
   {kind: "reference"; target: SourceCorrectionSelector; min: string; max: string | "unbounded"}
 >;
 type InsertCorrection = Readonly<{kind: "insert-element"; target: SourceCorrectionSelector; position: InsertPosition; element: InsertElement}>;
-type Correction = OccursCorrection | WildcardCorrection | InsertCorrection;
+type DeclaredTypeCorrection = Readonly<{kind: "set-declared-type"; target: SourceCorrectionSelector;
+  expectedType: Readonly<{namespace: string; local: string}>; type: Readonly<{namespace: string; local: string}>}>;
+type Correction = OccursCorrection | WildcardCorrection | InsertCorrection | DeclaredTypeCorrection;
 type Recipe = Readonly<{version: 1; resources: readonly Readonly<{uri: string; digest: string}>[]; corrections: readonly Correction[]}>;
 type SourceRecord = {uri: string; digest: string; bytes: Uint8Array; aliases: Set<string>};
-type TargetRecord = {node: GraphNode; syntax: SyntaxElement; ambiguousContext: boolean};
+type TargetRecord = {node: GraphNode; syntax: SyntaxElement; ambiguousContext: boolean; universes: CanonicalGraph[]};
 type Patch = {start: number; end: number; text: string; label: string};
 type LexicalBudget = {remaining: number};
 
@@ -71,7 +75,29 @@ export type PreparedCorrectedSourceInputs = Readonly<{
   inventory: SourceCorrectionInventory;
   resources: ReadonlyMap<string, OfflineSchemaResource>;
   provenance: SourceCorrectionProvenance;
+  originalTargets: readonly Readonly<{uri: string; effectiveDigest: string; effectiveStart: number;
+    namespace: string; kind: GraphNode['kind']; ambiguous: boolean; target: SourceCorrectionSelector;
+    declaredType?: Readonly<{namespace: string; local: string}>}>[];
 }>;
+
+/** Recover an original target from the actual edit spans, never an effective ordinal path.
+ * @param prepared Native correction result retaining the original pinned inventory and edit correspondence.
+ * @param source Effective declaration source obtained from its native semantic owner.
+ * @param namespace Effective schema interpretation namespace.
+ * @param kind Actual declaration kind.
+ * @returns A pinned original selector, or an explicit reason when correspondence is unavailable or ambiguous.
+ * @constraints This trusted local authoring result contains source locators and must not enter HTTP diagnostics.
+ */
+export function recoverOriginalSourceCorrectionTarget(prepared: PreparedCorrectedSourceInputs, source: SyntaxSource,
+  namespace: string, kind: GraphNode['kind']): Readonly<{kind: 'available'; target: SourceCorrectionSelector;
+    declaredType?: Readonly<{namespace: string; local: string}>} |
+    {kind: 'unavailable'; reason: 'original-target-not-established' | 'ambiguous-original-target'}> {
+  const matches = prepared.originalTargets.filter(item => item.uri === source.uri && item.effectiveDigest === source.digest
+    && item.effectiveStart === source.start.offset && item.namespace === namespace && item.kind === kind);
+  if (matches.length !== 1 || matches[0]!.ambiguous) return {kind: 'unavailable',
+    reason: matches.length > 1 || matches[0]?.ambiguous ? 'ambiguous-original-target' : 'original-target-not-established'};
+  return {kind: 'available', target: matches[0]!.target, ...(matches[0]!.declaredType ? {declaredType: matches[0]!.declaredType} : {})};
+}
 
 export class SourceCorrectionError extends Error {
   constructor(readonly category: "invalid-recipe" | "stale-source" | "ambiguous-target" | "unsupported-target" | "resource-limit" | "cancelled", message: string) {
@@ -156,6 +182,12 @@ function occurrence(value: unknown, label: string, allowUnbounded: boolean): str
 function checkOccurs(min: string, max: string, label: string): void {
   if (max !== "unbounded" && (min.length > max.length || (min.length === max.length && min > max))) fail("invalid-recipe", `${label} minimum exceeds maximum`);
 }
+function expandedType(value: unknown, label: string): Readonly<{namespace: string; local: string}> {
+  const item = record(value, ["namespace", "local"], label);
+  const namespace = text(item.namespace, `${label}.namespace`, true), local = text(item.local, `${label}.local`);
+  if (!isXmlNCName(local)) fail("invalid-recipe", `${label}.local must be an XML NCName`);
+  return Object.freeze({namespace, local});
+}
 function parseRecipe(value: unknown, signal?: AbortSignal): Recipe {
   boundedJsonSize(value, signal);
   const root = record(value, ["version", "resources", "corrections"], "recipe");
@@ -170,6 +202,12 @@ function parseRecipe(value: unknown, signal?: AbortSignal): Recipe {
     checkAbort(signal);
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) fail("invalid-recipe", `corrections[${index}] must be an object`);
     const kind = (raw as Record<string, unknown>).kind;
+    if (kind === "set-declared-type") {
+      const item = record(raw, ["kind", "target", "expectedType", "type"], `corrections[${index}]`);
+      return Object.freeze({kind, target: selector(item.target, `corrections[${index}].target`),
+        expectedType: expandedType(item.expectedType, `corrections[${index}].expectedType`),
+        type: expandedType(item.type, `corrections[${index}].type`)});
+    }
     if (kind === "set-occurs") {
       const item = record(raw, ["kind", "target", "min", "max"], `corrections[${index}]`);
       const min = occurrence(item.min, `corrections[${index}].min`, false), max = occurrence(item.max, `corrections[${index}].max`, true);
@@ -305,9 +343,10 @@ function targetMap(inputs: readonly SchemaInput[], signal?: AbortSignal): {inven
         if (old.node.context.effectiveNamespace !== node.context.effectiveNamespace || old.node.context.source.path !== source.path) {
           fail("ambiguous-target", "One canonical identity has conflicting schema contexts");
         }
+        old.universes.push(graph);
         continue;
       }
-      targets.set(key, {node, syntax, ambiguousContext: false});
+      targets.set(key, {node, syntax, ambiguousContext: false, universes: [graph]});
     }
   }
   for (const target of targets.values()) {
@@ -337,7 +376,9 @@ function targetMap(inputs: readonly SchemaInput[], signal?: AbortSignal): {inven
       ...(nodeName(node) ? {name: nodeName(node)} : {}), syntaxName: syntax.name, uri: source.uri, digest: source.digest, path: source.path,
       start: source.start.offset, end: source.end.offset, attributes: rawAttributes, ...(node.kind === "particle" ? {occurs: node.occurs} : {}),
       ...(wildcard ? {wildcard} : {}), ...(children ? {children} : {}), ...(parents.has(node.id) ? {parent: parents.get(node.id)} : {}),
-      chameleon: Boolean(node.context.chameleon || contextChameleon.get(sourceKey(source.uri, source.digest, source.path))), ambiguousContext});
+      chameleon: Boolean(node.context.chameleon || contextChameleon.get(sourceKey(source.uri, source.digest, source.path))), ambiguousContext,
+      ...((node.kind === 'element' || node.kind === 'attribute') && syntaxAttribute(syntax, 'type') !== undefined && node.type.kind !== 'local'
+        ? {declaredType: node.type.name} : {})});
     nodes.push(entry);
   }
   nodes.sort((a, b) => compareText(a.uri, b.uri) || compareText(a.path, b.path) || compareText(a.id, b.id));
@@ -489,6 +530,66 @@ function validateTargetType(qnameValue: Readonly<{namespace: string; local: stri
     ? target.node.identity.kind === "global" && target.node.identity.name.namespace === qnameValue.namespace && target.node.identity.name.local === qnameValue.local : false);
   if (!exists) fail("unsupported-target", "Inserted element type must refer to an existing named type or XML Schema builtin");
 }
+/** Check a replacement in each declaring source universe and schema interpretation.
+ * @param target Original authored declaration and its independent acquired universes.
+ * @param replacement Expanded replacement type, never a payload-derived guess.
+ * @param signal Cooperative cancellation signal.
+ * @param budget Shared bounded correction work allowance.
+ * @returns Nothing when every origin permits the existing type reference.
+ * @throws SourceCorrectionError For unavailable, illegal, unimported or ambiguous types, cancellation or exhausted work.
+ * @constraints An independent companion cannot lend its types or import permissions to this declaration.
+ */
+function validateDeclaredType(target: TargetRecord, replacement: DeclaredTypeCorrection['type'], signal: AbortSignal | undefined, budget: LexicalBudget): void {
+  const charge = () => {
+    checkAbort(signal);
+    if (--budget.remaining < 0) fail('resource-limit', 'Declared-type correction exceeds its work limit');
+  };
+  if (replacement.namespace === XSD_NAMESPACE && isBuiltinType(replacement.local)) {
+    if (target.node.kind === 'attribute' && replacement.local === 'anyType') fail('unsupported-target', 'Attribute declared type must be simple');
+    return;
+  }
+  for (const graph of target.universes) {
+    charge();
+    const matches = graph.nodes.filter(node => {
+      charge();
+      return (node.kind === 'simpleType' || node.kind === 'complexType') && node.identity.kind === 'global'
+        && node.identity.name.namespace === replacement.namespace && node.identity.name.local === replacement.local;
+    });
+    if (matches.length !== 1) fail(matches.length > 1 ? 'ambiguous-target' : 'unsupported-target', 'Replacement type must be an existing named type in the target source universe');
+    if (target.node.kind === 'attribute' && matches[0]!.kind !== 'simpleType') fail('unsupported-target', 'Attribute declared type must be simple');
+    const imports = new Map<string, Set<string>>();
+    const importSyntax = new Map<string, SyntaxElement>();
+    for (const retained of graph.schemaRetained) {
+      charge();
+      if (retained.syntax.name.namespace === XSD_NAMESPACE && retained.syntax.name.local === 'import') {
+        const source = retained.syntax.source;
+        importSyntax.set(sourceKey(source.uri, source.digest, source.path), retained.syntax);
+      }
+    }
+    for (const edge of graph.loading.edges) {
+      charge();
+      if (edge.kind !== 'import') continue;
+      const syntax = importSyntax.get(sourceKey(edge.source.uri, edge.source.digest, edge.source.path));
+      if (!syntax) fail('unsupported-target', 'Replacement type import prerequisite is unavailable');
+      const namespaces = imports.get(edge.from) ?? new Set<string>();
+      namespaces.add(normalizeWhitespace(syntaxAttribute(syntax, 'namespace') ?? '', 'collapse'));
+      imports.set(edge.from, namespaces);
+    }
+    const source = target.node.context.source;
+    const origins = (graph.origins[target.node.id] ?? []).filter(origin => {
+      charge();
+      const actual = origin.context.source;
+      return sourceKey(actual.uri, actual.digest, actual.path) === sourceKey(source.uri, source.digest, source.path);
+    });
+    if (!origins.length) fail('unsupported-target', 'Replacement type declaring interpretation is unavailable');
+    for (const origin of origins) {
+      charge();
+      if (replacement.namespace !== origin.context.effectiveNamespace && !imports.get(origin.interpretation)?.has(replacement.namespace)) {
+        fail('unsupported-target', 'Replacement type namespace is not imported by the declaring schema');
+      }
+    }
+  }
+}
 function decodedResource(source: SourceRecord, cache: Map<string, string>): string {
   const prior = cache.get(source.uri);
   if (prior !== undefined) return prior;
@@ -499,6 +600,28 @@ function decodedResource(source: SourceRecord, cache: Map<string, string>): stri
 function validateCorrection(correction: Correction, targets: Map<string, TargetRecord>, sources: Map<string, SourceRecord>, decoded: Map<string, string>, claimed: Set<string>, insertSlots: Set<string>, signal?: AbortSignal, scanBudget: LexicalBudget = {remaining: MAX_LEXICAL_SCAN}): {patches: Map<string, Patch[]>; provenance: {kind: Correction["kind"]; target: SourceCorrectionSelector}} {
   const target = targetFor(correction.target, targets), source = checkSelectorResource(correction.target, sources), node = target.node;
   checkAbort(signal);
+  if (correction.kind === 'set-declared-type') {
+    if ((node.kind !== 'element' && node.kind !== 'attribute') || syntaxAttribute(target.syntax, 'ref') !== undefined
+      || syntaxAttribute(target.syntax, 'type') === undefined || node.type.kind === 'local'
+      || syntaxElements(target.syntax, XSD_NAMESPACE).some(child => child.name.local === 'simpleType' || child.name.local === 'complexType')) {
+      fail('unsupported-target', 'set-declared-type requires an authored element or attribute declaration with an existing @type; inline and ref forms refuse');
+    }
+    if (node.type.name.namespace !== correction.expectedType.namespace || node.type.name.local !== correction.expectedType.local) {
+      fail('stale-source', 'Declared type does not match expectedType in the original schema context');
+    }
+    validateDeclaredType(target, correction.type, signal, scanBudget);
+    if (node.context.chameleon && correction.type.namespace === '') fail('unsupported-target', 'A no-namespace replacement would be reinterpreted by chameleon adoption');
+    const claim = `${sourceKey(source.uri, source.digest, node.context.source.path)}:type`;
+    if (claimed.has(claim)) fail('invalid-recipe', 'Conflicting correction for declared type');
+    claimed.add(claim);
+    const xml = decodedResource(source, decoded), replacement = qname(correction.type.namespace, correction.type.local, node.context.namespaces, new Set());
+    const edits = updateStartTag(xml, target, {type: replacement.lexical}, signal, scanBudget);
+    if (replacement.declaration) {
+      const tag = startTag(xml, node.context.source.start.offset, signal, scanBudget);
+      edits.push({start: tag.close, end: tag.close, text: ` ${replacement.declaration}`, label: `${node.id}:attributes`});
+    }
+    return {patches: new Map([[source.uri, edits]]), provenance: {kind: correction.kind, target: correction.target}};
+  }
   if (correction.kind === "set-occurs") {
     if (node.kind !== "particle") fail("unsupported-target", "set-occurs target must be an XSD particle");
     const set = {minOccurs: correction.min, maxOccurs: correction.max};
@@ -579,9 +702,10 @@ function validateCorrection(correction: Correction, targets: Map<string, TargetR
   return {patches: new Map([[source.uri, [{start: position, end: replacementEnd ?? position, text, label: `${node.id}:insert`}]]]), provenance: {kind: correction.kind, target: correction.target}};
 }
 
-function applyPatches(original: string, patches: readonly Patch[], signal?: AbortSignal): string {
+function normalizedPatches(patches: readonly Patch[], signal?: AbortSignal): readonly Patch[] {
   const combined = new Map<string, Patch>();
   for (const patch of patches) {
+    checkAbort(signal);
     const key = `${patch.start}:${patch.end}`;
     const prior = combined.get(key);
     if (!prior) {combined.set(key, patch); continue;}
@@ -590,10 +714,12 @@ function applyPatches(original: string, patches: readonly Patch[], signal?: Abor
     }
     combined.set(key, {...prior, text: prior.text + patch.text.replace(/^\s+/, " ")});
   }
-  const sorted = [...combined.values()].sort((a, b) => a.start - b.start || a.end - b.end || compareText(a.label, b.label));
+  return [...combined.values()].sort((a, b) => a.start - b.start || a.end - b.end || compareText(a.label, b.label));
+}
+function applyPatches(original: string, patches: readonly Patch[], signal?: AbortSignal): string {
   let previousEnd = 0;
   const chunks: string[] = [];
-  for (const patch of sorted) {
+  for (const patch of patches) {
     checkAbort(signal);
     if (patch.start < previousEnd || patch.end < patch.start || patch.end > original.length) fail("invalid-recipe", "Correction source spans overlap or exceed the original resource");
     chunks.push(original.slice(previousEnd, patch.start), patch.text);
@@ -636,12 +762,14 @@ export function prepareCorrectedSourceInputs(inputs: readonly SchemaInput[], rec
     provenanceCorrections.push(result.provenance);
   }
   const resources = new Map<string, OfflineSchemaResource>(), provenanceResources: Array<{uri: string; originalDigest: string; effectiveDigest: string; changed: boolean}> = [];
+  const originalTargets: Array<PreparedCorrectedSourceInputs['originalTargets'][number]> = [];
   let effectiveBytesTotal = 0;
   let outputGrowth = 0;
   const outputLimit = Math.min(...inputs.map(input => input.limits.totalBytes)), singleLimit = Math.min(...inputs.map(input => input.limits.resourceBytes));
   for (const source of [...sources.values()].sort((a, b) => compareText(a.uri, b.uri))) {
     checkAbort(signal);
-    const edits = patches.get(source.uri) ?? [];
+    // @constraints Application and original-target correspondence consume exactly the same combined edits.
+    const edits = normalizedPatches(patches.get(source.uri) ?? [], signal);
     const originalText = edits.length ? decodedResource(source, decoded) : "";
     const updated = edits.length ? applyPatches(originalText, edits, signal) : "";
     const bytes = edits.length && updated !== originalText ? utf8Output(updated, source.bytes) : source.bytes;
@@ -651,6 +779,21 @@ export function prepareCorrectedSourceInputs(inputs: readonly SchemaInput[], rec
     outputGrowth += Math.max(0, bytes.byteLength - source.bytes.byteLength);
     if (outputGrowth > MAX_OUTPUT_GROWTH) fail("resource-limit", "Correction output growth exceeds the limit");
     const effectiveDigest = sha256(bytes), changed = effectiveDigest !== source.digest;
+    // @constraints Encoding-declaration rewriting is outside edit-span correspondence; refuse rather than guess.
+    if (!edits.length || decodeMetadataXml(bytes) === updated) for (const node of inventory.nodes) {
+      checkAbort(signal);
+      if (node.uri !== source.uri || node.digest !== source.digest) continue;
+      let effectiveStart = node.start, established = true;
+      for (const edit of edits) {
+        if (edit.end <= node.start) effectiveStart += edit.text.length - (edit.end - edit.start);
+        else if (edit.start <= node.start) established = false;
+      }
+      const native = targets.get(selectorKey({id: node.id, uri: node.uri, digest: node.digest}))?.node;
+      const declaredType = native && (native.kind === 'element' || native.kind === 'attribute') && native.type.kind !== 'local' ? native.type.name : undefined;
+      if (established) originalTargets.push(Object.freeze({uri: source.uri, effectiveDigest, effectiveStart,
+        namespace: node.namespace, kind: node.kind, ambiguous: node.ambiguousContext,
+        target: Object.freeze({id: node.id, uri: node.uri, digest: node.digest}), ...(declaredType ? {declaredType} : {})}));
+    }
     const resource = Object.freeze({bytes: new Uint8Array(bytes), digest: effectiveDigest});
     resources.set(source.uri, resource);
     for (const alias of source.aliases) if (alias !== source.uri) resources.set(alias, Object.freeze({bytes: resource.bytes, digest: resource.digest, canonicalUri: source.uri}));
@@ -665,5 +808,5 @@ export function prepareCorrectedSourceInputs(inputs: readonly SchemaInput[], rec
   }
   const provenance: SourceCorrectionProvenance = Object.freeze({version: 1, canonicalRecipeDigest: canonicalRecipeDigest(recipe),
     resources: Object.freeze(provenanceResources), corrections: Object.freeze(provenanceCorrections.map(item => Object.freeze(item)))});
-  return Object.freeze({inventory, resources, provenance});
+  return Object.freeze({inventory, resources, provenance, originalTargets: Object.freeze(originalTargets)});
 }

@@ -1,4 +1,5 @@
 import {directDataOwnership, directLimit, directLoadingLimits} from '../compiler/directExecutionPolicy.js';
+import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
 /** Private P3.7 binding. No public package entry or alternate SOAP implementation. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {DataOwnershipLimitError} from '../compiler/dataOwnership.js';
@@ -35,6 +36,7 @@ export interface DirectClientFailure {
   readonly kind: DirectCapsuleFailure['kind'] | DirectSoapFailure['kind'];
   readonly rule: string; readonly usage: ResolverUsage; readonly repair?: string;
   readonly phase?: 'input' | 'response';
+  readonly diagnostic?: CheckedPayloadDiagnostic;
 }
 export type DirectClientResult = DirectClientFailure | Readonly<{
   kind: 'soap-response'; value: DirectApplicationValue; status: number; admitted: false;
@@ -183,7 +185,10 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
       }
       if (!('decoded' in result)) {
         if (result.kind === 'soap-fault' && result.fault.version !== protocol) throw new TypeError('Protocol fault requires its generated runtime binding');
-        return result;
+        if (result.kind === 'soap-fault') return result;
+        // @constraints Native source provenance can contain endpoint secrets; only the safe diagnostic crosses the runtime boundary.
+        return Object.freeze({kind: result.kind, rule: result.rule, usage: result.usage,
+          ...(result.phase ? {phase: result.phase} : {}), ...(result.diagnostic ? {diagnostic: result.diagnostic} : {})});
       }
 
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');

@@ -33,6 +33,7 @@ The optional research workflow runs when research files change or through manual
 
 ## Investigation records
 
+- [Alternate response branches](docs/alternate-response-branches.md) separates native feasibility from proposed scoped outcomes.
 - [Joint rule investigations](docs/content-model-s06-research-handoff.md) connect attribute, wildcard, calendar and derivation work.
 - [Derivation research](docs/content-model-s06-re-01.md) records retained results and unresolved proof obligations.
 - [XML/JSON exploration](docs/v1.0-xml-json-mapping.md) retains exploratory examples and inverse limits.

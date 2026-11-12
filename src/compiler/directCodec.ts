@@ -1,4 +1,5 @@
 import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
+import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
 /** Internal, buffered, bare-root XML codec. No SOAP envelope or dispatch. */
 import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
@@ -39,6 +40,7 @@ export interface DirectCodecFailure {
   readonly source?: SyntaxSource;
   readonly schemaPath?: string;
   readonly payloadPath?: string;
+  readonly diagnostic?: CheckedPayloadDiagnostic;
   readonly usage: ResolverUsage;
 }
 export interface DirectEncodedXml {

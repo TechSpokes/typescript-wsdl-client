@@ -10,6 +10,8 @@ import type {SemanticContext} from './semanticContext.js';
 import type {ResolverUsage} from './semanticBudget.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
 import {isXmlNCName} from '../loader/orderedSyntax.js';
+import {createPayloadDiagnostic, diagnosticName, appendDiagnosticLocation} from './payloadDiagnostics.js';
+import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
 
 export type DirectDirection = Readonly<{kind: 'input' | 'output'} | {kind: 'fault'; name: string}>;
 export interface DirectScalarDuty {
@@ -21,6 +23,7 @@ export interface DirectScalarDuty {
   readonly payloadSource: SyntaxSource;
   readonly payloadPath: string;
   readonly schemaPath: string;
+  readonly knownLocation?: string;
   readonly fixedCanonical?: string;
   readonly retainLexical?: true;
   readonly list?: ProjectionScalarList;
@@ -49,7 +52,7 @@ export type ProjectionStructuralResult = Readonly<{
   occurrences: readonly DirectScalarDuty[]; usage: ResolverUsage;
 }> | Readonly<{
   kind: 'mismatch' | 'unsupported' | 'cancelled' | 'resource-limit'; rule: string;
-  schemaPath?: string; payloadPath?: string; usage: ResolverUsage;
+  schemaPath?: string; payloadPath?: string; diagnostic?: CheckedPayloadDiagnostic; usage: ResolverUsage;
 }>;
 export type ProjectionStructuralMatch = Extract<ProjectionStructuralResult, {kind: 'projection-match'}>;
 const projectionIssued = new WeakMap<object, SemanticContext>();
@@ -65,7 +68,7 @@ export type DirectStructuralResult = Readonly<{
   occurrences: readonly DirectScalarDuty[]; tree: DirectMatchedNode; usage: ResolverUsage;
 }> | Readonly<{
   kind: 'mismatch' | 'unsupported' | 'cancelled' | 'resource-limit'; rule: string;
-  schemaPath?: string; payloadPath?: string; usage: ResolverUsage;
+  schemaPath?: string; payloadPath?: string; diagnostic?: CheckedPayloadDiagnostic; usage: ResolverUsage;
 }>;
 export type DirectStructuralMatch = Extract<DirectStructuralResult, {kind: 'structural-match'}>;
 const issued = new WeakMap<object, DirectOperationContract>();
@@ -77,7 +80,7 @@ export function inspectDirectStructuralMatch(match: unknown, expectedContract: D
 }
 class Stop extends Error {
   constructor(readonly kind: 'mismatch' | 'unsupported' | 'cancelled', readonly rule: string,
-    readonly schemaPath?: string, readonly payloadPath?: string) {super(rule);}
+    readonly schemaPath?: string, readonly payloadPath?: string, readonly diagnostic?: CheckedPayloadDiagnostic) {super(rule);}
 }
 
 /**
@@ -166,7 +169,12 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         for (const child of node.children) {check(); budget.chargeWork(32); visits.push(child);}
       }
       const same = (a: ExpandedName, b: ExpandedName) => budget.compareText(a.namespace, b.namespace) === 0 && budget.compareText(a.local, b.local) === 0;
-      const mismatch = (rule: string, declaration: ElementNode, path: string): never => fail('mismatch', rule, declaration.context.source.path, path);
+      let currentLocation = '/' + diagnosticName(root.name);
+      const mismatch = (rule: string, declaration: ElementNode, path: string): never => {
+        const unknownField = ['unexpected-child', 'unknown-attribute', 'root-name', 'scalar-child', 'ordered-particle-language'].includes(rule);
+        throw new Stop('mismatch', rule, declaration.context.source.path, path,
+          createPayloadDiagnostic(context, declaration, unknownField ? appendDiagnosticLocation(currentLocation, '[unknown-field]') : currentLocation, {unknownField}));
+      };
       const attributes = (node: SyntaxElement, declaration: ElementNode, path: string) => {
         check(); if (node.attributes.length) fail('unsupported', 'payload-attributes', declaration.context.source.path, path);
       };
@@ -190,6 +198,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
           end: {offset: s.end.offset, line: s.end.line, column: s.end.column}});
         occurrences.push({declaration, type: declaration.type, builtin, lexical, namespaces,
           payloadSource, payloadPath: path, schemaPath: declaration.context.source.path,
+          knownLocation: declaration.kind === 'attribute' ? appendDiagnosticLocation(currentLocation, '@' + diagnosticName(declaration.name)) : currentLocation,
           ...(fixedCanonical === undefined ? {} : {fixedCanonical}), ...(retainLexical ? {retainLexical} : {}), ...(list ? {list} : {})});
       };
       const text = (node: SyntaxElement, declaration: ElementNode, path: string): string => {
@@ -210,12 +219,13 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         attributes(node, declaration, path);
         elementOperand(node, declaration, builtin, path, shape, retainLexical, list);
       };
-      type Frame = {node: SyntaxNode; declaration: ElementNode; value: DirectProjectionValue; unassessed?: true; path: string; into: DirectMatchedNode[]};
+      type Frame = {node: SyntaxNode; declaration: ElementNode; value: DirectProjectionValue; unassessed?: true; path: string; into: DirectMatchedNode[]; location?: string};
       const roots: DirectMatchedNode[] = [];
       const frames: Frame[] = [{node: owned, declaration: root, value: plan.root, path: '/0', into: roots}];
       while (frames.length) {
         check(); const frame = frames.pop()!;
         const {declaration, path: parentPath} = frame;
+        currentLocation = frame.location ?? '/' + diagnosticName(declaration.name);
         let node = frame.node;
         budget.chargeWork(128 + parentPath.length * 4);
         if (node.kind === 'text') {
@@ -361,19 +371,27 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             dynamicDeclarations: selected.filter(slot => !('value' in slot) && slot.element).map(slot => slot.element!),
             ...(record.keyed ? {keyed: true} : {})});
           let selectedIndex = elements.length - 1;
+          const occurrenceIndexes = new Map<string, number>();
+          const locations = selected.map(slot => {
+            check();
+            if (!slot.element) return currentLocation;
+            const key = slot.element.id, index = (occurrenceIndexes.get(key) ?? 0) + 1;
+            occurrenceIndexes.set(key, index);
+            return appendDiagnosticLocation(currentLocation, diagnosticName(slot.element.name, index));
+          });
           for (let index = node.children.length - 1; index >= 0; index--) {
             check(); const child = node.children[index]!;
             if (child.kind === 'text') {
               if (record.content === 'mixed') frames.push({node: child, path: `${parentPath}/children/${index}`, declaration, value: frame.value, into: content});
               continue;
             }
-            const item = elements[selectedIndex]!, slot = selected[selectedIndex--]!;
+            const item = elements[selectedIndex]!, childLocation = locations[selectedIndex]!, slot = selected[selectedIndex--]!;
             if (!slot.element) {
               frames.push({node: item.node, path: item.path, declaration, value: frame.value, unassessed: true, into: content});
               continue;
             }
             frames.push({node: item.node, path: item.path, declaration: slot.element,
-              value: 'value' in slot ? slot.value : wildcardValue(slot.element), into: content});
+              value: 'value' in slot ? slot.value : wildcardValue(slot.element), into: content, location: childLocation});
           }
           continue;
         }
@@ -401,7 +419,8 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
           const slot = slots[cursor];
           if (!slot) return mismatch('unexpected-child', declaration, path);
           if (slot.particle.occurs.max === '1' && count === 1) return mismatch('duplicate-singleton', slot.element, path);
-          children.push({node: child, declaration: slot.element, value: slot.value, path, into: matchedSlots[cursor]!.items}); count++;
+          children.push({node: child, declaration: slot.element, value: slot.value, path, into: matchedSlots[cursor]!.items,
+            location: appendDiagnosticLocation(currentLocation, diagnosticName(slot.element.name, count + 1))}); count++;
         }
         for (; cursor < slots.length; cursor++, count = 0) {
           check(); const slot = slots[cursor]!;
@@ -422,7 +441,8 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
     return guarded.kind === 'resource-limit' ? Object.freeze({kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()}) : guarded;
   } catch (error) {
     if (budget.exhausted()) return Object.freeze({kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()});
-    if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, schemaPath: error.schemaPath, payloadPath: error.payloadPath, usage: Object.freeze({...budget.usage()})});
+    if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, schemaPath: error.schemaPath, payloadPath: error.payloadPath,
+      ...(error.diagnostic ? {diagnostic: error.diagnostic} : {}), usage: Object.freeze({...budget.usage()})});
     throw error;
   }
 }

@@ -2,7 +2,8 @@ import path from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
+import * as payloadDiagnostics from '../../src/compiler/payloadDiagnostics.js';
 import {selectComponentOperation} from '../../src/compiler/directOperation.js';
 import type {DirectOperationContract} from '../../src/compiler/directOperation.js';
 import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from '../../src/compiler/standardSchemaComponents.js';
@@ -35,6 +36,23 @@ beforeAll(async () => {
 });
 
 describe('explicit native companion record scope', () => {
+  it('returns a resource failure when diagnostic ownership lookup exhausts the remaining native budget', async () => {
+    const selected = await selectComponentOperation(path.join(directory, 'wrapper.wsdl'), {
+      portType: name('WrapperPortType'), binding: name('WrapperBinding'), operation: 'Fetch'}, {
+      limits: {maxWork: 125_000_000}, loading: {policy: {fileRoots: [directory]}}, standardLibraries: [acquireStandardSchemaLibrary(SCHEMA_ELEMENT_LIBRARY)]});
+    if (selected.kind !== 'selected') throw new Error(JSON.stringify(selected));
+    const scoped = createComponentRecordProjection(selected.contract, companion, recordScopeSpec);
+    if (scoped.kind !== 'component-record-projection') throw new Error(JSON.stringify(scoped));
+    const metadata = vi.spyOn(payloadDiagnostics, 'createPayloadDiagnostic').mockImplementationOnce(context => {
+      context.budget.chargeWork(Number.MAX_SAFE_INTEGER);
+      throw new Error('Native resource accounting must stop metadata publication');
+    });
+    try {
+      expect(decodeComponentRecordXml(selected.contract, scoped, xml(recordXml, '')))
+        .toMatchObject({kind: 'resource-limit', rule: 'record-projection-budget'});
+      expect(metadata).toHaveBeenCalledOnce();
+    } finally {metadata.mockRestore();}
+  });
   it('requires an unambiguous corrected contract before permitting absent metadata', async () => {
     const file = path.join(directory, 'wrapper.wsdl');
     const original = await readFile(file, 'utf8');

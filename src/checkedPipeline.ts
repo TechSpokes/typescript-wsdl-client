@@ -178,6 +178,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
 export interface PreparedCheckedSourceInputs {
   readonly main: SchemaInput;
   readonly companions: ReadonlyMap<string, SchemaInput>;
+  readonly correctionPreparation: ReturnType<typeof prepareCorrectedSourceInputs>;
   readonly provenance: Awaited<ReturnType<typeof prepareCorrectedSourceInputs>>['provenance'] & {
     readonly recipeFile: {readonly digest: string};
   };
@@ -261,7 +262,7 @@ export async function prepareCheckedSourceInputs(source: string, config: Pick<Ch
   const effectiveMain = await reload(main);
   const effectiveCompanions = new Map<string, SchemaInput>();
   for (const [key, input] of companions) effectiveCompanions.set(key, await reload(input));
-  return {main: effectiveMain, companions: effectiveCompanions, provenance: {...corrected.provenance,
+  return {main: effectiveMain, companions: effectiveCompanions, correctionPreparation: corrected, provenance: {...corrected.provenance,
     recipeFile: {digest: createHash('sha256').update(bytes).digest('hex')}}};
 }
 
