@@ -6,6 +6,16 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.5.x to 1.6.0
+
+Existing single-success scoped projections and runtime bindings retain their contracts. To adopt [application-error branches](checked-gateway.md#independently-validated-application-error-branches), configure `responseBranches` alongside the existing success `recordProjections` association. Pin every original resource in each independently authorized error grammar before applying corrections. A branch validates the complete selected error response, including its wrappers and attributes.
+
+Regenerate clients, capsules, gateways, OpenAPI and the generated source inventory together. Branch-enabled SOAP 1.1 clients use `checkedComponentRuntimeV4`; SOAP 1.2 clients use `checkedComponentRuntimeV5`. Older bindings refuse these artifacts. Runtime reconstruction requires an explicit physical `branchSources` authority for every configured error branch, supplied by the matching generated source inventory for normal startup.
+
+Handle `application-error` separately from `soap-response` and `soap-fault`. Its configured `branch` identifies the independently validated full native `value`; gateways return HTTP 502 with `{kind, branch, value}`. Branch-enabled fault envelopes also carry `kind: 'soap-fault'`. A malformed selected branch refuses without retrying the success grammar. Delivery remains buffered under shared caller limits and cancellation.
+
+For a generated service mixing branch-enabled and older operation bindings, pass the matching runtime per operation to `createClient`. Uniform services retain the single-runtime argument. Review generated types and independently qualify your owned SOAP backend before deployment; synthetic qualification does not establish vendor or production compatibility.
+
 ## From 1.4.x to 1.5.0
 
 Checked payload failures gain optional `checked-payload-diagnostic-v1` metadata with opaque source/universe identities, source digests, declaration and datatype names, and bounded locations. Existing failure kinds, HTTP statuses and strict validation remain the same. Regenerate matched clients, capsules, gateways and OpenAPI to obtain the new generated diagnostic declarations and serialized fields; existing runtime bindings remain supported.

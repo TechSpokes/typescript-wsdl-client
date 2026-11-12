@@ -7,6 +7,10 @@
     "rootDir": "../.."
   },
   "include": [
+    "component-response-branches.test.ts",
+    "component-response-branches-capsule.test.ts",
+    "checked-response-branches.test.ts",
+    "checked-response-branches-planning.test.ts",
     "source-declared-type-corrections.test.ts",
     "direct-projection-string-unions.test.ts",
     "checked-preparation.test.ts",

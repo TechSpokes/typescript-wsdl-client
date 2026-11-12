@@ -23,6 +23,8 @@ import {parseOrderedSyntax, syntaxElements, isXmlNCName, SchemaLoadingError} fro
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {createComponentRecordProjection, inspectComponentRecordProjection} from './componentRecordProjection.js';
 import type {ComponentRecordProjection, ComponentRecordProjectionSpec} from './componentRecordProjection.js';
+import {createComponentResponseBranches, inspectComponentResponseBranches, COMPONENT_RESPONSE_BRANCH_LIMITS} from './componentResponseBranches.js';
+import type {ComponentResponseBranches, ComponentResponseBranchesSpec} from './componentResponseBranches.js';
 import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from './standardSchemaComponents.js';
 import {parseApplicationGroups} from './applicationGroups.js';
 import type {ApplicationGroupsOptions} from './applicationGroups.js';
@@ -253,6 +255,8 @@ const componentVersions = Object.freeze({...versions, scope: 'component-soap11-u
 const scopedComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-utf8-graph-v2', mapping: 'component-values-and-record-scope-v1'} as const);
 const soap12ComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap12-document-literal-v1'} as const);
 const scopedSoap12ComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap12-document-literal-record-v1'} as const);
+const branchComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap11-response-branches-v1', mapping: 'component-response-branches-v1'} as const);
+const branchSoap12ComponentVersions = Object.freeze({...branchComponentVersions, scope: 'component-soap12-response-branches-v1'} as const);
 const rpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-strings-v1', mapping: 'component-rpc-string-values-v1'} as const);
 const typedRpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-typed-latin1-v1', mapping: 'component-rpc-typed-values-v1'} as const);
 type ComponentRoot = Readonly<{element: ExpandedName; message: ExpandedName; part: string}> | Readonly<{
@@ -264,23 +268,29 @@ interface ComponentRecordSource {
   readonly libraries: readonly string[]; readonly resources: readonly ComponentResource[];
 }
 interface ComponentProjectionData {readonly spec: ComponentRecordProjectionSpec; readonly source: ComponentRecordSource}
+interface ComponentResponseBranchesData {
+  readonly spec: ComponentResponseBranchesSpec;
+  readonly sources: readonly Readonly<{id: string; source: ComponentRecordSource}>[];
+}
 interface ComponentCompatibility extends DirectSourceSelection {
   readonly binding?: Readonly<{version: '1.2'; actionRequired: boolean}>;
   readonly selector: DirectOperationSelector; readonly action: string;
   readonly input: ComponentRoot; readonly output: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
 }
 interface ComponentCapsule {
-  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions;
+  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions | typeof branchComponentVersions | typeof branchSoap12ComponentVersions;
   readonly resources: readonly ComponentResource[];
   readonly libraries?: readonly string[]; readonly projection?: ComponentProjectionData | null;
   readonly compatibility: ComponentCompatibility; readonly fingerprint: string;
   readonly applicationGroups?: ApplicationGroupsOptions;
   readonly applicationGroupIdentity?: string;
+  readonly responseBranches?: ComponentResponseBranchesData;
 }
 export interface ReconstructedComponentSource {
   readonly kind: 'reconstructed-component'; readonly contract: DirectOperationContract;
   readonly mappings: readonly (ComponentValueMapping | ComponentRecordProjection)[]; readonly selection: DirectSourceSelection;
   readonly responseProjection?: ComponentRecordProjection;
+  readonly responseBranches?: ComponentResponseBranches;
   readonly admitted: false; readonly usage: ResolverUsage;
 }
 const componentReconstructions = new WeakMap<ReconstructedComponentSource, ComponentCapsule>();
@@ -303,7 +313,8 @@ function componentResources(contract: DirectOperationContract, signal?: AbortSig
   return resources;
 }
 async function componentDescriptor(contract: DirectOperationContract, selection: DirectSourceSelection, signal?: AbortSignal,
-  responseProjection?: ComponentRecordProjection, preparation?: ComponentSoapPreparation, applicationGroups?: ApplicationGroupsOptions) {
+  responseProjection?: ComponentRecordProjection, preparation?: ComponentSoapPreparation, applicationGroups?: ApplicationGroupsOptions,
+  responseBranches?: ComponentResponseBranches) {
   const {context: {budget}, source} = inspectDirectOperation(contract);
   const tick = () => check(budget, signal);
   tick();
@@ -313,6 +324,8 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
   if (preparation) await ComponentSoapPreparation.prototype.prepare.call(preparation, contract, owned, tick);
   else await prepareComponentSoapWsdl(contract, owned, tick);
   if (responseProjection) inspectComponentRecordProjection(responseProjection, contract);
+  const branchOwner = responseBranches ? inspectComponentResponseBranches(responseBranches, contract) : undefined;
+  if (branchOwner && branchOwner.success !== responseProjection) throw new Stop('unsupported', 'response-branch-success-projection');
   const mappings: (ComponentValueMapping | ComponentRecordProjection)[] = [];
   const make = (direction: ComponentValueMapping['direction']): ComponentRoot => {
     tick(); const mapping = direction.kind === 'output' && responseProjection ? responseProjection : createComponentValueMapping(contract, direction, {signal}, applicationGroups);
@@ -343,6 +356,17 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
       output: {element: companion.output.element.name, message: companion.output.message, part: companion.output.part},
       libraries: context.standardLibraryIds(), resources: componentResources(companion, signal)}};
   }
+  const branchData: ComponentResponseBranchesData | undefined = branchOwner && responseBranches ? {
+    spec: responseBranches.spec,
+    sources: branchOwner.errors.map(entry => {
+      tick();
+      if ('parts' in entry.contract.output) throw new Stop('unsupported', 'response-branch-document-output');
+      const {context} = inspectDirectOperation(entry.contract);
+      return {id: entry.id, source: {selector: entry.contract.selector, action: entry.contract.binding.action,
+        output: {element: entry.contract.output.element.name, message: entry.contract.output.message, part: entry.contract.output.part},
+        libraries: context.standardLibraryIds(), resources: componentResources(entry.contract, signal)}};
+    }),
+  } : undefined;
   const targets = new Set(mappings.flatMap(mapping => mapping.kind === 'component-mapping'
     ? (inspectComponentValueMapping(mapping,contract).applicationGroups?.targets ?? []).map(target=>target.target) : []));
   const groups = applicationGroups ? parseApplicationGroups(applicationGroups) : undefined;
@@ -352,6 +376,7 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
     targets:[...new Map(groupPlans.flatMap(plan=>plan.targets.map(target=>[target.target,target] as const))).values()].sort((a,b)=>a.target.localeCompare(b.target,'en')),
     records:[...new Map(groupPlans.flatMap(plan=>plan.dispositions.map(record=>[record.source,record] as const))).values()].sort((a,b)=>a.source.localeCompare(b.source,'en'))},budget)) : undefined;
   tick(); return {compatibility, resources: componentResources(contract, signal), mappings, libraries: inspectDirectOperation(contract).context.standardLibraryIds(), projection,
+    ...(branchData ? {responseBranches: branchData} : {}),
     ...(groups ? {applicationGroups: groups.names === undefined ? {} : {names:groups.names.filter(item=>targets.has(item.target))}, applicationGroupIdentity} : {})};
 }
 /** Serialize native component provenance as data; no source, mapping or execution authority is serialized.
@@ -359,12 +384,12 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
  * @throws TypeError For foreign operation handles. Caller cancellation is returned as a refusal.
  */
 export async function createComponentSourceCapsule(contract: DirectOperationContract, selection: DirectSourceSelection, signal?: AbortSignal,
-  responseProjection?: ComponentRecordProjection):
+  responseProjection?: ComponentRecordProjection, responseBranches?: ComponentResponseBranches):
   Promise<Readonly<{kind: 'component-capsule'; bytes: Uint8Array; admitted: false; usage: ResolverUsage}> | DirectCapsuleFailure> {
   const {budget} = inspectDirectOperation(contract).context;
   try {
-    const {compatibility, resources, libraries, projection} = await componentDescriptor(contract, selection, signal, responseProjection);
-    const capsule = componentCapsule({compatibility, resources, libraries, projection}, budget);
+    const derived = await componentDescriptor(contract, selection, signal, responseProjection, undefined, undefined, responseBranches);
+    const capsule = componentCapsule(derived, budget);
     const serialized = json(capsule, budget) + '\n';
     if (Buffer.byteLength(serialized) > directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes)) throw new Stop('resource-limit', 'capsule-byte-limit');
     check(budget, signal);
@@ -374,15 +399,17 @@ export async function createComponentSourceCapsule(contract: DirectOperationCont
     return componentFailure(error, budget);
   }
 }
-function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescriptor>>, 'compatibility' | 'resources' | 'libraries' | 'projection' | 'applicationGroups' | 'applicationGroupIdentity'>,
+function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescriptor>>, 'compatibility' | 'resources' | 'libraries' | 'projection' | 'applicationGroups' | 'applicationGroupIdentity' | 'responseBranches'>,
   budget: SemanticBudget): ComponentCapsule {
   const {compatibility, resources, libraries, projection} = derived;
   const extended = libraries.length > 0 || projection !== null;
   const rpc = 'kind' in compatibility.input && compatibility.input.kind === 'rpc-typed-parts-v1';
   const typedRpc = rpc && compatibility.input.parts.some(part => part.type.namespace !== 'http://www.w3.org/2001/XMLSchema' || part.type.local !== 'string');
   if (rpc && (extended || derived.applicationGroups)) throw new Stop('unsupported', 'rpc-artifact-extension');
-  const value = {versions: compatibility.binding?.version === '1.2' ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
-    ...(extended ? {libraries, projection} : {}), ...(derived.applicationGroups ? {applicationGroups: derived.applicationGroups,applicationGroupIdentity:derived.applicationGroupIdentity} : {})};
+  const value = {versions: derived.responseBranches ? compatibility.binding?.version === '1.2' ? branchSoap12ComponentVersions : branchComponentVersions
+      : compatibility.binding?.version === '1.2' ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
+    ...(extended ? {libraries, projection} : {}), ...(derived.applicationGroups ? {applicationGroups: derived.applicationGroups,applicationGroupIdentity:derived.applicationGroupIdentity} : {}),
+    ...(derived.responseBranches ? {responseBranches: derived.responseBranches} : {})};
   return {...value, fingerprint: hash(json(value, budget))};
 }
 
@@ -397,13 +424,14 @@ function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescr
  * @constraints Runtime physical-source reconstruction is independent and unchanged.
  */
 export async function prepareComponentSourceForOperation(contract: DirectOperationContract, selection: DirectSourceSelection,
-  preparation: ComponentSoapPreparation, signal?: AbortSignal, responseProjection?: ComponentRecordProjection, applicationGroups?: ApplicationGroupsOptions): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
+  preparation: ComponentSoapPreparation, signal?: AbortSignal, responseProjection?: ComponentRecordProjection, applicationGroups?: ApplicationGroupsOptions,
+  responseBranches?: ComponentResponseBranches): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
   const {budget} = inspectDirectOperation(contract).context;
   try {
-    const derived = await componentDescriptor(contract, selection, signal, responseProjection, preparation, applicationGroups);
+    const derived = await componentDescriptor(contract, selection, signal, responseProjection, preparation, applicationGroups, responseBranches);
     const capsule = componentCapsule(derived, budget);
     if (Buffer.byteLength(json(capsule, budget) + '\n') > directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes)) throw new Stop('resource-limit', 'capsule-byte-limit');
-    return issueComponentReconstruction(capsule, contract, derived, signal, responseProjection);
+    return issueComponentReconstruction(capsule, contract, derived, signal, responseProjection, responseBranches);
   } catch (error) {
     if (!budget.exhausted() && signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
     return componentFailure(error, budget);
@@ -426,17 +454,21 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
   const value = capsuleJson(bytes, budget, signal);
   const extended = !!value && typeof value === 'object' && (Object.hasOwn(value, 'libraries') || Object.hasOwn(value, 'projection'));
   const grouped = !!value && typeof value === 'object' && Object.hasOwn(value, 'applicationGroups');
+  const branched = !!value && typeof value === 'object' && Object.hasOwn(value, 'responseBranches');
   const parsed = record(value, [...(extended ? ['versions', 'resources', 'compatibility', 'libraries', 'projection', 'fingerprint']
-    : ['versions', 'resources', 'compatibility', 'fingerprint']), ...(grouped ? ['applicationGroups','applicationGroupIdentity'] : [])]);
+    : ['versions', 'resources', 'compatibility', 'fingerprint']), ...(grouped ? ['applicationGroups','applicationGroupIdentity'] : []),
+    ...(branched ? ['responseBranches'] : [])]);
   if (grouped) {
     try {parseApplicationGroups(parsed.applicationGroups);} catch {reject('application-group-configuration');}
     text(parsed.applicationGroupIdentity);if (!/^[a-f0-9]{64}$/.test(parsed.applicationGroupIdentity)) reject('application-group-identity');
   }
   const typedRpc = !!parsed.versions && typeof parsed.versions === 'object' && (parsed.versions as Record<string, unknown>).scope === typedRpcComponentVersions.scope;
   const rpc = typedRpc || !!parsed.versions && typeof parsed.versions === 'object' && (parsed.versions as Record<string, unknown>).scope === rpcComponentVersions.scope;
-  if (rpc && (extended || grouped)) reject('rpc-artifact-extension');
-  const soap12 = !!parsed.versions && typeof parsed.versions === 'object' && ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1'].includes((parsed.versions as Record<string, unknown>).scope as string);
-  const expectedVersions = soap12 ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
+  if (rpc && (extended || grouped || branched)) reject('rpc-artifact-extension');
+  if (branched && (!extended || !parsed.projection)) reject('response-branch-success-required');
+  const soap12 = !!parsed.versions && typeof parsed.versions === 'object' && ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1', 'component-soap12-response-branches-v1'].includes((parsed.versions as Record<string, unknown>).scope as string);
+  const expectedVersions = branched ? soap12 ? branchSoap12ComponentVersions : branchComponentVersions
+    : soap12 ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
   const actual = record(parsed.versions, Object.keys(expectedVersions));
   for (const key of Object.keys(expectedVersions) as (keyof typeof expectedVersions)[]) if (actual[key] !== expectedVersions[key]) reject('unsupported-version-mode-or-policy');
   validateComponentResources(parsed.resources, budget, signal);
@@ -476,6 +508,26 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
     }
     if (!(parsed.libraries as string[]).length && parsed.projection === null) reject('empty-component-extension');
   }
+  if (branched) {
+    const branches = record(parsed.responseBranches, ['spec', 'sources']);
+    const spec = record(branches.spec, ['version', 'policy', 'branches']);
+    if (spec.version !== 'component-response-branches-v1' || spec.policy !== 'application-error-http502-v1') reject('response-branch-version-or-policy');
+    if (!Array.isArray(spec.branches) || !spec.branches.length || spec.branches.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxBranches
+      || !Array.isArray(branches.sources) || branches.sources.length !== spec.branches.length) return reject('response-branch-count');
+    const ids = new Set<string>();
+    for (const [index, entry] of spec.branches.entries()) {
+      check(budget, signal); const branch = record(entry, ['id', 'path']); ncname(branch.id);
+      if (branch.id === 'success' || branch.id.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxIdLength || ids.has(branch.id)) reject('response-branch-id');
+      ids.add(branch.id);
+      if (!Array.isArray(branch.path) || !branch.path.length || branch.path.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxPath) return reject('response-branch-path');
+      for (const step of branch.path) {check(budget, signal); name(step);}
+      const descriptor = record(branches.sources[index], ['id', 'source']);
+      if (descriptor.id !== branch.id) reject('response-branch-source-order');
+      const source = record(descriptor.source, ['selector', 'action', 'output', 'libraries', 'resources']);
+      selector(source.selector); text(source.action); root(source.output);
+      validateComponentLibraries(source.libraries); validateComponentResources(source.resources, budget, signal);
+    }
+  }
   const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', 'output', 'faults', ...(soap12 ? ['binding'] : [])]);
   if (soap12) {
     const binding = record(c.binding, ['version', 'actionRequired']);
@@ -496,7 +548,8 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
   text(parsed.fingerprint);
   if (hash(json({versions: actual, resources: parsed.resources, compatibility: c,
     ...(extended ? {libraries: parsed.libraries, projection: parsed.projection} : {}),
-    ...(grouped ? {applicationGroups: parsed.applicationGroups,applicationGroupIdentity:parsed.applicationGroupIdentity} : {})}, budget)) !== parsed.fingerprint) reject('compatibility-fingerprint');
+    ...(grouped ? {applicationGroups: parsed.applicationGroups,applicationGroupIdentity:parsed.applicationGroupIdentity} : {}),
+    ...(branched ? {responseBranches: parsed.responseBranches} : {})}, budget)) !== parsed.fingerprint) reject('compatibility-fingerprint');
   check(budget, signal); return directDataOwnership(budget).freeze(parsed) as unknown as ComponentCapsule;
 }
 function validateComponentLibraries(value: unknown): void {
@@ -524,11 +577,15 @@ function validateComponentResources(value: unknown, budget: SemanticBudget, sign
  * @returns Fresh native operation/mapping authority with admitted=false, or explicit refusal.
  */
 export interface ComponentSourceReconstructionOptions {
+  /** Internal injection handshake restriction; absence preserves native reader auto-detection. */
+  readonly responseBranchMode?: boolean;
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   /** Caller permission; artifact identifiers alone never acquire a standard library. */
   standardLibraries?: readonly string[];
   /** Explicit physical companion roots, associated with exact outer binding/operation selectors. */
   recordSources?: readonly {readonly selector: DirectOperationSelector; readonly source: string}[];
+  /** Explicit physical full-output error grammars, keyed by outer operation and branch identity. */
+  branchSources?: readonly {readonly selector: DirectOperationSelector; readonly branch: string; readonly source: string}[];
 }
 export async function reconstructComponentSourceCapsule(bytes: Uint8Array, localSource: string, options: Readonly<ComponentSourceReconstructionOptions>): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
   return reconstructComponentSourceCapsuleInRequest(bytes, localSource, options, createApplicationBudget(options.limits));
@@ -538,6 +595,8 @@ export async function reconstructComponentSourceCapsuleInRequest(bytes: Uint8Arr
   budget: SemanticBudget): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
   try {
     const capsule = readComponent(bytes, budget, options.signal);
+    if (options.responseBranchMode !== undefined && Boolean(capsule.responseBranches) !== options.responseBranchMode)
+      throw new Stop('incompatible-artifact', 'response-branch-runtime-version');
     const allowed = directDataOwnership(budget).snapshot(options.standardLibraries ?? [], () => check(budget, options.signal));
     if (!Array.isArray(allowed) || allowed.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(allowed).size !== allowed.length)
       throw new Stop('unsupported', 'explicit-standard-library-permissions');
@@ -565,7 +624,37 @@ export async function reconstructComponentSourceCapsuleInRequest(bytes: Uint8Arr
         ? projection.kind : 'incompatible-artifact', projection.rule);
       responseProjection = projection;
     }
-    return await reconstructComponentAgainst(capsule, contract, {service: capsule.compatibility.service, port: capsule.compatibility.port}, options.signal, responseProjection);
+    let responseBranches: ComponentResponseBranches | undefined;
+    if (capsule.responseBranches) {
+      if (!responseProjection) throw new Stop('incompatible-artifact', 'response-branch-success-required');
+      const permissions = directDataOwnership(budget).snapshot(options.branchSources ?? [], () => check(budget, options.signal));
+      if (!Array.isArray(permissions)) throw new Stop('unsupported', 'explicit-branch-source-permissions');
+      const physical = new Map<string, string>(), keys = new Set<string>();
+      for (const permission of permissions) {
+        check(budget, options.signal);
+        const item = record(permission, ['selector', 'branch', 'source']); ncname(item.branch); text(item.source);
+        const selector = record(item.selector, ['portType', 'binding', 'operation']); name(selector.portType); name(selector.binding); ncname(selector.operation);
+        const operation = json(selector, budget), key = json([selector, item.branch], budget);
+        if (keys.has(key)) throw new Stop('unsupported', 'duplicate-branch-source-permission'); keys.add(key);
+        if (operation === json(capsule.compatibility.selector, budget)) physical.set(item.branch, item.source);
+      }
+      const entries = [];
+      for (const [index, branch] of capsule.responseBranches.spec.branches.entries()) {
+        check(budget, options.signal);
+        const source = capsule.responseBranches.sources[index]!.source, file = physical.get(branch.id);
+        if (!file) throw new Stop('missing-authority', 'explicit-application-error-source-required');
+        physical.delete(branch.id);
+        const error = await selectPinnedComponentSource(source.resources, source.selector, source.libraries, file,
+          {...options, loading: {...options.loading, sourceUri: undefined}}, budget, allowed);
+        entries.push({id: branch.id, path: branch.path, contract: error});
+      }
+      if (physical.size) throw new Stop('unsupported', 'unknown-branch-source-permission');
+      const branches = createComponentResponseBranches(contract, responseProjection, entries, {signal: options.signal});
+      if (branches.kind !== 'component-response-branches') throw new Stop(branches.kind === 'resource-limit' || branches.kind === 'cancelled'
+        ? branches.kind : 'incompatible-artifact', branches.rule);
+      responseBranches = branches;
+    }
+    return await reconstructComponentAgainst(capsule, contract, {service: capsule.compatibility.service, port: capsule.compatibility.port}, options.signal, responseProjection, responseBranches);
   } catch (error) {
     if (!budget.exhausted() && options.signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
     return componentFailure(error, budget);
@@ -593,34 +682,39 @@ async function selectPinnedComponentSource(resources: readonly ComponentResource
  *   authorized physical files. It permits service-wide generation to reuse one native whole-source qualification.
  */
 export async function reconstructComponentSourceCapsuleForOperation(bytes: Uint8Array, contract: DirectOperationContract,
-  selection: DirectSourceSelection, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
+  selection: DirectSourceSelection, signal?: AbortSignal, responseProjection?: ComponentRecordProjection,
+  responseBranches?: ComponentResponseBranches): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
   const {budget} = inspectDirectOperation(contract).context;
-  try {return await reconstructComponentAgainst(readComponent(bytes, budget, signal), contract, selection, signal, responseProjection);}
+  try {return await reconstructComponentAgainst(readComponent(bytes, budget, signal), contract, selection, signal, responseProjection, responseBranches);}
   catch (error) {
     if (!budget.exhausted() && signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
     return componentFailure(error, budget);
   }
 }
 async function reconstructComponentAgainst(capsule: ComponentCapsule, contract: DirectOperationContract,
-  selection: DirectSourceSelection, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): Promise<ReconstructedComponentSource> {
+  selection: DirectSourceSelection, signal?: AbortSignal, responseProjection?: ComponentRecordProjection,
+  responseBranches?: ComponentResponseBranches): Promise<ReconstructedComponentSource> {
   const {budget} = inspectDirectOperation(contract).context;
   let derived: Awaited<ReturnType<typeof componentDescriptor>>;
-  try {derived = await componentDescriptor(contract, selection, signal, responseProjection, undefined, capsule.applicationGroups);}
+  try {derived = await componentDescriptor(contract, selection, signal, responseProjection, undefined, capsule.applicationGroups, responseBranches);}
   catch (error) {if (error instanceof TypeError && error.message.startsWith('applicationGroups')) return reject('source-application-groups-changed'); throw error;}
   if (json(derived.applicationGroups ?? null,budget)!==json(capsule.applicationGroups ?? null,budget)) reject('source-application-groups-changed');
   if (derived.applicationGroupIdentity!==capsule.applicationGroupIdentity) reject('source-application-groups-changed');
   if (json(derived.resources, budget) !== json(capsule.resources, budget)) reject('local-source-changed');
   if (json(derived.compatibility, budget) !== json(capsule.compatibility, budget)) reject('source-contract-changed');
   if (json(derived.libraries, budget) !== json(capsule.libraries ?? [], budget) || json(derived.projection, budget) !== json(capsule.projection ?? null, budget)) reject('source-projection-changed');
-  return issueComponentReconstruction(capsule, contract, derived, signal, responseProjection);
+  if (json(derived.responseBranches ?? null, budget) !== json(capsule.responseBranches ?? null, budget)) reject('source-response-branches-changed');
+  return issueComponentReconstruction(capsule, contract, derived, signal, responseProjection, responseBranches);
 }
 function issueComponentReconstruction(capsule: ComponentCapsule, contract: DirectOperationContract,
-  derived: Awaited<ReturnType<typeof componentDescriptor>>, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): ReconstructedComponentSource {
+  derived: Awaited<ReturnType<typeof componentDescriptor>>, signal?: AbortSignal, responseProjection?: ComponentRecordProjection,
+  responseBranches?: ComponentResponseBranches): ReconstructedComponentSource {
   const {budget} = inspectDirectOperation(contract).context;
   check(budget, signal);
   const result: ReconstructedComponentSource = Object.freeze({kind: 'reconstructed-component', contract,
     mappings: Object.freeze(derived.mappings), selection: Object.freeze({service: derived.compatibility.service, port: derived.compatibility.port}),
     ...(responseProjection ? {responseProjection} : {}),
+    ...(responseBranches ? {responseBranches} : {}),
     admitted: false, usage: Object.freeze({...budget.usage()})});
   componentReconstructions.set(result, capsule); return result;
 }

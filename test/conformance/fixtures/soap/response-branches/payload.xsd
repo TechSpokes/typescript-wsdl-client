@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:test:payload" elementFormDefault="qualified">
+  <xs:element name="Response"><xs:complexType><xs:sequence>
+    <xs:element name="Records"><xs:complexType><xs:sequence>
+      <xs:element name="Record" maxOccurs="unbounded"><xs:complexType><xs:sequence>
+        <xs:element name="Quantity" type="xs:int"/>
+      </xs:sequence><xs:attribute name="Code" type="xs:string" use="required"/></xs:complexType></xs:element>
+    </xs:sequence></xs:complexType></xs:element>
+  </xs:sequence></xs:complexType></xs:element>
+  <xs:element name="ApplicationError"><xs:complexType><xs:sequence>
+    <xs:element name="Code" type="xs:int"/><xs:element name="Message" type="xs:string"/>
+  </xs:sequence><xs:attribute name="Retryable" type="xs:boolean" use="required"/></xs:complexType></xs:element>
+</xs:schema>

@@ -20,6 +20,7 @@ import {observeComponentXml, assessObservedComponentPayload, DIRECT_XML_LIMITS} 
 import type {DirectXmlLimits, DirectCodecFailure} from './compiler/directCodec.js';
 import {inspectComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import type {ComponentRecordProjection} from './compiler/componentRecordProjection.js';
+import {inspectComponentResponseBranches} from './compiler/componentResponseBranches.js';
 import {acquireStandardSchemaLibrary} from './compiler/standardSchemaComponents.js';
 import {inspectSourceCorrectionInventory, recoverOriginalSourceCorrectionTarget, SourceCorrectionError} from './compiler/sourceCorrections.js';
 import type {SourceCorrectionSelector} from './compiler/sourceCorrections.js';
@@ -77,6 +78,7 @@ export interface CheckedResponseInspectionReport {
   readonly response: {readonly digest?: string; readonly digestAssessment: 'computed' | 'unassessed-limit' | 'unassessed-cancelled'; readonly byteLength: number};
   readonly http: {readonly assessment: Assessment | 'not-established'; readonly status?: number};
   readonly fault: {readonly assessment: 'unassessed' | 'conforming'; readonly observed?: boolean; readonly declared?: boolean};
+  readonly applicationError?: {readonly assessment: 'conforming'; readonly branch: string};
   readonly resources: readonly {readonly resource: string; readonly digest: string}[];
   readonly outcomes: {readonly response: ScopedOutcome; readonly wrapper?: ScopedOutcome; readonly companion?: ScopedOutcome};
   readonly diagnostics: readonly InspectionDiagnostic[];
@@ -211,6 +213,7 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   let responseOutcome: ScopedOutcome = {assessment: 'unassessed'};
   let wrapper: ScopedOutcome | undefined, companion: ScopedOutcome | undefined;
   let fault: CheckedResponseInspectionReport['fault'] = {assessment: 'unassessed'};
+  let applicationError: CheckedResponseInspectionReport['applicationError'];
   let kind: CheckedResponseInspectionReport['kind'] = 'refused';
   let http: CheckedResponseInspectionReport['http'] = {assessment: metadata ? 'not-established' : 'unassessed', ...(metadata ? {status: metadata.status} : {})};
   let correctionDraft: CheckedResponseCorrectionDraft | undefined;
@@ -221,6 +224,7 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
     const scoped = (value: ScopedOutcome): ScopedOutcome => ({assessment: value.assessment, ...(value.rule ? {rule: bounded(value.rule)} : {})});
     const report: CheckedResponseInspectionReport = {version: 'checked-response-inspection-v1', kind, scope: metadata ? 'full-response' : 'xml-only',
     admitted: false, executed: false, selector: displaySelector, response: responseIdentity, http, fault, resources,
+    ...(applicationError ? {applicationError} : {}),
     outcomes: {response: scoped(responseOutcome), ...(wrapper ? {wrapper: scoped(wrapper)} : {}), ...(companion ? {companion: scoped(companion)} : {})}, diagnostics,
     ...(correctionDraft ? {correctionDraft} : {}), ...(correctionTargets ? {correctionTargets} : {}), ...(correctionEvidence ? {sourceCorrections: correctionEvidence} : {}), truncated};
     if (Buffer.byteLength(JSON.stringify(report)) > 128 * 1024 && correctionDraft) {
@@ -240,6 +244,7 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   await fs.access(rootFile);
   for (const entry of choices.sourceResources ?? []) await fs.access(localFile(entry.file));
   for (const entry of choices.recordProjections ?? []) await fs.access(localFile(entry.source));
+  for (const entry of choices.responseBranches ?? []) for (const branch of entry.branches) await fs.access(localFile(branch.source));
   if (choices.sourceCorrectionsFile) await fs.access(localFile(choices.sourceCorrectionsFile));
   const selectedChoices: Partial<CheckedComponentOptions> = {...choices, sourceResources: choices.sourceResources ?? [], signal};
   const prepared = await prepareCheckedComponentPlan(rootFile, selectedChoices, undefined, selector);
@@ -283,12 +288,21 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
     if (!input) throw new TypeError('Prepared operation input mapping unavailable');
     const projection = native.responseProjection;
     if (projection) retain(inspectDirectOperation(inspectComponentRecordProjection(projection).companion).source);
-    const assessed = inspectComponentSoapResponse(native.contract, input, new Uint8Array(bytes), {signal, limits: limits as DirectXmlLimits,
-      uri: 'urn:typescript-wsdl-client:inspected-response', responseMetadata: metadata, responseProjection: projection});
+    if (native.responseBranches) for (const branch of inspectComponentResponseBranches(native.responseBranches, native.contract).errors)
+      retain(inspectDirectOperation(branch.contract).source);
+    const controls = {signal, limits: limits as DirectXmlLimits,
+      uri: 'urn:typescript-wsdl-client:inspected-response', responseMetadata: metadata, responseProjection: projection};
+    const assessed = native.responseBranches
+      ? inspectComponentSoapResponse(native.contract, input, new Uint8Array(bytes), {...controls, responseBranches: native.responseBranches})
+      : inspectComponentSoapResponse(native.contract, input, new Uint8Array(bytes), controls);
     if ('admitted' in assessed) {
       kind = 'conforming'; responseOutcome = {assessment: 'conforming'};
       if (metadata) http = {assessment: 'conforming', status: metadata.status};
       fault = {assessment: 'conforming', observed: assessed.kind === 'soap-fault', ...(assessed.kind === 'soap-fault' ? {declared: assessed.decoded !== undefined} : {})};
+      if (assessed.kind === 'application-error') {
+        applicationError = {assessment: 'conforming', branch: assessed.branch};
+        wrapper = {assessment: 'conforming'};
+      }
       if (projection && assessed.kind === 'soap-response') {wrapper = {assessment: 'conforming'}; companion = {assessment: 'conforming'};}
     } else {
       kind = failureAssessment(assessed.kind); responseOutcome = {assessment: kind, rule: assessed.kind === 'xml-invalid' ? 'observed-XML-invalid' : bounded(assessed.rule)};
@@ -297,14 +311,14 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
       add('response', {...assessed, ...(source ? {source} : {})});
       lastFailure = assessed;
       if (metadata && httpRules.has(assessed.rule)) http = {assessment: 'mismatch', status: metadata.status};
-      if (projection) {
+      if (projection && !native.responseBranches) {
         wrapper = {assessment: /^record-wrapper-|^record-standard-/.test(assessed.rule) ? kind : 'unassessed', rule: bounded(assessed.rule)};
         const diagnostic = companionFromObservation(native.contract, projection, bytes, limits as DirectXmlLimits, metadata, signal);
         companion = diagnostic.outcome;
         if (diagnostic.failure) add('companion', diagnostic.failure);
         if (diagnostic.failure) lastFailure = diagnostic.failure;
         failedObservedPayload = diagnostic.payload;
-      } else if (assessed.rule === 'unexpected-child') {
+      } else if (!native.responseBranches && assessed.rule === 'unexpected-child') {
         const observation = observeComponentXml(native.contract, input, bytes, {signal, limits: limits as DirectXmlLimits,
           uri: 'urn:typescript-wsdl-client:inspected-response', componentResponseEncoding: {charset: charset(metadata)}});
         if (observation.kind === 'observed-component-xml') failedObservedPayload = envelopePayload(observation.root);

@@ -41,6 +41,7 @@ export type {MultiServicePipelineOptions, MultiServicePipelineResult, MultiServi
 export {composeOpenApiDocuments} from './openapi/composeOpenAPI.js';
 export type {ComposedOpenApiDocument, OpenApiCompositionEntry, OpenApiCompositionOptions} from './openapi/composeOpenAPI.js';
 export type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
+export type {CheckedComponentResponseBranches} from './checkedPipeline.js';
 export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';
 export type {CheckedComponentPlan, ComponentPlanBlocker} from './checkedPlanning.js';
 export {inspectCheckedResponse} from './checkedResponseInspection.js';
@@ -55,7 +56,8 @@ export {
   type StreamConfig,
 } from "./util/streamConfig.js";
 export {applyShapeCatalogs, type ApplyShapeCatalogsOptions} from "./compiler/shapeResolver.js";
-export {checkedDirectRuntimeV1, checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3} from './client/checkedDirectRuntime.js';
+export {checkedDirectRuntimeV1, checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3,
+  checkedComponentRuntimeV4, checkedComponentRuntimeV5} from './client/checkedDirectRuntime.js';
 
 // noinspection JSUnusedGlobalSymbols
 /**

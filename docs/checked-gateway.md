@@ -253,7 +253,7 @@ Local dependencies are discovered under authorized roots; callers need not autho
 
 Install, typecheck, test, build and start using the trial guide. Generated `client/source-resources.json` uses `checked-source-resources-v2`: it retains the resource inventory and source/capsule defaults relative to its client-directory owner. Ordinary startup needs no authored graph configuration. The optional runtime JSON file contains endpoint, destination restrictions, host, port and trust choices; paths resolve relative to that file. Programmatic hosts can call `buildServer()` or pass equivalent overrides.
 
-Complete explicit source configurations remain advanced inputs, including older hosts that use them. An explicit `localSource`, `sourceUri`, `namespaceLocations`, `recordSources` or `capsuleFiles` requires `localSource`, `fileRoots`, `sourceResources` and `sourceOrigins` together; incomplete combinations refuse. Omitted restrictions preserve generated decisions, while explicit empty origins, snapshots, libraries and endpoint lists retain denial semantics. Generated defaults resolve canonically within their owner and verify snapshot digests; native physical-source and artifact checks still run independently on invocation. Runtime metadata stays offline. Cross-volume source layouts remain outside this scaffold.
+Complete explicit source configurations remain advanced inputs, including older hosts that use them. An explicit `localSource`, `sourceUri`, `namespaceLocations`, `recordSources`, `branchSources` or `capsuleFiles` requires `localSource`, `fileRoots`, `sourceResources` and `sourceOrigins` together; incomplete combinations refuse. Omitted restrictions preserve generated decisions, while explicit empty origins, snapshots, libraries and endpoint lists retain denial semantics. Generated defaults resolve canonically within their owner and verify snapshot digests; native physical-source and artifact checks still run independently on invocation. Runtime metadata stays offline. Cross-volume source layouts remain outside this scaffold.
 
 The component transport applies optional endpoint restrictions and requires verified HTTPS when required by source policy. An optional CA file does not disable verification. Client certificates, timestamps, required WS-Addressing, supporting tokens and security headers remain unsupported and refuse. Scalar facets, ordered particle languages and strict wildcard membership remain native supplemental checks, so OpenAPI marks JSON shape completeness false. `admitted:false` remains the full-profile marker. Generated scaffold tests are separate from independently specified HTTP/SOAP wire and provider/business evidence.
 
@@ -288,6 +288,55 @@ The complete older form remains supported. Instead of the concise `scope`/option
 The path is relative to the outer response element; `recordPath` is relative to the companion output element. Both contracts are qualified independently, including when their output QNames coincide. Configuration does not merge their declarations or contact the companion service. Native checks must establish the supported wrapper structure and unique repeated-record path. The response retains the complete companion payload, including nonrecord fields; schema metadata is validated and omitted from the HTTP value. The declared scope does not claim wildcard validity against the outer declaration universe.
 
 Scoped artifacts use a distinct version from ordinary component artifacts. Generated runtime configuration adds explicit `recordSources`, each containing the outer full `selector` and independently authorized physical `source`. Both sources and their imported bytes are freshly checked on execution; embedded artifact bytes confer no permission. These responses are buffered under caller XML limits. No incremental delivery or streaming capability is claimed.
+
+### Independently validated application-error branches
+
+Add `responseBranches` only when an operation already has a scoped `recordProjections` success association and a separately authorized complete output grammar for each application error. The default single-boundary projection keeps its existing behavior. A consumer that owns one consolidated replacement grammar can continue using ordinary native choices and its own application adapter.
+
+Each entry has `version: "component-response-branches-v1"`, the outer operation's full `selector`, and one to eight `branches`. Each branch supplies a unique `id`, physical `source`, full error-operation `selector`, exact expanded-name `path`, and `resources` containing the original logical URI and SHA-256 digest of every resource in that error grammar's complete root/import closure. Optional `standardLibraries` requires explicit authorization just as it does for companion mappings.
+
+```json
+{
+  "responseBranches": [{
+    "version": "component-response-branches-v1",
+    "selector": {
+      "portType": {"namespace": "urn:owned:outer", "local": "PortType"},
+      "binding": {"namespace": "urn:owned:outer", "local": "Binding"},
+      "operation": "Fetch"
+    },
+    "branches": [{
+      "id": "application-error",
+      "source": "/authorized/contracts/error.wsdl",
+      "selector": {
+        "portType": {"namespace": "urn:owned:outer", "local": "PortType"},
+        "binding": {"namespace": "urn:owned:outer", "local": "Binding"},
+        "operation": "Fetch"
+      },
+      "path": [
+        {"namespace": "", "local": "Wrapper"},
+        {"namespace": "", "local": "Response"},
+        {"namespace": "urn:owned:payload", "local": "ApplicationError"}
+      ],
+      "resources": [
+        {"uri": "file:///authorized/contracts/error.wsdl", "digest": "REPLACE_WITH_SHA256_OF_ORIGINAL_ERROR_WSDL_BYTES"},
+        {"uri": "file:///authorized/contracts/payload.xsd", "digest": "REPLACE_WITH_SHA256_OF_ORIGINAL_IMPORTED_XSD_BYTES"}
+      ]
+    }]
+  }]
+}
+```
+
+Merge this fragment into the explicit component configuration, retain the outer success association, and replace every path, selector and digest with the consumer's independently authorized values. The discriminator path is relative to the complete output element and has at most sixteen steps. Empty namespace strings mean genuinely unqualified wrappers; prefixes, local-name searches and descendant searches cannot substitute for these expanded names.
+
+Native planning proves the success and error discriminators disjoint and rejects duplicate, overlapping, unknown or ambiguous paths. Runtime observes the bounded SOAP envelope once, selects one branch, and validates that branch's complete output grammar in its independent declaration universe. Required wrapper attributes, field order, namespace identity and scalar constraints remain authoritative; a malformed selected error never falls back to success or another error grammar.
+
+For SOAP 1.1 and SOAP 1.2, a validated companion success retains its HTTP 200 record value. A recognized application error returns HTTP 502 with `{ "kind": "application-error", "branch": "application-error", "value": ... }`; the validated value retains the error grammar's wrappers and attributes. SOAP Faults remain separate HTTP 502 outcomes with `kind: "soap-fault"`; invalid selected payloads return ordinary checked failures without an application value. No vendor code selects an HTTP status automatically. Generated TypeScript results and OpenAPI schemas describe the same outcomes.
+
+Branch-enabled capsules use separately versioned compatibility and require `checkedComponentRuntimeV4` for SOAP 1.1 or `checkedComponentRuntimeV5` for SOAP 1.2. Regenerate the complete client, capsule, gateway, host and OpenAPI set together; existing runtimes refuse branch artifacts, and existing single-boundary artifacts retain their meanings. Changing branch identity, path, source bytes or outcome policy requires regeneration and qualification.
+
+Generated `source-resources.json` includes owner-relative `branchSources` and matching effective source snapshots, so ordinary startup reconstructs every branch offline after project relocation. Original authoring pins and correction provenance are retained separately from effective snapshot digests. Advanced runtime configuration supplies `branchSources: [{selector, branch, source}]` alongside complete explicit source permissions; embedded capsule bytes grant no authority, and missing imports or stale source digests refuse before SOAP dispatch. Caller cancellation and XML limits apply across selection and complete selected validation.
+
+This opt-in family is buffered and operation-scoped. Streaming, per-record errors, scalar-based discriminators, namespace stripping, permissive wildcards and arbitrary recursive branch selection remain outside its contract. Installed synthetic SOAP/HTTP qualification establishes the bounded mechanism; provider, security and business acceptance still require consumer evidence.
 
 ## Native facets, lists and primitive-string unions
 

@@ -6,7 +6,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
-import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages, prepareCheckedSourceInputs} from './checkedPipeline.js';
+import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages, prepareCheckedSourceInputs, acquireCheckedSourceInputs} from './checkedPipeline.js';
 import type {CheckedComponentOptions, PreparedCheckedSourceInputs} from './checkedPipeline.js';
 import type {DirectOperationSelector} from './compiler/directOperation.js';
 import {inspectDirectOperation} from './compiler/directOperation.js';
@@ -56,6 +56,9 @@ export interface CheckedComponentPlan {
   readonly responseProjections?: readonly {readonly selector: DirectOperationSelector;
     readonly spec: import('./compiler/componentRecordProjection.js').ComponentRecordProjectionSpec;
     readonly delivery: 'buffered'; readonly retainedValue: 'complete-companion-payload'}[];
+  readonly responseBranches?: readonly {readonly selector: DirectOperationSelector;
+    readonly spec: import('./compiler/componentResponseBranches.js').ComponentResponseBranchesSpec;
+    readonly delivery: 'buffered'; readonly retainedValue: 'complete-selected-error-response'}[];
   readonly operations: readonly {readonly portType: ExpandedName; readonly binding?: ExpandedName; readonly operation: string;
     readonly requested: boolean; readonly selected: boolean; readonly generated: false; readonly executed: false}[];
   readonly blockers: readonly ComponentPlanBlocker[];
@@ -160,6 +163,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
   };
   let native: Awaited<ReturnType<typeof prepareComponentStages>> | undefined;
   let correctedSources: PreparedCheckedSourceInputs | undefined;
+  let branchInputs: Awaited<ReturnType<typeof acquireCheckedSourceInputs>> | undefined;
   let sourceInput: SchemaInput | undefined;
   let preparingNative = false;
   try {
@@ -188,7 +192,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
       const prepared = Object.hasOwn(explicit, 'sourceResources') ? await prepareSchemaSnapshotFiles(source, intake.sourceResources, loading) : undefined;
       let input = await loadSemanticSchemaInput(intake.sourceUri ?? prepared?.source ?? source, prepared?.loading ?? loading);
       sourceInput = input;
-      correctedSources = intake.sourceCorrectionsFile ? await prepareCheckedSourceInputs(source, intake, input) : undefined;
+      branchInputs = intake.responseBranches?.length ? await acquireCheckedSourceInputs(source, intake, input) : undefined;
+      correctedSources = intake.sourceCorrectionsFile ? await prepareCheckedSourceInputs(source, intake, input, branchInputs) : undefined;
       if (correctedSources) {
         input = correctedSources.main;
         sourceInput = input;
@@ -201,7 +206,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           && same(candidate.portType, inspectionSelector.portType) && same(candidate.binding, inspectionSelector.binding);
         if (intake.selectors && !intake.selectors.some(selected)) throw new TypeError('Inspection selector is not a configured operation');
         intake = {...intake, selectors: [inspectionSelector],
-          ...(intake.recordProjections ? {recordProjections: intake.recordProjections.filter(entry => selected(entry.selector))} : {})};
+          ...(intake.recordProjections ? {recordProjections: intake.recordProjections.filter(entry => selected(entry.selector))} : {}),
+          ...(intake.responseBranches ? {responseBranches: intake.responseBranches.filter(entry => selected(entry.selector))} : {})};
         explicit.selectors = [inspectionSelector];
       }
       complete = true;
@@ -240,7 +246,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           .map(r => ({uri: r.uri, file: fileURLToPath(r.uri)}))]};
         preparingNative = true;
         native = await prepareComponentStages(source, config, correctedSources ? input : !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined,
-          outputs, correctedSources);
+          outputs, correctedSources, branchInputs);
         if (native.expected.length) {
           const fresh = inspectDirectOperation(native.expected[0]!.contract).source;
           if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest))) {
@@ -319,6 +325,9 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     ...(native && native.projections.size ? {responseProjections: native.expected.flatMap(operation => operation.responseProjection
       ? [{selector: operation.contract.selector, spec: operation.responseProjection.spec,
         delivery: 'buffered' as const, retainedValue: 'complete-companion-payload' as const}] : [])} : {}),
+    ...(native && native.responseBranches.size ? {responseBranches: native.expected.flatMap(operation => operation.responseBranches
+      ? [{selector: operation.contract.selector, spec: operation.responseBranches.spec, delivery: 'buffered' as const,
+        retainedValue: 'complete-selected-error-response' as const}] : [])} : {}),
     ...(config && selectors.length ? {selection: {service: config.service, port: config.port, selectors}} : {}), blockers: order(blockers),
     ...(intake && blockers.some(b => b.category === 'missing-dependency' && b.reason.startsWith('locationless-import:')) ? {resolution: {
       instructions: 'Save configuration as checked JSON. Replace REQUIRED_SCHEMA_LOCATION with an authorized schema path; paths resolve from the invocation working directory. Rerun the same pipeline with --checked-config. Reports never authorize generation.',

@@ -238,22 +238,48 @@ export function decodeComponentRecordXml(outer: DirectOperationContract, project
   options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; componentResponseEncoding?: {charset?: string};
     selectPayload?: (root: SyntaxElement) => {payload: SyntaxElement; mapping: ComponentRecordProjection | ComponentValueMapping}}> = {}):
   ComponentRecordDecodedXml | ComponentDecodedXml | DirectCodecFailure {
+  const owned = inspectComponentRecordProjection(projection, outer), {budget} = inspectDirectOperation(outer).context;
+  const failure = (): DirectCodecFailure => Object.freeze({kind: 'resource-limit', rule: 'record-projection-budget', usage: Object.freeze({...budget.usage()})});
+  try {
+    const result = budget.guard(() => {
+      const observation = observeComponentXml(outer, owned.parser, bytes, options);
+      if (observation.kind !== 'observed-component-xml') return observation;
+      const selected = options.selectPayload?.(observation.root) ?? {payload: observation.root, mapping: projection};
+      if (selected.mapping !== projection) {
+        const {mapping} = inspectComponentValueMapping(selected.mapping, outer);
+        if (mapping.direction.kind !== 'fault') throw new TypeError('Record projection selection requires this output or a declared fault');
+        return assessObservedComponentPayload(outer, mapping, observation, selected.payload, options);
+      }
+      return assessObservedComponentRecordPayload(outer, projection, observation, selected.payload, options);
+    });
+    return result.kind === 'resource-limit' && !('rule' in result) ? failure() : result;
+  } catch (error) {
+    if (budget.exhausted()) return failure();
+    throw error;
+  }
+}
+
+/** Assess an authenticated wrapper on the original observation without parsing it again.
+ * @param outer Exact wrapper operation.
+ * @param projection Authenticated projection of that operation.
+ * @param observation Native observation containing the payload.
+ * @param wrapperPayload Actual wrapper node from that observation.
+ * @param options Cancellation controls.
+ * @returns A scoped native value or a bounded refusal.
+ * @throws TypeError For foreign handles or nodes.
+ */
+export function assessObservedComponentRecordPayload(outer: DirectOperationContract, projection: ComponentRecordProjection,
+  observation: ComponentXmlObservation, wrapperPayload: SyntaxElement,
+  options: Readonly<{signal?: AbortSignal}> = {}):
+  ComponentRecordDecodedXml | ComponentDecodedXml | DirectCodecFailure {
   const owned = inspectComponentRecordProjection(projection, outer), {context} = inspectDirectOperation(outer), {budget} = context;
   const check = () => {budget.chargeWork(); if (options.signal?.aborted) throw new ScopeStop('cancelled', 'cooperative-cancellation');};
   const failure = (kind: DirectCodecFailure['kind'], rule: string): DirectCodecFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
   try {
     const result = budget.guard(() => {
       check();
-      const observation = observeComponentXml(outer, owned.parser, bytes, options);
-      if (observation.kind !== 'observed-component-xml') return observation;
-      const selected = options.selectPayload?.(observation.root) ?? {payload: observation.root, mapping: projection};
-      assertComponentObservedPayload(observation, selected.payload, check);
-      if (selected.mapping !== projection) {
-        const {mapping} = inspectComponentValueMapping(selected.mapping, outer);
-        if (mapping.direction.kind !== 'fault') throw new TypeError('Record projection selection requires this output or a declared fault');
-        return assessObservedComponentPayload(outer, mapping, observation, selected.payload, options);
-      }
-      const wrapper = selected.payload;
+      assertComponentObservedPayload(observation, wrapperPayload, check);
+      const wrapper = wrapperPayload;
       if ('parts' in outer.output) throw new ScopeStop('unsupported', 'record-projection-requires-document-output');
       if (!same(wrapper.name, outer.output.element.name)) throw new ScopeStop('mismatch', 'record-wrapper-root');
       if (wrapper.attributes.length || wrapper.children.some(node => node.kind === 'text' && /[^\t\r\n ]/.test(node.value)))

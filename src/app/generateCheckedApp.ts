@@ -26,6 +26,7 @@ export interface GenerateCheckedAppOptions {
     readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
     readonly standardLibraries?: readonly string[];
     readonly recordSources?: readonly {readonly selector: DirectOperationSelector; readonly source: string}[];
+    readonly branchSources?: readonly {readonly selector: DirectOperationSelector; readonly branch: string; readonly source: string}[];
   };
 }
 
@@ -55,6 +56,7 @@ export async function generateCheckedApp(options: GenerateCheckedAppOptions): Pr
   const spec = relative(root, options.openapiFile);
   const ownPackage = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as {version: string};
   const capsuleFiles = Object.fromEntries(Object.entries(component.capsules).map(([name, file]) => [name, relative(root, file)]));
+  const branched = !!component.branchSources?.length;
   const server = loadRuntimeTemplate('checkedGatewayHost.tpl.txt')
     .replaceAll('__CLIENT_IMPORT__', JSON.stringify(clientImport))
     .replaceAll('__GATEWAY_IMPORT__', JSON.stringify(gatewayImport))
@@ -62,7 +64,12 @@ export async function generateCheckedApp(options: GenerateCheckedAppOptions): Pr
     .replaceAll('__SOURCE_RECORD__', JSON.stringify(relative(root, path.join(options.clientDir, 'source-resources.json'))))
     .replaceAll('__OPENAPI_FILE__', JSON.stringify(spec))
     .replaceAll('__DEFAULT_HOST__', JSON.stringify(options.host ?? '127.0.0.1'))
-    .replaceAll('__DEFAULT_PORT__', String(options.port ?? 3000));
+    .replaceAll('__DEFAULT_PORT__', String(options.port ?? 3000))
+    .replaceAll('__BRANCH_CONFIG__', branched ? "\n  readonly branchSources?: Options['branchSources'];" : '')
+    .replaceAll('__BRANCH_KEY__', branched ? "'branchSources', " : '')
+    .replaceAll('__BRANCH_GENERATED__', branched ? '\n    ...(supplied.branchSources ? {branchSources: supplied.branchSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),' : '')
+    .replaceAll('__BRANCH_OPTIONS__', branched ? '\n    ...(config.branchSources ? {branchSources: config.branchSources} : {}),' : '')
+    .replaceAll('__BRANCH_EXPLICIT__', branched ? '\n    ...(supplied.branchSources ? {branchSources: supplied.branchSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),' : '');
   const manifest = {
     name: 'checked-component-gateway', version: '0.0.0', private: true, type: 'module',
     engines: {node: '>=24.0.0'},
@@ -118,6 +125,13 @@ Generated defaults retain the acquired standard-library and explicit companion-s
 Clients, per-operation capsules, copied source bytes, gateway files and OpenAPI are generator-owned. Server, package/configuration, this README and generated tests are consumer-owned scaffolds and are preserved unless force is selected. Optional \`capsuleFiles\` explicitly overrides per-operation artifact locations. Unknown controls and mismatched artifacts refuse.
 
 Generated tests cover health, documentation and invalid-input refusal. They do not establish independent wire behavior, record interpretation or provider/business acceptance. WSDL supplies neither credentials nor business-value oracles; use separately specified owned-service fixtures for those checks.
+`;
+  if (component.branchSources?.length) files['README.md'] += `
+## Application-error branches
+
+This project explicitly qualifies independently sourced application-error grammars. The optional advanced \`branchSources\` array identifies each outer operation selector, configured branch ID and physical source. It follows the same explicit source permissions and relative-path rules as \`recordSources\`; an explicit empty array does not inherit generated defaults.
+
+Successful data remains HTTP 200. A validated application error returns HTTP 502 with \`{kind: "application-error", branch, value}\`; \`value\` retains the complete error grammar's wrappers and attributes. SOAP Faults return HTTP 502 with \`kind: "soap-fault"\`. Refusals contain only their failure kind, rule and optional diagnostic. Vendor codes do not select branches or change HTTP status. Changed sources, selectors, paths or branch identities require qualification and regeneration of the complete matching artifact set.
 `;
   fs.mkdirSync(root, {recursive: true});
   if (options.force || !fs.existsSync(path.join(root, 'server.ts'))) {
