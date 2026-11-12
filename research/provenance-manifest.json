@@ -1061,12 +1061,22 @@
         {
           "path": "src/loader/orderedSyntax.ts",
           "role": "semantic-source",
-          "sha256": "df111418be47d54403c08b684b2b710eb253d1488b3725f45da98d4c30c8d6c9"
+          "sha256": "a691b60c882ee46bb33b41d8e30b5c4cd67f48b7bf528dc3182d5fa63dc3a8f6",
+          "historical": {
+            "path": "src/loader/orderedSyntax.ts",
+            "sha256": "df111418be47d54403c08b684b2b710eb253d1488b3725f45da98d4c30c8d6c9",
+            "revision": "ed76b7bb8b1739cd19839de1d6045dcc0461a863"
+          }
         },
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "315f7cdefd31b50807a71dde740069fb5c0198d7f22b50a94349bbf77b3a7e2c"
+          "sha256": "7785dab335b0d6bfc720ea0362aab7c3f07ec21325354ae2d03a3e994fdce48f",
+          "historical": {
+            "path": "src/loader/schemaInput.ts",
+            "sha256": "315f7cdefd31b50807a71dde740069fb5c0198d7f22b50a94349bbf77b3a7e2c",
+            "revision": "ed76b7bb8b1739cd19839de1d6045dcc0461a863"
+          }
         },
         {
           "path": "research/tests/re01/predicate-dependencies.test.ts",
@@ -1531,7 +1541,12 @@
         {
           "path": "src/compiler/canonicalGraph.ts",
           "role": "semantic-source",
-          "sha256": "7cbdbd499e3f116b573362f478af54af1eb74cae7a01e4a69d3c3ec942c1e31b"
+          "sha256": "e1fe378844b2d4e63c833b6107bd2d24c03cccc5c3f1ea6e86aba5297e5194be",
+          "historical": {
+            "path": "src/compiler/canonicalGraph.ts",
+            "sha256": "7cbdbd499e3f116b573362f478af54af1eb74cae7a01e4a69d3c3ec942c1e31b",
+            "revision": "ed76b7bb8b1739cd19839de1d6045dcc0461a863"
+          }
         },
         {
           "path": "src/loader/wsdlLoader.ts",
@@ -1541,7 +1556,12 @@
         {
           "path": "src/compiler/schemaCompiler.ts",
           "role": "semantic-source",
-          "sha256": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a"
+          "sha256": "0c30d19d60800cd3e935e4dac16fa836c7422acf6bb5a6d024f7bf8cac534c26",
+          "historical": {
+            "path": "src/compiler/schemaCompiler.ts",
+            "sha256": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a",
+            "revision": "ed76b7bb8b1739cd19839de1d6045dcc0461a863"
+          }
         },
         {
           "path": "src/config.ts",

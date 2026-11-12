@@ -104,7 +104,7 @@ Set `sourceCorrectionsFile` in checked generation configuration to apply a versi
 
 Maintain upstream snapshots unchanged and keep the correction file under version control. The correction file pins the complete original resource set by logical URI and digest. Refreshing upstream metadata requires regenerating and reviewing the correction draft. Scoped targets identify original declarations and particles, not generated TypeScript names. All edits resolve against the original inventory before application.
 
-The bounded operations change particle occurrence bounds, narrow element wildcard namespaces, or insert a typed element into an existing sequence. Insertions require an existing named type or global element reference. Corrections do not define new complex types, rewrite imports, or change incoming SOAP XML. Use replacement snapshots for unsupported restructuring or sources that cannot construct a canonical inventory.
+The bounded operations change particle occurrence bounds, narrow element wildcard namespaces, insert a typed element into an existing sequence, or change an authored element or attribute type reference. Insertions require an existing named type or global element reference. Corrections do not define new types, rewrite imports, or change incoming SOAP XML. Use replacement snapshots for unsupported restructuring or sources that cannot construct a canonical inventory.
 
 The correction document has `version: 1`, `resources: [{uri, digest}]`, and `corrections`. Retain every original resource pin supplied by the tool. A target is `{id, uri, digest}` copied from the inventory or draft; do not replace it with a generated DTO name. Complete unresolved draft values before passing the file to generation.
 
@@ -113,6 +113,7 @@ The correction document has `version: 1`, `resources: [{uri, digest}]`, and `cor
 | `set-occurs` | `target`, `min`, and `max`; bounds are canonical decimal strings, with `"unbounded"` also permitted for `max` |
 | `set-wildcard-namespaces` | `target` and `namespaces`; use explicit namespace strings and `""` for the no-namespace case; the original `processContents` is preserved |
 | `insert-element` | Sequence `target`, `position`, and `element`; position is `"append"` or `{kind: "before" or "after", target: originalChildTarget}` |
+| `set-declared-type` | Declaration `target`, original `expectedType`, and replacement `type`, both as `{namespace, local}` |
 
 For a local inserted declaration, `element` contains `{kind: "declaration", name, type: {namespace, local}, min, max}`. The type must be a built-in XSD type or an existing named type. A global element reference instead uses `{kind: "reference", target: globalElementTarget, min, max}`. For example, a reviewed new scalar can use `type: {namespace: "http://www.w3.org/2001/XMLSchema", local: "string"}`; selecting that type is a contract decision, not an inference from one text value. Local declarations follow the containing schema's element-form rules.
 
@@ -123,6 +124,27 @@ Making metadata optional can make a following unrestricted wildcard ambiguous. R
 Effective metadata is freshly parsed and checked before generation. Native decoding, SOAP bootstrap, generated types, OpenAPI, and runtime source reconstruction use those same effective bytes. Generated provenance distinguishes upstream and effective digests; successful validation establishes conformance to the consumer's effective contract, not upstream approval. Runtime needs the generated effective snapshots, not the correction file or upstream network access. Regenerate clients, contracts and gateways together after changes, and refresh source-derived presentation targets when necessary.
 
 One generated project retains one effective byte sequence per logical URI. Shared declarations change for all their uses in that project. Conflicting URI contents and interpretation-specific edits to shared chameleon declarations refuse; separate replacement snapshots are required for those cases. This feature does not extend checked multi-service composition or legacy generation.
+
+#### Changing an existing declared type
+
+Use `set-declared-type` for an existing authored element or attribute `@type`. Obtain the original declaration selector and `declaredType` through [trusted correction targets](#trusted-original-correction-targets), then copy `declaredType` into `expectedType`. Keep every original resource pin; an effective datatype or ordinal path alone does not establish an original target.
+
+```json
+{
+  "kind": "set-declared-type",
+  "target": {"id": "ORIGINAL_DECLARATION_ID", "uri": "ORIGINAL_RESOURCE_URI", "digest": "ORIGINAL_SHA256"},
+  "expectedType": {"namespace": "http://www.w3.org/2001/XMLSchema", "local": "anyURI"},
+  "type": {"namespace": "http://www.w3.org/2001/XMLSchema", "local": "string"}
+}
+```
+
+The original type guard compares expanded names resolved in the declaration's schema context. Replacements may select XML Schema builtins or existing named types from the declaration's authorized source universe. A foreign named type also requires an existing import in the declaring schema; another companion or including schema cannot lend its type declarations or import permissions. Namespace prefixes are emitted deterministically without changing expanded names.
+
+Inline anonymous types, implicit types, `ref` uses, new definitions and new imports refuse. Attribute replacements require simple types. Missing or stale selectors, mismatched old types, conflicting edits and ambiguous shared chameleon interpretations also refuse; pins are never refreshed automatically.
+
+Changing `anyURI` to `string` admits raw text and escaped embed content while removing the URI guarantee. Changing `dateTime` to `string` also admits nonsense. An existing constrained string type may check a timestamp layout while still accepting impossible calendar dates; it does not prove calendar validity or normalize timezones.
+
+Every use of the selected shared declaration adopts its new type in that project. Independent source universes with colliding names keep their own declarations. Original source and response bytes remain unchanged; regenerate and qualify matching client, native/runtime, capsule and OpenAPI artifacts against the new effective bytes before adoption.
 
 ### Offline response inspection
 
@@ -139,6 +161,40 @@ Reports separate wrapper and companion assessment. A valid inner payload cannot 
 Drafts retain exact logical source URIs, which can include local filesystem paths, because those identities are needed to apply corrections. The CLI writes them only to the explicitly requested draft file. Programmatic callers must select `includeCorrectionDraft: true` to receive those additional local identities; ordinary diagnostic reports use resource labels.
 
 Exit codes are 0 for conformance within the reported scope, 1 for mismatch/refusal, and 2 for invocation/file errors. A conforming SOAP fault remains identified as a fault. The package-root `inspectCheckedResponse` API accepts the same checked choices, a full operation selector, response bytes, optional actual response metadata, cancellation and XML limits; it returns diagnostic data without writing files.
+
+### Scoped payload diagnostics
+
+Native element and attribute failures can include an optional `diagnostic` object in inspection reports, direct runtime failures and newly generated gateway error responses. `checked-payload-diagnostic-v1` identifies the source universe and resource with opaque hashes, retains the effective source digest, and identifies the declared field, owning declaration and effective datatype when established by the native owner. A scalar diagnostic also identifies its builtin datatype.
+
+`location` uses schema-established expanded names and one-based occurrence indexes. An unknown child or wrapper is represented by `[unknown-field]` under the nearest known parent; its caller-controlled name is omitted. Diagnostics contain no XML values, source URI, absolute local path, raw exception or native handle.
+
+Names and locations are bounded, and `truncated: true` indicates shortened diagnostic metadata. An occurrence above 100000 is displayed as `[>100000]`; omitted ancestor information is marked `[truncated]`. Neither marker is an exact original location or a correction selector.
+
+This metadata is additive: the inspection report remains `checked-response-inspection-v1`, existing runtime bindings retain their versions, and consumers must continue branching on the existing failure `kind` and `rule`. Existing generated gateways keep their previous envelope until regenerated; regenerate the matching client, gateway and OpenAPI artifacts to obtain the documented optional `diagnostic`. HTTP status and native strict validation remain unchanged; a missing diagnostic never makes a failure acceptable.
+
+### Trusted original correction targets
+
+Pass `includeCorrectionTargets: true` to the public `inspectCheckedResponse()` API only for trusted local authoring. The optional `correctionTargets` array associates each descriptor with its zero-based `diagnostic` index. An available descriptor includes `target: {id, uri, digest}` for the original element or attribute declaration and its original expanded `declaredType` when named. Use that type as the explicit `expectedType` guard when authoring a declared-type correction.
+
+```typescript
+import {inspectCheckedResponse} from '@techspokes/typescript-wsdl-client';
+import type {CheckedComponentOptions} from '@techspokes/typescript-wsdl-client';
+declare const source: string;
+declare const selector: {portType: {namespace: string; local: string}; binding: {namespace: string; local: string}; operation: string};
+declare const responseBytes: Uint8Array;
+declare const checkedComponents: Partial<CheckedComponentOptions>;
+const report = await inspectCheckedResponse(source, {
+  selector,
+  responseBytes,
+  checkedComponents,
+  includeCorrectionTargets: true,
+});
+const available = report.correctionTargets?.filter(item => item.kind === 'available');
+```
+
+These descriptors intentionally contain original source locators and must stay out of public HTTP responses and logs. Default inspection reports and generated gateway diagnostics do not include them. Requesting `includeCorrectionDraft` is a separate authoring operation.
+
+Original target recovery uses native declaration ownership and retained edit-span correspondence when a recipe already exists. It never treats an effective ordinal path as an original target. A descriptor with `kind: 'unavailable'` states a reason, including absent native declaration evidence, an ambiguous original context, a newly inserted declaration without an original, or correspondence that cannot be established after encoding-declaration rewriting. Do not infer a selector or silently refresh pins from that result.
 
 ### Planning and missing-schema recovery
 

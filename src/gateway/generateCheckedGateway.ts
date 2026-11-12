@@ -93,6 +93,21 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   }};
   const fault: Schema = {oneOf: [...faultVariants(false), protocolFault]};
   const documentedFault: Schema = {oneOf: [...faultVariants(true), protocolFault]};
+  const diagnosticNameSchema = {type: 'object', additionalProperties: false, required: ['namespace', 'local'],
+    properties: {namespace: {type: 'string', maxLength: 256}, local: {type: 'string', maxLength: 256}}};
+  const diagnosticSchema = {type: 'object', additionalProperties: false,
+    required: ['version', 'universe', 'resource', 'digest', 'declaration', 'location'], properties: {
+      version: {const: 'checked-payload-diagnostic-v1'}, universe: {type: 'string', pattern: '^universe-[a-f0-9]{64}$'},
+      resource: {type: 'string', pattern: '^resource-[a-f0-9]{64}$'}, digest: {type: 'string', pattern: '^[a-f0-9]{64}$'},
+      declaration: {type: 'object', additionalProperties: false, required: ['kind', 'name'],
+        properties: {kind: {enum: ['element', 'attribute']}, name: diagnosticNameSchema}},
+      owner: {type: 'object', additionalProperties: false, required: ['kind'],
+        properties: {kind: {type: 'string'}, name: diagnosticNameSchema}},
+      datatype: diagnosticNameSchema, builtin: diagnosticNameSchema, location: {type: 'string', maxLength: 2048},
+      unknownField: {const: true}, truncated: {const: true},
+    }};
+  const failureSchema = {type: 'object', additionalProperties: false, required: ['kind', 'rule'],
+    properties: {kind: {type: 'string'}, rule: {type: 'string'}, diagnostic: diagnosticSchema}};
   const schemas = {request: {$schema: draft07, ...request}, response: {$schema: draft07, ...response}, fault: {$schema: draft07, ...fault}};
   const doc = {
     openapi: '3.1.1', jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
@@ -111,8 +126,9 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
         '502': {description: 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
-          {type: 'object', additionalProperties: false, required: ['kind', 'rule'], properties: {kind: {type: 'string'}, rule: {type: 'string'}}}]}}}},
-        '500': {description: 'Incompatible artifacts or gateway configuration'}}}}},
+          failureSchema]}}}},
+        '499': {description: 'Cancelled request', content: {'application/json': {schema: failureSchema}}},
+        '500': {description: 'Incompatible artifacts or gateway configuration', content: {'application/json': {schema: failureSchema}}}}}}},
   };
   let clientImport = path.relative(options.gatewayDir, path.join(options.clientDir, 'client.js')).replace(/\\/g, '/');
   if (!clientImport.startsWith('.')) clientImport = './' + clientImport;
@@ -184,7 +200,7 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
       }
       const status = result.kind === 'incompatible-artifact' || result.kind === 'missing-authority' ? 500
         : result.kind === 'cancelled' ? 499 : result.phase === 'input' ? 400 : 502;
-      return reply.code(status).send({kind: result.kind, rule: result.rule});
+      return reply.code(status).send({kind: result.kind, rule: result.rule, ...(result.diagnostic ? {diagnostic: result.diagnostic} : {})});
     } finally {
       request.raw.removeListener('aborted', disconnected);
       reply.raw.removeListener('close', disconnected);

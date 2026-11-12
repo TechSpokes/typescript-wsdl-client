@@ -1,4 +1,5 @@
 import {types} from 'node:util';
+import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
 import {directClientRuntime, componentClientRuntime, componentSoap11ClientRuntime, componentSoap12ClientRuntime} from './directClientRuntime.js';
 import type {ComponentClientOptions, ComponentClientResult} from './directClientRuntime.js';
 import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
@@ -22,6 +23,7 @@ interface Failure {
     | 'inconclusive' | 'invalid-schema' | 'scalar-invalid' | 'value-invalid' | 'xml-invalid' | 'mismatch' | 'transport' | 'protocol';
   readonly rule: string; readonly usage: Usage; readonly repair?: string;
   readonly phase?: 'input' | 'response';
+  readonly diagnostic?: CheckedPayloadDiagnostic;
 }
 type Success = {
   readonly value: unknown;

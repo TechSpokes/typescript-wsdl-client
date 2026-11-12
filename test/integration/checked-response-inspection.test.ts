@@ -23,6 +23,32 @@ const soap = (body: string) => new TextEncoder().encode('<s:Envelope xmlns:s="ht
 const wrapped = (metadata: boolean) => soap(`<Envelope xmlns="${namespace}">${metadata ? '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>' : ''}${records}</Envelope>`);
 
 describe('offline checked SOAP response inspection', () => {
+  it('attributes a companion scalar failure to its independent same-QName universe with an existing recipe', async () => {
+    await mkdir('tmp/conformance', {recursive: true});
+    const temporary = await mkdtemp(path.resolve('tmp/conformance/inspect-scoped-target-'));
+    try {
+      const companionFile = path.join(directory, 'records.wsdl');
+      const load = (file: string) => loadSemanticSchemaInput(file, {policy: {fileRoots: [directory]}});
+      const [main, companion] = await Promise.all([load(source), load(companionFile)]);
+      const inventory = inspectSourceCorrectionInventory([main, companion]);
+      const wildcard = inventory.nodes.find(node => node.uri === main.root.uri && node.wildcard);
+      if (!wildcard) throw new Error('Authored wrapper wildcard required');
+      const recipe = path.join(temporary, 'recipe.json');
+      await writeFile(recipe, JSON.stringify({version: 1, resources: inventory.resources.map(({uri, digest}) => ({uri, digest})),
+        corrections: [{kind: 'set-wildcard-namespaces', target: {id: wildcard.id, uri: wildcard.uri, digest: wildcard.digest}, namespaces: [namespace]}]}));
+      const report = await inspectCheckedResponse(source, {selector,
+        checkedComponents: {...choices, sourceCorrectionsFile: recipe}, includeCorrectionTargets: true,
+        responseBytes: new TextEncoder().encode(new TextDecoder().decode(wrapped(true)).replace('<Quantity>2</Quantity>', '<Quantity>private-invalid-integer</Quantity>'))});
+      expect(report.kind).toBe('mismatch');
+      expect(report.diagnostics[0]).toMatchObject({kind: 'scalar-invalid', diagnostic: {digest: companion.root.digest,
+        declaration: {kind: 'element', name: {namespace, local: 'Quantity'}},
+        datatype: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'int'}}});
+      expect(report.correctionTargets![0]).toMatchObject({kind: 'available', target: {uri: companion.root.uri, digest: companion.root.digest}});
+      expect(report.diagnostics[1]!.diagnostic?.universe).toBe(report.diagnostics[0]!.diagnostic?.universe);
+      expect(JSON.stringify(report.diagnostics)).not.toContain('private-invalid-integer');
+      expect(JSON.stringify(report.diagnostics)).not.toContain(companion.root.uri);
+    } finally {await rm(temporary, {recursive: true, force: true});}
+  });
   it('enforces the native byte length before copying or loading and refuses shared response storage', async () => {
     const bytes = wrapped(true);
     const actualLength = bytes.byteLength;

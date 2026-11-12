@@ -1,4 +1,5 @@
 import {isApplicationUnmetered} from './semanticBudget.js';
+import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
 import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Shared retained-operation SOAP exchange; profile-specific authority stays explicit. */
 import {checkSemanticBudget} from './semanticBudget.js';
@@ -44,6 +45,7 @@ export interface DirectSoapFailure {
   readonly source?: SyntaxSource;
   readonly schemaPath?: string;
   readonly payloadPath?: string;
+  readonly diagnostic?: CheckedPayloadDiagnostic;
 }
 /** Version-specific protocol metadata; application detail remains owned by native mappings.
  * @since 1.3.0
@@ -601,7 +603,8 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
         ...(ignoredHeaders.length ? {ignoredHeaders: Object.freeze(ignoredHeaders)} : {}), usage: Object.freeze({...budget.usage()})});
     }
     if (!decoded) throw new TypeError('Missing decoded SOAP response');
-    if (!('validated' in decoded)) return profile.component ? Object.freeze({...decoded, phase: 'response' as const}) : fail(decoded.kind, decoded.rule);
+    if (!('validated' in decoded)) return profile.component ? Object.freeze({...decoded, phase: 'response' as const})
+      : Object.freeze({...fail(decoded.kind, decoded.rule), ...(decoded.diagnostic ? {diagnostic: decoded.diagnostic} : {})});
     check(); check();
     return Object.freeze({kind: faultInfo ? 'soap-fault' : 'soap-response', admitted: false, decoded,
       ...(faultInfo ? {fault: faultInfo} : {}),

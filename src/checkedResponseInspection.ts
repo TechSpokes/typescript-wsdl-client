@@ -21,7 +21,11 @@ import type {DirectXmlLimits, DirectCodecFailure} from './compiler/directCodec.j
 import {inspectComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import type {ComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import {acquireStandardSchemaLibrary} from './compiler/standardSchemaComponents.js';
-import {inspectSourceCorrectionInventory, SourceCorrectionError} from './compiler/sourceCorrections.js';
+import {inspectSourceCorrectionInventory, recoverOriginalSourceCorrectionTarget, SourceCorrectionError} from './compiler/sourceCorrections.js';
+import type {SourceCorrectionSelector} from './compiler/sourceCorrections.js';
+import {inspectPayloadDiagnostic} from './compiler/payloadDiagnostics.js';
+import type {CheckedPayloadDiagnostic} from './compiler/payloadDiagnostics.js';
+import type {PreparedCheckedSourceInputs} from './checkedPipeline.js';
 import {loadSemanticSchemaInput, prepareSchemaSnapshotFiles, copyOriginalSchemaResource} from './loader/schemaInput.js';
 import type {SchemaInput} from './loader/schemaInput.js';
 import {resolveResourceUri} from './loader/schemaResources.js';
@@ -36,6 +40,7 @@ export interface CheckedResponseInspectionOptions {
   readonly signal?: AbortSignal;
   readonly limits?: DirectXmlLimits;
   readonly includeCorrectionDraft?: boolean;
+  readonly includeCorrectionTargets?: boolean;
 }
 type Assessment = 'conforming' | 'mismatch' | 'refused' | 'unassessed';
 interface ScopedOutcome {readonly assessment: Assessment; readonly rule?: string}
@@ -45,7 +50,15 @@ interface InspectionLocation {
 interface InspectionDiagnostic {
   readonly scope: 'preparation' | 'response' | 'wrapper' | 'companion'; readonly kind: string; readonly rule: string;
   readonly guidance: string; readonly source?: InspectionLocation; readonly schemaPath?: string; readonly payloadPath?: string;
+  readonly diagnostic?: CheckedPayloadDiagnostic;
 }
+/** Explicit trusted authoring data; available selectors retain original locators and digest pins.
+ * @since 1.5.0
+ * @constraints Only requested local authoring output may contain these locators; HTTP diagnostics never do.
+ */
+export type CheckedResponseCorrectionTarget = Readonly<{diagnostic: number} & (
+  {kind: 'available'; target: SourceCorrectionSelector; declaredType?: {namespace: string; local: string}} |
+  {kind: 'unavailable'; reason: string})>;
 /** A non-applicable recipe draft; null fields require an explicit consumer decision.
  * @since Unreleased
  */
@@ -68,6 +81,7 @@ export interface CheckedResponseInspectionReport {
   readonly outcomes: {readonly response: ScopedOutcome; readonly wrapper?: ScopedOutcome; readonly companion?: ScopedOutcome};
   readonly diagnostics: readonly InspectionDiagnostic[];
   readonly correctionDraft?: CheckedResponseCorrectionDraft;
+  readonly correctionTargets?: readonly CheckedResponseCorrectionTarget[];
   readonly sourceCorrections?: {readonly recipeDigest: string; readonly resources: readonly {readonly resource: string;
     readonly originalDigest: string; readonly effectiveDigest: string; readonly changed: boolean}[]};
   readonly truncated: boolean;
@@ -109,8 +123,9 @@ function failureAssessment(kind: string): 'mismatch' | 'refused' {
  */
 export async function inspectCheckedResponse(source: string, options: CheckedResponseInspectionOptions): Promise<CheckedResponseInspectionReport> {
   if (typeof source !== 'string' || !source) throw new TypeError('Local WSDL source string required');
-  const supplied = record(options, ['checkedComponents', 'selector', 'responseBytes', 'responseMetadata', 'signal', 'limits', 'includeCorrectionDraft']);
+  const supplied = record(options, ['checkedComponents', 'selector', 'responseBytes', 'responseMetadata', 'signal', 'limits', 'includeCorrectionDraft', 'includeCorrectionTargets']);
   if (supplied.includeCorrectionDraft !== undefined && typeof supplied.includeCorrectionDraft !== 'boolean') throw new TypeError('includeCorrectionDraft must be boolean');
+  if (supplied.includeCorrectionTargets !== undefined && typeof supplied.includeCorrectionTargets !== 'boolean') throw new TypeError('includeCorrectionTargets must be boolean');
   const selector = parseCheckedComponentChoices({selectors: [supplied.selector]}).selectors![0]!;
   const choices = parseCheckedComponentChoices(supplied.checkedComponents ?? {});
   const responseByteLength = xmlByteLength(supplied.responseBytes);
@@ -134,6 +149,8 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   const displaySelector = {portType: {namespace: bounded(selector.portType.namespace), local: bounded(selector.portType.local)},
     binding: {namespace: bounded(selector.binding.namespace), local: bounded(selector.binding.local)}, operation: bounded(selector.operation)};
   const diagnostics: InspectionDiagnostic[] = [];
+  let sourcePreparation: PreparedCheckedSourceInputs | undefined;
+  let correctionTargets: CheckedResponseCorrectionTarget[] | undefined = supplied.includeCorrectionTargets ? [] : undefined;
   const inputs: SchemaInput[] = [];
   const locations = new Map<string, {resource: string; digest: string}>();
   const resources: {resource: string; digest: string}[] = [];
@@ -153,11 +170,43 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   const location = (at: SyntaxSource): InspectionLocation => ({resource: at.uri === 'urn:typescript-wsdl-client:inspected-response' ? 'response' : locations.get(at.uri)?.resource ?? 'unlocated-source',
     digest: at.uri === 'urn:typescript-wsdl-client:inspected-response' ? responseIdentity.digest! : locations.get(at.uri)?.digest ?? at.digest,
     path: bounded(at.path), line: at.start.line, column: at.start.column});
-  const add = (scope: InspectionDiagnostic['scope'], result: {kind: string; rule: string; source?: SyntaxSource; schemaPath?: string; payloadPath?: string}) => {
+  let authoringInventory: {inputCount: number; value?: ReturnType<typeof inspectSourceCorrectionInventory>; reason?: string} | undefined;
+  const inventoryForAuthoring = () => {
+    if (authoringInventory?.inputCount === inputs.length) return authoringInventory;
+    try {authoringInventory = {inputCount: inputs.length, value: inspectSourceCorrectionInventory(inputs, signal)};}
+    catch (error) {
+      if (!(error instanceof SourceCorrectionError) && !(error instanceof SchemaLoadingError)) throw error;
+      authoringInventory = {inputCount: inputs.length, reason: `original-target-inventory-${error.category}`};
+    }
+    return authoringInventory;
+  };
+  const add = (scope: InspectionDiagnostic['scope'], result: {kind: string; rule: string; source?: SyntaxSource; schemaPath?: string; payloadPath?: string; diagnostic?: CheckedPayloadDiagnostic}) => {
     if (diagnostics.length === 32) {truncated = true; return;}
+    if (result.diagnostic?.truncated) truncated = true;
     diagnostics.push({scope, kind: bounded(result.kind, 80), rule: result.kind === 'xml-invalid' ? 'observed-XML-invalid' : bounded(result.rule), guidance,
       ...(result.source ? {source: location(result.source)} : {}), ...(result.schemaPath ? {schemaPath: bounded(result.schemaPath)} : {}),
-      ...(result.payloadPath ? {payloadPath: bounded(result.payloadPath)} : {})});
+      ...(result.payloadPath ? {payloadPath: bounded(result.payloadPath)} : {}), ...(result.diagnostic ? {diagnostic: result.diagnostic} : {})});
+    if (correctionTargets) {
+      const diagnostic = diagnostics.length - 1;
+      const native = result.diagnostic && inspectPayloadDiagnostic(result.diagnostic);
+      if (!native) correctionTargets.push({diagnostic, kind: 'unavailable', reason: 'native-declaration-unavailable'});
+      else if (sourcePreparation) correctionTargets.push({diagnostic, ...recoverOriginalSourceCorrectionTarget(sourcePreparation.correctionPreparation,
+        native.declaration.context.source, native.declaration.context.effectiveNamespace, native.declaration.kind)});
+      else {
+        const declaration = native.declaration;
+        const inventory = inventoryForAuthoring();
+        if (!inventory.value) {
+          correctionTargets.push({diagnostic, kind: 'unavailable', reason: inventory.reason!}); return;
+        }
+        const matches = inventory.value.nodes.filter(node => node.id === declaration.id && node.uri === declaration.context.source.uri
+          && node.digest === declaration.context.source.digest && node.kind === declaration.kind
+          && node.namespace === declaration.context.effectiveNamespace);
+        correctionTargets.push(matches.length === 1 && !matches[0]!.ambiguousContext
+          ? {diagnostic, kind: 'available', target: {id: matches[0]!.id, uri: matches[0]!.uri, digest: matches[0]!.digest},
+            ...(declaration.type.kind !== 'local' ? {declaredType: declaration.type.name} : {})}
+          : {diagnostic, kind: 'unavailable', reason: matches.length > 1 || matches[0]?.ambiguousContext ? 'ambiguous-original-target' : 'original-target-not-established'});
+      }
+    }
   };
   let responseOutcome: ScopedOutcome = {assessment: 'unassessed'};
   let wrapper: ScopedOutcome | undefined, companion: ScopedOutcome | undefined;
@@ -173,9 +222,13 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
     const report: CheckedResponseInspectionReport = {version: 'checked-response-inspection-v1', kind, scope: metadata ? 'full-response' : 'xml-only',
     admitted: false, executed: false, selector: displaySelector, response: responseIdentity, http, fault, resources,
     outcomes: {response: scoped(responseOutcome), ...(wrapper ? {wrapper: scoped(wrapper)} : {}), ...(companion ? {companion: scoped(companion)} : {})}, diagnostics,
-    ...(correctionDraft ? {correctionDraft} : {}), ...(correctionEvidence ? {sourceCorrections: correctionEvidence} : {}), truncated};
+    ...(correctionDraft ? {correctionDraft} : {}), ...(correctionTargets ? {correctionTargets} : {}), ...(correctionEvidence ? {sourceCorrections: correctionEvidence} : {}), truncated};
     if (Buffer.byteLength(JSON.stringify(report)) > 128 * 1024 && correctionDraft) {
       correctionDraft = undefined; truncated = true; return finish();
+    }
+    if (Buffer.byteLength(JSON.stringify(report)) > 128 * 1024 && correctionTargets?.some(target => target.kind === 'available')) {
+      correctionTargets = correctionTargets.map(target => ({diagnostic: target.diagnostic, kind: 'unavailable', reason: 'authoring-target-exceeds-report-capacity'}));
+      truncated = true; return finish();
     }
     return report;
   };
@@ -190,6 +243,7 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   if (choices.sourceCorrectionsFile) await fs.access(localFile(choices.sourceCorrectionsFile));
   const selectedChoices: Partial<CheckedComponentOptions> = {...choices, sourceResources: choices.sourceResources ?? [], signal};
   const prepared = await prepareCheckedComponentPlan(rootFile, selectedChoices, undefined, selector);
+  sourcePreparation = prepared.sources;
   if (prepared.sourceInput) retain(prepared.sourceInput);
   if (prepared.sources) {retain(prepared.sources.main); for (const input of prepared.sources.companions.values()) retain(input);}
   if (prepared.sources) {

@@ -7,6 +7,7 @@
     "rootDir": "../.."
   },
   "include": [
+    "source-declared-type-corrections.test.ts",
     "direct-projection-string-unions.test.ts",
     "checked-preparation.test.ts",
     "checked-pipeline.test.ts",

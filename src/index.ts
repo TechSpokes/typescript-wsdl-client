@@ -44,7 +44,7 @@ export type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.
 export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';
 export type {CheckedComponentPlan, ComponentPlanBlocker} from './checkedPlanning.js';
 export {inspectCheckedResponse} from './checkedResponseInspection.js';
-export type {CheckedResponseInspectionOptions, CheckedResponseInspectionReport} from './checkedResponseInspection.js';
+export type {CheckedResponseInspectionOptions, CheckedResponseInspectionReport, CheckedResponseCorrectionTarget} from './checkedResponseInspection.js';
 export type {ComponentRecordProjectionSpec, ComponentRecordProjectionAssociation} from './compiler/componentRecordProjection.js';
 export {
   loadStreamConfigFile,
@@ -168,3 +168,4 @@ export async function compileWsdlToProject(
 export {assessSchemaSource, serializeAssessmentReport, parseAssessmentReport, assessmentExitCode, ASSESSMENT_VERSION, ASSESSMENT_BASIS} from './compiler/checkedAssessment.js';
 export type {ApplicationGroupsOptions, ApplicationGroupName} from './compiler/applicationGroups.js';
 export type {CheckedAssessmentReport, AssessmentObligation, AssessedOperation, AssessmentStatus} from './compiler/checkedAssessment.js';
+export type {CheckedPayloadDiagnostic} from './compiler/payloadDiagnostics.js';

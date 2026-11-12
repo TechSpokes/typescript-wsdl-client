@@ -21,6 +21,8 @@ console.log(report.kind);
 
 The report separates wrapper and companion outcomes and excludes raw XML and decoded values. Configuration can select a consumer-owned `sourceCorrectionsFile`; the same effective contract is used for planning, inspection and generation. A correction draft does not authorize execution until its semantic choices are completed. See [source corrections and offline inspection](checked-gateway.md#consumer-owned-source-corrections).
 
+Optional `diagnostic` metadata uses `CheckedPayloadDiagnostic` and `checked-payload-diagnostic-v1` across inspection and newly generated runtime/gateway failures. It identifies native scoped declarations, effective types and bounded known-field locations without source locators or payload values. For explicit local authoring, `includeCorrectionTargets: true` adds `CheckedResponseCorrectionTarget` descriptors with original pinned selectors and original `declaredType`, or an unavailable reason; retain these trusted locators outside HTTP responses and logs. See [trusted original correction targets](checked-gateway.md#trusted-original-correction-targets) for compatibility and recovery rules.
+
 Set `includeCorrectionDraft: true` to request an available correction draft. Its exact resource pins can contain local source URIs; default reports retain only diagnostic resource labels.
 
 Pass the complete multi-operation checked configuration unchanged. Inspection authenticates the complete correction-source closure before selecting the requested operation and its projection; inactive companions retain their freshness checks.

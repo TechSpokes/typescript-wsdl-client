@@ -2,7 +2,7 @@ import {afterAll, describe, expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from "node:fs";
 import path from "node:path";
 import {buildCanonicalGraph} from "../../src/compiler/buildCanonicalGraph.js";
-import {prepareCorrectedSourceInputs, inspectSourceCorrectionInventory, SourceCorrectionError} from "../../src/compiler/sourceCorrections.js";
+import {prepareCorrectedSourceInputs, inspectSourceCorrectionInventory, recoverOriginalSourceCorrectionTarget, SourceCorrectionError} from "../../src/compiler/sourceCorrections.js";
 import type {SourceCorrectionInventory, SourceCorrectionInventoryNode, SourceCorrectionSelector} from "../../src/compiler/sourceCorrections.js";
 import {copyOriginalSchemaResource, loadSemanticSchemaInput} from "../../src/loader/schemaInput.js";
 import type {SchemaInput} from "../../src/loader/schemaInput.js";
@@ -79,6 +79,12 @@ describe("source correction recipes", () => {
     const addedGraphNode = graph.nodes.find(node => node.id === added.id);
     expect(addedGraphNode?.kind).toBe("element");
     if (addedGraphNode?.kind === "element") expect(addedGraphNode.type).toMatchObject({kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "string"}});
+    const originalA = inventory.nodes.find(node => node.kind === 'element' && attr(node, 'name') === 'a')!;
+    const effectiveA = graph.nodes.find(node => node.kind === 'element' && node.name.local === 'a')!;
+    expect(recoverOriginalSourceCorrectionTarget(corrected, effectiveA.context.source, effectiveA.context.effectiveNamespace, 'element'))
+      .toMatchObject({kind: 'available', target: selector(originalA), declaredType: {namespace: XSD_NAMESPACE, local: 'string'}});
+    expect(recoverOriginalSourceCorrectionTarget(corrected, addedGraphNode!.context.source, addedGraphNode!.context.effectiveNamespace, 'element'))
+      .toEqual({kind: 'unavailable', reason: 'original-target-not-established'});
   });
 
   it("inserts existing complex types and element references at multiple original anchors", async () => {
