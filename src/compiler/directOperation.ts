@@ -250,8 +250,10 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
           if (policyOwner?.isPolicyMetadata(node)) continue;
           if (node.name.namespace === WSDL_NAMESPACE && node.name.local === 'documentation') continue;
           const soap12 = profile === 'components' && node.name.namespace === SOAP12;
-          const allowed = node.name.namespace === WSDL_NAMESPACE ? attributes[node.name.local] : node.name.namespace === SOAP || soap12
-            ? soap12 && node.name.local === 'operation' ? [...soapAttributes.operation!, 'soapActionRequired'] : soapAttributes[node.name.local] : undefined;
+          const table = node.name.namespace === WSDL_NAMESPACE ? attributes : node.name.namespace === SOAP || soap12 ? soapAttributes : undefined;
+          // @why Source names must not resolve Object.prototype members as attribute allowlists (#179).
+          const allowed = table && Object.hasOwn(table, node.name.local)
+            ? soap12 && node.name.local === 'operation' ? [...soapAttributes.operation!, 'soapActionRequired'] : table[node.name.local] : undefined;
           if (!allowed) return refuse('unsupported', 'wsdl-extension');
           for (const a of node.attributes) {
             // @why The May 2006 WSDL binding assigns no normative intent to Action without UsingAddressing.

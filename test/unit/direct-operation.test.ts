@@ -62,6 +62,39 @@ function sequence(context: SemanticContext, root: DirectMessageRoot) {
 }
 
 describe('authenticated direct operation source contract', () => {
+  for (const [profile, selectOperation, soapNamespace] of [
+    ['direct SOAP 1.1', selectDirectOperation, 'http://schemas.xmlsoap.org/wsdl/soap/'],
+    ['component SOAP 1.1', selectComponentOperation, 'http://schemas.xmlsoap.org/wsdl/soap/'],
+    ['component SOAP 1.2', selectComponentOperation, 'http://schemas.xmlsoap.org/wsdl/soap12/'],
+  ] as const) {
+    describe(`binding allowlists: ${profile}`, () => {
+      async function check(extension = '') {
+        const directory = await mkdtemp(path.join(scratch, 'allowlist-'));
+        const source = path.join(directory, 'source.wsdl');
+        await writeFile(source, sourceText.replace('<soap:binding ', extension + '<soap:binding ')
+          .replaceAll('http://schemas.xmlsoap.org/wsdl/soap/', soapNamespace));
+        return selectOperation(source, selector, {loading: {policy: {fileRoots: [directory]}}});
+      }
+
+      it('preserves the supported operation control', async () => {
+        const result = await check();
+        expect(result.kind).toBe('selected');
+        if (result.kind !== 'selected') throw new Error(result.rule);
+        expect(result.contract.binding).toMatchObject({version: soapNamespace.endsWith('/soap12/') ? '1.2' : '1.1',
+          action: 'urn:checked:GetForecast', style: 'document', use: 'literal'});
+        expect(result.contract.admitted).toBe(false);
+      });
+
+      it.each(['constructor', 'toString', '__proto__', 'ordinaryUnknown'])('refuses unknown %s source syntax', async name => {
+        for (const prefix of ['soap', 'wsdl']) for (const attributes of [' flag="x"', '', ' wsdl:required="true"']) {
+          const result = await check(`<${prefix}:${name}${attributes}/>`);
+          expect(result, `${prefix}:${name}${attributes}`).toMatchObject({kind: 'unsupported', rule: 'wsdl-extension'});
+          expect('contract' in result).toBe(false);
+        }
+      });
+    });
+  }
+
   it('keeps additive component source authority distinct from preview codec admission', async () => {
     const contract = selected(await selectComponentOperation(forecast, selector, {loading}));
     expect(contract).toMatchObject({basis: 'native-component-premises-v1', correspondence: 'dated-XSD-2004-components-v1', admitted: false});
