@@ -62,9 +62,12 @@ describe('fresh-only scoped identity compatibility', () => {
     const inherited = deriveActualComplexContent(request.actual, named('EmptyExtension'));
     const ur = deriveActualComplexContent(request.actual, named('UrExtension'));
     const builtin = deriveBuiltinAnyTypeContent(request.actual, named('D'));
+    const urBase = deriveBuiltinAnyTypeContent(request.actual, named('UrExtension'));
     for (const result of [d, inherited, ur, builtin]) assert.equal(result.kind, 'checked');
     assert.equal(d.kind, 'checked'); assert.equal(inherited.kind, 'checked');
     assert.equal(ur.kind, 'checked'); assert.equal(builtin.kind, 'checked');
+    assert.equal(urBase.kind, 'checked');
+    expect(ur.view.urTypeWildcards).toEqual(urBase.view.urTypeWildcards);
     assert.ok('particle' in d.view.content && 'particle' in inherited.view.content);
     expect(d.view.content.particle).toBe(inherited.view.content.particle);
     // Separate actual mappings may allocate separate objects for the exact same component ID/tuple.
@@ -73,7 +76,8 @@ describe('fresh-only scoped identity compatibility', () => {
     for (const [result, family] of [[d, 'effective'], [ur, 'effective'], [builtin, 'builtin-anyType']] as const)
       for (const id of result.view.synthetic) {
         const node = particleContentNode(request.actual, result.view, id); assert.ok(node); assert.equal(node.identity.kind, 'scoped');
-        expect(JSON.parse(id)).toEqual(['semantic-private-particle-v1', family,
+        const expectedFamily = result === ur && urBase.view.synthetic.includes(id) ? 'builtin-anyType' : family;
+        expect(JSON.parse(id)).toEqual(['semantic-private-particle-v1', expectedFamily,
           node.identity.owner, node.identity.path, node.identity.role]);
         expect(request.actual.lookup(id).kind).toBe('missing');
         rejection(request.candidate(delta(request, node)), 'identity');

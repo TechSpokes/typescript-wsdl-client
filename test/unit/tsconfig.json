@@ -7,6 +7,7 @@
     "rootDir": "../.."
   },
   "include": [
+    "anytype-empty-extension.test.ts",
     "s06-gap-regressions.test.ts",
     "component-response-branches.test.ts",
     "component-response-branches-capsule.test.ts",
