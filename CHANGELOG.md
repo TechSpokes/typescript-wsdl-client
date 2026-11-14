@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(ci): refresh artifact uploads across product and research qualification and update the roadmap baseline.
+
 ## [1.6.0] - 2026-11-12
 
 - feat(checked): validate independently pinned application-error response branches with typed HTTP 502 outcomes.

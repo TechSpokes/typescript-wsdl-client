@@ -39,7 +39,7 @@ jobs:
         run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
       - name: Installed checked gateway HTTP and SOAP
         run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: linux-node-${{ matrix.node }}-reference
@@ -78,7 +78,7 @@ jobs:
         run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
       - name: Installed checked gateway HTTP and SOAP
         run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: windows-node-${{ matrix.node }}-reference

@@ -36,7 +36,7 @@ jobs:
         if: matrix.node == 24
         run: npm run test:conformance -- --exclude "test/conformance/reference/**"
       - name: Installed timing evidence
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: linux-node-${{ matrix.node }}-installed-timings
@@ -48,7 +48,7 @@ jobs:
             tmp/conformance/**/result.json
             tmp/conformance/**/context.json
           if-no-files-found: ignore
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: linux-node-${{ matrix.node }}-product
@@ -82,7 +82,7 @@ jobs:
         env:
           NPM_CACHE_RESTORED: ${{ steps.node.outputs.cache-hit }}
       - name: Installed timing evidence
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: windows-node-${{ matrix.node }}-installed-timings
@@ -94,7 +94,7 @@ jobs:
             tmp/conformance/**/result.json
             tmp/conformance/**/context.json
           if-no-files-found: ignore
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: windows-node-${{ matrix.node }}-product
