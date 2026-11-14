@@ -144,13 +144,16 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
         if (absent) return node.mixed ? particleContent(node, sequence(node, NONE)) : EMPTY;
         return particleContent(node, particle.id);
       };
-      const builtin = (owner: ComplexTypeNode, reference: Reference): RawComplexContent => {
+      const builtin = (owner: ComplexTypeNode, reference: Reference): RawComplexContent | ResourceLimitFailure => {
         if (reference.kind !== 'builtin' || reference.name.local !== 'anyType') return fail(owner.id, 'Complex content requires a complex base');
-        budget.chargeWork(10);
-        const wildcard = Object.freeze({namespace: Object.freeze({value: '##any', context: owner.context}), processContents: 'lax'} as const);
-        const id = synthetic(owner, Object.freeze({kind: 'any', wildcard}), OPTIONAL_MANY);
-        budget.chargeWork(); urTypeWildcards.push(id);
-        budget.chargeWork(4); return Object.freeze({kind: 'mixed', particle: sequence(owner, [id])});
+        // @why Empty extension inherits the authentic base particle, not a structural copy (#477).
+        const mapped = deriveBuiltinAnyTypeContent(context, owner.id);
+        if (mapped.kind === 'resource-limit') return mapped;
+        if (mapped.kind !== 'checked') throw new MappingFailure(mapped);
+        budget.chargeWork(6 + mapped.view.urTypeWildcards.length);
+        for (const node of generatedNodes.get(mapped.view)!.values()) {budget.chargeWork(2); additions.push(node);}
+        urTypeWildcards.push(...mapped.view.urTypeWildcards);
+        return mapped.view.content;
       };
       type Frame = {node: ComplexTypeNode; base?: ComplexTypeNode; entered: boolean};
       budget.chargeWork(4); const stack: Frame[] = [{node: complex(type), entered: false}];
@@ -194,6 +197,7 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
           if (node.derivation?.kind !== 'extension') content = declared;
           else {
             const base = frame.base ? mapped.get(frame.base.id)! : builtin(node, node.derivation.base);
+            if (base.kind === 'resource-limit') return base;
             if (base.kind === 'simple' || base.kind === 'opaque-builtin') return fail(node.id, 'Complex-content extension cannot extend scalar or unresolved builtin content');
             if (declared.kind === 'empty') content = base;
             else if (base.kind === 'empty') content = declared;

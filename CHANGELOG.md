@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-11-14
+
+- fix(compiler): preserve builtin particle identity when assessing empty anyType extensions.
+- chore(deps): refresh existing XML parser and lint dependencies for release qualification.
 - fix(compiler): return typed refusals for unknown WSDL and SOAP names that collide with object prototype properties.
 - test(compiler): cover SOAP 1.2 action metadata and bounded shared-group preparation from the S06 gap review.
 - chore(ci): refresh artifact uploads across product and research qualification and update the roadmap baseline.
