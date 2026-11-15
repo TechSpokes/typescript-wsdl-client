@@ -19,6 +19,7 @@ const resources = ['error.wsdl', 'payload.xsd'].map(file => ({uri: pathToFileURL
 for (const [mode, file] of [['soap11', 'outer.wsdl'], ['soap12', 'outer12.wsdl'], ['mixed', 'outer-mixed.wsdl']] as const) {
   const project = path.join(root, mode);
   await runGenerationPipeline({wsdl: path.join(inputs, file), model: 'checked-components-v1', checkedComponents: {
+    httpResponseHeaders: ['X-RateLimit-Limit', 'x-ratelimit-remaining', 'X-RateLimit-Window'],
     selectors: [outerSelector, ...(mode === 'mixed' ? [{...outerSelector, operation: 'Ordinary'}] : [])],
     service: name('urn:test:outer', 'Service'), port: 'Port',
     fileRoots: [inputs], sourceResources: [{uri: pathToFileURL(path.join(inputs, 'payload.xsd')).href,

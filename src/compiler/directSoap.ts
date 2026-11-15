@@ -1,4 +1,6 @@
 import {isApplicationUnmetered} from './semanticBudget.js';
+import {normalizeHttpResponseHeaders, captureHttpResponseHeaders} from './httpResponseHeaders.js';
+import type {HttpResponseObservation} from './httpResponseHeaders.js';
 import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
 import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Shared retained-operation SOAP exchange; profile-specific authority stays explicit. */
@@ -40,6 +42,7 @@ export interface DirectSoapOptions {
   readonly capabilities?: readonly string[];
 }
 export interface DirectSoapFailure {
+  readonly http?: HttpResponseObservation;
   readonly kind: DirectCodecFailure['kind'] | 'transport' | 'protocol';
   readonly rule: string;
   readonly usage: ResolverUsage;
@@ -77,12 +80,14 @@ export type DeclaredSoapFault = Readonly<{name: string; code: ExpandedName; code
  * @constraints Unassessed detail remains only in responseBytes; no native value receipt is issued.
  */
 export interface ComponentProtocolFault<F extends ProtocolFaultMetadata = ProtocolFaultMetadata> {
+  readonly http?: HttpResponseObservation;
   readonly kind: 'soap-fault'; readonly admitted: false;
   readonly fault: F;
   readonly responseBytes: Uint8Array; readonly status: number; readonly usage: ResolverUsage;
   readonly ignoredHeaders?: readonly ExpandedName[];
 }
 type DecodedSoapResult<D> = DirectSoapFailure | Readonly<{
+  http?: HttpResponseObservation;
   kind: 'soap-response' | 'soap-fault'; admitted: false;
   decoded: D;
   /** Actual bounded HTTP entity bytes, before any decoding; caller-owned data. */
@@ -94,6 +99,7 @@ type DecodedSoapResult<D> = DirectSoapFailure | Readonly<{
   usage: ResolverUsage;
 }>;
 export interface ComponentApplicationErrorSoapResult {
+  readonly http?: HttpResponseObservation;
   readonly kind: 'application-error'; readonly branch: string; readonly admitted: false;
   readonly decoded: ComponentApplicationErrorDecodedXml;
   readonly responseBytes: Uint8Array; readonly status: number; readonly usage: ResolverUsage;
@@ -105,6 +111,8 @@ export type ComponentSoapResult = DecodedSoapResult<ComponentDecodedXml> | Compo
 export type ComponentRecordSoapResult = DecodedSoapResult<ComponentDecodedXml | ComponentRecordDecodedXml> | ComponentProtocolFault;
 export type ComponentResponseBranchesSoapResult = ComponentRecordSoapResult | ComponentApplicationErrorSoapResult;
 export interface ComponentSoapOptions extends Omit<DirectSoapOptions, 'endpoint' | 'allowEndpoint'> {
+  /** Explicit bounded HTTP observation; an empty selection observes only status. */
+  readonly httpResponseHeaders?: readonly string[];
   readonly endpoint?: string;
   /** Optional restriction; omission permits only the configured or selected address. */
   readonly allowEndpoint?: (endpoint: URL) => boolean;
@@ -240,7 +248,9 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
   const {context} = inspectDirectOperation(contract);
   if (input.direction.kind !== 'input') throw new TypeError('SOAP request requires the exact input mapping');
   const {budget} = context;
+  let http: HttpResponseObservation | undefined;
   const fail = (kind: DirectSoapFailure['kind'], rule: string, phase?: 'input' | 'response'): DirectSoapFailure => Object.freeze({kind, rule,
+    ...(http ? {http} : {}),
     ...(profile.component && phase ? {phase} : {}), usage: Object.freeze({...budget.usage()})});
   let signal: AbortSignal | undefined;
   const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
@@ -253,8 +263,11 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     check();
     // Options are a closed capability surface. Never silently discard security,
     // headers, endpoint agents, redirects, streaming or other caller extensions.
-    const optionRule = directSoapOptionsShape(options, check, profile.component ? ['ca'] : []);
+    const optionRule = directSoapOptionsShape(options, check, profile.component ? ['ca', 'httpResponseHeaders'] : []);
     if (optionRule) return fail('unsupported', optionRule);
+    let selection: readonly string[] | undefined;
+    try {selection = profile.component ? normalizeHttpResponseHeaders(options.httpResponseHeaders) : undefined;}
+    catch {return fail('unsupported', 'httpResponseHeaders selection');}
     signal = options.signal;
     if (signal !== undefined && !(signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
     const allowEndpoint = options.allowEndpoint;
@@ -355,10 +368,13 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
         return super.request(url, data, (error: unknown, res: {status: number; headers: Record<string, unknown>} | undefined, bytes: unknown) => {
           // Never throw through HttpClient's detached then-handler.
           try {
-           check();
             if (error) hookFailure = error;
             else if (!res || !Buffer.isBuffer(bytes)) stop('transport', 'raw response bytes unavailable');
-            else response = {bytes, status: res.status, contentType: String(res.headers['content-type'] ?? ''), encoding: String(res.headers['content-encoding'] ?? '')};
+            else {
+              if (selection !== undefined) http = captureHttpResponseHeaders(res.status, res.headers, selection);
+              response = {bytes, status: res.status, contentType: String(res.headers['content-type'] ?? ''), encoding: String(res.headers['content-encoding'] ?? '')};
+            }
+            check();
           } catch (failure) {hookFailure = failure;}
           // No response object/data on this sentinel: node-soap cannot enter
           // xmlToObject, including its special err.response parsing path.
@@ -385,21 +401,21 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     const observed: {bytes: Buffer; status: number; contentType: string; encoding: string} = response;
     const assessed = assessSoapResponse(contract, output, faults, observed.bytes, profile, {signal, limits, uri: endpoint.href,
       responseMetadata: {status: observed.status, contentType: observed.contentType, contentEncoding: observed.encoding}});
-    if (!('admitted' in assessed)) return assessed;
+    if (!('admitted' in assessed)) return http ? Object.freeze({...assessed, http}) : assessed;
     if (assessed.kind === 'application-error') {
       if (assessed.decoded?.kind !== 'component-application-error-decoded') throw new TypeError('Native application error receipt required');
-      return Object.freeze({kind: 'application-error', branch: assessed.decoded.branch, admitted: false,
+      return Object.freeze({kind: 'application-error', branch: assessed.decoded.branch, admitted: false, ...(http ? {http} : {}),
         decoded: assessed.decoded as ComponentApplicationErrorDecodedXml, responseBytes: new Uint8Array(observed.bytes), status: observed.status,
         usage: assessed.usage, ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
     }
     if (assessed.decoded === undefined) {
       if (!profile.component || !assessed.fault || 'name' in assessed.fault) throw new TypeError('Missing decoded SOAP response');
-      return Object.freeze({kind: 'soap-fault' as const, admitted: false as const, fault: assessed.fault,
+      return Object.freeze({kind: 'soap-fault' as const, admitted: false as const, fault: assessed.fault, ...(http ? {http} : {}),
         responseBytes: new Uint8Array(observed.bytes), status: observed.status, usage: assessed.usage,
         ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});
     }
     if (assessed.fault && !('name' in assessed.fault)) throw new TypeError('Decoded fault requires its declared application mapping');
-    return Object.freeze({kind: assessed.kind, admitted: false as const, decoded: assessed.decoded as Exclude<D, ComponentApplicationErrorDecodedXml>,
+    return Object.freeze({kind: assessed.kind, admitted: false as const, ...(http ? {http} : {}), decoded: assessed.decoded as Exclude<D, ComponentApplicationErrorDecodedXml>,
       responseBytes: new Uint8Array(observed.bytes), status: observed.status, usage: assessed.usage,
       ...(assessed.fault && 'name' in assessed.fault ? {fault: assessed.fault} : {}),
       ...(assessed.ignoredHeaders ? {ignoredHeaders: assessed.ignoredHeaders} : {})});

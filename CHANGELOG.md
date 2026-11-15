@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-11-15
+
+- feat(checked): observe bounded selected upstream HTTP response headers and opt into namespaced gateway publication.
+
 ## [1.6.1] - 2026-11-14
 
 - fix(compiler): preserve builtin particle identity when assessing empty anyType extensions.

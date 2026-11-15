@@ -4,6 +4,30 @@ Generation offers legacy, the default, and opt-in checked components. Start with
 
 ## Component service generation
 
+### Selected upstream HTTP response headers
+
+Generated component clients accept `soap.httpResponseHeaders`, an optional array of explicit HTTP field names. Omit it to preserve existing results; `[]` requests status only. Names normalize to lowercase, deduplicate and sort before I/O; wildcards, invalid names, accessors and selections over 16 entries refuse before dispatch.
+
+When a complete response is captured, results may include `http: {status, headers}`, where each selected field maps to a frozen array of strings. The observation and its map are frozen invocation-owned copies, separate from the XML-derived value and the existing success/fault `status`. A transport-coalesced string stays one value, including commas; original wire repetition is not reconstructed. Missing fields are absent.
+
+HTTP observation survives later SOAP response refusals, application errors and faults without admitting their bodies. For example, a plain-text HTTP 429 still refuses as `protocol` with rule `SOAP response Content-Type`, while `http.status` is 429. Source, artifact, input and option denials before I/O have no observation. TLS/socket errors, incomplete responses and termination before complete capture have none; cancellation or timeout after capture may retain it. `ignoredHeaders` continues to mean SOAP XML header blocks.
+
+The fixed projection limits are 16 selection entries, 128 ASCII bytes per field name, 8 values per field, 1024 UTF-8 bytes per value and 8192 aggregate UTF-8 bytes for exposed names and values. Malformed, control-containing or over-bound fields are omitted whole, without truncation. Aggregate overflow produces an empty map with the observed status. These limits bound retained observation after transport parsing; transport parser limits and caller-owned SOAP body/resource policy remain unchanged. Observation omission never changes native SOAP admission.
+
+Gateway publication requires a separate generation opt-in in the existing `--checked-config` file:
+
+```json
+{"httpResponseHeaders":["X-RateLimit-Limit","X-RateLimit-Remaining","X-RateLimit-Window"]}
+```
+
+The API equivalent is `checkedComponents: {httpResponseHeaders: [...]}`. Each generated route pins that selection for its own call, independently of extra client-only observation. Merely enabling client capture publishes nothing. An explicit empty gateway selection publishes only status; omission preserves current gateway output.
+
+Opted-in routes emit `x-wsdl-tsc-upstream-status` as a decimal string and `x-wsdl-tsc-upstream-header-<normalized-name>` with captured values joined by comma and space. OpenAPI documents these optional string headers on responses that may follow upstream execution. Existing REST bodies and status codes remain unchanged: upstream 429 normally remains downstream 502 with informational upstream status 429. No headers are emitted without a complete observation. The fixed namespace prevents upstream names from taking over cookies, authentication, framing or browser policy.
+
+Select only metadata appropriate for your application; there is no implicit sensitive-header preset. Unselected cookies, authorization and private headers never enter the projection. Rate interpretation, scheduling, budgets, backoff and retries remain consumer responsibilities; this option does not retry business operations or activate streaming. Regenerate matched clients and gateways to adopt the option; runtime V1-V5 handshakes, capsules, source fingerprints, frozen direct-preview behavior and legacy defaults remain unchanged.
+
+### Service and binding selection
+
 SOAP 1.2 document/literal operations use the selected binding's envelope namespace and `application/soap+xml` action parameter. Select service, port and binding through the existing checked configuration when multiple ports are available; a SOAP version flag is unnecessary. SOAP 1.2 artifacts have their own compatibility scope, so regenerate matched clients, capsules and gateways together. Existing SOAP 1.1 and direct-runtime artifacts retain their contracts.
 
 Generated SOAP 1.2 clients use the additive `checkedComponentRuntimeV2` package-root binding with protocol `checked-component-soap12-runtime-v1`. Existing SOAP 1.1 clients keep `checkedComponentRuntimeV1` and `checked-component-runtime-v2`, including their TypeScript injection contract. The older binding refuses SOAP 1.2 artifacts before SOAP dispatch.

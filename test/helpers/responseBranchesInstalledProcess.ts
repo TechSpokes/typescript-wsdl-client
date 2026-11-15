@@ -33,7 +33,10 @@ const upstream = createServer(async (request, response) => {
   let xml = ''; for await (const chunk of request) xml += String(chunk);
   observed.push({xml, action: request.headers.soapaction as string | undefined, contentType: request.headers['content-type'],
     method: request.method, url: request.url});
-  response.writeHead(status, {'Content-Type': protocol === ns11 ? 'text/xml; charset=utf-8' : 'application/soap+xml; charset=utf-8'});
+  response.writeHead(status, {'Content-Type': status === 429 ? 'text/plain' : protocol === ns11 ? 'text/xml; charset=utf-8' : 'application/soap+xml; charset=utf-8',
+    'X-RateLimit-Limit': '500', 'X-RateLimit-Remaining': '499', 'X-RateLimit-Window': '60000',
+    'set-cookie': 'COOKIE_SENTINEL', authorization: 'AUTH_SENTINEL'});
+  if (status === 429) {response.end('UNVALIDATED_BODY_SENTINEL'); return;}
   if (hold) {
     response.once('close', () => released?.());
     response.write(`<s:Envelope xmlns:s="${protocol}"><s:Body>`); arrived?.(); return;
@@ -47,6 +50,12 @@ const bounded = async <T>(promise: Promise<T>, message: string): Promise<T> => {
   finally {clearTimeout(timer);}
 };
 const soapCallsBefore = () => observed.length;
+const metadata = (reply: {headers: Record<string, unknown>; body: string}, status: number) => {
+  assert.equal(reply.headers['x-wsdl-tsc-upstream-status'], String(status));
+  for (const [name, value] of [['limit', '500'], ['remaining', '499'], ['window', '60000']])
+    assert.equal(reply.headers['x-wsdl-tsc-upstream-header-x-ratelimit-' + name], value);
+  assert.doesNotMatch(JSON.stringify(reply.headers) + reply.body, /SENTINEL/);
+};
 try {
   upstream.listen(0, '127.0.0.1'); await once(upstream, 'listening');
   const address = upstream.address(); assert.ok(address && typeof address !== 'string');
@@ -72,19 +81,23 @@ try {
     const send = (server = app) => server.inject({method: 'POST', url: '/v1/branches/Fetch', payload: JSON.stringify('owned-request'), headers: {'content-type': 'application/json'}});
     const firstCall = observed.length;
     const good = await send(); assert.equal(good.statusCode, 200, good.body); assert.deepEqual(good.json(), expectedSuccess);
+    metadata(good, 200);
     if (mode === 'mixed') {
       body = '<o:OrdinaryResponse xmlns:o="urn:test:outer">ordinary success</o:OrdinaryResponse>';
       const ordinary = await app.inject({method: 'POST', url: '/v1/branches/Ordinary', payload: JSON.stringify('owned-request'),
         headers: {'content-type': 'application/json'}});
       assert.equal(ordinary.statusCode, 200, ordinary.body); assert.deepEqual(ordinary.json(), 'ordinary success');
+      metadata(ordinary, 200);
     }
     body = applicationError;
     const error = await send(); assert.equal(error.statusCode, 502, error.body); assert.deepEqual(error.json(), expectedError);
+    metadata(error, 200);
     body = mode !== 'soap12'
       ? '<s:Fault><faultcode>s:Server</faultcode><faultstring>synthetic fault</faultstring></s:Fault>'
       : '<s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">synthetic fault</s:Text></s:Reason></s:Fault>';
     status = 500;
     const fault = await send(); assert.equal(fault.statusCode, 502, fault.body);
+    metadata(fault, 500);
     assert.equal(fault.json().kind, 'soap-fault'); assert.equal(fault.json().fault.string, 'synthetic fault');
     assert.equal(fault.json().fault.version, mode !== 'soap12' ? '1.1' : '1.2');
     assert.equal(acceptsUpstream(fault.json()), true); assert.equal(acceptsSuccess(fault.json()), false);
@@ -97,11 +110,16 @@ try {
       success.replace('>2<', '>invalid-secret<')]) {
       body = invalid; const before = observed.length;
       const refusal = await send(); assert.equal(refusal.statusCode, 502, refusal.body);
+      metadata(refusal, 200);
       assert.ok(!['application-error', 'soap-fault', 'soap-response'].includes(refusal.json().kind), refusal.body);
       assert.doesNotMatch(refusal.body, /invalid-secret/); assert.equal(observed.length, before + 1, 'Selected errors must not retry SOAP or fall back');
     }
     body = applicationError; status = 500;
     const protocolFailure = await send(); assert.equal(protocolFailure.statusCode, 502); assert.equal(protocolFailure.json().kind, 'protocol');
+    metadata(protocolFailure, 500);
+    status = 429;
+    const throttled = await send(); assert.equal(throttled.statusCode, 502); metadata(throttled, 429);
+    assert.equal(throttled.json().kind, 'protocol'); assert.equal(throttled.json().rule, 'SOAP response Content-Type');
     status = 200;
     for (const request of observed.slice(firstCall)) {
       assert.equal(request.method, 'POST'); assert.equal(request.url, '/owned-branches');
@@ -128,6 +146,7 @@ try {
     const beforeAbort = observed.length, immediateCancellation = await send(stopped);
     assert.equal(immediateCancellation.statusCode, 499, immediateCancellation.body);
     assert.equal(immediateCancellation.json().kind, 'cancelled'); assert.equal(observed.length, beforeAbort);
+    assert.equal(immediateCancellation.headers['x-wsdl-tsc-upstream-status'], undefined);
     await stopped.close(); apps.delete(stopped);
     const controller = new AbortController();
     const cancelled = await host.buildServer({...config, signal: controller.signal}); apps.add(cancelled);
@@ -138,6 +157,7 @@ try {
     await bounded(reached, 'Owned SOAP response did not start before cancellation');
     controller.abort();
     const aborted = await pending; assert.equal(aborted.statusCode, 499, aborted.body); assert.equal(aborted.json().kind, 'cancelled');
+    assert.equal(aborted.headers['x-wsdl-tsc-upstream-status'], undefined);
     await bounded(closed, 'Cancelled SOAP response socket was not released');
     hold = false; arrived = undefined; released = undefined;
     await cancelled.close(); apps.delete(cancelled);
@@ -176,8 +196,20 @@ try {
         ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})),
       recordSources: saved.runtime.recordSources.map(item => ({...item, source: physical(item.source)})),
       branchSources: saved.runtime.branchSources.map(item => ({...item, source: physical(item.source)})),
-      soap: {service: {namespace: 'urn:test:outer', local: 'Service'}, port: 'Port', endpoint, allowEndpoint: (url: URL) => url.href === endpoint}};
+      soap: {service: {namespace: 'urn:test:outer', local: 'Service'}, port: 'Port', endpoint, allowEndpoint: (url: URL) => url.href === endpoint,
+        httpResponseHeaders: ['X-RateLimit-Limit', 'x-ratelimit-remaining', 'X-RateLimit-Window']}};
     delete (runtimeOptions as Record<string, unknown>).capsuleFiles;
+    const operation = await import(pathToFileURL(path.join(project, 'dist/client/operations/0/client.js')).href) as {
+      createClient(binding: object): {Fetch(input: string, options: object): Promise<{kind: string; http?: {status: number; headers: Record<string, readonly string[]>}}>};
+    };
+    body = success; status = 200;
+    const captured = await operation.createClient(current).Fetch('owned-request', runtimeOptions);
+    assert.equal(captured.kind, 'soap-response');
+    assert.deepEqual(captured.http, {status: 200, headers: Object.assign(Object.create(null), {
+      'x-ratelimit-limit': ['500'], 'x-ratelimit-remaining': ['499'], 'x-ratelimit-window': ['60000'],
+    })});
+    assert.ok(Object.isFrozen(captured.http) && Object.isFrozen(captured.http.headers) && Object.isFrozen(captured.http.headers['x-ratelimit-limit']));
+    assert.doesNotMatch(JSON.stringify(captured), /SENTINEL/);
     const beforeVersion = observed.length;
     const wrongVersion = await current.execute(capsule.toString('base64'), 'owned-request', runtimeOptions, previous.version);
     assert.equal(wrongVersion.kind, 'incompatible-artifact');

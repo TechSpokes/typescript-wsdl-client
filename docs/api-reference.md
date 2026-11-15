@@ -316,6 +316,8 @@ interface PipelineOptions {
 
 Legacy calls require `catalogOut` at runtime. Checked component calls use `model: "checked-components-v1"` and optional `checkedComponents`; they return checked inventory/planning instead of a legacy catalog contract. See [the complete programmatic checked example](checked-generation.md#programmatic-planning-and-generation) for source policy and planning before generation. Checked RPC outputs remain opaque strings and buffered checked values; legacy stream configuration does not activate checked streaming.
 
+Component runtime options accept `soap.httpResponseHeaders?: readonly string[]` for bounded observation, yielding optional `http: {status: number, headers: Readonly<Record<string, readonly string[]>>}` on successes, faults, application errors and post-capture failures. Generation configuration `checkedComponents.httpResponseHeaders` separately pins gateway publication; client observation alone never publishes. See [selected upstream HTTP response headers](checked-gateway.md#selected-upstream-http-response-headers) for normalization, bounds, lifecycle, failure semantics and OpenAPI serialization.
+
 ## runMultiServicePipeline
 
 Generate independent legacy clients and service routers, then publish one aggregate gateway plugin and combined OpenAPI JSON document. The [multi-service guide](gateway-guide.md#multi-service-setup) supplies a complete configuration with explicit, disjoint outputs:
