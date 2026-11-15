@@ -29,7 +29,7 @@ Pass the complete multi-operation checked configuration unchanged. Inspection au
 
 ## Checked runtime bindings
 
-New SOAP 1.1 component clients inject package-root `checkedComponentRuntimeV3` with handshake `checked-component-soap11-runtime-v1`. SOAP 1.2 keeps `checkedComponentRuntimeV2`, and existing SOAP 1.1 artifacts keep their V1 binding. These injection contracts are separate from package and capsule versions.
+Ordinary request-response SOAP 1.1 component clients inject package-root `checkedComponentRuntimeV3` with handshake `checked-component-soap11-runtime-v1`. SOAP 1.2 request-response clients keep `checkedComponentRuntimeV2`, and existing SOAP 1.1 artifacts keep their V1 binding. Branch-enabled and one-way clients use the separately versioned bindings documented below. These injection contracts are separate from package and capsule versions.
 
 A V3 protocol `soap-fault` exposes version `1.1`, expanded `code`, `string`, optional `actor`, response bytes and transport status without a declared application `value` or fault `name`. A uniquely declared fault detail retains native decoding; malformed declared content is refused. See [runtime compatibility](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/005-checked-protocol-fault-compatibility.md) and [migration](migration.md#from-13x-to-140).
 
@@ -317,6 +317,10 @@ interface PipelineOptions {
 Legacy calls require `catalogOut` at runtime. Checked component calls use `model: "checked-components-v1"` and optional `checkedComponents`; they return checked inventory/planning instead of a legacy catalog contract. See [the complete programmatic checked example](checked-generation.md#programmatic-planning-and-generation) for source policy and planning before generation. Checked RPC outputs remain opaque strings and buffered checked values; legacy stream configuration does not activate checked streaming.
 
 Component runtime options accept `soap.httpResponseHeaders?: readonly string[]` for bounded observation, yielding optional `http: {status: number, headers: Readonly<Record<string, readonly string[]>>}` on successes, faults, application errors and post-capture failures. Generation configuration `checkedComponents.httpResponseHeaders` separately pins gateway publication; client observation alone never publishes. See [selected upstream HTTP response headers](checked-gateway.md#selected-upstream-http-response-headers) for normalization, bounds, lifecycle, failure semantics and OpenAPI serialization.
+
+Generation-only `checkedComponents.httpResponseHeaderNames?: Readonly<Record<string, string>>` maps selected upstream identities to full downstream names. `httpResponseStatusHeaderName?: string` sets the status destination. Both require an explicit selection, normalize identities to lowercase and refuse unsafe or colliding final names before writes. Unmapped fields retain the namespaced defaults; runtime observation keys remain upstream identities. The CLI uses these same properties in `--checked-config`.
+
+Input-only document/literal generation selects `checkedComponentRuntimeV6` (SOAP 1.1) or `checkedComponentRuntimeV7` (SOAP 1.2) from the package root. Their handshakes are `checked-component-soap11-one-way-runtime-v1` and `checked-component-soap12-one-way-runtime-v1`. These bindings return failures, value-less protocol faults or `soap-acknowledgement` with `admitted: false`, actual `status`, owned empty `responseBytes`, `usage` and optional `http`. There is no application `value`, `decoded`, `fault` or `branch` on an acknowledgement. Existing V1-V5 signatures and result unions remain unchanged; see [one-way operation policy](checked-gateway.md#one-way-operations).
 
 ## runMultiServicePipeline
 

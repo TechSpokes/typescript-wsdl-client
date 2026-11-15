@@ -14,10 +14,12 @@ import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectComponentValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
-import {normalizeHttpResponseHeaders} from '../compiler/httpResponseHeaders.js';
+import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from '../compiler/httpResponseHeaders.js';
 
 interface CheckedGatewayOptions {
   readonly httpResponseHeaders?: readonly string[];
+  readonly httpResponseHeaderNames?: Readonly<Record<string, string>>;
+  readonly httpResponseStatusHeaderName?: string;
   /** Internal non-writing preparation; native qualification and lowering still run. */
   readonly emit?: boolean;
   readonly clientDir: string;
@@ -40,14 +42,17 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   inspectReconstructedComponentSource(expected);
   const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
   const branched = !!expected.responseBranches;
+  const oneWay = expected.contract.pattern === 'one-way';
   const selection = normalizeHttpResponseHeaders(options.httpResponseHeaders);
+  const publication = normalizeHttpResponseHeaderNames(selection, options.httpResponseHeaderNames, options.httpResponseStatusHeaderName);
   const observedHeaders = selection === undefined ? {} : {headers: {
-    'x-wsdl-tsc-upstream-status': {description: 'Actual upstream HTTP status when a complete response was observed', schema: {type: 'string', pattern: '^[0-9]{3}$'}},
-    ...Object.fromEntries(selection.map(name => [`x-wsdl-tsc-upstream-header-${name}`, {
+    [publication.status]: {description: 'Actual upstream HTTP status when a complete response was observed', schema: {type: 'string', pattern: '^[0-9]{3}$'}},
+    ...Object.fromEntries(selection.map(name => [publication.headers[name]!, {
       description: 'Selected upstream values joined with comma and space after transport coalescing', schema: {type: 'string'},
     }])),
   }};
-  const runtime = branched ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4'
+  const runtime = oneWay ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV7' : 'checkedComponentRuntimeV6'
+    : branched ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4'
     : expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
     .some(segment => !segment || !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment))) {
@@ -55,7 +60,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   }
   const input = expected.mappings.find(mapping => mapping.direction.kind === 'input');
   const output = expected.mappings.find(mapping => mapping.direction.kind === 'output');
-  if (!input || !output) throw new TypeError('Issued input and output mappings required');
+  if (!input || !oneWay && !output) throw new TypeError('Issued input and output mappings required');
   const {budget} = inspectDirectOperation(expected.contract).context;
   const check = () => {
     checkSemanticBudget(budget); if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
@@ -67,8 +72,8 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       && !!inspectComponentValueMapping(mapping, expected.contract).applicationGroups, components, () => {
         budget.chargeWork(); check();
       });
-  const request = schema(input, 'Request'), response = schema(output, 'Response');
-  const documentation = {request: documented(request, input, 'Request'), response: documented(response, output, 'Response')};
+  const request = schema(input, 'Request'), response = oneWay ? {} : schema(output!, 'Response');
+  const documentation = {request: documented(request, input, 'Request'), response: oneWay ? {} : documented(response, output!, 'Response')};
   const errors = expected.responseBranches ? inspectComponentResponseBranches(expected.responseBranches).errors.map((branch, index) => {
     const role = `ApplicationError_${index}`;
     const value = lowerComponentShape(branch.contract, branch.mapping, role, check).schema;
@@ -149,7 +154,8 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
         ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
       ...(expected.responseBranches ? {'x-response-branches': {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
       requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
-      responses: {'200': {...observedHeaders, description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
+      responses: {...(oneWay ? {'202': {...observedHeaders, description: 'Complete transport acknowledgement; no application output or business-success assertion'}}
+        : {'200': {...observedHeaders, description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}}}),
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
         '502': {...observedHeaders, description: branched ? 'Validated application error, SOAP fault or refused upstream response' : 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
           ...errors.map(error => error.documented), failureSchema]}}}},
@@ -209,16 +215,17 @@ ${branched ? '  const validateApplicationError = ajv.compile(schemas.application
       const result = await client[${literal(expected.contract.selector.operation)}](request.body as Request,
         {...base, soap: {...soap, signal${selection === undefined ? '' : `, httpResponseHeaders: ${literal(selection)}`}}});
 ${selection === undefined ? '' : `      if (result.http) {
-        reply.header('x-wsdl-tsc-upstream-status', String(result.http.status));
-        for (const name of ${literal(selection)}) {
+        // @constraints Node's header store preserves __proto__ as data; Fastify's ordinary header dictionary does not.
+        reply.raw.setHeader(${literal(publication.status)}, String(result.http.status));
+        for (const [name, destination] of ${literal(selection.map(name => [name, publication.headers[name]!]))}) {
           const values = result.http.headers[name];
-          if (values) reply.header('x-wsdl-tsc-upstream-header-' + name, values.join(', '));
+          if (values) reply.raw.setHeader(destination, values.join(', '));
         }
       }
-`}      if (result.kind === 'soap-response') {
+`}      ${oneWay ? `if (result.kind === 'soap-acknowledgement') return reply.code(202).send();` : `if (result.kind === 'soap-response') {
         if (!validateResponse(result.value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-response-shape'});
         return reply.type('application/json').serializer(value => JSON.stringify(value)).send(result.value);
-      }
+      }`}
       if (result.kind === 'soap-fault') {
         ${soap12 ? `const fault = {version: result.fault.version, code: result.fault.code, string: result.fault.string,
           subcodes: result.fault.subcodes, reasons: result.fault.reasons,
@@ -269,6 +276,7 @@ export default plugin;
  */
 export async function generateComponentServiceGateway(expected: readonly ReconstructedComponentSource[], options: {
   clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean; httpResponseHeaders?: readonly string[];
+  httpResponseHeaderNames?: Readonly<Record<string, string>>; httpResponseStatusHeaderName?: string;
 }): Promise<{doc: unknown; routes: Readonly<Record<string, string>>; emit: () => Promise<void>}> {
   const operations = inspectComponentSourceService(expected), routes: Record<string, string> = Object.create(null) as Record<string, string>;
   const paths: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
@@ -281,7 +289,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   for (const [index, operation] of operations.entries()) {
     tick(); const name = operation.contract.selector.operation, routePath = `${options.basePath}/${encodeURIComponent(name)}`;
     const result = await generateComponentGateway(operation, {clientDir: path.join(options.clientDir, 'operations', String(index)),
-      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, httpResponseHeaders: options.httpResponseHeaders, signal: options.signal, emit: false});
+      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, httpResponseHeaders: options.httpResponseHeaders, httpResponseHeaderNames: options.httpResponseHeaderNames, httpResponseStatusHeaderName: options.httpResponseStatusHeaderName, signal: options.signal, emit: false});
     emissions.push(result.emit);
     const doc = result.doc as Record<string, unknown>;
     documents.push(doc); routes[name] = routePath;

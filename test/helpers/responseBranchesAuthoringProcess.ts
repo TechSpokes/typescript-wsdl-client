@@ -20,7 +20,8 @@ for (const [mode, file] of [['soap11', 'outer.wsdl'], ['soap12', 'outer12.wsdl']
   const project = path.join(root, mode);
   await runGenerationPipeline({wsdl: path.join(inputs, file), model: 'checked-components-v1', checkedComponents: {
     httpResponseHeaders: ['X-RateLimit-Limit', 'x-ratelimit-remaining', 'X-RateLimit-Window'],
-    selectors: [outerSelector, ...(mode === 'mixed' ? [{...outerSelector, operation: 'Ordinary'}] : [])],
+    ...(mode === 'soap11' ? {} : {httpResponseHeaderNames: {'x-ratelimit-limit': 'RateLimit-Limit'}, httpResponseStatusHeaderName: 'X-Provider-Status'}),
+    selectors: [outerSelector, ...(mode === 'mixed' ? ['Ordinary', 'Notify'].map(operation => ({...outerSelector, operation})) : [])],
     service: name('urn:test:outer', 'Service'), port: 'Port',
     fileRoots: [inputs], sourceResources: [{uri: pathToFileURL(path.join(inputs, 'payload.xsd')).href,
       file: path.join(inputs, 'payload.xsd')}], sourceOrigins: [],

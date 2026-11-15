@@ -1,4 +1,6 @@
 import {types} from 'node:util';
+import {componentSoap11OneWayClientRuntime, componentSoap12OneWayClientRuntime} from './directClientRuntime.js';
+import {COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 import type {HttpResponseObservation} from '../compiler/httpResponseHeaders.js';
 import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
 import {directClientRuntime, componentClientRuntime, componentSoap11ClientRuntime, componentSoap12ClientRuntime,
@@ -49,6 +51,7 @@ type ComponentBranchOptions = ComponentOptions & {
   readonly branchSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly branch: string; readonly source: string}[];
 };
 type ProtocolVersion = typeof COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION
+  | typeof COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION
   | typeof COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION;
 type ProtocolOptions<V extends ProtocolVersion> = V extends typeof COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION | typeof COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION
   ? ComponentBranchOptions : ComponentOptions;
@@ -143,3 +146,12 @@ export const checkedComponentRuntimeV4 = checkedProtocolRuntime(componentSoap11B
  * @since 1.6.0
  */
 export const checkedComponentRuntimeV5 = checkedProtocolRuntime(componentSoap12BranchClientRuntime);
+
+/** SOAP 1.1 one-way binding with transport-only acknowledgement results.
+ * @since 1.6.3
+ */
+export const checkedComponentRuntimeV6 = checkedProtocolRuntime(componentSoap11OneWayClientRuntime);
+/** SOAP 1.2 one-way binding using the same bounded acknowledgement policy.
+ * @since 1.6.3
+ */
+export const checkedComponentRuntimeV7 = checkedProtocolRuntime(componentSoap12OneWayClientRuntime);

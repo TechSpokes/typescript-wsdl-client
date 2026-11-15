@@ -76,7 +76,7 @@ export function createComponentResponseBranches(outer: DirectOperationContract, 
     const result = budget.guard(() => {
       check();
       if (inspectDirectOperation(companion.companion).context.budget !== budget) stop('response-branches-shared-budget');
-      if ('parts' in outer.output) stop('response-branches-require-document-output');
+      if (!outer.output || 'parts' in outer.output) return fail('unsupported', 'response-branches-require-document-output');
       if (!Array.isArray(entries) || entries.length < 1 || entries.length > COMPONENT_RESPONSE_BRANCH_LIMITS.maxBranches) stop('response-branches-error-count');
       const errors: ErrorBranch[] = [], ids = new Set<string>(), first: ExpandedName[] = [success.spec.payloadPath[0]!];
       for (const entry of entries) {
@@ -92,7 +92,7 @@ export function createComponentResponseBranches(outer: DirectOperationContract, 
         })) stop('response-branches-discriminator-path');
         if (first.some(name => same(name, metadata.path[0]!))) stop('response-branches-unproved-disjoint');
         first.push(metadata.path[0]!);
-        if ('parts' in entry.contract.output || 'parts' in outer.output) stop('response-branches-require-document-output');
+        if (!entry.contract.output || 'parts' in entry.contract.output || 'parts' in outer.output) return fail('unsupported', 'response-branches-require-document-output');
         if (!same(entry.contract.output.element.name, outer.output.element.name)) stop('response-branches-complete-output-root');
         const mapping = createComponentValueMapping(entry.contract, {kind: 'output'}, options);
         if (mapping.kind !== 'component-mapping') return mapping;

@@ -10,4 +10,6 @@ export const COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION = 'checked-component-soap11
 /** Explicit application-error results require regenerated branch-enabled clients. */
 export const COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION = 'checked-component-soap11-branches-runtime-v1' as const;
 export const COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION = 'checked-component-soap12-branches-runtime-v1' as const;
+export const COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION = 'checked-component-soap11-one-way-runtime-v1' as const;
+export const COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION = 'checked-component-soap12-one-way-runtime-v1' as const;
 export const COMPONENT_CLIENT_RUNTIME_REPAIR = 'Regenerate matched component client and source artifacts with the installed runtime.';

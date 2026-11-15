@@ -54,11 +54,18 @@ describe('checked HTTP response metadata over owned verified TLS', () => {
     const apps: import('fastify').FastifyInstance[] = [];
     try {
       let firstSource = '';
-      for (const publish of [false, true, 'status'] as const) {
-        const project = path.join(root, publish === 'status' ? 'status-only' : publish ? 'published' : 'private');
+      for (const publish of [false, true, 'status', 'aliases', 'partial', 'status-alias'] as const) {
+        const statusOnly = publish === 'status' || publish === 'status-alias';
+        const aliases = publish === 'aliases' || publish === 'partial';
+        const statusName = aliases || publish === 'status-alias' ? 'x-provider-status' : 'x-wsdl-tsc-upstream-status';
+        const destination = (name: string) => aliases && (publish === 'aliases' || name === 'x-ratelimit-limit')
+          ? 'x-provider-' + name : 'x-wsdl-tsc-upstream-header-' + name;
+        const project = path.join(root, String(publish));
         const config = {selectors: [{portType: {namespace: ns, local: 'PingType'}, binding: {namespace: ns, local: 'Soap' + version}, operation: 'Ping'}],
           service: {namespace: ns, local: 'PingService'}, port: 'Port' + version,
-          ...(publish ? {httpResponseHeaders: publish === 'status' ? [] : selection} : {})};
+          ...(publish ? {httpResponseHeaders: statusOnly ? [] : selection} : {}),
+          ...(aliases ? {httpResponseHeaderNames: Object.fromEntries((publish === 'aliases' ? ['x-missing', ...Object.keys(rates)] : ['x-ratelimit-limit']).map(name => [name.toUpperCase(), destination(name)]))} : {}),
+          ...(statusName === 'x-provider-status' ? {httpResponseStatusHeaderName: 'X-Provider-Status'} : {})};
         const pipeline = {wsdl: path.join(fixture, 'document-literal.wsdl'), model: 'checked-components-v1' as const,
           checkedComponents: config, clientOutDir: path.join(project, 'client'), openapi: {outFile: path.join(project, 'openapi.json')},
           gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: 'ping'}};
@@ -126,15 +133,15 @@ describe('checked HTTP response metadata over owned verified TLS', () => {
           if (current === '429') expect(observed).toMatchObject({kind: 'protocol', rule: 'SOAP response Content-Type'});
           const reply = await app.inject({method: 'POST', url: '/v1/ping/Ping', payload: {value: 'first'}});
           expect(reply.statusCode).toBe(current === 'normal' ? 200 : 502);
-          expect(reply.headers['x-wsdl-tsc-upstream-status']).toBe(publish ? String(observed.http!.status) : undefined);
-          for (const [name, values] of Object.entries(rates)) expect(reply.headers['x-wsdl-tsc-upstream-header-' + name]).toBe(publish === true ? values[0] : undefined);
+          expect(reply.headers[statusName]).toBe(publish ? String(observed.http!.status) : undefined);
+          for (const [name, values] of Object.entries(rates)) expect(reply.headers[destination(name)]).toBe(publish && !statusOnly ? values[0] : undefined);
           expect(JSON.stringify(reply.headers) + reply.body).not.toMatch(/SENTINEL/);
           expect(reply.json()).not.toHaveProperty('http');
         }
         const documented = document.paths['/v1/ping/Ping']!.post.responses;
         for (const code of ['200', '502', '499', '500']) expect(documented[code]!.headers === undefined).toBe(!publish);
         if (publish) expect(Object.keys(documented['502']!.headers!).sort()).toEqual([
-          'x-wsdl-tsc-upstream-status', ...(publish === 'status' ? [] : ['x-missing', ...Object.keys(rates)].map(name => 'x-wsdl-tsc-upstream-header-' + name))].sort());
+          statusName, ...(statusOnly ? [] : ['x-missing', ...Object.keys(rates)].map(destination))].sort());
         const afterCapture = new AbortController();
         const original = HttpClient.prototype.request;
         const intercept = vi.spyOn(HttpClient.prototype, 'request').mockImplementation(function (this: HttpClient, ...args) {

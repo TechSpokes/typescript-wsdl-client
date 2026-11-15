@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {describe, expect, test} from "vitest";
 import {replaceSupportMatrix} from "../../scripts/generate-support-matrix.js";
-import {capabilities} from "./registry.js";
+import {capabilities, checkedCapabilities} from "./registry.js";
 
 function githubAnchorForHeading(heading: string): string {
   return heading.trim().toLowerCase().replace(/`/g, "").replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
@@ -26,7 +26,7 @@ export function registerDocumentationCases(): void {
       const supportedPatterns = readFileSync("docs/supported-patterns.md", "utf8");
       const anchors = collectHeadingAnchors(supportedPatterns);
 
-      for (const capability of capabilities) {
+      for (const capability of [...capabilities, ...checkedCapabilities]) {
         if (capability.docsAnchor) {
           expect(anchors.has(capability.docsAnchor), capability.id).toBe(true);
         }
@@ -36,7 +36,7 @@ export function registerDocumentationCases(): void {
     test("list every capability id in the public evidence matrix", () => {
       const supportedPatterns = readFileSync("docs/supported-patterns.md", "utf8");
 
-      for (const capability of capabilities) {
+      for (const capability of [...capabilities, ...checkedCapabilities]) {
         expect(supportedPatterns, capability.id).toContain(`\`${capability.id}\``);
       }
     });

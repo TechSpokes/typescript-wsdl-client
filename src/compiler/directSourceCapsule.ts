@@ -257,6 +257,8 @@ const soap12ComponentVersions = Object.freeze({...componentVersions, scope: 'com
 const scopedSoap12ComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap12-document-literal-record-v1'} as const);
 const branchComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap11-response-branches-v1', mapping: 'component-response-branches-v1'} as const);
 const branchSoap12ComponentVersions = Object.freeze({...branchComponentVersions, scope: 'component-soap12-response-branches-v1'} as const);
+const oneWayComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-one-way-v1'} as const);
+const oneWaySoap12ComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap12-one-way-v1'} as const);
 const rpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-strings-v1', mapping: 'component-rpc-string-values-v1'} as const);
 const typedRpcComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-rpc-typed-latin1-v1', mapping: 'component-rpc-typed-values-v1'} as const);
 type ComponentRoot = Readonly<{element: ExpandedName; message: ExpandedName; part: string}> | Readonly<{
@@ -272,13 +274,16 @@ interface ComponentResponseBranchesData {
   readonly spec: ComponentResponseBranchesSpec;
   readonly sources: readonly Readonly<{id: string; source: ComponentRecordSource}>[];
 }
-interface ComponentCompatibility extends DirectSourceSelection {
+interface ComponentCompatibilityBase extends DirectSourceSelection {
   readonly binding?: Readonly<{version: '1.2'; actionRequired: boolean}>;
   readonly selector: DirectOperationSelector; readonly action: string;
-  readonly input: ComponentRoot; readonly output: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
+  readonly input: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
 }
+type ComponentCompatibility = ComponentCompatibilityBase & (
+  {readonly output: ComponentRoot; readonly pattern?: never} | {readonly pattern: 'one-way'; readonly output?: never}
+);
 interface ComponentCapsule {
-  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions | typeof branchComponentVersions | typeof branchSoap12ComponentVersions;
+  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions | typeof branchComponentVersions | typeof branchSoap12ComponentVersions | typeof oneWayComponentVersions | typeof oneWaySoap12ComponentVersions;
   readonly resources: readonly ComponentResource[];
   readonly libraries?: readonly string[]; readonly projection?: ComponentProjectionData | null;
   readonly compatibility: ComponentCompatibility; readonly fingerprint: string;
@@ -342,15 +347,16 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
       })};
     return {element: mapping.root.element.name, message: mapping.root.message, part: mapping.root.part};
   };
-  const input = make({kind: 'input'}), output = make({kind: 'output'});
+  if (contract.pattern === 'one-way' && (responseProjection || responseBranches)) throw new Stop('unsupported', 'application-output-required');
+  const input = make({kind: 'input'}), output = contract.pattern === 'one-way' ? undefined : make({kind: 'output'});
   const faults = contract.faults.map(fault => ({name: fault.name, root: make({kind: 'fault', name: fault.name})}));
   const compatibility: ComponentCompatibility = {selector: contract.selector, service: owned.service, port: owned.port,
     ...(contract.binding.version === '1.2' ? {binding: {version: '1.2' as const, actionRequired: contract.binding.actionRequired!}} : {}),
-    action: contract.binding.action, input, output, faults};
+    action: contract.binding.action, input, ...(output ? {output} : {pattern: 'one-way' as const}), faults};
   let projection: ComponentProjectionData | null = null;
   if (responseProjection) {
     const {companion} = inspectComponentRecordProjection(responseProjection, contract);
-    if ('parts' in companion.output) throw new Stop('unsupported', 'record-projection-requires-document-output');
+    if (!companion.output || 'parts' in companion.output) throw new Stop('unsupported', 'record-projection-requires-document-output');
     const {context} = inspectDirectOperation(companion);
     projection = {spec: responseProjection.spec, source: {selector: companion.selector, action: companion.binding.action,
       output: {element: companion.output.element.name, message: companion.output.message, part: companion.output.part},
@@ -360,7 +366,7 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
     spec: responseBranches.spec,
     sources: branchOwner.errors.map(entry => {
       tick();
-      if ('parts' in entry.contract.output) throw new Stop('unsupported', 'response-branch-document-output');
+      if (!entry.contract.output || 'parts' in entry.contract.output) throw new Stop('unsupported', 'response-branch-document-output');
       const {context} = inspectDirectOperation(entry.contract);
       return {id: entry.id, source: {selector: entry.contract.selector, action: entry.contract.binding.action,
         output: {element: entry.contract.output.element.name, message: entry.contract.output.message, part: entry.contract.output.part},
@@ -406,7 +412,8 @@ function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescr
   const rpc = 'kind' in compatibility.input && compatibility.input.kind === 'rpc-typed-parts-v1';
   const typedRpc = rpc && compatibility.input.parts.some(part => part.type.namespace !== 'http://www.w3.org/2001/XMLSchema' || part.type.local !== 'string');
   if (rpc && (extended || derived.applicationGroups)) throw new Stop('unsupported', 'rpc-artifact-extension');
-  const value = {versions: derived.responseBranches ? compatibility.binding?.version === '1.2' ? branchSoap12ComponentVersions : branchComponentVersions
+  const value = {versions: compatibility.pattern === 'one-way' ? compatibility.binding?.version === '1.2' ? oneWaySoap12ComponentVersions : oneWayComponentVersions
+      : derived.responseBranches ? compatibility.binding?.version === '1.2' ? branchSoap12ComponentVersions : branchComponentVersions
       : compatibility.binding?.version === '1.2' ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
     ...(extended ? {libraries, projection} : {}), ...(derived.applicationGroups ? {applicationGroups: derived.applicationGroups,applicationGroupIdentity:derived.applicationGroupIdentity} : {}),
     ...(derived.responseBranches ? {responseBranches: derived.responseBranches} : {})};
@@ -466,8 +473,12 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
   const rpc = typedRpc || !!parsed.versions && typeof parsed.versions === 'object' && (parsed.versions as Record<string, unknown>).scope === rpcComponentVersions.scope;
   if (rpc && (extended || grouped || branched)) reject('rpc-artifact-extension');
   if (branched && (!extended || !parsed.projection)) reject('response-branch-success-required');
-  const soap12 = !!parsed.versions && typeof parsed.versions === 'object' && ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1', 'component-soap12-response-branches-v1'].includes((parsed.versions as Record<string, unknown>).scope as string);
-  const expectedVersions = branched ? soap12 ? branchSoap12ComponentVersions : branchComponentVersions
+  const scope = parsed.versions && typeof parsed.versions === 'object' ? (parsed.versions as Record<string, unknown>).scope : undefined;
+  const oneWay = scope === oneWayComponentVersions.scope || scope === oneWaySoap12ComponentVersions.scope;
+  if (oneWay && (rpc || branched || parsed.projection)) reject('one-way-output-configuration');
+  const soap12 = !!parsed.versions && typeof parsed.versions === 'object' && ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1', 'component-soap12-response-branches-v1', oneWaySoap12ComponentVersions.scope].includes((parsed.versions as Record<string, unknown>).scope as string);
+  const expectedVersions = oneWay ? soap12 ? oneWaySoap12ComponentVersions : oneWayComponentVersions
+    : branched ? soap12 ? branchSoap12ComponentVersions : branchComponentVersions
     : soap12 ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
   const actual = record(parsed.versions, Object.keys(expectedVersions));
   for (const key of Object.keys(expectedVersions) as (keyof typeof expectedVersions)[]) if (actual[key] !== expectedVersions[key]) reject('unsupported-version-mode-or-policy');
@@ -528,13 +539,14 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
       validateComponentLibraries(source.libraries); validateComponentResources(source.resources, budget, signal);
     }
   }
-  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', 'output', 'faults', ...(soap12 ? ['binding'] : [])]);
+  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', oneWay ? 'pattern' : 'output', 'faults', ...(soap12 ? ['binding'] : [])]);
+  if (oneWay && (c.pattern !== 'one-way' || !Array.isArray(c.faults) || c.faults.length)) reject('one-way-pattern');
   if (soap12) {
     const binding = record(c.binding, ['version', 'actionRequired']);
     if (binding.version !== '1.2' || typeof binding.actionRequired !== 'boolean') reject('soap12-binding');
   }
   selector(c.selector); name(c.service); ncname(c.port); text(c.action);
-  root(c.input); root(c.output);
+  root(c.input); if (!oneWay) root(c.output);
   if (rpc) {
     const parts = (c.input as {parts: {type: ExpandedName}[]}).parts;
     if (typedRpc !== parts.some(part => part.type.namespace !== 'http://www.w3.org/2001/XMLSchema' || part.type.local !== 'string')) reject('rpc-type-version');

@@ -26,6 +26,7 @@ const expectedError = {kind: 'application-error', branch: 'application-error', v
   Response: {ApplicationError: {Retryable: false, Code: 42, Message: 'synthetic error'}}}}};
 const ns11 = 'http://schemas.xmlsoap.org/soap/envelope/', ns12 = 'http://www.w3.org/2003/05/soap-envelope';
 let body = success, status = 200, protocol = ns11, hold = false;
+let aliasedPublication = false;
 let arrived: (() => void) | undefined, released: (() => void) | undefined;
 const observed: {xml: string; action?: string; contentType?: string; method?: string; url?: string}[] = [];
 const sockets = new Set<Socket>(), apps = new Set<FastifyInstance>();
@@ -41,7 +42,7 @@ const upstream = createServer(async (request, response) => {
     response.once('close', () => released?.());
     response.write(`<s:Envelope xmlns:s="${protocol}"><s:Body>`); arrived?.(); return;
   }
-  response.end(`<s:Envelope xmlns:s="${protocol}"><s:Body>${body}</s:Body></s:Envelope>`);
+  response.end(request.headers.soapaction === '"urn:test:notify"' ? '' : `<s:Envelope xmlns:s="${protocol}"><s:Body>${body}</s:Body></s:Envelope>`);
 });
 upstream.on('connection', socket => {sockets.add(socket); socket.once('close', () => sockets.delete(socket));});
 const bounded = async <T>(promise: Promise<T>, message: string): Promise<T> => {
@@ -51,9 +52,11 @@ const bounded = async <T>(promise: Promise<T>, message: string): Promise<T> => {
 };
 const soapCallsBefore = () => observed.length;
 const metadata = (reply: {headers: Record<string, unknown>; body: string}, status: number) => {
-  assert.equal(reply.headers['x-wsdl-tsc-upstream-status'], String(status));
+  assert.equal(reply.headers[aliasedPublication ? 'x-provider-status' : 'x-wsdl-tsc-upstream-status'], String(status));
+  assert.equal(reply.headers[aliasedPublication ? 'x-wsdl-tsc-upstream-status' : 'x-provider-status'], undefined);
   for (const [name, value] of [['limit', '500'], ['remaining', '499'], ['window', '60000']])
-    assert.equal(reply.headers['x-wsdl-tsc-upstream-header-x-ratelimit-' + name], value);
+    assert.equal(reply.headers[aliasedPublication && name === 'limit' ? 'ratelimit-limit' : 'x-wsdl-tsc-upstream-header-x-ratelimit-' + name], value);
+  if (aliasedPublication) assert.equal(reply.headers['x-wsdl-tsc-upstream-header-x-ratelimit-limit'], undefined);
   assert.doesNotMatch(JSON.stringify(reply.headers) + reply.body, /SENTINEL/);
 };
 try {
@@ -61,6 +64,7 @@ try {
   const address = upstream.address(); assert.ok(address && typeof address !== 'string');
   const endpoint = `http://127.0.0.1:${address.port}/owned-branches`;
   for (const mode of ['soap11', 'soap12', 'mixed']) {
+    aliasedPublication = mode !== 'soap11';
     protocol = mode === 'soap12' ? ns12 : ns11; status = 200; body = success;
     const project = path.join(root, mode);
     const document: unknown = JSON.parse(await readFile(path.join(project, 'openapi.json'), 'utf8'));
@@ -185,6 +189,7 @@ try {
     const previous = runtime[mode !== 'soap12' ? 'checkedComponentRuntimeV3' : 'checkedComponentRuntimeV2']!;
     const crossed = runtime[mode !== 'soap12' ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4']!;
     const saved = JSON.parse(await readFile(recordFile, 'utf8')) as {runtime: {
+      capsuleFiles: Record<string, string>;
       localSource: string; fileRoots: string[]; sourceUri?: string; sourceOrigins: string[];
       sourceResources: {uri: string; file: string; canonicalUri?: string}[];
       recordSources: {selector: object; source: string}[]; branchSources: {selector: object; branch: string; source: string}[];
@@ -224,8 +229,9 @@ try {
       const generated = await import(pathToFileURL(path.join(project, 'dist/client/client.js')).href) as {
         createClient(runtime: object): Record<string, (input: string, options: object) => Promise<{kind: string; value?: unknown; branch?: string}>>;
       };
-      const client = generated.createClient({Fetch: current, Ordinary: previous});
-      const ordinaryCapsule = await readFile(path.join(project, 'client/operations/1/contract.json'));
+      const oneWay = runtime.checkedComponentRuntimeV6!;
+      const client = generated.createClient({Fetch: current, Ordinary: previous, Notify: oneWay});
+      const ordinaryCapsule = await readFile(physical(saved.runtime.capsuleFiles.Ordinary!));
       body = '<o:OrdinaryResponse xmlns:o="urn:test:outer">ordinary direct success</o:OrdinaryResponse>';
       const ordinary = await client.Ordinary!('owned-request', {...runtimeOptions, capsule: ordinaryCapsule});
       assert.equal(ordinary.kind, 'soap-response'); assert.equal(ordinary.value, 'ordinary direct success');
@@ -236,6 +242,18 @@ try {
       assert.equal(Object.getPrototypeOf(branched.value as object), null);
       assert.deepEqual(JSON.parse(JSON.stringify(branched.value)), expectedError.value); assert.equal(observed.length, beforeVersion + 2);
       assert.equal(observed.at(-1)!.action, '"urn:test:fetch"');
+      const notifyCapsule = await readFile(physical(saved.runtime.capsuleFiles.Notify!));
+      status = 202;
+      const acknowledged = await client.Notify!('owned-request', {...runtimeOptions, capsule: notifyCapsule});
+      assert.equal(acknowledged.kind, 'soap-acknowledgement'); assert.equal(acknowledged.value, undefined);
+      assert.equal(observed.length, beforeVersion + 3); assert.equal(observed.at(-1)!.action, '"urn:test:notify"');
+      const ackHost = await host.buildServer(config); apps.add(ackHost);
+      try {
+        const ackReply = await ackHost.inject({method: 'POST', url: '/v1/branches/Notify', headers: {'content-type': 'application/json'}, payload: '"owned-request"'});
+        assert.equal(ackReply.statusCode, 202); assert.equal(ackReply.body, ''); assert.equal(ackReply.headers['content-type'], undefined);
+        metadata(ackReply, 202);
+      } finally {await ackHost.close(); apps.delete(ackHost);}
+      status = 200;
     }
     await writeFile(capsuleFile, '{}');
     try {

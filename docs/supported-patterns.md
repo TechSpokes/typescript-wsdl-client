@@ -2,9 +2,15 @@
 
 This document lists the WSDL and XSD features handled by the generator, along with current limitations. For modeling details, see [Core Concepts](concepts.md).
 
-The matrix describes the existing legacy generator. The unreleased opt-in [checked gateway preview](checked-gateway.md) has a separate, narrower source/value/binding contract and installed HTTP/SOAP evidence; these legacy rows do not imply checked-model support. Synthetic preview success establishes no real-provider or general-XSD coverage.
+The matrix describes the existing legacy generator except where a row explicitly names the checked profile. Opt-in [checked generation](checked-gateway.md) has a separate source/value/binding contract and installed HTTP/SOAP evidence; legacy rows do not imply checked-model support. Synthetic success establishes no real-provider or general-XSD coverage.
 
 The qualified checked domain includes [keyed mixed, namespace-collision and source-permitted open values](checked-gateway.md#mixed-namespaced-and-open-values), with production conformance and installed request/response/fault evidence. Native strict/lax/skip checks remain distinct from schema-source wildcard checks and from the legacy rows below.
+
+## Checked one-way document literal
+
+The checked-components profile supports WSDL 1.1 input-only document/literal operations over SOAP 1.1 and SOAP 1.2 HTTP(S). Complete empty 200/202/204 responses produce transport acknowledgements and an empty downstream 202; nonempty acknowledgement bodies, other statuses and contradictory source patterns refuse. Native protocol-fault, source/security, cancellation and body limits remain authoritative. RPC and multipart one-way forms remain unsupported; legacy defaults do not adopt the new contract.
+
+The owned dual-binding fixture and conformance wire tests cover both versions, HTTP/verified HTTPS, acknowledgement/refusal/fault outcomes and V6/V7 isolation. Relocated production-only installed consumers qualify generated clients, OpenAPI, gateways and app/tests without checkout fallback. See the [one-way contract](checked-gateway.md#one-way-operations) for policy and compatibility limits; this does not establish production-provider or universal SOAP conformance.
 
 ## Checked SOAP 1.2 document/literal
 
@@ -39,6 +45,7 @@ Candidate interpretations and test-only prototypes do not certify production ass
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `checked-one-way-document-literal` | partial | Checked document/literal input-only operations use V6/V7 bindings and empty 202 transport acknowledgements; legacy defaults remain unchanged. |
 | `declared-derivation-boundaries` | research | Legacy compilation characterizes omitted groups, appended restriction content and named recursive references; faithful resolution/composition remain internal. |
 | `content-model-boundaries` | research | Characterization records current projection limits; it does not claim faithful content-model support. |
 | `content-model-invalid-all` | research | Legacy compiler acceptance is characterized separately from independent schema rejection. |

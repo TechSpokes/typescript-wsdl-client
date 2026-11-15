@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:owned:one-way" targetNamespace="urn:owned:one-way">
+  <wsdl:types><xs:schema targetNamespace="urn:owned:one-way" elementFormDefault="qualified">
+    <xs:element name="Notice"><xs:complexType><xs:sequence><xs:element name="value" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Reply"><xs:complexType><xs:sequence><xs:element name="value" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+  </xs:schema></wsdl:types>
+  <wsdl:message name="NoticeMessage"><wsdl:part name="parameters" element="t:Notice"/></wsdl:message>
+  <wsdl:message name="ReplyMessage"><wsdl:part name="parameters" element="t:Reply"/></wsdl:message>
+  <wsdl:portType name="Notices">
+    <wsdl:operation name="Notify"><wsdl:input message="t:NoticeMessage"/></wsdl:operation>
+    <wsdl:operation name="Query"><wsdl:input message="t:NoticeMessage"/><wsdl:output message="t:ReplyMessage"/></wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Soap11" type="t:Notices">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Notify"><soap:operation soapAction="urn:notify:11"/><wsdl:input name="Notify"><soap:body use="literal"/></wsdl:input></wsdl:operation>
+    <wsdl:operation name="Query"><soap:operation soapAction="urn:query:11"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="Soap12" type="t:Notices">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Notify"><soap12:operation soapAction="urn:notify:12"/><wsdl:input name="Notify"><soap12:body use="literal"/></wsdl:input></wsdl:operation>
+    <wsdl:operation name="Query"><soap12:operation soapAction="urn:query:12"/><wsdl:input><soap12:body use="literal"/></wsdl:input><wsdl:output><soap12:body use="literal"/></wsdl:output></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="NoticeService">
+    <wsdl:port name="Port11" binding="t:Soap11"><soap:address location="http://127.0.0.1:1/soap11"/></wsdl:port>
+    <wsdl:port name="Port12" binding="t:Soap12"><soap12:address location="http://127.0.0.1:1/soap12"/></wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

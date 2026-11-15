@@ -2,11 +2,11 @@
  * @since 1.6.0
  */
 import {createHash} from 'node:crypto';
-import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {describe, expect, it} from 'vitest';
-import {inspectCheckedResponse, planCheckedComponents} from '../../src/index.js';
+import {inspectCheckedResponse, planCheckedComponents, runGenerationPipeline} from '../../src/index.js';
 import type {CheckedComponentOptions} from '../../src/index.js';
 
 const directory = path.resolve('test/conformance/fixtures/soap/response-branches');
@@ -29,6 +29,26 @@ const successXml = '<o:OuterResponse xmlns:o="urn:test:outer" xmlns:p="urn:test:
 const envelope = (xml: string) => Buffer.from('<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>' + xml + '</s:Body></s:Envelope>');
 
 describe('public response branch planning and offline inspection', () => {
+  it('scopes output configuration to request-response selectors and refuses one-way output tools before writes', async () => {
+    const mixed = path.join(directory, 'outer-mixed.wsdl'), notify = {...selector(), operation: 'Notify'};
+    const config = {...choices(), selectors: [selector(), notify]};
+    const valid = await planCheckedComponents(mixed, config);
+    expect(valid.ready).toBe(true);
+    const inspection = await inspectCheckedResponse(mixed, {selector: notify, checkedComponents: config, responseBytes: envelope(successXml)});
+    expect(inspection.kind).not.toBe('conforming');
+    expect(JSON.stringify(inspection)).toContain('application-output-required');
+    const invalid = {...config, recordProjections: [{...config.recordProjections[0]!, selector: notify}],
+      responseBranches: [{...config.responseBranches[0]!, selector: notify}]};
+    expect((await planCheckedComponents(mixed, invalid)).ready).toBe(false);
+    mkdirSync('tmp/test-generation', {recursive: true});
+    const root = mkdtempSync(path.resolve('tmp/test-generation/one-way-refusal-'));
+    try {
+      await expect(runGenerationPipeline({model: 'checked-components-v1', wsdl: mixed, checkedComponents: invalid,
+        clientOutDir: path.join(root, 'client'), openapi: {outFile: path.join(root, 'openapi.json')},
+        gateway: {outDir: path.join(root, 'gateway'), versionSlug: 'v1', serviceSlug: 'mixed'}})).rejects.toThrow();
+      for (const file of ['client', 'gateway', 'openapi.json']) expect(existsSync(path.join(root, file))).toBe(false);
+    } finally {rmSync(root, {recursive: true, force: true});}
+  });
   it('accepts the complete original root/import pin closure and reports buffered branch scope', async () => {
     const before = new Map(['outer.wsdl', 'companion.wsdl', 'error.wsdl', 'payload.xsd'].map(file => [file, readFileSync(path.join(directory, file))]));
     const report = await planCheckedComponents(source, choices());

@@ -12,6 +12,7 @@
   },
   "include": [
     "*.test.ts",
+    "../conformance/one-way.test.ts",
     "../helpers/**/*.ts"
   ]
 }

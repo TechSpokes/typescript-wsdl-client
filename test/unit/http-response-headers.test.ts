@@ -1,8 +1,36 @@
 import {describe, expect, it} from 'vitest';
-import {captureHttpResponseHeaders, normalizeHttpResponseHeaders} from '../../src/compiler/httpResponseHeaders.js';
+import {captureHttpResponseHeaders, normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from '../../src/compiler/httpResponseHeaders.js';
 import {parseCheckedComponentChoices as parseCheckedComponentOptions} from '../../src/checkedPipeline.js';
 
 describe('bounded HTTP observation', () => {
+  it('normalizes exact publication names with fallback and status-only selection', () => {
+    expect(normalizeHttpResponseHeaderNames(['a', 'b'], {A: 'RateLimit'}, 'X-Provider-Status')).toEqual({status: 'x-provider-status', headers: {a: 'ratelimit', b: 'x-wsdl-tsc-upstream-header-b'}});
+    expect(normalizeHttpResponseHeaderNames([], {}, 'Retry-After')).toEqual({status: 'retry-after', headers: {}});
+    expect(normalizeHttpResponseHeaderNames(['a'.repeat(128)]).headers['a'.repeat(128)]).toHaveLength(155);
+    const names = JSON.parse('{"__proto__":"X-Proto","constructor":"X-Constructor"}') as Record<string, string>;
+    expect(normalizeHttpResponseHeaderNames(['__proto__', 'constructor'], names).headers).toEqual({['__proto__']: 'x-proto', constructor: 'x-constructor'});
+    expect(normalizeHttpResponseHeaderNames(['a'], {a: 'x'.repeat(128)}).headers.a).toHaveLength(128);
+    const maximum = 'a'.repeat(128);
+    const normalized = parseCheckedComponentOptions({httpResponseHeaders: [maximum, 'b'], httpResponseHeaderNames: {b: 'X-B'}});
+    expect(() => normalizeHttpResponseHeaderNames(normalized.httpResponseHeaders, normalized.httpResponseHeaderNames)).not.toThrow();
+    const hidden = Object.defineProperty({}, 'A', {value: 'X-A'});
+    expect(parseCheckedComponentOptions({httpResponseHeaders: ['a'], httpResponseHeaderNames: hidden}).httpResponseHeaderNames).toEqual({a: 'x-a'});
+  });
+  it('rejects unsafe, colliding and nondata publication configuration', () => {
+    const unsafe = 'connection keep-alive te trailer transfer-encoding upgrade host forwarded date server location refresh authorization authentication-info www-authenticate cookie set-cookie set-cookie2 cache-control expires age vary etag last-modified clear-site-data strict-transport-security permissions-policy feature-policy referrer-policy report-to reporting-endpoints origin-agent-cluster alt-svc accept-ch critical-ch nel x-frame-options x-content-type-options x-xss-protection x-permitted-cross-domain-policies content-any access-control-any cross-origin-any sec-any proxy-any x-forwarded-any'.split(' ');
+    for (const name of [...unsafe, '', '*', 'x'.repeat(129), 'bad name', 'é', 'x\r\ny']) {
+      expect(() => normalizeHttpResponseHeaderNames(['a'], {a: name})).toThrow(TypeError);
+      expect(() => normalizeHttpResponseHeaderNames([], undefined, name.toUpperCase())).toThrow(TypeError);
+    }
+    const getter = Object.defineProperty({}, 'a', {get() {throw new Error('read');}});
+    for (const names of [null, [], new Proxy({}, {}), getter, {[Symbol('a')]: 'x'}, {a: 'x', A: 'y'}, {c: 'x'},
+      {a: 'x-wsdl-tsc-upstream-status'}, {a: 'x-wsdl-tsc-upstream-header-b'}, {a: 'X', b: 'x'}]) {
+      expect(() => normalizeHttpResponseHeaderNames(['a', 'b'], names)).toThrow(TypeError);
+    }
+    expect(() => normalizeHttpResponseHeaderNames(['a'], undefined, 'x-wsdl-tsc-upstream-header-a')).toThrow(TypeError);
+    expect(() => parseCheckedComponentOptions({httpResponseHeaderNames: {}})).toThrow(TypeError);
+    expect(() => parseCheckedComponentOptions({httpResponseStatusHeaderName: 'X-Status'})).toThrow(TypeError);
+  });
   it('normalizes explicit finite names without enabling omission', () => {
     expect(normalizeHttpResponseHeaders(undefined)).toBeUndefined();
     expect(normalizeHttpResponseHeaders([])).toEqual([]);

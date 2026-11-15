@@ -6,6 +6,8 @@ See [README](../README.md) for quick start and [CONTRIBUTING](https://github.com
 
 Consumer projects should start at [For Consumer Projects](#for-consumer-projects), then choose the legacy [Generated Test Suite](#generated-test-suite) or checked scaffold workflow. The repository-maintenance sections below require a clone and its development dependencies; installing the npm package does not install repository scripts, Vitest projects or the shared verification lock.
 
+For checked one-way operations, independently assert completion of the owned HTTP exchange and empty downstream 202 without JSON Content-Type or a body schema. Treat acknowledgement as transport acceptance only; separately qualify business outcomes and never retry uncertain operations automatically. Generated scaffold tests remain offline by default. Include matching V6/V7 regeneration, native refusal/cancellation controls and actual upstream status/selected metadata names in consumer checks; see the [one-way contract](checked-gateway.md#one-way-operations).
+
 ## Test Architecture
 
 Repository tests verify observable contracts and regressions, diagnose behavior and support confident changes. Choose the smallest meaningful check, retaining representative installed-package and independent SOAP wire/reference checks when those boundaries matter.

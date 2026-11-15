@@ -9,24 +9,6 @@ Turn legacy WSDL/SOAP services into typed TypeScript clients and optional REST A
 
 Created from production integration work at [TechSpokes](https://www.techspokes.com); built for teams modernizing real enterprise SOAP integrations.
 
-## Upgrading to 1.5.0
-
-Version 1.5.0 adds scoped, value-redacted checked payload diagnostics and explicit digest-pinned declared-type corrections. Trusted local inspection can supply original correction targets; changed effective contracts need fresh qualification and matched artifact regeneration. Read the [1.4.x migration guidance](docs/migration.md#from-14x-to-150).
-
-## Upgrading to 1.4.0
-
-Version 1.4.0 adds explicit JSON source corrections, offline SOAP response inspection, and checked SOAP 1.1 protocol faults without invented application values. Existing runtime bindings remain available; regenerate matched SOAP 1.1 artifacts to adopt the additive V3 binding. Read the [1.3.x migration guidance](docs/migration.md#from-13x-to-140).
-
-## Upgrading to 1.3.0
-
-Version 1.3.0 adds opt-in checked SOAP 1.2 document/literal execution through the existing adapter. Existing SOAP 1.1 and direct-runtime bindings retain their contracts. SOAP 1.2 clients use an additive runtime handshake; regenerate matched artifacts when adopting that binding. Read the [1.2.x migration guidance](docs/migration.md#from-12x-to-130) for adoption and evidence limits.
-
-## Upgrading to 1.2.0
-
-Existing projects keep legacy generation unless they explicitly choose another profile. Regeneration can change affected DTO names, stream records and corrected scalar/simple-content results; 1.2.0 is not an unconditional drop-in regeneration upgrade. Read the [1.1.x migration guide](docs/migration.md#from-11x-to-120) before updating, including matched artifact regeneration, scaffold preservation, consumer checks and rollback.
-
-Published npm starting points include 1.1.5 and 1.1.8; 1.1.6 and 1.1.7 were unpublished candidates. Native multi-service composition and checked generation are optional capabilities with separate adoption instructions, not automatic migrations of an existing gateway.
-
 ## Pick Your Path
 
 | Goal | Command | What you get |
@@ -50,6 +32,18 @@ Generated source snapshots support offline runtime use, and calls use the select
 Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
 
 Checked clients can observe selected upstream HTTP response headers through `soap.httpResponseHeaders`. Publishing them from a generated gateway separately requires `httpResponseHeaders` in `--checked-config` or `checkedComponents`; existing JSON bodies and REST status codes stay unchanged. See [bounded HTTP observation and publication](docs/checked-gateway.md#selected-upstream-http-response-headers).
+
+Checked input-only document/literal operations use SOAP 1.1 or SOAP 1.2 bindings and return a [transport acknowledgement](docs/checked-gateway.md#one-way-operations). Their gateway response is HTTP 202 with no body; acknowledgement does not establish business success. Optional full downstream header names use the existing checked configuration:
+
+```json
+{
+  "httpResponseHeaders": ["X-RateLimit-Limit"],
+  "httpResponseHeaderNames": {"x-ratelimit-limit": "RateLimit-Limit"},
+  "httpResponseStatusHeaderName": "X-Provider-Status"
+}
+```
+
+Omit naming options to retain namespaced defaults. Names normalize to lowercase identities; unsafe framing, cookie, authentication, caching and browser-policy destinations refuse before generation.
 
 ## Why Choose This
 
@@ -126,6 +120,12 @@ curl -X POST http://localhost:3000/get-weather-information \
 ### Compose several SOAP services
 
 Use `pipeline --services-config ./services.json` to generate each source into separate client, catalog, OpenAPI and gateway paths, then emit one aggregate plugin and API document. The [multi-service guide](docs/gateway-guide.md#multi-service-setup) shows the configuration and generated `createClients` helper; each runtime client keeps its own WSDL source, endpoint and security settings. Native composition currently supports legacy generation; checked composition remains deferred.
+
+## Upgrading
+
+Read the [migration guide](docs/migration.md) before updating and regenerating. Existing generation defaults remain legacy; adopting one-way checked operations requires matched V6/V7 clients, capsules and gateways. Keep consumer-owned scaffolds under their existing skip/force rules and run consumer checks.
+
+When crossing 1.2.0, regeneration can change DTO names, stream records and corrected scalar/simple-content values. Preserve the working lockfile and deployment for rollback; the [1.1.x migration guidance](docs/migration.md#from-11x-to-120) explains these compatibility impacts.
 
 ## What Gets Generated
 
@@ -302,6 +302,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
 | [v1.6.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.1.md) | Accurate empty-extension assessment and typed syntax refusals |
+| [v1.6.3 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/v1.6.3/docs/releases/v1.6.3.md) | One-way SOAP acknowledgements and exact safe downstream HTTP names |
 | [v1.6.2 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.2.md) | Bounded upstream HTTP observation and explicit gateway publication |
 | [v1.6.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.0.md) | Independently validated application-error branches and upgrade guidance |
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |

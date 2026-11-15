@@ -4,6 +4,51 @@
  */
 import {types} from 'node:util';
 
+const unsafeDestinations = new Set(`connection keep-alive te trailer transfer-encoding upgrade host forwarded date server location refresh authorization authentication-info www-authenticate cookie set-cookie set-cookie2 cache-control expires age vary etag last-modified clear-site-data strict-transport-security permissions-policy feature-policy referrer-policy report-to reporting-endpoints origin-agent-cluster alt-svc accept-ch critical-ch nel x-frame-options x-content-type-options x-xss-protection x-permitted-cross-domain-policies`.split(' '));
+
+/** Validate generation-only publication names independently of client observation.
+ * @param selection Explicit upstream selection, including an empty status-only selection.
+ * @param aliases Optional own data mapping from selected source identities to destinations.
+ * @param status Optional full status destination.
+ * @returns Frozen normalized publication names, with compatible fallback names.
+ * @throws TypeError For malformed, unsafe, unselected or colliding names.
+ */
+export function normalizeHttpResponseHeaderNames(selection: readonly string[] | undefined, aliases?: unknown, status?: unknown): Readonly<{
+  headers: Readonly<Record<string, string>>; status: string;
+}> {
+  const invalid = () => new TypeError('Invalid HTTP response publication names');
+  if (selection === undefined && (aliases !== undefined || status !== undefined)) throw invalid();
+  const destination = (value: unknown): string => {
+    if (typeof value !== 'string' || value.length > 128 || !/^[!#$%&'+.^_`|~0-9A-Za-z-]+$/.test(value)) throw invalid();
+    const name = value.toLowerCase();
+    if (unsafeDestinations.has(name) || /^(?:content-|access-control-|cross-origin-|sec-|proxy-|x-forwarded-)/.test(name)) throw invalid();
+    return name;
+  };
+  const headers: Record<string, string> = Object.create(null) as Record<string, string>;
+  const mapped = new Set<string>();
+  if (aliases !== undefined) {
+    if (!aliases || typeof aliases !== 'object' || types.isProxy(aliases)
+      || ![null, Object.prototype].includes(Object.getPrototypeOf(aliases) as object | null)) throw invalid();
+    const keys = Reflect.ownKeys(aliases);
+    if (keys.length > 16) throw invalid();
+    for (const key of keys) {
+      if (typeof key !== 'string') throw invalid();
+      const source = normalizeHttpResponseHeaders([key])![0]!;
+      const descriptor = Object.getOwnPropertyDescriptor(aliases, key);
+      if (mapped.has(source) || !selection?.includes(source) || !descriptor || !('value' in descriptor)) throw invalid();
+      mapped.add(source); headers[source] = destination(descriptor.value);
+    }
+  }
+  const statusName = status === undefined ? 'x-wsdl-tsc-upstream-status' : destination(status);
+  const emitted = new Set([statusName]);
+  for (const source of selection ?? []) {
+    const name = headers[source] ?? `x-wsdl-tsc-upstream-header-${source}`;
+    if (emitted.has(name)) throw invalid();
+    emitted.add(name); headers[source] = name;
+  }
+  return Object.freeze({headers: Object.freeze(headers), status: statusName});
+}
+
 /** Complete transport observation, without an assertion of SOAP body admission.
  * @since 1.6.2
  */

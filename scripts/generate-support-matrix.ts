@@ -2,7 +2,7 @@
 
 import {readFile, writeFile} from "node:fs/promises";
 import {pathToFileURL} from "node:url";
-import {capabilities} from "../test/conformance/registry.js";
+import {capabilities, checkedCapabilities} from "../test/conformance/registry.js";
 
 const targetFile = "docs/supported-patterns.md";
 const startMarker = "<!-- support-matrix:start -->";
@@ -15,7 +15,7 @@ export function generateSupportMatrix(): string {
     "|---|---|---|",
   ];
 
-  for (const capability of capabilities) {
+  for (const capability of [...checkedCapabilities, ...capabilities]) {
     lines.push(`| \`${capability.id}\` | ${capability.status} | ${capability.publicContract} |`);
   }
 

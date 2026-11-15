@@ -306,7 +306,7 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
       if (projection && assessed.kind === 'soap-response') {wrapper = {assessment: 'conforming'}; companion = {assessment: 'conforming'};}
     } else {
       kind = failureAssessment(assessed.kind); responseOutcome = {assessment: kind, rule: assessed.kind === 'xml-invalid' ? 'observed-XML-invalid' : bounded(assessed.rule)};
-      const source = assessed.source ?? (projection && /^record-wrapper-|^record-standard-/.test(assessed.rule) && !('parts' in native.contract.output)
+      const source = assessed.source ?? (projection && /^record-wrapper-|^record-standard-/.test(assessed.rule) && native.contract.output && !('parts' in native.contract.output)
         ? native.contract.output.element.context.source : undefined);
       add('response', {...assessed, ...(source ? {source} : {})});
       lastFailure = assessed;
@@ -480,7 +480,7 @@ function observedCompanion(contract: DirectOperationContract, parser: unknown, c
   const body = soap ? syntaxElements(root).filter(node => node.name.namespace === root.name.namespace && node.name.local === 'Body') : [];
   const outer = body.length === 1 ? syntaxElements(body[0]!) : [];
   const output = companion.output;
-  if ('parts' in output) return {outcome: {assessment: 'unassessed', rule: 'companion-document-output-required'}};
+  if (!output || 'parts' in output) return {outcome: {assessment: 'unassessed', rule: 'companion-document-output-required'}};
   const candidates = outer.length === 1 ? syntaxElements(outer[0]!).filter(node => sameName(node.name, output.element.name)) : [];
   if (candidates.length !== 1) return {outcome: {assessment: 'unassessed', rule: 'unique-genuine-companion-subtree-required'}};
   const result = assessObservedComponentPayload(companion, mapping, observation, candidates[0]!, {signal});

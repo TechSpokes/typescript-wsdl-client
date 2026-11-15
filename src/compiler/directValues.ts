@@ -151,7 +151,11 @@ function mappingRoot(contract: DirectOperationContract, direction: DirectDirecti
   const owned = directDataOwnership(budget).snapshot(direction, check);
   if (!owned || typeof owned !== 'object' || Array.isArray(owned)) throw new TypeError('Data-only direct direction required');
   let root: DirectMessageRoot | RpcMessageRoot;
-  if (owned.kind === 'input' || owned.kind === 'output') root = contract[owned.kind];
+  if (owned.kind === 'input' || owned.kind === 'output') {
+    const selected = contract[owned.kind];
+    if (!selected) throw new Stop('unsupported', 'application-output-required');
+    root = selected;
+  }
   else if (owned.kind === 'fault' && typeof owned.name === 'string') {
 
     const fault = contract.faults.find(f => budget.compareText(f.name, owned.name) === 0);

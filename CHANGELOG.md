@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-11-15
+
+- feat(checked): execute input-only SOAP 1.1/1.2 operations with distinct transport acknowledgements and empty gateway 202 responses.
+- feat(checked): configure exact safe downstream HTTP metadata names while preserving selection, naming and validation defaults.
+- docs: lead with product usage and consolidate durable upgrade guidance in the migration guide.
+
 ## [1.6.2] - 2026-11-15
 
 - feat(checked): observe bounded selected upstream HTTP response headers and opt into namespaced gateway publication.

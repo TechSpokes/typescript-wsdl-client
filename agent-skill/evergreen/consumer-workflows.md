@@ -18,6 +18,7 @@ Read the installed package version first. The canonical paths below are relative
 | Choose commands and paths | `docs/cli-reference.md` | `references/cli-reference.md` |
 | Construct clients and inspect DTOs | `docs/generated-code.md` | `references/generated-code.md` |
 | Adopt checked generation | `docs/checked-generation.md` | `references/checked-generation.md` |
+| Match checked bindings and HTTP metadata | `docs/checked-gateway.md` and `docs/api-reference.md` | Follow version-matched source links |
 | Compose legacy services | `docs/gateway-guide.md` | `references/composition.md` |
 | Configure streams | `docs/configuration.md` | `references/streaming.md` |
 | Set up consumer tests | `docs/testing.md` consumer sections | `references/testing.md` |

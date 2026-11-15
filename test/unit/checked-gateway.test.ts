@@ -1,6 +1,7 @@
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {request as httpRequest} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import Fastify, {type FastifyPluginAsync} from 'fastify';
 import {selectComponentOperation} from '../../src/compiler/directOperation.js';
@@ -56,6 +57,49 @@ async function app() {
 }
 
 describe('native checked gateway lowering', () => {
+  it('rejects invalid publication names before creating artifact directories', async () => {
+    for (const naming of [{httpResponseHeaders: ['a'], httpResponseHeaderNames: {a: 'Alt-Svc'}},
+      {httpResponseHeaders: ['a'], httpResponseStatusHeaderName: 'X-Wsdl-Tsc-Upstream-Header-A'},
+      {httpResponseHeaders: ['a'], httpResponseHeaderNames: {b: 'X-B'}}, {httpResponseStatusHeaderName: 'X-Status'}]) {
+      const gatewayDir = path.join(scratch, 'must-not-write');
+      await expect(generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir,
+        openapiFile: path.join(gatewayDir, 'openapi.json'), routePath: '/headers', ...naming})).rejects.toThrow(TypeError);
+      await expect(readFile(path.join(gatewayDir, 'plugin.ts'))).rejects.toMatchObject({code: 'ENOENT'});
+    }
+  });
+  it('publishes prototype-like HTTP identities as own headers without changing object prototypes', async () => {
+    const aliases = JSON.parse('{"__proto__":"X-Proto","constructor":"__proto__","prototype":"constructor","tostring":"prototype"}') as Record<string, string>;
+    const opts = {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'header-keys'),
+      openapiFile: path.join(scratch, 'header-keys/openapi.json'), routePath: '/headers',
+      httpResponseHeaders: Object.keys(aliases), httpResponseHeaderNames: aliases, httpResponseStatusHeaderName: 'ToString'};
+    await generateComponentGateway(expected, opts);
+    const before = await readFile(path.join(opts.gatewayDir, 'plugin.ts'), 'utf8');
+    await generateComponentGateway(expected, {...opts, httpResponseHeaderNames: Object.fromEntries(Object.entries(aliases).reverse())});
+    expect(await readFile(path.join(opts.gatewayDir, 'plugin.ts'), 'utf8')).toBe(before);
+    const headerPlugin = (await import(pathToFileURL(path.join(opts.gatewayDir, 'plugin.ts')).href)).default as typeof plugin;
+    const server = Fastify();
+    runtime.execute.mockResolvedValue({kind: 'soap-response', value: {city: 'A', temperature: [], complete: true},
+      admitted: false, status: 200, http: {status: 200, headers: JSON.parse('{"__proto__":["one"],"constructor":["two"],"prototype":["three"],"tostring":["four"]}')}});
+    try {
+      await server.register(headerPlugin, {clientOptions: {soap: selection}});
+      const reply = await server.inject({method: 'POST', url: '/headers', payload: {city: 'A', days: 1}});
+      expect(reply.statusCode).toBe(200);
+      expect(reply.headers['x-proto']).toBe('one');
+      expect(reply.raw.res.getHeader('__proto__')).toBe('two');
+      expect(reply.headers.constructor).toBe('three'); expect(reply.headers.prototype).toBe('four'); expect(reply.headers.tostring).toBe('200');
+      const address = await server.listen({host: '127.0.0.1', port: 0});
+      const headers = await new Promise<string[]>((resolve, reject) => {
+        const request = httpRequest(address + '/headers', {method: 'POST', headers: {'content-type': 'application/json'}}, response => {
+          response.resume(); response.once('end', () => resolve(response.rawHeaders)); response.once('error', reject);
+        });
+        request.once('error', reject); request.end(JSON.stringify({city: 'A', days: 1}));
+      });
+      const emitted = new Map(Array.from({length: headers.length / 2}, (_, index) => [headers[index * 2]!.toLowerCase(), headers[index * 2 + 1]!]));
+      expect(emitted.get('__proto__')).toBe('two'); expect(emitted.get('constructor')).toBe('three');
+      expect(emitted.get('prototype')).toBe('four'); expect(emitted.get('tostring')).toBe('200');
+      expect(Object.getPrototypeOf({})).toBe(Object.prototype);
+    } finally {await server.close();}
+  });
   it('emits deterministic OAS3.1.1 and separate draft07 exact scalar schemas', async () => {
     const before = await readFile(path.join(scratch, 'gateway/plugin.ts'), 'utf8');
     await generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'gateway'),

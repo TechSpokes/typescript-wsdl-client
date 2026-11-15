@@ -467,6 +467,7 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
         root = selected.root;
       } else {
         const selected = contract[ownedDirection.kind];
+        if (!selected) throw new Stop('unsupported', 'application-output-required');
         if ('parts' in selected) throw new Stop('unsupported', 'direct-document-root-required');
         root = selected;
       }

@@ -1,8 +1,9 @@
 import {existsSync} from "node:fs";
+import {resolve} from "node:path";
 import {describe, expect, test} from "vitest";
-import {fixturesRoot, isWithinRoot, validateAllConformanceFixtureGraphs} from "./fixturePolicy.js";
-import {capabilities} from "./registry.js";
-import {CONFORMANCE_CLEANUP_TIMEOUT_MS, CONFORMANCE_COMMAND_TIMEOUT_MS, fixturePathFor, runAppCase, runClientCase, runCompileCase, runGatewayCase, runGeneratedTestsCase, runOpenApiCase} from "./runner.js";
+import {fixturesRoot, isWithinRoot, resolveUnder, validateAllConformanceFixtureGraphs} from "./fixturePolicy.js";
+import {capabilities, checkedCapabilities} from "./registry.js";
+import {CONFORMANCE_CLEANUP_TIMEOUT_MS, CONFORMANCE_COMMAND_TIMEOUT_MS, runAppCase, runClientCase, runCompileCase, runGatewayCase, runGeneratedTestsCase, runOpenApiCase} from "./runner.js";
 
 const runnableCapabilities = capabilities.filter(capability => capability.compile.outcome !== "research");
 const downstreamCapabilities = capabilities.filter(capability =>
@@ -17,7 +18,7 @@ export function registerContractCases(): void {
     test("declares unique capability ids with local fixtures", () => {
       const ids = new Set<string>();
 
-      for (const capability of capabilities) {
+      for (const capability of [...capabilities, ...checkedCapabilities]) {
         expect(ids.has(capability.id)).toBe(false);
         ids.add(capability.id);
 
@@ -31,14 +32,27 @@ export function registerContractCases(): void {
         expect(capability.provenance).not.toEqual("");
         expect(capability.license).not.toEqual("");
         expect(capability.fixtureKind).not.toEqual("");
-        expect(isWithinRoot(fixturesRoot, fixturePathFor(capability)), capability.id).toBe(true);
-        expect(existsSync(fixturePathFor(capability)), capability.id).toBe(true);
+        const fixture = resolveUnder(fixturesRoot, capability.fixture);
+        expect(isWithinRoot(fixturesRoot, fixture), capability.id).toBe(true);
+        expect(existsSync(fixture), capability.id).toBe(true);
       }
     });
 
     test("keeps schema imports and includes inside conformance fixtures", () => {
       expect(() => validateAllConformanceFixtureGraphs()).not.toThrow();
     });
+
+    for (const capability of checkedCapabilities) {
+      test(`${capability.id} declares separately executed native and installed evidence`, () => {
+        expect(capability.profile).toBe('checked-components-v1');
+        expect(capability.evidence.native).toMatch(/^conformance\/.+\.test\.ts$/);
+        expect(capability.evidence.installed.length).toBeGreaterThan(0);
+        for (const evidence of [capability.evidence.native, ...capability.evidence.installed]) {
+          expect(evidence).toMatch(/^(?:conformance|integration)\/[a-z0-9-]+\.test\.ts$/);
+          expect(existsSync(resolveUnder(resolve(fixturesRoot, '..', '..'), evidence)), evidence).toBe(true);
+        }
+      });
+    }
 
     for (const capability of terminalStatusCapabilities) {
       test(`${capability.id} has executable terminal compile evidence`, () => {

@@ -86,7 +86,7 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
   try {
     const result = budget.guard(() => {
       check();
-      if ('parts' in outer.output || 'parts' in companion.output) return failure('unsupported', 'record-projection-requires-document-output');
+      if (!outer.output || !companion.output || 'parts' in outer.output || 'parts' in companion.output) return failure('unsupported', 'record-projection-requires-document-output');
       if (outer.basis !== 'native-component-premises-v1' || companion.basis !== 'native-component-premises-v1'
         || outer.correspondence !== 'dated-XSD-2004-components-v1' || companion.correspondence !== 'dated-XSD-2004-components-v1') stop('component-record-source-authority');
       const requested = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(supplied, check));
@@ -280,7 +280,7 @@ export function assessObservedComponentRecordPayload(outer: DirectOperationContr
       check();
       assertComponentObservedPayload(observation, wrapperPayload, check);
       const wrapper = wrapperPayload;
-      if ('parts' in outer.output) throw new ScopeStop('unsupported', 'record-projection-requires-document-output');
+      if (!outer.output || 'parts' in outer.output) throw new ScopeStop('unsupported', 'record-projection-requires-document-output');
       if (!same(wrapper.name, outer.output.element.name)) throw new ScopeStop('mismatch', 'record-wrapper-root');
       if (wrapper.attributes.length || wrapper.children.some(node => node.kind === 'text' && /[^\t\r\n ]/.test(node.value)))
         throw new ScopeStop('mismatch', 'record-wrapper-attributes-or-text');
@@ -321,7 +321,7 @@ export function assessObservedComponentRecordPayload(outer: DirectOperationContr
   } catch (error) {
     if (budget.exhausted()) return failure('resource-limit', 'record-projection-budget');
     if (error instanceof ScopeStop) {
-      if (error.kind !== 'mismatch' || 'parts' in outer.output) return failure(error.kind, error.rule);
+      if (error.kind !== 'mismatch' || !outer.output || 'parts' in outer.output) return failure(error.kind, error.rule);
       const declaration = outer.output.element;
       // @constraints Native metadata lookups consume the same budget and retain its terminal resource result.
       const diagnosed = budget.guard(() => {

@@ -161,3 +161,11 @@ export interface CapabilityCase {
   generatedTests?: GeneratedTestsExpectation;
   app?: AppExpectation;
 }
+
+/** Checked evidence uses native owners instead of the legacy catalog stage runner.
+ * @since 1.6.3
+ */
+export interface CheckedCapabilityCase extends Omit<CapabilityCase, 'compile' | 'client' | 'openapi' | 'gateway' | 'generatedTests' | 'app'> {
+  readonly profile: 'checked-components-v1';
+  readonly evidence: {readonly native: string; readonly installed: readonly string[]};
+}

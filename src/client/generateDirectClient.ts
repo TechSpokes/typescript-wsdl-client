@@ -1,4 +1,5 @@
 import {directLimit} from '../compiler/directExecutionPolicy.js';
+import {COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 /** Native-plan generator consumed by the opt-in checked pipeline. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
@@ -157,7 +158,8 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
     const input = mappings.find(mapping => mapping.direction.kind === 'input')!;
     const output = mappings.find(mapping => mapping.direction.kind === 'output')!;
     const request = lowerComponentShape(expected.contract, input, 'Request', check);
-    const response = lowerComponentShape(expected.contract, output, 'Response', check);
+    const oneWay = expected.contract.pattern === 'one-way';
+    const response = oneWay ? {type: 'never', declarations: []} : lowerComponentShape(expected.contract, output, 'Response', check);
     const faults = mappings.filter(mapping => mapping.direction.kind === 'fault').map((mapping, index) => ({mapping,
       shape: lowerComponentShape(expected.contract, mapping, `Fault_${index}`, check)}));
     const errors = expected.responseBranches ? inspectComponentResponseBranches(expected.responseBranches).errors.map((branch, index) => ({id: branch.id,
@@ -171,11 +173,11 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       ...response.declarations, `export type Response = ${response.type};`,
       ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`])];
     const soap12 = expected.contract.binding.version === '1.2';
-    const runtimeVersion = expected.responseBranches
+    const runtimeVersion = oneWay ? soap12 ? COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION : expected.responseBranches
       ? soap12 ? COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION
       : soap12 ? COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION : COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION;
     const lines = [
-      `// Checked component client; inject ${expected.responseBranches ? soap12 ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4' : soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3'} from the package root.`,
+      `// Checked component client; inject ${oneWay ? soap12 ? 'checkedComponentRuntimeV7' : 'checkedComponentRuntimeV6' : expected.responseBranches ? soap12 ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4' : soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3'} from the package root.`,
       '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
       ...declarations,
       ...errors.flatMap(({shape}, index) => [...shape.declarations, `export type ApplicationError_${index} = ${shape.type};`]),
@@ -198,12 +200,13 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       '}',
       'export interface Failure {readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
       '  readonly http?: HttpObservation; readonly rule: string; readonly repair?: string; readonly phase?: "input" | "response"; readonly usage: Usage; readonly diagnostic?: import("@techspokes/typescript-wsdl-client").CheckedPayloadDiagnostic}',
-      `export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"${expected.responseBranches ? ' | "application-error"; readonly branch?: string' : ''}; readonly value?: unknown; readonly admitted: false;`,
+      `export interface NativeSuccess {readonly kind: ${oneWay ? '"soap-acknowledgement" | "soap-fault"' : '"soap-response" | "soap-fault"'}${expected.responseBranches ? ' | "application-error"; readonly branch?: string' : ''}; readonly value?: unknown; readonly admitted: false;`,
       '  readonly http?: HttpObservation; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
       '  readonly fault?: {readonly name?: string; readonly code: Name; readonly string: string; readonly actor?: string}}',
       `export interface Runtime {readonly version: ${literal(runtimeVersion)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(runtimeVersion)}): Promise<Failure | NativeSuccess>}`,
       'type Common = {readonly http?: HttpObservation; readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array};',
-      'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
+      oneWay ? 'export type Result = Failure | (Common & {readonly kind: "soap-acknowledgement"; readonly value?: never; readonly decoded?: never; readonly fault?: never; readonly branch?: never})'
+        : 'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
       ...errors.map(({id}, index) => `  | (Common & {readonly kind: "application-error"; readonly branch: ${literal(id)}; readonly value: ApplicationError_${index}})`),
       ...faults.map(({mapping}, index) => {
         if (mapping.direction.kind !== 'fault') throw new TypeError('Native fault mapping required');
@@ -257,8 +260,9 @@ export async function writeComponentServiceClient(expected: readonly Reconstruct
     `import {createClient as operation_${index}} from './operations/${index}/client.js';`,
     `export * as Operation_${index} from './operations/${index}/client.js';`,
   ]);
-  const branched = operations.some(operation => operation.responseBranches);
-  const mixed = branched && operations.some(operation => !!operation.responseBranches !== !!operations[0]!.responseBranches);
+  const branched = operations.some(operation => operation.responseBranches || operation.contract.pattern === 'one-way');
+  const binding = (operation: ReconstructedComponentSource) => `${operation.contract.binding.version}:${operation.contract.pattern ?? 'request-response'}:${!!operation.responseBranches}`;
+  const mixed = branched && operations.some(operation => binding(operation) !== binding(operations[0]!));
   if (mixed) lines.push("import {types} from 'node:util';");
   if (branched) lines.push(...operations.map((_, index) => `import type {Runtime as Runtime_${index}, Options as Options_${index}} from './operations/${index}/client.js';`));
   lines.push(...(branched ? [
