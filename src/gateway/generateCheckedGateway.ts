@@ -217,7 +217,7 @@ ${branched ? '  const validateApplicationError = ajv.compile(schemas.application
 ${selection === undefined ? '' : `      if (result.http) {
         // @constraints Node's header store preserves __proto__ as data; Fastify's ordinary header dictionary does not.
         reply.raw.setHeader(${literal(publication.status)}, String(result.http.status));
-        for (const [name, destination] of ${literal(selection.map(name => [name, publication.headers[name]!]))}) {
+        for (const [name, destination] of ${literal(selection.map(name => [name, publication.headers[name]!]))} as ReadonlyArray<readonly [string, string]>) {
           const values = result.http.headers[name];
           if (values) reply.raw.setHeader(destination, values.join(', '));
         }

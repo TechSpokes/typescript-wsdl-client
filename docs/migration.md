@@ -6,6 +6,10 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.6.3 to 1.6.4
+
+Regenerate gateways that publish selected HTTP metadata after updating the package. The publication loop now retains string-pair types under `noUncheckedIndexedAccess`, including status-only selections. Keep consumer compiler checks enabled; HTTP selection, naming, runtime bindings and response behavior remain unchanged.
+
 ## From 1.6.x to 1.6.3
 
 One-way checked document/literal operations now have an explicit input-only source contract. Regenerate clients, capsules, source inventories, gateways and OpenAPI together to adopt SOAP 1.1 `checkedComponentRuntimeV6` or SOAP 1.2 `checkedComponentRuntimeV7`. Existing V1-V5 request-response bindings, direct preview and legacy defaults retain their contracts and refuse one-way artifacts before I/O.

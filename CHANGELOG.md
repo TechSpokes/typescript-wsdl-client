@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-11-15
+
+- fix(gateway): emit typed HTTP publication pairs for strict indexed-access consumer builds.
 - docs: reconcile the v1.6.3 release baseline, current coverage owners and historical roadmap guidance.
 
 ## [1.6.3] - 2026-11-15

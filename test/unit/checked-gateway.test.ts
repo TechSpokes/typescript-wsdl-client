@@ -4,6 +4,7 @@ import path from 'node:path';
 import {request as httpRequest} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import Fastify, {type FastifyPluginAsync} from 'fastify';
+import ts from 'typescript';
 import {selectComponentOperation} from '../../src/compiler/directOperation.js';
 import {createComponentSourceCapsule, reconstructComponentSourceCapsule} from '../../src/compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from '../../src/compiler/directSourceCapsule.js';
@@ -57,6 +58,18 @@ async function app() {
 }
 
 describe('native checked gateway lowering', () => {
+  it('typechecks selected and status-only publication with unchecked indexed access enabled', async () => {
+    for (const headers of [[], ['x-ratelimit-limit', 'x-ratelimit-remaining']]) {
+      const gatewayDir = path.join(scratch, `strict-headers-${headers.length}`);
+      await generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir,
+        openapiFile: path.join(gatewayDir, 'openapi.json'), routePath: '/headers', httpResponseHeaders: headers});
+      const program = ts.createProgram([path.join(gatewayDir, 'plugin.ts')], {
+        target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.NodeNext, moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        strict: true, noUncheckedIndexedAccess: true, exactOptionalPropertyTypes: true, skipLibCheck: true, noEmit: true,
+      });
+      expect(ts.getPreEmitDiagnostics(program).map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))).toEqual([]);
+    }
+  });
   it('rejects invalid publication names before creating artifact directories', async () => {
     for (const naming of [{httpResponseHeaders: ['a'], httpResponseHeaderNames: {a: 'Alt-Svc'}},
       {httpResponseHeaders: ['a'], httpResponseStatusHeaderName: 'X-Wsdl-Tsc-Upstream-Header-A'},
