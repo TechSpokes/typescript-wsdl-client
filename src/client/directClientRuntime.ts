@@ -11,13 +11,14 @@ import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudg
 import {reconstructDirectSourceCapsuleInRequest, reconstructComponentSourceCapsuleInRequest, checkDirectSourceCompatibility, DIRECT_CAPSULE_LIMITS} from '../compiler/directSourceCapsule.js';
 import type {DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
 import {exchangeDirectSoap, exchangeComponentSoap, directSoapOptionsShape} from '../compiler/directSoap.js';
-import type {DirectSoapOptions, ComponentSoapOptions, DirectSoapFailure, ComponentRecordSoapResult, ComponentResponseBranchesSoapResult, ComponentProtocolFault, DeclaredSoapFault, Soap11FaultMetadata, Soap12FaultMetadata} from '../compiler/directSoap.js';
+import type {DirectSoapOptions, ComponentSoapOptions, DirectSoapFailure, ComponentRecordSoapResult, ComponentResponseBranchesSoapResult, ComponentProtocolFault, DeclaredSoapFault, Soap11FaultMetadata, Soap12FaultMetadata, SoapAcknowledgement} from '../compiler/directSoap.js';
 import type {DirectOperationSelector} from '../compiler/directOperation.js';
 import type {DirectApplicationValue} from '../compiler/directValues.js';
 import {DIRECT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION,
   COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 import {prepareSchemaSnapshotFiles} from '../loader/schemaInput.js';
 import {SchemaLoadingError} from '../loader/orderedSyntax.js';
+import {COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 
 export interface DirectClientOptions {
   readonly localSource: string;
@@ -105,14 +106,25 @@ export const componentSoap12BranchClientRuntime = Object.freeze({
   version: COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION,
   execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => executeClient(expectedBase64, input, options, true, '1.2', true),
 });
+export type ComponentOneWayClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap11FaultMetadata | Soap12FaultMetadata> = DirectClientFailure | ComponentProtocolFault<F> | SoapAcknowledgement;
+export const componentSoap11OneWayClientRuntime = Object.freeze({
+  version: COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION,
+  execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => executeClient(expectedBase64, input, options, true, '1.1', false, true),
+});
+export const componentSoap12OneWayClientRuntime = Object.freeze({
+  version: COMPONENT_SOAP12_ONE_WAY_CLIENT_RUNTIME_VERSION,
+  execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => executeClient(expectedBase64, input, options, true, '1.2', false, true),
+});
 function executeClient(expectedBase64: string, input: unknown, options: DirectClientOptions, component: false): Promise<DirectClientResult>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true): Promise<DirectClientResult>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.2'): Promise<ComponentClientResult<Soap12FaultMetadata>>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.1'): Promise<ComponentClientResult<Soap11FaultMetadata>>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.1', branches: true): Promise<ComponentBranchClientResult<Soap11FaultMetadata>>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.2', branches: true): Promise<ComponentBranchClientResult<Soap12FaultMetadata>>;
+function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.1', branches: false, oneWay: true): Promise<ComponentOneWayClientResult<Soap11FaultMetadata>>;
+function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.2', branches: false, oneWay: true): Promise<ComponentOneWayClientResult<Soap12FaultMetadata>>;
 async function executeClient(expectedBase64: string, input: unknown, options: DirectClientOptions | ComponentClientOptions,
-  component: boolean, protocol?: '1.1' | '1.2', branches = false): Promise<ComponentBranchClientResult> {
+  component: boolean, protocol?: '1.1' | '1.2', branches = false, oneWay = false): Promise<ComponentBranchClientResult | ComponentOneWayClientResult> {
     // Constant-sized entry introspection precedes budget configuration and all reads.
     const entryFailure = (): DirectClientFailure => ({kind: 'unsupported', rule: 'data-only client options required', usage: {nodes: 0, work: 0}});
     if (!options || typeof options !== 'object' || types.isProxy(options)
@@ -201,6 +213,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         const fresh = await reconstructComponentSourceCapsuleInRequest(bytes, prepared.source, {loading: prepared.loading, signal,
           standardLibraries: sources.standards, recordSources: sources.records, branchSources: sources.branches, responseBranchMode: branches}, budget);
         if (fresh.kind !== 'reconstructed-component') return fresh;
+        if ((fresh.contract.pattern === 'one-way') !== oneWay || oneWay && fresh.contract.binding.version !== protocol) return fail('incompatible-artifact', 'one-way-runtime-binding');
         if (fresh.contract.binding.version === '1.2' && protocol !== '1.2') return fail('incompatible-artifact', 'SOAP 1.2 runtime binding required');
         if (branches && fresh.contract.binding.version !== protocol) return fail('incompatible-artifact', 'Matching response branch protocol binding required');
         if (fresh.selection.port !== options.soap.port || fresh.selection.service.namespace !== options.soap.service.namespace
@@ -222,7 +235,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
       http = result.http;
       if (!('decoded' in result)) {
         if (result.kind === 'soap-fault' && result.fault.version !== protocol) throw new TypeError('Protocol fault requires its generated runtime binding');
-        if (result.kind === 'soap-fault') return result;
+        if (result.kind === 'soap-fault' || result.kind === 'soap-acknowledgement') return result;
         // @constraints Native source provenance can contain endpoint secrets; only the safe diagnostic crosses the runtime boundary.
         return Object.freeze({kind: result.kind, rule: result.rule, usage: result.usage,
           ...(http ? {http} : {}),

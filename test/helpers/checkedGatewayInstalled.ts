@@ -4,7 +4,7 @@
  */
 import {expect} from 'vitest';
 import {execFileSync} from 'node:child_process';
-import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, appendFile} from 'node:fs/promises';
+import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, appendFile, rename} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -232,6 +232,44 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
         path.join(project, 'qualification.ts'), fixture, mode], project);
       expect(JSON.parse(checked.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: mode});
       await writeFile(path.join(evidence, mode + '-wire.log'), checked.stdout + checked.stderr);
+    }
+    for (const version of ['11', '12']) {
+      const oneWayProject = path.join(consumer, 'one-way-' + version), relocated = path.join(consumer, 'relocated-one-way-' + version);
+      const oneWaySource = path.join(consumer, 'one-way.wsdl');
+      await copyFile(path.join(root, 'test/conformance/fixtures/soap/versions/one-way.wsdl'), oneWaySource);
+      const namespace = 'urn:owned:one-way';
+      await writeFile(config, JSON.stringify({selectors: ['Notify', 'Query'].map(operation => ({operation,
+        portType: {namespace, local: 'Notices'}, binding: {namespace, local: 'Soap' + version}})),
+        service: {namespace, local: 'NoticeService'}, port: 'Port' + version,
+        httpResponseHeaders: ['X-Rate'], httpResponseHeaderNames: {'x-rate': 'RateLimit'}, httpResponseStatusHeaderName: 'X-Provider-Status'}));
+      await run('one-way SOAP ' + version + ' installed generation', [cli, 'pipeline', '--model', 'checked-components-v1', '--checked-config', config,
+        '--wsdl-source', oneWaySource, '--client-dir', path.join(oneWayProject, 'client'), '--openapi-file', path.join(oneWayProject, 'openapi.json'),
+        '--gateway-dir', path.join(oneWayProject, 'gateway'), '--gateway-version-prefix', 'v1', '--gateway-service-name', 'notices',
+        '--init-app', '--app-dir', oneWayProject, '--test-dir', path.join(oneWayProject, 'test')], tooling);
+      await run('one-way consumer install ' + version, [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], oneWayProject);
+      await writeFile(path.join(oneWayProject, 'acknowledgement-contract.ts'), `import type {Result} from './client/operations/0/client.js';
+import {createClient} from './client/operations/0/client.js';
+import {checkedComponentRuntimeV${version === '11' ? '6' : '7'}, checkedComponentRuntimeV3} from '@techspokes/typescript-wsdl-client';
+createClient(checkedComponentRuntimeV${version === '11' ? '6' : '7'});
+// @ts-expect-error Retained request-response binding cannot satisfy the new acknowledgement protocol.
+createClient(checkedComponentRuntimeV3);
+export function transportStatus(result: Result): number | undefined {
+  if (result.kind !== 'soap-acknowledgement') return undefined;
+  const empty: Uint8Array = result.responseBytes;
+  const noValue: undefined = result.value;
+  // @ts-expect-error Acknowledgement never supplies an application value.
+  result.value.businessOutcome;
+  return empty.byteLength === 0 && noValue === undefined ? result.status : undefined;
+}
+`);
+      for (const command of ['typecheck', 'test', 'build']) await run('one-way consumer ' + command + ' ' + version, [npm, 'run', command], oneWayProject);
+      await run('one-way production-only dependencies ' + version, [npm, 'prune', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], oneWayProject);
+      await rename(oneWayProject, relocated);
+      await copyFile(path.join(root, 'test/helpers/oneWayInstalledProcess.ts'), path.join(relocated, 'qualification.ts'));
+      const wire = await run('one-way relocated production-only wire ' + version, ['--permission', ...networkPermission,
+        '--allow-fs-read=' + relocated, path.join(relocated, 'qualification.ts'), fixture, version], relocated);
+      expect(JSON.parse(wire.stdout)).toMatchObject({kind: 'one-way-installed', version, originalCheckoutReadable: false, productionOnly: true});
+      await writeFile(path.join(evidence, 'one-way-' + version + '-wire.log'), wire.stdout + wire.stderr);
     }
     // @why #458 qualifies original NOAA bytes through the same installed consumer and owned-server harness.
     const noaaSource = path.join(consumer, 'noaa.wsdl');

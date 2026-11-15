@@ -22,9 +22,58 @@ Gateway publication requires a separate generation opt-in in the existing `--che
 
 The API equivalent is `checkedComponents: {httpResponseHeaders: [...]}`. Each generated route pins that selection for its own call, independently of extra client-only observation. Merely enabling client capture publishes nothing. An explicit empty gateway selection publishes only status; omission preserves current gateway output.
 
-Opted-in routes emit `x-wsdl-tsc-upstream-status` as a decimal string and `x-wsdl-tsc-upstream-header-<normalized-name>` with captured values joined by comma and space. OpenAPI documents these optional string headers on responses that may follow upstream execution. Existing REST bodies and status codes remain unchanged: upstream 429 normally remains downstream 502 with informational upstream status 429. No headers are emitted without a complete observation. The fixed namespace prevents upstream names from taking over cookies, authentication, framing or browser policy.
+Opted-in routes default to `x-wsdl-tsc-upstream-status` as a decimal string and `x-wsdl-tsc-upstream-header-<normalized-name>` with captured values joined by comma and space. OpenAPI documents these optional string headers on responses that may follow upstream execution, including one-way 202 responses. Existing request-response bodies and status codes remain unchanged: upstream 429 normally remains downstream 502 with informational upstream status 429. No headers are emitted without a complete observation.
+
+Configure full downstream identities in the same checked configuration:
+
+```json
+{
+  "httpResponseHeaders": ["X-RateLimit-Limit", "X-RateLimit-Remaining"],
+  "httpResponseHeaderNames": {"x-ratelimit-limit": "RateLimit-Limit"},
+  "httpResponseStatusHeaderName": "X-Provider-Status"
+}
+```
+
+This emits `ratelimit-limit`, the unchanged fallback `x-wsdl-tsc-upstream-header-x-ratelimit-remaining`, and `x-provider-status`. Names are case-insensitive lowercase HTTP identities; configured letter case is not a wire spelling guarantee. Client `result.http.headers` retains normalized upstream keys. Values retain transport coalescing and comma-and-space serialization, not raw wire repetition.
+
+Naming requires explicit `httpResponseHeaders`, including `[]` for status-only aliases. A mapping has at most sixteen own string data properties in a nonproxy plain or null-prototype object. Accessors, symbols, wildcard sources, duplicate normalized source keys and mappings for unselected fields refuse. Each explicit destination must be an ASCII HTTP field name of 1 to 128 bytes. Existing prefixed defaults retain their legal prefix-plus-source extent, including a 128-byte upstream source name. The entire final set, including status and fallback names, must be collision-free before artifact writes or HTTP dispatch.
+
+Explicit destinations cannot begin with `content-`, `access-control-`, `cross-origin-`, `sec-`, `proxy-` or `x-forwarded-`. They also cannot use these exact identities:
+
+```text
+connection keep-alive te trailer transfer-encoding upgrade host forwarded
+date server location refresh authorization authentication-info www-authenticate
+cookie set-cookie set-cookie2 cache-control expires age vary etag last-modified
+clear-site-data strict-transport-security permissions-policy feature-policy
+referrer-policy report-to reporting-endpoints origin-agent-cluster alt-svc
+accept-ch critical-ch nel x-frame-options x-content-type-options
+x-xss-protection x-permitted-cross-domain-policies
+```
+
+This finite policy keeps framing, representation, authentication, cookies, redirects, caching and browser controls with the gateway host. Ordinary informational names such as `RateLimit`, `RateLimit-Limit` and `Retry-After` remain available. It is not a promise to enumerate future browser policy fields, and there is no bypass option. Header identities are separate from dependency-reserved XML declaration names; own data dictionaries preserve legal configured keys without changing source-bootstrap refusals. Fields unavailable from the transport's parsed header object remain absent.
 
 Select only metadata appropriate for your application; there is no implicit sensitive-header preset. Unselected cookies, authorization and private headers never enter the projection. Rate interpretation, scheduling, budgets, backoff and retries remain consumer responsibilities; this option does not retry business operations or activate streaming. Regenerate matched clients and gateways to adopt the option; runtime V1-V5 handshakes, capsules, source fingerprints, frozen direct-preview behavior and legacy defaults remain unchanged.
+
+### One-way operations
+
+Checked WSDL 1.1 input-only document/literal operations support SOAP 1.1 and SOAP 1.2 HTTP(S) bindings. The authenticated abstract operation and binding must both contain one supported element-based input and no output or application faults. Contradictory patterns, output-first operations, notification, solicit-response and RPC one-way operations refuse. An unnamed one-way input defaults to its operation name; any explicit binding input name must match the resolved abstract name.
+
+One-way clients use `checkedComponentRuntimeV6` for SOAP 1.1 or `checkedComponentRuntimeV7` for SOAP 1.2, with their own capsule scopes and injection protocols. Existing V1-V5, direct-preview and legacy contracts remain unchanged. Mixed checked services retain per-operation binding composition, including ordinary and V4/V5 branch-enabled operations. Response projections and application-error configuration refuse only when targeting an operation without output; valid associations on other operations remain available.
+
+| Completed upstream outcome | Client result | Gateway result |
+|---|---|---|
+| 200, 202 or 204 with zero entity bytes | `soap-acknowledgement` | Empty HTTP 202 |
+| 200, 202 or 204 with nonempty entity | `protocol` / `one-way-response-body` | Existing refusal JSON, 502 |
+| SOAP 1.1 500 with valid protocol fault | Value-less `soap-fault` | Existing fault JSON, 502 |
+| SOAP 1.2 400/500 with valid protocol fault | Value-less `soap-fault` | Existing fault JSON, 502 |
+| Other status or empty fault-status response | `transport` / `SOAP HTTP status` | Existing refusal JSON, 502 |
+| Invalid fault media, encoding, XML or protocol | Existing native refusal | Existing refusal JSON, 502 |
+
+Acknowledgement waits for the complete bounded HTTP exchange. Empty 202 is the common standards-aligned path; empty 200/204 are explicit interoperability allowances. Whitespace, a BOM and an empty SOAP envelope are nonempty entities and refuse on acknowledgement statuses. No SOAP Content-Type is required for zero bytes, and supplied media does not admit a body. Nonidentity compression still refuses before these outcomes; HTTP framing/parser and body limits remain authoritative.
+
+An acknowledgement has `kind: 'soap-acknowledgement'`, `admitted: false`, actual upstream `status`, owned empty `responseBytes`, `usage` and optional immutable `http`. It has no `value`, `decoded`, `fault`, `branch` or output-validation receipt. Transport acceptance does not prove business processing. The gateway emits no JSON body, JSON Content-Type, body schema, Location or polling contract. Optional observation headers report actual upstream status independently of downstream 202/502.
+
+Fault candidates retain version-specific media/encoding agreement, XML, envelope, mandatory-header and protocol-fault assessment. Unassessed protocol detail stays only in bounded original fault bytes; no application value is invented. Unexpected application bodies refuse. Input failures before I/O remain 400, incompatible artifacts or missing authority 500, cancellation 499 and other upstream failures 502. Existing TLS, endpoint/source authority, timeout, cancellation and cleanup controls remain effective, with no default deadline, retry, queue or background worker. Response-only inspection explicitly refuses an absent application output.
 
 ### Service and binding selection
 

@@ -2,6 +2,14 @@
 
 Internal direct mapping, bare-root XML codec and portable source contract. See the root [README](../README.md) and [matching contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-matching.md).
 
+## Component one-way results
+
+The component profile supports input-only document/literal WSDL operations through additive package-root `checkedComponentRuntimeV6` (SOAP 1.1) and `checkedComponentRuntimeV7` (SOAP 1.2). Their source-owned contracts contain an input and an explicit one-way discriminant with no output root; no fake response element or native output mapping is created. Existing V1-V5, direct preview and legacy contracts retain their scopes and refuse one-way artifacts before I/O.
+
+Their generated result union adds `soap-acknowledgement`: `admitted: false`, actual upstream `status`, an owned empty `responseBytes`, existing `usage` and optional immutable `http`. It contains no `value`, `decoded`, `fault` or `branch` and grants no output-validation receipt. Fault-status responses use the shared native protocol-fault assessor without manufacturing application detail. The [one-way gateway contract](checked-gateway.md#one-way-operations) defines the finite acknowledgement/error policy and empty downstream HTTP 202.
+
+Generation-only `httpResponseHeaderNames` and `httpResponseStatusHeaderName` control downstream publication independently of client observation. They require explicit selection and safe collision-free lowercase destinations. Runtime `result.http.headers` remains keyed by normalized upstream names, with bounded owned values; aliases never authorize unselected capture. Preserve matched regeneration and consumer-owned scaffold rules in the [migration guide](migration.md#from-16x-to-163).
+
 ## Package-root binding for generated direct clients
 
 The root export `checkedDirectRuntimeV1` preserves the v1.1.5 execution contract for existing generated direct clients through the native source, capsule, schema/scalar, XML and buffered SOAP engines. The [checked gateway workflow](checked-gateway.md) exposes legacy and component generation; the unpublished intermediate direct-generation choice has been removed. Frozen v1.1.5-issued client and capsule fixtures verify compatibility against the installed candidate runtime. Historical P3 sections below record earlier internal milestones, not another current public generation entry.

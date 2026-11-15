@@ -4,6 +4,8 @@ This document describes each file produced by the generator, what it contains, a
 
 See the root [README](../README.md) for the documentation index. This catalog-based flow describes legacy output; [checked generation](checked-generation.md) emits source-backed artifacts with a separate value/validation contract.
 
+Checked input-only operations contain no application output mapping. Matching operation clients/capsules use the V6/V7 one-way bindings; the gateway and OpenAPI describe an empty 202 acknowledgement with optional observation headers and no body schema. Generated app/tests remain consumer-owned offline scaffolds; see [one-way behavior](checked-gateway.md#one-way-operations) before adding independent business-operation tests.
+
 ## TypeScript File Preambles
 
 All complete emitted TypeScript files receive one [generated preamble](generated-code.md#generated-preambles-and-eslint), including optional helpers and `_typecheck.ts`. App and generated-test scaffolds use editable-source wording and retain their existing skip/force behavior. Preambles do not alter data files or existing consumer source; regeneration compatibility follows the [version migration guide](migration.md#from-11x-to-120).

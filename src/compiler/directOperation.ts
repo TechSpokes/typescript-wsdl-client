@@ -52,14 +52,13 @@ export interface RpcMessageRoot {
 export function isRpcMessageRoot(root: DirectMessageRoot | RpcMessageRoot): root is RpcMessageRoot {
   return 'kind' in root && root.kind === 'rpc-typed-parts-v1';
 }
-export interface DirectOperationContract {
+interface OperationContractBase {
   readonly selector: DirectOperationSelector;
   readonly contextId: string;
   readonly basis: 'native-direct-premises-v1' | 'native-component-premises-v1';
   readonly correspondence: 'dated-XSD-2004-direct-v1' | 'dated-XSD-2004-components-v1';
   readonly binding: Readonly<{version: '1.1' | '1.2'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; actionRequired?: boolean; source: SyntaxSource}>;
   readonly input: DirectMessageRoot | RpcMessageRoot;
-  readonly output: DirectMessageRoot | RpcMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
   readonly policy?: BindingPolicyRequirements;
   readonly addressingActions?: Readonly<{required: false; input?: string; output?: string;
@@ -67,6 +66,10 @@ export interface DirectOperationContract {
   readonly missingCapabilities: readonly string[];
   readonly admitted: false;
 }
+export type DirectOperationContract = OperationContractBase & (
+  {readonly pattern?: 'request-response'; readonly output: DirectMessageRoot | RpcMessageRoot} |
+  {readonly pattern: 'one-way'; readonly output?: never}
+);
 export type DirectOperationResult = Readonly<{kind: 'selected'; contract: DirectOperationContract; usage: ResolverUsage}> |
   Readonly<{kind: 'invalid-schema' | 'inconclusive' | 'unsupported' | 'selection-refused' | 'loading-refused' | 'resource-limit' | 'cancelled'; rule: string; usage: ResolverUsage}>;
 export interface DirectOperationInspection {
@@ -317,12 +320,16 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       const action = selectedAction ?? '';
       shape(abstract, [ws('input'), ws('output'), ws('fault'), ws('documentation')]);
       shape(bound, [soap('operation'), ws('input'), ws('output'), ws('fault'), ws('documentation')]);
-      const abstractInput = exactly(abstract, WSDL_NAMESPACE, 'input'), abstractOutput = exactly(abstract, WSDL_NAMESPACE, 'output');
+      const abstractInput = exactly(abstract, WSDL_NAMESPACE, 'input');
+      const oneWay = !children(abstract).some(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'output');
+      if (oneWay && (profile !== 'components' || style !== 'document')) return refuse('unsupported', 'request-response-required');
+      const abstractOutput = oneWay ? undefined : exactly(abstract, WSDL_NAMESPACE, 'output');
       const sequence = children(abstract).filter(c => c.name.namespace === WSDL_NAMESPACE && ['input', 'output'].includes(c.name.local));
       if (sequence[0] !== abstractInput || sequence[1] !== abstractOutput) return refuse('unsupported', 'request-response-required');
       const messageOrder = (node: SyntaxElement) => {
         const messages = children(node).filter(c => c.name.namespace === WSDL_NAMESPACE && ['input', 'output', 'fault'].includes(c.name.local));
-        if (messages[0]?.name.local !== 'input' || messages[1]?.name.local !== 'output' || messages.slice(2).some(c => c.name.local !== 'fault')) refuse('unsupported', 'request-response-order');
+        if (oneWay ? messages.length !== 1 || messages[0]?.name.local !== 'input'
+          : messages[0]?.name.local !== 'input' || messages[1]?.name.local !== 'output' || messages.slice(2).some(c => c.name.local !== 'fault')) refuse('unsupported', 'request-response-order');
       };
       messageOrder(abstract); messageOrder(bound);
       if (attr(abstract, 'parameterOrder') !== undefined || attr(bound, 'parameterOrder') !== undefined) return refuse('unsupported', 'parameter-order');
@@ -385,11 +392,11 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       const io = (direction: 'input' | 'output', declaration: SyntaxElement): DirectMessageRoot | RpcMessageRoot => {
         const boundIo = exactly(bound, WSDL_NAMESPACE, direction);
         const boundName = attr(boundIo, 'name');
-        const expectedName = attr(declaration, 'name') ?? `${ownedSelector.operation}${direction === 'input' ? 'Request' : 'Response'}`;
+        const expectedName = attr(declaration, 'name') ?? (oneWay ? ownedSelector.operation : `${ownedSelector.operation}${direction === 'input' ? 'Request' : 'Response'}`);
         if (boundName !== undefined && boundName !== expectedName) return refuse('selection-refused', 'binding-message-name');
         return style === 'rpc' ? rpcRoot(declaration, boundIo, direction) : root(declaration, boundIo);
       };
-      const requestRoot = io('input', abstractInput), responseRoot = io('output', abstractOutput);
+      const requestRoot = io('input', abstractInput), responseRoot = abstractOutput && io('output', abstractOutput);
       const declaredFaults = children(abstract).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'fault');
       const boundFaults = children(bound).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'fault');
       if (style === 'rpc' && (declaredFaults.length || boundFaults.length)) return refuse('unsupported', 'rpc-declared-fault');
@@ -411,9 +418,9 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
         binding: {version: soapNamespace === SOAP12 ? '1.2' : '1.1', ...(soapNamespace === SOAP12 ? {actionRequired} : {}), style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
           ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
-        input: requestRoot, output: responseRoot, faults,
+        input: requestRoot, ...(responseRoot ? {output: responseRoot} : {pattern: 'one-way' as const}), faults,
         ...(policyOwner ? {policy: policyOwner.forBinding(binding.syntax), addressingActions: {required: false as const,
-          input: attr(abstractInput, 'Action', ADDRESSING_WSDL), output: attr(abstractOutput, 'Action', ADDRESSING_WSDL),
+          input: attr(abstractInput, 'Action', ADDRESSING_WSDL), output: abstractOutput && attr(abstractOutput, 'Action', ADDRESSING_WSDL),
           faults: declaredFaults.flatMap(fault => {const action = attr(fault, 'Action', ADDRESSING_WSDL);
             return action === undefined ? [] : [{name: attr(fault, 'name')!, action}];})}} : {}),
         missingCapabilities: ['matcher', 'projection', 'scalar-payload', 'bundle', 'codec', 'buffered-transport', 'structured-generation',

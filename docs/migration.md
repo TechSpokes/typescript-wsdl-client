@@ -6,6 +6,16 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.6.x to 1.6.3
+
+One-way checked document/literal operations now have an explicit input-only source contract. Regenerate clients, capsules, source inventories, gateways and OpenAPI together to adopt SOAP 1.1 `checkedComponentRuntimeV6` or SOAP 1.2 `checkedComponentRuntimeV7`. Existing V1-V5 request-response bindings, direct preview and legacy defaults retain their contracts and refuse one-way artifacts before I/O.
+
+Handle the distinct `soap-acknowledgement` terminal result without reading an application `value`. Its actual upstream status is 200, 202 or 204 and its owned response bytes are empty. Gateways return empty HTTP 202; this establishes complete transport acceptance, not successful business processing. Never retry an uncertain business operation automatically. See the [acknowledgement/error table](checked-gateway.md#one-way-operations).
+
+Version 1.6.2 added optional selected HTTP observation and gateway publication. The new `httpResponseHeaderNames` and `httpResponseStatusHeaderName` generation options require an explicit `httpResponseHeaders` selection, including `[]` for status only. Omission preserves the existing namespaced outputs. Unsafe, colliding, malformed and unselected mappings refuse. Client observation keeps normalized upstream identities independently of gateway names.
+
+Preserve customized app/config/test scaffolds; regeneration skips them unless their existing force options are supplied. Review generated types and consumer tests before deployment, including mixed services that require a matching binding per operation. No package update alone qualifies a production provider.
+
 ## From 1.5.x to 1.6.0
 
 Existing single-success scoped projections and runtime bindings retain their contracts. To adopt [application-error branches](checked-gateway.md#independently-validated-application-error-branches), configure `responseBranches` alongside the existing success `recordProjections` association. Pin every original resource in each independently authorized error grammar before applying corrections. A branch validates the complete selected error response, including its wrappers and attributes.

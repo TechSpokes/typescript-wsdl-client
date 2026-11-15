@@ -106,9 +106,16 @@ export interface ComponentApplicationErrorSoapResult {
   readonly ignoredHeaders?: readonly ExpandedName[];
 }
 type SoapResult<D> = DecodedSoapResult<Exclude<D, ComponentApplicationErrorDecodedXml>> | ComponentProtocolFault | ComponentApplicationErrorSoapResult;
+/** Complete transport acceptance; no application output or business-success claim.
+ * @since 1.6.3
+ */
+export interface SoapAcknowledgement {
+  readonly kind: 'soap-acknowledgement'; readonly admitted: false; readonly status: number;
+  readonly responseBytes: Uint8Array; readonly usage: ResolverUsage; readonly http?: HttpResponseObservation;
+}
 export type DirectSoapResult = DecodedSoapResult<DirectDecodedXml>;
-export type ComponentSoapResult = DecodedSoapResult<ComponentDecodedXml> | ComponentProtocolFault;
-export type ComponentRecordSoapResult = DecodedSoapResult<ComponentDecodedXml | ComponentRecordDecodedXml> | ComponentProtocolFault;
+export type ComponentSoapResult = DecodedSoapResult<ComponentDecodedXml> | ComponentProtocolFault | SoapAcknowledgement;
+export type ComponentRecordSoapResult = DecodedSoapResult<ComponentDecodedXml | ComponentRecordDecodedXml> | ComponentProtocolFault | SoapAcknowledgement;
 export type ComponentResponseBranchesSoapResult = ComponentRecordSoapResult | ComponentApplicationErrorSoapResult;
 export interface ComponentSoapOptions extends Omit<DirectSoapOptions, 'endpoint' | 'allowEndpoint'> {
   /** Explicit bounded HTTP observation; an empty selection observes only status. */
@@ -153,7 +160,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     },
   });
   if (result.kind === 'soap-fault' && !('decoded' in result)) throw new TypeError('Component fault on direct profile');
-  if (result.kind === 'application-error') throw new TypeError('Component application error on direct profile');
+  if (result.kind === 'application-error' || result.kind === 'soap-acknowledgement') throw new TypeError('Component outcome on direct profile');
   return result;
 }
 
@@ -243,7 +250,7 @@ interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping |
 async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping | ComponentRecordProjection | ComponentResponseBranches,
   D extends DirectDecodedXml | ComponentDecodedXml | ComponentRecordDecodedXml | ComponentApplicationErrorDecodedXml>(
   contract: DirectOperationContract, input: M, application: unknown, options: ComponentSoapOptions,
-  profile: ExchangeProfile<M, D>): Promise<SoapResult<D>> {
+  profile: ExchangeProfile<M, D>): Promise<SoapResult<D> | SoapAcknowledgement> {
   const soap12 = profile.component && contract.binding.version === '1.2';
   const {context} = inspectDirectOperation(contract);
   if (input.direction.kind !== 'input') throw new TypeError('SOAP request requires the exact input mapping');
@@ -317,7 +324,8 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');
     const encoded = profile.encode(contract, input, application, {signal, limits});
     if (!('bytes' in encoded)) return fail(encoded.kind, encoded.rule, 'input');
-    const output = profile.create(contract, {kind: 'output'}, {signal});
+    // @constraints One-way input supplies only the XML parser; protocol selection below must never admit an application body.
+    const output = contract.pattern === 'one-way' ? input : profile.create(contract, {kind: 'output'}, {signal});
     if (!('direction' in output)) return fail(output.kind, output.rule);
     const faults = new Map<string, M>();
     for (const fault of contract.faults) {
@@ -399,6 +407,15 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (hookFailure) throw hookFailure;
     if (!response) return fail('transport', 'incomplete HTTP response');
     const observed: {bytes: Buffer; status: number; contentType: string; encoding: string} = response;
+    if (contract.pattern === 'one-way') {
+      if (observed.encoding && observed.encoding.toLowerCase() !== 'identity') return fail('unsupported', 'HTTP compression');
+      if ([200, 202, 204].includes(observed.status)) {
+        if (observed.bytes.byteLength) return fail('protocol', 'one-way-response-body', 'response');
+        return Object.freeze({kind: 'soap-acknowledgement', admitted: false, status: observed.status,
+          responseBytes: new Uint8Array(0), usage: Object.freeze({...budget.usage()}), ...(http ? {http} : {})});
+      }
+      if (!(observed.status === 500 || soap12 && observed.status === 400) || !observed.bytes.byteLength) return fail('transport', 'SOAP HTTP status');
+    }
     const assessed = assessSoapResponse(contract, output, faults, observed.bytes, profile, {signal, limits, uri: endpoint.href,
       responseMetadata: {status: observed.status, contentType: observed.contentType, contentEncoding: observed.encoding}});
     if (!('admitted' in assessed)) return http ? Object.freeze({...assessed, http}) : assessed;
@@ -578,6 +595,7 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
       selectPayload: root => {
         const payload = bodyRoot(root, true);
         if (!same(payload.name, {namespace: SOAP, local: 'Fault'})) {
+          if (contract.pattern === 'one-way') stop('protocol', 'one-way-response-body');
           if (options.responseMetadata && options.responseMetadata.status !== 200) stop('protocol', 'HTTP 500 requires SOAP Fault');
           return {payload, mapping: output};
         }

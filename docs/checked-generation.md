@@ -6,13 +6,13 @@ This is a bounded preview, not general WSDL/XSD or production-provider qualifica
 
 ## Install and try the bundled contract
 
-The examples target 1.3.0. Before that version is published, install a locally packed 1.3.0 tarball instead of requesting an unpublished registry version. After publication, use the explicit registry version below. Earlier releases retain their own documented contracts.
+The examples use published 1.6.2 for the bundled request-response contract. One-way support and exact downstream HTTP names are prepared for 1.6.3; until that candidate is published, trial those additions from a locally packed candidate. Earlier releases retain their own documented contracts.
 
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.3.0
+npm install --save-dev @techspokes/typescript-wsdl-client@1.6.2
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```
@@ -20,6 +20,8 @@ npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@
 The bundled [Forecast contract](examples/checked-forecast.wsdl) is synthetic and has no running SOAP backend. Generation selects its one unambiguous service/port/binding and `GetForecast` operation without a configuration file. Its placeholder SOAP address must be replaced with your owned test backend before invoking the operation.
 
 The generated project includes `client/inventory.json`, copied WSDL/XSD sources and provenance, operation clients/contracts, OpenAPI, gateway routes, server configuration and scaffold tests. The planning report lists readiness and blockers; the inventory records discovered, selected and generated operations. Generation does not mean an operation was executed.
+
+Input-only document/literal sources use the [one-way operation contract](checked-gateway.md#one-way-operations) on either SOAP version. A complete allowed empty exchange returns a transport-only acknowledgement and an empty gateway 202, not application success. Configure downstream metadata names in the existing checked object; selection, source/security validation and defaults stay explicit.
 
 ## Check and start the generated project
 

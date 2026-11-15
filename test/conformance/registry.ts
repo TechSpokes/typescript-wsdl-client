@@ -1,4 +1,4 @@
-import type {CapabilityCase} from "./types.js";
+import type {CapabilityCase, CheckedCapabilityCase} from "./types.js";
 import {resolve, join} from "node:path";
 import {pathToFileURL} from "node:url";
 import Fastify from "fastify";
@@ -44,6 +44,26 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
     "Gateway should return the standard success envelope.",
   );
 }
+
+export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
+  {
+    id: "checked-one-way-document-literal",
+    title: "Checked SOAP 1.1 and SOAP 1.2 input-only operations",
+    status: "partial",
+    featureTags: ["wsdl", "soap", "one-way", "checked"],
+    fixture: "soap/versions/one-way.wsdl",
+    docsAnchor: "checked-one-way-document-literal",
+    publicContract: "Checked document/literal input-only operations use V6/V7 bindings and empty 202 transport acknowledgements; legacy defaults remain unchanged.",
+    decision: "partial-support",
+    decisionReason: "Native one-way execution and refusal evidence lives in one-way.test.ts and relocated installed consumers; RPC, multipart and nonempty acknowledgements refuse.",
+    authority: "WSDL 1.1 sections 2.4.1/2.4.5; bounded SOAP 1.1/1.2 HTTP acknowledgement policy",
+    provenance: "Repository-owned dual-binding input-only fixture with an ordinary request-response control.",
+    license: "MIT",
+    fixtureKind: "interop-profile",
+    profile: "checked-components-v1",
+    evidence: {native: "conformance/one-way.test.ts", installed: ["integration/checked-gateway-installed.test.ts", "integration/checked-intake-installed.test.ts"]},
+  },
+];
 
 export const capabilities: CapabilityCase[] = [
   {

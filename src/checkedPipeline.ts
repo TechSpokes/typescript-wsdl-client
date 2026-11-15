@@ -37,13 +37,22 @@ import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from './compiler/s
 import {ComponentSoapPreparation} from './compiler/componentSoapPreparation.js';
 import {parseApplicationGroups} from './compiler/applicationGroups.js';
 import type {ApplicationGroupsOptions, ApplicationGroupTarget, ApplicationGroupRecord} from './compiler/applicationGroups.js';
-import {normalizeHttpResponseHeaders} from './compiler/httpResponseHeaders.js';
+import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from './compiler/httpResponseHeaders.js';
 import {inspectComponentValueMapping} from './compiler/directValues.js';
+
+function publicationChoices(data: Record<string, unknown>): Pick<CheckedComponentOptions, 'httpResponseHeaderNames' | 'httpResponseStatusHeaderName'> {
+  const names = normalizeHttpResponseHeaderNames(normalizeHttpResponseHeaders(data.httpResponseHeaders), data.httpResponseHeaderNames, data.httpResponseStatusHeaderName);
+  return {...(data.httpResponseHeaderNames === undefined ? {} : {httpResponseHeaderNames: Object.freeze(Object.fromEntries(
+    Object.getOwnPropertyNames(data.httpResponseHeaderNames).sort().map(key => [key.toLowerCase(), names.headers[key.toLowerCase()]!]))) }),
+    ...(data.httpResponseStatusHeaderName === undefined ? {} : {httpResponseStatusHeaderName: names.status})};
+}
 
 /** Explicit service operations and independently authorized snapshots for component generation. */
 export interface CheckedComponentOptions {
   /** Explicit publication selection for generated routes; client observation alone never publishes. */
   readonly httpResponseHeaders?: readonly string[];
+  readonly httpResponseHeaderNames?: Readonly<Record<string, string>>;
+  readonly httpResponseStatusHeaderName?: string;
   readonly applicationGroups?: ApplicationGroupsOptions;
   readonly sourceCorrectionsFile?: string;
   readonly service: {readonly namespace: string; readonly local: string};
@@ -141,7 +150,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile', 'httpResponseHeaders'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile', 'httpResponseHeaders', 'httpResponseHeaderNames', 'httpResponseStatusHeaderName'],
     resolved ? ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'] : []);
   if (['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => Object.hasOwn(data, key) && data[key] === undefined))
     throw new TypeError('Explicit component choices must not be undefined');
@@ -215,6 +224,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
   if (data.signal !== undefined && !(data.signal instanceof AbortSignal)) throw new TypeError('Native AbortSignal required');
   return {...(selectors ? {selectors} : {}), ...(data.service === undefined ? {} : {service: name(data.service)}),
     ...(data.httpResponseHeaders === undefined ? {} : {httpResponseHeaders: normalizeHttpResponseHeaders(data.httpResponseHeaders)}),
+    ...publicationChoices(data),
     ...(data.sourceCorrectionsFile === undefined ? {} : {sourceCorrectionsFile: text(data.sourceCorrectionsFile)}),
     ...(Object.hasOwn(data, 'applicationGroups') ? {applicationGroups: parseApplicationGroups(data.applicationGroups)} : {}),
     ...(data.port === undefined ? {} : {port: text(data.port)}), ...(fileRoots ? {fileRoots} : {}),
@@ -523,7 +533,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       else generatedClients.push(generated);
     }
     if (!refusals.length) {
-      try {gateway = await generateComponentServiceGateway(expected, {...outputs, basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, signal: config.signal, emit: false});}
+      try {gateway = await generateComponentServiceGateway(expected, {...outputs, basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, httpResponseHeaderNames: config.httpResponseHeaderNames, httpResponseStatusHeaderName: config.httpResponseStatusHeaderName, signal: config.signal, emit: false});}
       catch (error) {
         const exhausted = expected.some(operation => inspectDirectOperation(operation.contract).context.budget.exhausted());
         if (!config.signal?.aborted && !exhausted) throw error;
