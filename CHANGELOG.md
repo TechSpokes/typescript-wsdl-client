@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs: reconcile the v1.6.3 release baseline, current coverage owners and historical roadmap guidance.
+
 ## [1.6.3] - 2026-11-15
 
 - feat(checked): execute input-only SOAP 1.1/1.2 operations with distinct transport acknowledgements and empty gateway 202 responses.
