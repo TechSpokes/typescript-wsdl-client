@@ -49,6 +49,8 @@ Generated source snapshots support offline runtime use, and calls use the select
 
 Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
 
+Checked clients can observe selected upstream HTTP response headers through `soap.httpResponseHeaders`. Publishing them from a generated gateway separately requires `httpResponseHeaders` in `--checked-config` or `checkedComponents`; existing JSON bodies and REST status codes stay unchanged. See [bounded HTTP observation and publication](docs/checked-gateway.md#selected-upstream-http-response-headers).
+
 ## Why Choose This
 
 Most tools in this space stop at one layer: a SOAP runtime, type generation, or spec conversion. This package generates the full stack from a WSDL source and can compose independent legacy sources into one REST gateway.
@@ -300,6 +302,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
 | [v1.6.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.1.md) | Accurate empty-extension assessment and typed syntax refusals |
+| [v1.6.2 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.2.md) | Bounded upstream HTTP observation and explicit gateway publication |
 | [v1.6.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.0.md) | Independently validated application-error branches and upgrade guidance |
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
 | [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |

@@ -14,8 +14,10 @@ import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectComponentValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
+import {normalizeHttpResponseHeaders} from '../compiler/httpResponseHeaders.js';
 
 interface CheckedGatewayOptions {
+  readonly httpResponseHeaders?: readonly string[];
   /** Internal non-writing preparation; native qualification and lowering still run. */
   readonly emit?: boolean;
   readonly clientDir: string;
@@ -38,6 +40,13 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   inspectReconstructedComponentSource(expected);
   const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
   const branched = !!expected.responseBranches;
+  const selection = normalizeHttpResponseHeaders(options.httpResponseHeaders);
+  const observedHeaders = selection === undefined ? {} : {headers: {
+    'x-wsdl-tsc-upstream-status': {description: 'Actual upstream HTTP status when a complete response was observed', schema: {type: 'string', pattern: '^[0-9]{3}$'}},
+    ...Object.fromEntries(selection.map(name => [`x-wsdl-tsc-upstream-header-${name}`, {
+      description: 'Selected upstream values joined with comma and space after transport coalescing', schema: {type: 'string'},
+    }])),
+  }};
   const runtime = branched ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4'
     : expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
@@ -140,12 +149,12 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
         ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
       ...(expected.responseBranches ? {'x-response-branches': {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
       requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
-      responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
+      responses: {'200': {...observedHeaders, description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}},
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
-        '502': {description: branched ? 'Validated application error, SOAP fault or refused upstream response' : 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
+        '502': {...observedHeaders, description: branched ? 'Validated application error, SOAP fault or refused upstream response' : 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
           ...errors.map(error => error.documented), failureSchema]}}}},
-        '499': {description: 'Cancelled request', content: {'application/json': {schema: failureSchema}}},
-        '500': {description: 'Incompatible artifacts or gateway configuration', content: {'application/json': {schema: failureSchema}}}}}}},
+        '499': {...observedHeaders, description: 'Cancelled request', content: {'application/json': {schema: failureSchema}}},
+        '500': {...observedHeaders, description: 'Incompatible artifacts or gateway configuration', content: {'application/json': {schema: failureSchema}}}}}}},
   };
   let clientImport = path.relative(options.gatewayDir, path.join(options.clientDir, 'client.js')).replace(/\\/g, '/');
   if (!clientImport.startsWith('.')) clientImport = './' + clientImport;
@@ -198,8 +207,15 @@ ${branched ? '  const validateApplicationError = ajv.compile(schemas.application
     try {
       const signal = soap.signal ? AbortSignal.any([soap.signal, controller.signal]) : controller.signal;
       const result = await client[${literal(expected.contract.selector.operation)}](request.body as Request,
-        {...base, soap: {...soap, signal}});
-      if (result.kind === 'soap-response') {
+        {...base, soap: {...soap, signal${selection === undefined ? '' : `, httpResponseHeaders: ${literal(selection)}`}}});
+${selection === undefined ? '' : `      if (result.http) {
+        reply.header('x-wsdl-tsc-upstream-status', String(result.http.status));
+        for (const name of ${literal(selection)}) {
+          const values = result.http.headers[name];
+          if (values) reply.header('x-wsdl-tsc-upstream-header-' + name, values.join(', '));
+        }
+      }
+`}      if (result.kind === 'soap-response') {
         if (!validateResponse(result.value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-response-shape'});
         return reply.type('application/json').serializer(value => JSON.stringify(value)).send(result.value);
       }
@@ -252,7 +268,7 @@ export default plugin;
  * @throws For mixed native handles, invalid/colliding paths, cancellation or filesystem failures.
  */
 export async function generateComponentServiceGateway(expected: readonly ReconstructedComponentSource[], options: {
-  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean;
+  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean; httpResponseHeaders?: readonly string[];
 }): Promise<{doc: unknown; routes: Readonly<Record<string, string>>; emit: () => Promise<void>}> {
   const operations = inspectComponentSourceService(expected), routes: Record<string, string> = Object.create(null) as Record<string, string>;
   const paths: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
@@ -265,7 +281,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   for (const [index, operation] of operations.entries()) {
     tick(); const name = operation.contract.selector.operation, routePath = `${options.basePath}/${encodeURIComponent(name)}`;
     const result = await generateComponentGateway(operation, {clientDir: path.join(options.clientDir, 'operations', String(index)),
-      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, signal: options.signal, emit: false});
+      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, httpResponseHeaders: options.httpResponseHeaders, signal: options.signal, emit: false});
     emissions.push(result.emit);
     const doc = result.doc as Record<string, unknown>;
     documents.push(doc); routes[name] = routePath;

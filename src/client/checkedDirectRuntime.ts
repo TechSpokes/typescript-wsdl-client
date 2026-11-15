@@ -1,4 +1,5 @@
 import {types} from 'node:util';
+import type {HttpResponseObservation} from '../compiler/httpResponseHeaders.js';
 import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
 import {directClientRuntime, componentClientRuntime, componentSoap11ClientRuntime, componentSoap12ClientRuntime,
   componentSoap11BranchClientRuntime, componentSoap12BranchClientRuntime} from './directClientRuntime.js';
@@ -21,6 +22,7 @@ interface Options {
   };
 }
 interface Failure {
+  readonly http?: HttpResponseObservation;
   readonly kind: 'incompatible-artifact' | 'unsupported' | 'missing-authority' | 'resource-limit' | 'cancelled'
     | 'inconclusive' | 'invalid-schema' | 'scalar-invalid' | 'value-invalid' | 'xml-invalid' | 'mismatch' | 'transport' | 'protocol';
   readonly rule: string; readonly usage: Usage; readonly repair?: string;
@@ -28,6 +30,7 @@ interface Failure {
   readonly diagnostic?: CheckedPayloadDiagnostic;
 }
 type Success = {
+  readonly http?: HttpResponseObservation;
   readonly value: unknown;
   readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;
 } & ({readonly kind: 'soap-response'} | {readonly kind: 'soap-fault';
@@ -40,7 +43,7 @@ type ComponentOptions = Omit<Options, 'soap'> & {
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
   readonly standardLibraries?: readonly string[];
   readonly recordSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly source: string}[];
-  readonly soap: Omit<Options['soap'], 'endpoint' | 'allowEndpoint'> & {readonly ca?: string; readonly endpoint?: string; readonly allowEndpoint?: (endpoint: URL) => boolean};
+  readonly soap: Omit<Options['soap'], 'endpoint' | 'allowEndpoint'> & {readonly httpResponseHeaders?: readonly string[]; readonly ca?: string; readonly endpoint?: string; readonly allowEndpoint?: (endpoint: URL) => boolean};
 };
 type ComponentBranchOptions = ComponentOptions & {
   readonly branchSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly branch: string; readonly source: string}[];

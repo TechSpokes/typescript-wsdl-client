@@ -4,6 +4,8 @@ import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {DataOwnershipLimitError} from '../compiler/dataOwnership.js';
 import {types} from 'node:util';
+import {normalizeHttpResponseHeaders} from '../compiler/httpResponseHeaders.js';
+import type {HttpResponseObservation} from '../compiler/httpResponseHeaders.js';
 import {createApplicationBudget} from '../compiler/semanticBudget.js';
 import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudget.js';
 import {reconstructDirectSourceCapsuleInRequest, reconstructComponentSourceCapsuleInRequest, checkDirectSourceCompatibility, DIRECT_CAPSULE_LIMITS} from '../compiler/directSourceCapsule.js';
@@ -35,15 +37,18 @@ export interface ComponentClientOptions extends Omit<DirectClientOptions, 'soap'
   readonly soap: ComponentSoapOptions;
 }
 export interface DirectClientFailure {
+  readonly http?: HttpResponseObservation;
   readonly kind: DirectCapsuleFailure['kind'] | DirectSoapFailure['kind'];
   readonly rule: string; readonly usage: ResolverUsage; readonly repair?: string;
   readonly phase?: 'input' | 'response';
   readonly diagnostic?: CheckedPayloadDiagnostic;
 }
 export type DirectClientResult = DirectClientFailure | Readonly<{
+  http?: HttpResponseObservation;
   kind: 'soap-response'; value: DirectApplicationValue; status: number; admitted: false;
   responseBytes: Uint8Array; usage: ResolverUsage;
 }> | Readonly<{
+  http?: HttpResponseObservation;
   kind: 'soap-fault'; value: DirectApplicationValue; status: number; admitted: false;
   fault: Readonly<{name: string; code: Readonly<{namespace: string; local: string}>; string: string; actor?: string}>;
   responseBytes: Uint8Array; usage: ResolverUsage;
@@ -58,6 +63,7 @@ export interface DirectClientRuntime {
 export type ComponentClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap12FaultMetadata> = Exclude<DirectClientResult, {kind: 'soap-fault'}> | ComponentProtocolFault<F>
   | Readonly<Omit<Extract<DirectClientResult, {kind: 'soap-fault'}>, 'fault'> & {fault: Omit<DeclaredSoapFault, 'codeNode'>}>;
 export type ComponentBranchClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap11FaultMetadata | Soap12FaultMetadata> = ComponentClientResult<F> | Readonly<{
+  http?: HttpResponseObservation;
   kind: 'application-error'; branch: string; value: DirectApplicationValue; status: number; admitted: false;
   responseBytes: Uint8Array; usage: ResolverUsage;
 }>;
@@ -133,9 +139,10 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
     }
     options = owned as unknown as DirectClientOptions;
     const budget = createApplicationBudget(options.budget);
-    const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
+    let http: HttpResponseObservation | undefined;
+    const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, ...(http ? {http} : {}), usage: Object.freeze({...budget.usage()})});
     try {
-      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget), component ? ['ca'] : []);
+      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget), component ? ['ca', 'httpResponseHeaders'] : []);
       if (optionRule) return fail('unsupported', optionRule);
       if (options.soap.signal !== undefined && !(options.soap.signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
@@ -144,6 +151,10 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
 
       const soap: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
       for (const key of Reflect.ownKeys(options.soap)) soap[key as string] = Object.getOwnPropertyDescriptor(options.soap, key)!.value;
+      if (component && Object.hasOwn(soap, 'httpResponseHeaders')) {
+        try {soap.httpResponseHeaders = normalizeHttpResponseHeaders(soap.httpResponseHeaders);}
+        catch {return fail('unsupported', 'httpResponseHeaders selection');}
+      }
       for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities', ...(component ? ['ca'] : [])]) {
         if (Object.hasOwn(soap, key)) soap[key] = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(soap[key], check));
       }
@@ -195,8 +206,8 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         if (fresh.selection.port !== options.soap.port || fresh.selection.service.namespace !== options.soap.service.namespace
           || fresh.selection.service.local !== options.soap.service.local) return fail('incompatible-artifact', 'explicit source selection mismatch');
         result = fresh.responseBranches
-          ? await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap, fresh.responseProjection, protocol === '1.1', fresh.responseBranches)
-          : await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap, fresh.responseProjection, protocol === '1.1');
+          ? await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, options.soap as ComponentSoapOptions, fresh.responseProjection, protocol === '1.1', fresh.responseBranches)
+          : await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, options.soap as ComponentSoapOptions, fresh.responseProjection, protocol === '1.1');
       } else {
         const fresh = await reconstructDirectSourceCapsuleInRequest(bytes, options.localSource,
         {policy: {fileRoots: options.fileRoots}, limits: options.budget, signal: options.soap.signal}, budget);
@@ -208,16 +219,19 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
 
         result = await exchangeDirectSoap(fresh.contract, fresh.mappings[0], input, options.soap);
       }
+      http = result.http;
       if (!('decoded' in result)) {
         if (result.kind === 'soap-fault' && result.fault.version !== protocol) throw new TypeError('Protocol fault requires its generated runtime binding');
         if (result.kind === 'soap-fault') return result;
         // @constraints Native source provenance can contain endpoint secrets; only the safe diagnostic crosses the runtime boundary.
         return Object.freeze({kind: result.kind, rule: result.rule, usage: result.usage,
+          ...(http ? {http} : {}),
           ...(result.phase ? {phase: result.phase} : {}), ...(result.diagnostic ? {diagnostic: result.diagnostic} : {})});
       }
 
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
       const common = {value: result.decoded.validated.value, status: result.status, admitted: false as const,
+        ...(http ? {http} : {}),
         responseBytes: result.responseBytes, usage: Object.freeze({...budget.usage()})};
       if (result.kind === 'application-error') {
         if (!branches) return fail('incompatible-artifact', 'response-branch-runtime-version');
