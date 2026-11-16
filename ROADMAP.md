@@ -66,7 +66,7 @@ Specify metadata acquisition, SOAP responses and outgoing requests separately. R
 
 Assess explicit US-ASCII, UTF-8, UTF-16 and UTF-16LE/BE labels, BOM presence, XML declarations and HTTP charset precedence against [XML 1.0](https://www.w3.org/TR/xml/#charencoding), [RFC 7303](https://www.rfc-editor.org/rfc/rfc7303.html#section-3) and [SOAP media rules](https://www.rfc-editor.org/rfc/rfc3902.html#section-2). Distinguish mandatory UTF-8/UTF-16 support from optional byte-order labels and other charsets. Decide whether to retain contradiction refusal or adopt specified precedence, recording compatibility consequences before implementation.
 
-Current code refuses explicit ASCII and unmarked UTF-16LE/BE responses, ignores metadata HTTP charset as encoding authority and requires present response assertions to agree. Reproduce these observations with independent byte/code-point fixtures before changing them. Preserve exact ISO-8859-1 behavior; Windows-1252 is a distinct mapping, and broader charset ranking remains #462 work.
+Before the standalone #190 response-encoding batch, checked responses refused explicit ASCII and unmarked UTF-16LE/BE. The [implemented response profile](docs/checked-gateway.md#checked-response-encoding) now accepts strict ASCII and explicitly labelled BOM-less UTF-16LE/BE while retaining assertion agreement and exact ISO-8859-1. Metadata HTTP charset authority remains unchanged under #426; Windows-1252 is a distinct mapping, and broader charset ranking remains #462 work.
 
 #### Envelope and processing contract
 
