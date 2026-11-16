@@ -6,6 +6,12 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.6.4 to 1.6.5
+
+Update the package used by the checked runtime to accept strict ASCII and explicitly labelled BOM-less UTF-16LE/BE SOAP responses. No generated artifact format or runtime binding changes are required; existing clients and gateways use the extended response decoder after their runtime dependency is updated.
+
+The [checked response encoding profile](checked-gateway.md#checked-response-encoding) retains agreement between all present HTTP charset, XML declaration and BOM assertions. Generic `UTF-16` still requires a BOM, and malformed bytes or contradictory assertions refuse. Source decoding, outgoing UTF-8, direct clients and legacy defaults retain their existing contracts.
+
 ## From 1.6.3 to 1.6.4
 
 Regenerate gateways that publish selected HTTP metadata after updating the package. The publication loop now retains string-pair types under `noUncheckedIndexedAccess`, including status-only selections. Keep consumer compiler checks enabled; HTTP selection, naming, runtime bindings and response behavior remain unchanged.

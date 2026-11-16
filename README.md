@@ -301,6 +301,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.6.5 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.5.md) | Strict ASCII and explicitly labelled UTF-16 checked SOAP responses |
 | [v1.6.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.1.md) | Accurate empty-extension assessment and typed syntax refusals |
 | [v1.6.3 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/v1.6.3/docs/releases/v1.6.3.md) | One-way SOAP acknowledgements and exact safe downstream HTTP names |
 | [v1.6.2 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.2.md) | Bounded upstream HTTP observation and explicit gateway publication |
