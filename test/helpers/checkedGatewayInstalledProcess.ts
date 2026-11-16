@@ -605,6 +605,23 @@ try {
   assert.equal(upstream[0]!.action, '"urn:checked:GetForecast"');
   assert.equal(upstream[0]!.contentType, 'text/xml; charset=utf-8');
   assert.equal(upstream[0]!.method, 'POST'); assert.equal(upstream[0]!.path, '/owned-forecast');
+  for (const charset of ['US-ASCII', 'UTF-16LE', 'UTF-16BE']) {
+    replyStatus = 200;
+    replyContentType = 'text/xml; charset=' + charset;
+    const encode = (text: string) => {
+      const bytes = Buffer.from(text, charset === 'US-ASCII' ? 'ascii' : 'utf16le');
+      return charset === 'UTF-16BE' ? bytes.swap16() : bytes;
+    };
+    reply = encode(normal.replace(/<\?xml[^?]*\?>/, '').replace('<t:city>Paris</t:city>', '<t:city>caf&#xE9;</t:city>'));
+    assert.deepEqual(await post(expected.request), {status: 200, value: {...expected.response, city: 'café'}});
+    replyStatus = 500; reply = encode(fault.replace(/<\?xml[^?]*\?>/, ''));
+    const declared = await post(expected.request);
+    assert.equal(declared.status, 502);
+    assert.equal((declared.value as {fault: {name: string}}).fault.name, expected.fault.name);
+    assert.deepEqual((declared.value as {value: unknown}).value,
+      {code: expected.fault.detail.code, message: expected.fault.detail.message});
+  }
+  reply = normal; replyStatus = 200; replyContentType = 'text/xml; charset=utf-8';
   for (const value of [{city: 'Paris', days: '2'}, {city: 'Paris'}, {city: 'Paris', days: 2, extra: true},
     {city: 7, days: 2}, {city: 'Paris', days: 2147483648}, {city: 'Paris', days: 1.5},
     null, [], {city: 'Paris', days: false}]) {

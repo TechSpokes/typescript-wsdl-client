@@ -573,15 +573,15 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
       try {
         const mime = new MIMEType(metadata.contentType);
         soap12Charset = mime.params.get('charset')?.toLowerCase();
-        validSoap12Media = mime.essence === 'application/soap+xml' && (!soap12Charset || ['utf-8', 'utf-16', 'utf-16le', 'utf-16be', 'iso-8859-1'].includes(soap12Charset));
+        validSoap12Media = mime.essence === 'application/soap+xml' && (!soap12Charset || ['utf-8', 'utf8', 'utf-16', 'utf-16le', 'utf-16be', 'iso-8859-1', 'us-ascii', 'ascii'].includes(soap12Charset));
       } catch { /* Invalid media types are refused below. */ }
     }
-    const media = soap12 ? validSoap12Media ? ['', soap12Charset] : null : /^text\/xml(?:\s*;\s*charset\s*=\s*(?:"(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)"|(utf-8|utf-16|utf-16le|utf-16be|iso-8859-1)))?\s*$/i.exec(metadata.contentType);
+    const media = soap12 ? validSoap12Media ? ['', soap12Charset] : null : /^text\/xml(?:\s*;\s*charset\s*=\s*(?:"(utf-8|utf8|utf-16|utf-16le|utf-16be|iso-8859-1|us-ascii|ascii)"|(utf-8|utf8|utf-16|utf-16le|utf-16be|iso-8859-1|us-ascii|ascii)))?\s*$/i.exec(metadata.contentType);
     if (!media) return fail('protocol', 'SOAP response Content-Type');
     if (metadata.status !== 200 && metadata.status !== 500 && !(soap12 && metadata.status === 400)) return fail('transport', 'SOAP HTTP status');
     // Header charset is a protocol assertion, checked against actual BOM bytes.
     charset = (media[1] ?? media[2])?.toLowerCase();
-    if (!profile.component && charset === 'iso-8859-1') return fail('protocol', 'SOAP response Content-Type');
+    if (!profile.component && charset && ['iso-8859-1', 'us-ascii', 'ascii', 'utf8'].includes(charset)) return fail('protocol', 'SOAP response Content-Type');
     const bom = bytes[0] === 0xff && bytes[1] === 0xfe ? 'utf-16le'
       : bytes[0] === 0xfe && bytes[1] === 0xff ? 'utf-16be' : 'utf-8';
     if (!profile.component && charset && charset !== bom && !(charset === 'utf-16' && bom.startsWith('utf-16'))) return fail('protocol', 'SOAP charset disagrees with bytes');

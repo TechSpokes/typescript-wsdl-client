@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(soap): decode strict ASCII and explicitly labelled UTF-16LE/BE checked responses while preserving encoding assertion agreement.
 - docs: prioritize checked completion, define legacy retirement gates and prepare encoding/envelope gap closure.
 
 ## [1.6.4] - 2026-11-15

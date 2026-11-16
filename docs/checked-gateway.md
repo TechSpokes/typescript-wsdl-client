@@ -89,7 +89,30 @@ SOAP 1.2 header processing uses the default ultimate receiver and next roles. Un
 
 The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the shipped direct runtime and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
 
-The [bounded SOAP 1.1 RPC/encoded profile](supported-patterns.md#checked-soap-11-rpc-string-profile) adds source-owned scalar and flat Boolean record parts without document element roots. Component responses additionally accept exact Latin1 with encoding agreement. See the [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) for native restrictions, opaque string/reference results and separate owned-server/live evidence limits.
+The [bounded SOAP 1.1 RPC/encoded profile](supported-patterns.md#checked-soap-11-rpc-string-profile) adds source-owned scalar and flat Boolean record parts without document element roots. Component responses use the [checked response encoding profile](#checked-response-encoding). See the [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) for native restrictions, opaque string/reference results and separate owned-server/live evidence limits.
+
+### Checked response encoding
+
+Buffered checked component SOAP 1.1 `text/xml` and SOAP 1.2 `application/soap+xml` responses, including faults and offline response inspection, share this encoding profile. All present HTTP charset, XML declaration and BOM assertions must agree under the label rules below. This deliberately stricter compatibility policy refuses contradictions instead of applying [RFC 7303 section 3](https://www.rfc-editor.org/rfc/rfc7303.html#section-3) precedence; precedence reconsideration remains #462.
+
+| Bytes | HTTP charset and XML declaration labels, when present | BOM |
+|---|---|---|
+| UTF-8 | `UTF-8`, `UTF8` | Optional |
+| Seven-bit ASCII | `US-ASCII`, `ASCII` | Absent |
+| Exact Latin1 | `ISO-8859-1` | Absent |
+| UTF-16 little endian | `UTF-16LE` | Optional compatibility allowance |
+| UTF-16 big endian | `UTF-16BE` | Optional compatibility allowance |
+| UTF-16 with BOM-selected byte order | `UTF-16` or matching explicit endian label | Required for generic `UTF-16` |
+
+Labels are case insensitive. BOM-less UTF-16LE/BE requires an explicit byte-order label in the HTTP charset, the XML declaration, or both; declaration-only selection uses [XML initial-byte recognition](https://www.w3.org/TR/xml/#sec-guessing) solely to read and verify that declaration. Unlabelled UTF-16 is refused, and any generic `UTF-16` assertion requires a BOM. The explicit LE/BE labels canonically use no BOM in RFC 7303; matching BOM-marked explicit labels remain accepted for compatibility with existing checked responses.
+
+Absent assertions default to UTF-8. Invalid bytes never trigger guessing or replacement: ASCII rejects every byte above `0x7f`, Latin1 preserves C1 byte/code-point identity, and UTF-16 rejects odd lengths and unpaired surrogates. ASCII XML character references such as `&#xE9;` may still produce U+00E9 because references are XML syntax, not encoded high bytes.
+
+[XML 1.0](https://www.w3.org/TR/xml/#charencoding) requires UTF-8/UTF-16 support and malformed encoding failure; this bounded profile adds selected optional labels, not a complete charset catalogue. [RFC 3902](https://www.rfc-editor.org/rfc/rfc3902.html#section-2) defines SOAP 1.2 media semantics. Unknown charsets, contradictory byte order and illegal or truncated XML refuse before native validated values are returned; schema, scalar, mapping, fault, byte-limit and cancellation checks remain authoritative.
+
+Original response bytes are retained. Metadata/source decoding and digests, outgoing UTF-8, frozen `checkedDirectRuntimeV1` and legacy behavior retain their existing contracts. Empty one-way acknowledgements remain bodyless; encoded nonempty success-status entities remain failures. Envelope/header-role processing, metadata charset authority and broader charset support remain #190/#426/#462 work.
+
+### Service planning
 
 For a supported local WSDL or HTTP(S) root URL with one service/port/binding candidate, omit `--checked-config`. The planner selects all operations of that binding and derives supported mappings through the existing native owners. Local sources default to their containing directory; remote sources authorize their same-origin declared dependency graph. Canonical containment, redirect permission checks and native qualification still apply.
 

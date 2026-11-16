@@ -26,6 +26,7 @@ const expectedError = {kind: 'application-error', branch: 'application-error', v
   Response: {ApplicationError: {Retryable: false, Code: 42, Message: 'synthetic error'}}}}};
 const ns11 = 'http://schemas.xmlsoap.org/soap/envelope/', ns12 = 'http://www.w3.org/2003/05/soap-envelope';
 let body = success, status = 200, protocol = ns11, hold = false;
+let charset = 'utf-8';
 let aliasedPublication = false;
 let arrived: (() => void) | undefined, released: (() => void) | undefined;
 const observed: {xml: string; action?: string; contentType?: string; method?: string; url?: string}[] = [];
@@ -34,7 +35,7 @@ const upstream = createServer(async (request, response) => {
   let xml = ''; for await (const chunk of request) xml += String(chunk);
   observed.push({xml, action: request.headers.soapaction as string | undefined, contentType: request.headers['content-type'],
     method: request.method, url: request.url});
-  response.writeHead(status, {'Content-Type': status === 429 ? 'text/plain' : protocol === ns11 ? 'text/xml; charset=utf-8' : 'application/soap+xml; charset=utf-8',
+  response.writeHead(status, {'Content-Type': status === 429 ? 'text/plain' : (protocol === ns11 ? 'text/xml' : 'application/soap+xml') + '; charset=' + charset,
     'X-RateLimit-Limit': '500', 'X-RateLimit-Remaining': '499', 'X-RateLimit-Window': '60000',
     'set-cookie': 'COOKIE_SENTINEL', authorization: 'AUTH_SENTINEL'});
   if (status === 429) {response.end('UNVALIDATED_BODY_SENTINEL'); return;}
@@ -42,7 +43,9 @@ const upstream = createServer(async (request, response) => {
     response.once('close', () => released?.());
     response.write(`<s:Envelope xmlns:s="${protocol}"><s:Body>`); arrived?.(); return;
   }
-  response.end(request.headers.soapaction === '"urn:test:notify"' ? '' : `<s:Envelope xmlns:s="${protocol}"><s:Body>${body}</s:Body></s:Envelope>`);
+  const responseXml = `<s:Envelope xmlns:s="${protocol}"><s:Body>${body}</s:Body></s:Envelope>`;
+  const bytes = Buffer.from(responseXml, charset === 'utf-16le' || charset === 'utf-16be' ? 'utf16le' : 'utf8');
+  response.end(request.headers.soapaction === '"urn:test:notify"' ? '' : charset === 'utf-16be' ? bytes.swap16() : bytes);
 });
 upstream.on('connection', socket => {sockets.add(socket); socket.once('close', () => sockets.delete(socket));});
 const bounded = async <T>(promise: Promise<T>, message: string): Promise<T> => {
@@ -86,6 +89,13 @@ try {
     const firstCall = observed.length;
     const good = await send(); assert.equal(good.statusCode, 200, good.body); assert.deepEqual(good.json(), expectedSuccess);
     metadata(good, 200);
+    for (const encoding of ['US-ASCII', 'utf-16le', 'utf-16be']) {
+      charset = encoding;
+      body = success.replace('Code="A"', 'Code="caf&#xE9;"');
+      const encoded = await send(); assert.equal(encoded.statusCode, 200, encoded.body);
+      assert.deepEqual(encoded.json(), {Records: {Record: [{Code: 'café', Quantity: 2}]}});
+    }
+    charset = 'utf-8'; body = success;
     if (mode === 'mixed') {
       body = '<o:OrdinaryResponse xmlns:o="urn:test:outer">ordinary success</o:OrdinaryResponse>';
       const ordinary = await app.inject({method: 'POST', url: '/v1/branches/Ordinary', payload: JSON.stringify('owned-request'),
@@ -105,6 +115,13 @@ try {
     assert.equal(fault.json().kind, 'soap-fault'); assert.equal(fault.json().fault.string, 'synthetic fault');
     assert.equal(fault.json().fault.version, mode !== 'soap12' ? '1.1' : '1.2');
     assert.equal(acceptsUpstream(fault.json()), true); assert.equal(acceptsSuccess(fault.json()), false);
+    for (const encoding of ['US-ASCII', 'utf-16le', 'utf-16be']) {
+      charset = encoding;
+      const encoded = await send(); assert.equal(encoded.statusCode, 502, encoded.body);
+      assert.equal(encoded.json().kind, 'soap-fault'); assert.equal(encoded.json().fault.string, 'synthetic fault');
+      assert.equal(acceptsUpstream(encoded.json()), true);
+    }
+    charset = 'utf-8';
     status = 200;
     for (const invalid of [applicationError.replace('>42<', '>invalid-secret<'), applicationError.replace('Retryable="false"', 'Retryable="invalid-secret"'),
       applicationError.replace(' Marker="owned"', ''), applicationError.replace('<Wrapper ', '<Wrapper xmlns="urn:test:outer" '),

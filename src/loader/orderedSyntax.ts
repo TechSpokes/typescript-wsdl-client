@@ -92,28 +92,43 @@ function decodeXml(bytes: Uint8Array, strictBom = false, metadata = false, respo
     : bytes[0] === 0xfe && bytes[1] === 0xff ? "utf-16be" : "utf-8";
   try {
     const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    // @why Sniff only an ASCII declaration, never guess Latin1 after UTF-8 failure.
-    //   A BOM fixes the encoding and must agree with the decoded declaration.
+    // @why A BOM fixes byte order; declarations select optional encodings before
+    //   decoding. Invalid UTF-8 never triggers Latin1 guessing (#190/#462).
     const bom = encoding !== 'utf-8' || bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
-    const canonical = (label: string) => label.toLowerCase() === 'utf8' ? 'utf-8' : label.toLowerCase();
-    const agrees = (label: string) => canonical(label) === encoding || canonical(label) === 'utf-16' && encoding.startsWith('utf-16');
+    const canonical = (label: string) => label.toLowerCase() === 'utf8' ? 'utf-8'
+      : response && label.toLowerCase() === 'ascii' ? 'us-ascii' : label.toLowerCase();
+    const agrees = (label: string) => canonical(label) === encoding
+      || canonical(label) === 'utf-16' && encoding.startsWith('utf-16') && (!response || bom);
     if ((metadata || response) && !bom) {
       const end = buffer.indexOf('>');
       const declaration = xmlEncodingDeclaration.exec(buffer.toString('latin1', 0, end < 0 ? 0 : end + 1))?.[1].toLowerCase();
       if (response) {
-        const asserted = response.charset ?? declaration;
+        // @why XML Appendix F recognizes only the declaration's initial bytes here.
+        //   Recognition alone never authorizes an unlabelled UTF-16 response.
+        const recognized = bytes[0] === 0x3c && bytes[1] === 0 && bytes[2] === 0x3f && bytes[3] === 0 ? 'utf-16le'
+          : bytes[0] === 0 && bytes[1] === 0x3c && bytes[2] === 0 && bytes[3] === 0x3f ? 'utf-16be' : undefined;
+        const asserted = response.charset ?? recognized ?? declaration;
         if (asserted) {
           const selected = canonical(asserted);
-          if (!['utf-8', 'iso-8859-1'].includes(selected)) throw new SchemaLoadingError('unsupported-capability', 'Unsupported XML byte encoding');
+          if (!['utf-8', 'iso-8859-1', 'us-ascii', 'utf-16le', 'utf-16be'].includes(selected)) throw new SchemaLoadingError('unsupported-capability', 'Unsupported XML byte encoding');
           encoding = selected;
         }
       } else if (declaration === 'iso-8859-1') encoding = 'iso-8859-1';
     }
     if (response?.charset && !agrees(response.charset)) throw new SchemaLoadingError('unsupported-capability', 'HTTP charset disagrees with XML bytes');
-    // TextDecoder's ISO label aliases Windows-1252; Buffer supplies actual ISO byte identity.
-    const text = encoding === 'iso-8859-1' ? buffer.toString('latin1') : new TextDecoder(encoding, {fatal: true}).decode(bytes);
+    // @why WHATWG ASCII/ISO labels alias Windows-1252. Use exact byte identity,
+    //   with a seven-bit check for ASCII, rather than platform alias substitution.
+    if (encoding === 'us-ascii' && bytes.some(byte => byte > 0x7f)) throw new SchemaLoadingError('invalid-schema', 'Invalid US-ASCII byte');
+    const text = encoding === 'iso-8859-1' || encoding === 'us-ascii' ? buffer.toString('latin1') : new TextDecoder(encoding, {fatal: true}).decode(bytes);
     if (strictBom && text.startsWith('\ufeff')) throw new SchemaLoadingError('invalid-schema', 'Multiple XML byte order marks');
     const declared = xmlEncodingDeclaration.exec(text)?.[1].toLowerCase();
+    if (response) {
+      if (declared && !agrees(declared)
+        || !bom && encoding.startsWith('utf-16') && !response.charset && (!declared || canonical(declared) !== encoding)) {
+        throw new SchemaLoadingError('unsupported-capability', 'XML encoding assertions disagree or are missing');
+      }
+      return text;
+    }
     const allowed = encoding === 'iso-8859-1' ? [encoding] : encoding === 'utf-8' ? ['utf-8', 'utf8'] : ['utf-16', encoding];
     if (declared && !allowed.includes(declared)) {
       throw new SchemaLoadingError("unsupported-capability", "Unsupported XML byte encoding");
