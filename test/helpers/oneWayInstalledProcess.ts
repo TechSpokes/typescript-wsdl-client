@@ -15,7 +15,7 @@ await assert.rejects(import('typescript'), {code: 'ERR_MODULE_NOT_FOUND'});
 const version = process.argv[3];
 assert.ok(version === '11' || version === '12');
 const namespace = 'urn:owned:one-way', soap = version === '11' ? 'http://schemas.xmlsoap.org/soap/envelope/' : 'http://www.w3.org/2003/05/soap-envelope';
-let status = 202, body = '', calls = 0;
+let status = 202, body: string | Buffer = '', calls = 0;
 const sockets = new Set<Socket>();
 const upstream = createServer(async (request, reply) => {
   let xml = ''; for await (const chunk of request) xml += String(chunk);
@@ -50,6 +50,13 @@ try {
   status = 202; body = ' ';
   const refused = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned & installed'}});
   assert.equal(refused.statusCode, 502); assert.equal(refused.json().rule, 'one-way-response-body');
+  for (const encoding of ['ascii', 'utf-16le', 'utf-16be']) {
+    const bytes = Buffer.from(`<?xml version="1.0" encoding="${encoding}"?><value>nonempty</value>`, encoding === 'ascii' ? 'ascii' : 'utf16le');
+    body = encoding === 'utf-16be' ? bytes.swap16() : bytes;
+    const encoded = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned & installed'}});
+    assert.equal(encoded.statusCode, 502); assert.equal(encoded.json().rule, 'one-way-response-body');
+    assert.equal(encoded.json().value, undefined);
+  }
   status = 500; body = version === '11'
     ? `<s:Envelope xmlns:s="${soap}"><s:Body><s:Fault><faultcode>s:Server</faultcode><faultstring>owned fault</faultstring></s:Fault></s:Body></s:Envelope>`
     : `<s:Envelope xmlns:s="${soap}"><s:Body><s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">owned fault</s:Text></s:Reason></s:Fault></s:Body></s:Envelope>`;

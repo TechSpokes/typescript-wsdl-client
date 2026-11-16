@@ -27,13 +27,13 @@ Checked component generation supports the bounded RPC/encoded profile below. The
 | Typed RPC/encoded parts | Partial | Required strings, Booleans, decimal/integer/date/dateTime strings and native restrictions |
 | RPC Boolean record | Partial | One flat required Boolean record with native particle and fixed-value validation |
 | RPC result | Partial | One opaque string result under the original output part name |
-| Component SOAP response encodings | Partial | UTF-8, BOM-marked UTF-16 and exact ISO-8859-1 with assertion agreement |
+| Component SOAP response encodings | Partial | UTF-8, strict ASCII, explicit UTF-16LE/BE, BOM UTF-16 and exact Latin1 |
 | SOAP string references | Partial | Same-Body string `id`/`href`, inline strings and unambiguous roots |
 | Unused locationless imports | Supported | Native component qualification resolves actual required references |
 
 Request accessors follow source declaration order and the WSDL body namespace, with resolved native type names. JSON record property order is immaterial; native all-group validation permits unordered children while canonical writing is deterministic. Response struct and return-accessor local names may vary; the generated JSON response retains the source-owned part name. RPC/literal, other primitives, encoded arrays/shared or cyclic graphs, multiple results, declared RPC faults, headers and `parameterOrder` remain unsupported by this profile.
 
-The component response decoder uses an explicit supported HTTP charset or XML declaration without a BOM and requires all present header/declaration/BOM assertions to agree. Absent assertions default to UTF-8; invalid UTF-8 never triggers Latin1 guessing. ISO-8859-1 preserves byte-to-code-point identity, including C1 bytes; XML 1.0 legality and caller limits still apply. This compatible response extension belongs to the checked component runtime; source decoding and the shipped direct-runtime policy remain separate. Existing string-RPC artifacts retain their identity; typed inputs have a distinct interpretation and fresh source compatibility checks.
+The component response decoder requires all present header/declaration/BOM assertions to agree. The [exact response encoding profile](checked-gateway.md#checked-response-encoding) covers strict `US-ASCII`/`ASCII`, explicitly labelled BOM-less UTF-16LE/BE, generic BOM-required UTF-16 and the existing matching-BOM explicit-label compatibility allowance. Absent assertions default to UTF-8; invalid UTF-8 never triggers Latin1 guessing. ISO-8859-1 preserves byte-to-code-point identity, including C1 bytes; XML 1.0 legality and caller limits still apply. Source decoding and the shipped direct-runtime policy remain separate. Existing string-RPC artifacts retain their identity; typed inputs have a distinct interpretation and fresh source compatibility checks.
 
 ## Capability Evidence Matrix
 

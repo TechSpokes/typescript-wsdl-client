@@ -3,6 +3,8 @@ import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createServer} from 'node:http';
+import {createServer as createSecureServer} from 'node:https';
+import type {RequestListener} from 'node:http';
 import {once} from 'node:events';
 import type {Socket} from 'node:net';
 import Fastify from 'fastify';
@@ -10,7 +12,7 @@ import type {FastifyPluginAsync} from 'fastify';
 import {SaxesParser} from 'saxes';
 import {selectComponentOperation, selectDirectOperation} from '../../src/compiler/directOperation.js';
 import {createComponentValueMapping} from '../../src/compiler/directValues.js';
-import {exchangeComponentSoap} from '../../src/compiler/directSoap.js';
+import {exchangeComponentSoap, inspectComponentSoapResponse} from '../../src/compiler/directSoap.js';
 import {createComponentSourceCapsule, reconstructComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
 import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway.js';
@@ -28,11 +30,12 @@ const fixture = path.resolve('test/conformance/fixtures/soap/versions');
 const input = {value: 'owned & independent'};
 const selector = (version: '11' | '12') => ({portType: {namespace: ns, local: 'PingType'}, binding: {namespace: ns, local: 'Soap' + version}, operation: 'Ping'});
 const selection = (version: '11' | '12') => ({service: {namespace: ns, local: 'PingService'}, port: 'Port' + version});
-let directory: string, original: string, response: string, fault: string;
+let directory: string, original: string, response: string, fault: string, cert: string, key: string;
 beforeAll(async () => {
   await mkdir('tmp/conformance/soap12', {recursive: true});
   directory = await mkdtemp(path.resolve('tmp/conformance/soap12/suite-'));
   [original, response, fault] = await Promise.all(['document-literal.wsdl', 'response.xml', 'fault.xml'].map(file => readFile(path.join(fixture, file), 'utf8')));
+  [cert, key] = await Promise.all(['test-cert.pem', 'test-key.pem'].map(file => readFile(path.resolve('test/conformance/fixtures/soap/content-model', file), 'utf8')));
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});
 
@@ -49,26 +52,61 @@ async function source(version: '11' | '12' = '12', text = original) {
 
 async function owned<T>(work: (server: {
   endpoint: string; requests: {path: string; xml: string; action?: string; contentType?: string}[];
-  reply: (xml: string, status?: number, contentType?: string) => void;
-}) => Promise<T>) {
+  reply: (xml: string | Buffer, status?: number, contentType?: string) => void;
+}) => Promise<T>, secure = false) {
   const sockets = new Set<Socket>();
   const requests: {path: string; xml: string; action?: string; contentType?: string}[] = [];
-  let bytes = response, status = 200, contentType = 'application/soap+xml; charset=utf-8';
-  const server = createServer(async (request, reply) => {
+  let bytes: string | Buffer = response, status = 200, contentType = 'application/soap+xml; charset=utf-8';
+  const listener: RequestListener = async (request, reply) => {
     const chunks: Buffer[] = []; for await (const chunk of request) chunks.push(Buffer.from(chunk));
     requests.push({path: request.url!, xml: Buffer.concat(chunks).toString('utf8'), action: request.headers.soapaction as string | undefined, contentType: request.headers['content-type']});
     const is11 = request.url === '/soap11';
-    reply.writeHead(status, {'content-type': is11 ? 'text/xml; charset=utf-8' : contentType});
-    reply.end(is11 ? bytes.replaceAll(soap12, soap11) : bytes);
-  });
+    reply.writeHead(status, {'content-type': is11 ? contentType.replace('application/soap+xml', 'text/xml') : contentType});
+    reply.end(is11 && typeof bytes === 'string' ? bytes.replaceAll(soap12, soap11) : bytes);
+  };
+  const server = secure ? createSecureServer({cert, key}, listener) : createServer(listener);
   server.on('connection', socket => {sockets.add(socket); socket.once('close', () => sockets.delete(socket));});
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const address = server.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
-  try {return await work({endpoint: `http://127.0.0.1:${address.port}`, requests, reply(xml, code = 200, media = 'application/soap+xml; charset=utf-8') {bytes = xml; status = code; contentType = media;}});}
+  try {return await work({endpoint: `${secure ? 'https' : 'http'}://127.0.0.1:${address.port}`, requests, reply(xml, code = 200, media = 'application/soap+xml; charset=utf-8') {bytes = xml; status = code; contentType = media;}});}
   finally {for (const socket of sockets) socket.destroy(); server.close(); await once(server, 'close');}
 }
 
 describe('SOAP 1.2 component binding and wire execution', () => {
+  it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('decodes exact encoded SOAP %s response bytes (HTTPS=%s)', async (version, secure) => {
+    const selected = await source(version);
+    await owned(async server => {
+      for (const encoding of ['US-ASCII', 'UTF-16LE', 'UTF-16BE'] as const) {
+        const body = response.replaceAll(soap12, version === '11' ? soap11 : soap12)
+          .replace('owned &amp; independent', encoding === 'US-ASCII' ? 'caf&#xE9; &#x1F327;' : 'café 🌧');
+        const encode = (text: string) => {
+          const bytes = Buffer.from(text, encoding === 'US-ASCII' ? 'ascii' : 'utf16le');
+          return encoding === 'UTF-16BE' ? bytes.swap16() : bytes;
+        };
+        for (const assertions of ['http', 'declaration', 'both']) {
+          const bytes = encode((assertions === 'http' ? '' : `<?xml version="1.0" encoding="${encoding}"?>`) + body);
+          const contentType = (version === '11' ? 'text/xml' : 'application/soap+xml') + (assertions === 'declaration' ? '' : `; charset="${encoding}"`);
+          server.reply(bytes, 200, contentType);
+          const result = await exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection(version), endpoint: server.endpoint + '/soap' + version, ...(secure ? {ca: cert} : {})});
+          expect(result).toMatchObject({kind: 'soap-response', decoded: {validated: {value: {value: 'café 🌧'}}}});
+          expect(result).toHaveProperty('responseBytes', new Uint8Array(bytes));
+          expect(inspectComponentSoapResponse(selected.contract, selected.mapping, bytes, {responseMetadata: {status: 200, contentType}}))
+            .toMatchObject({kind: 'soap-response', decoded: {validated: {value: {value: 'café 🌧'}}}});
+        }
+        const malformed = encoding === 'US-ASCII'
+          ? Buffer.concat([Buffer.from(body.slice(0, body.indexOf('caf'))), Buffer.from([0xe9]), Buffer.from(body.slice(body.indexOf('caf') + 3))])
+          : encode(body).subarray(0, encode(body).length - 1);
+        const contentType = (version === '11' ? 'text/xml' : 'application/soap+xml') + '; charset=' + encoding;
+        server.reply(malformed, 200, contentType);
+        const invalid = await exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection(version), endpoint: server.endpoint + '/soap' + version, ...(secure ? {ca: cert} : {})});
+        expect(invalid.kind).not.toBe('soap-response'); expect(invalid).not.toHaveProperty('decoded');
+        expect(inspectComponentSoapResponse(selected.contract, selected.mapping, malformed, {responseMetadata: {status: 200, contentType}}).kind).not.toBe('soap-response');
+        server.reply(encode(body), 200, 'application/soap+xml; charset=windows-1252');
+        const refused = await exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection(version), endpoint: server.endpoint + '/soap' + version, ...(secure ? {ca: cert} : {})});
+        expect(refused.kind).not.toBe('soap-response');
+      }
+    }, secure);
+  });
   it('keeps the frozen pre-change SOAP 1.1 generated runtime interface assignable', () => {
     expect(acceptComponentRuntime(checkedComponentRuntimeV1)).toBe(checkedComponentRuntimeV1);
   });
@@ -268,6 +306,16 @@ describe('SOAP 1.2 component binding and wire execution', () => {
       const app = Fastify(); await app.register(plugin, {clientOptions: options});
       try {
         expect((await app.inject({method: 'POST', url: '/v1/ping', payload: input})).json()).toEqual(input);
+        for (const charset of ['ASCII', 'UTF-16LE', 'UTF-16BE']) {
+          const encode = (text: string) => {
+            const bytes = Buffer.from(text, charset === 'ASCII' ? 'ascii' : 'utf16le');
+            return charset === 'UTF-16BE' ? bytes.swap16() : bytes;
+          };
+          server.reply(encode(fault), 500, 'application/soap+xml; charset=' + charset);
+          const encoded = await app.inject({method: 'POST', url: '/v1/ping', payload: input});
+          expect(encoded.statusCode).toBe(502);
+          expect(encoded.json()).toMatchObject({fault: {name: 'Problem', version: '1.2'}, value: {code: 'MISSING', message: 'Missing input'}});
+        }
         server.reply(fault, 400);
         const declared = await app.inject({method: 'POST', url: '/v1/ping', payload: input});
         expect(declared.statusCode).toBe(502); expect(declared.json()).toMatchObject({fault: {name: 'Problem', version: '1.2'}, value: {code: 'MISSING', message: 'Missing input'}});
