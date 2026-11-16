@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs: prioritize checked completion, define legacy retirement gates and prepare encoding/envelope gap closure.
+
 ## [1.6.4] - 2026-11-15
 
 - fix(gateway): emit typed HTTP publication pairs for strict indexed-access consumer builds.

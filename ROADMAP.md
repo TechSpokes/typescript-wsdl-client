@@ -6,17 +6,19 @@ Product direction for the WSDL/SOAP client generator, OpenAPI bridge, Fastify ga
 
 Deliver working integrations for declared WSDL profiles, with typed generated artifacts, independently expected XML/HTTP exchanges and useful refusals where support is missing. Legacy remains the default; [checked generation](docs/checked-generation.md) is opt-in and retains its separate native validation requirements.
 
+Prioritize completing checked generation as the replacement for the existing product before expanding the feature catalogue. Close gaps in the current approach, carry existing supported capabilities through the shared semantic core, then retire duplicated legacy semantics through tested migration. This preparation does not deprecate legacy, change defaults or establish implementation readiness.
+
 The [public corpus](docs/corpus.md) connects representative source inputs to executable evidence. Successful generation and intentional refusal are separate outcomes; neither a growing example count nor a round trip alone establishes general XSD coverage.
 
 Product changes do not wait for unrelated universal research completion. Each change must still establish the source, scalar, mapping, protocol and security duties it actually consumes; [ADR-003](docs/decisions/003-content-model-contracts.md) and [ADR-004](docs/decisions/004-product-research-boundary.md) retain that boundary.
 
 ## Published baseline
 
-Version [1.6.3](docs/releases/v1.6.3.md) is the current GitHub release. It adds checked SOAP 1.1/1.2 input-only document/literal operations and exact safe downstream HTTP metadata names, following bounded HTTP observation in 1.6.2 and independently validated application-error branches in 1.6.0. Checked composition and checked streaming remain deferred; a bounded release does not establish broader provider or standards coverage.
+Version [1.6.4](docs/releases/v1.6.4.md) is the current published baseline. It corrects generated HTTP publication tuple types for strict consumer compilation, following checked SOAP 1.1/1.2 input-only operations and configured downstream HTTP names in 1.6.3. Checked composition and checked streaming remain incomplete; a bounded release does not establish broader provider or standards coverage.
 
 ### Release availability and upgrade impact
 
-Version 1.6.3 is published on [GitHub](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.6.3), and its [npm publication workflow](https://github.com/TechSpokes/typescript-wsdl-client/actions/runs/43716126755) completed successfully. Registry processing and availability are separate from workflow completion; verify the exact version in the [npm registry](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) before installing it. Versions 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. See the [version migration guide](docs/migration.md).
+Version 1.6.4 is published on [GitHub](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.6.4) and was verified in the npm registry on November 16, 2026. Verify the exact version in the [npm registry](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) before installing it; workflow completion alone does not establish registry availability. Versions 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. See the [version migration guide](docs/migration.md).
 
 | Delivery state | Scope |
 |---|---|
@@ -28,6 +30,7 @@ Version 1.6.3 is published on [GitHub](https://github.com/TechSpokes/typescript-
 | Published in 1.6.0 | Independently pinned application-error branches with typed HTTP 502 outcomes |
 | Published in 1.6.2 | Bounded HTTP observation and separately selected gateway publication |
 | Released in 1.6.3 | SOAP 1.1/1.2 input-only acknowledgements and exact safe downstream HTTP names |
+| Published in 1.6.4 | Strict consumer compilation of HTTP publication pairs |
 | Deferred | Checked composition, checked incremental decoding and broader protocol/security coverage |
 
 Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values when crossing 1.2.0. The [migration guide](docs/migration.md) retains those impacts and describes the separately adopted SOAP 1.2 runtime in 1.3.0.
@@ -38,7 +41,55 @@ One-way acknowledgement confirms a complete allowed HTTP exchange, not business 
 
 Use this roadmap for product direction and release boundaries, the [working-gateway coverage register](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) for current feature gaps, and the [product outcome](https://github.com/TechSpokes/typescript-wsdl-client/issues/401) for end-to-end acceptance. Issue [#379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379) preserves earlier restart history; its dated dispatch instructions do not select the next task.
 
-The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/425)/[#482](https://github.com/TechSpokes/typescript-wsdl-client/issues/482) delivery is complete through [PR #483](https://github.com/TechSpokes/typescript-wsdl-client/pull/483). No next feature is dispatched by this reconciliation; choose a bounded addition by the integrations it unlocks and qualify its actual dependencies.
+The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/425)/[#482](https://github.com/TechSpokes/typescript-wsdl-client/issues/482) delivery is complete through [PR #483](https://github.com/TechSpokes/typescript-wsdl-client/pull/483). The next prepared slice is [encoding and envelope gap closure](#encoding-and-envelope-gap-closure) within current checked document/literal execution, coordinated by [#190](https://github.com/TechSpokes/typescript-wsdl-client/issues/190). Authentication belongs to eventual existing-capability parity rather than the next separately selected expansion.
+
+### Completion sequence
+
+| Order | Outcome | Existing owners |
+|---|---|---|
+| 1 | Complete current byte, envelope, header-role and fault boundaries | #190/#191/#426/#462 |
+| 2 | Close agreed source, schema and value gaps | #179/#183/#184/#187/#478 |
+| 3 | Carry existing capabilities through checked execution | #192-#194/#201-#203/#424/#164 |
+| 4 | Retire duplicate semantics with installed migration evidence | #204/#205/#207/#208 |
+
+Use [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [#207](https://github.com/TechSpokes/typescript-wsdl-client/issues/207) for a paired legacy/checked capability register. Each row identifies its source/profile, legacy promise, checked behavior, independently expected wire/HTTP result, remaining gap and owner. Distinguish working execution, valid unsupported input, unresolved qualification, invalid input and deliberate policy denial; refusal coverage does not prove replacement parity.
+
+Prioritize existing supported behavior and the agreed WSDL 1.1/XSD 1.0/SOAP 1.1/1.2 HTTP(S) profile. Keep wider standards and optional modules visible under their existing owners; classify an exclusion as rare only with representative evidence. Whole-schema legality remains distinct from selected-operation runtime capability, so selecting fewer operations cannot bypass required source qualification.
+
+### Encoding and envelope gap closure
+
+Prepare one coherent implementation under #190 with source decoding under #426, charset analysis under #462 and independent wire qualification under #191. This packet completes boundaries of existing checked buffered document/literal request-response and one-way profiles. Preparation does not dispatch implementation, add a release target or claim fresh runtime qualification.
+
+#### Byte decoding contract
+
+Specify metadata acquisition, SOAP responses and outgoing requests separately. Reuse the ordered parser and byte decoder; retain original bytes/digests, resource authority, malformed-byte rejection, cancellation and byte limits. Outgoing UTF-8 remains sufficient, and the frozen direct-runtime contract remains compatible.
+
+Assess explicit US-ASCII, UTF-8, UTF-16 and UTF-16LE/BE labels, BOM presence, XML declarations and HTTP charset precedence against [XML 1.0](https://www.w3.org/TR/xml/#charencoding), [RFC 7303](https://www.rfc-editor.org/rfc/rfc7303.html#section-3) and [SOAP media rules](https://www.rfc-editor.org/rfc/rfc3902.html#section-2). Distinguish mandatory UTF-8/UTF-16 support from optional byte-order labels and other charsets. Decide whether to retain contradiction refusal or adopt specified precedence, recording compatibility consequences before implementation.
+
+Current code refuses explicit ASCII and unmarked UTF-16LE/BE responses, ignores metadata HTTP charset as encoding authority and requires present response assertions to agree. Reproduce these observations with independent byte/code-point fixtures before changing them. Preserve exact ISO-8859-1 behavior; Windows-1252 is a distinct mapping, and broader charset ranking remains #462 work.
+
+#### Envelope and processing contract
+
+Assess namespace-qualified attributes on Envelope/Header/Body, SOAP 1.1 actor and SOAP 1.2 role/relay/mustUnderstand processing, and normal/protocol/declared fault selection against [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/) and [SOAP 1.2 Part 1](https://www.w3.org/TR/soap12-part1/). Current shape checks reject those attributes except a narrow encoding case; establish legal examples and independent expected outcomes before changing them. Unknown mandatory blocks targeted at this receiver remain terminal unless their semantics are implemented.
+
+Keep the selected single-element document/literal body contract. Multipart bodies and general SOAP encoding remain #427; accepting a legal envelope must not admit an unsupported application body. Typed application/security headers remain #424, and source-required security cannot be ignored.
+
+Record endpoint query strings, HTTP compression and SOAP 1.2 GET SOAP-response exchanges as explicit follow-up dispositions under #190/#429. The [standard HTTP binding](https://www.w3.org/TR/soap12-part2/#httpbind) covers more than current POST execution; this packet cannot certify complete HTTP-binding support by omission.
+
+#### Acceptance and verification
+
+- Every selected byte and envelope case has a normative expectation and an explicit compatibility disposition.
+- Independent bytes and namespace-aware XML distinguish accepted, valid unsupported and malformed messages.
+- Installed clients and gateways exercise SOAP 1.1/1.2 request-response, faults and one-way outcomes.
+- Invalid inputs, incompatible artifacts and denied endpoints retain zero-dispatch evidence.
+- Invalid upstream data cannot become successful JSON or an acknowledgement.
+- Original-byte pins, exact scalars, mapping fidelity, limits, cancellation and cleanup retain regression coverage.
+- Linux/Windows Node 24/26 evidence covers selected decoder availability and exact mappings.
+- Consumer documentation and the paired capability register describe the implemented scope.
+
+Assign one verification owner, inspect script coverage and reuse unchanged evidence. Run affected guarded checks during development, then required standalone conformance and full CI sequentially, including pipeline smoke and installed qualification through their existing gates. Require fresh independent review before delivery; a later release uses one final uncommitted release preflight instead of duplicating its included gates.
+
+### Remaining coverage owners
 
 | Remaining work | Current owner |
 |---|---|
@@ -60,6 +111,24 @@ Maintain the CI tooling that retains timing records and diagnostic bundles for t
 
 ## Major-release readiness
 
+### Legacy retirement criteria
+
+Use [#204](https://github.com/TechSpokes/typescript-wsdl-client/issues/204) for compatibility, [#205](https://github.com/TechSpokes/typescript-wsdl-client/issues/205) for semantic retirement and [#207](https://github.com/TechSpokes/typescript-wsdl-client/issues/207) for cross-layer evidence. Retirement requires all the following outcomes; preserving legacy bugs is not a parity requirement, but corrections need explicit migration consequences.
+
+- Every existing supported capability has a checked replacement or an explicit maintainer-approved retirement decision.
+- Streaming, composition, security and required CLI/API workflows have installed replacement or retirement evidence.
+- One shared core owns schema, occurrence, choice, scalar, projection and XML rules across backends and transports.
+- Legacy compatibility adapters preserve approved shapes without a second permanent semantic compiler.
+- Insufficient old catalogs require source regeneration; mixed or stale artifacts fail before execution.
+- Installed migrations verify types, validation, SOAP exchanges, HTTP values and scaffold ownership.
+- Invalid responses, serializer fallback, stream finalization and concurrent cancellation preserve promised behavior.
+- Platform, adversarial, determinism and documentation evidence covers the actual retirement candidate.
+- Deprecation guidance identifies affected consumers, corrective changes, rollback and the removal boundary.
+
+Internal semantic retirement, public deprecation and a default switch are separate milestones. Legacy remains supported and the 1.x default during this work; existing generated direct clients retain published compatibility. The separately approved 2.0.0 activation and S17/S18 gates remain required before changing public defaults or shapes.
+
+### Activation evidence
+
 A future default or public-shape activation requires its existing separately approved major-release decision, migration guidance and compatibility evidence. Define the intended supported profile and platform/security requirements explicitly before announcing readiness.
 
 Use representative corpus exchanges alongside independent native checks, installed consumers, invalid-response tests and migration coverage. Do not equate a finite corpus with universal standards conformance or retire unresolved research by renaming its status.
@@ -68,7 +137,7 @@ Use representative corpus exchanges alongside independent native checks, install
 
 Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The development tree includes the released 1.6.3 implementation. [Release notes](docs/releases/README.md) describe each version's scope, while [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability. Later development-tree changes and successful tests do not establish publication.
+The development tree includes the released 1.6.4 implementation. [Release notes](docs/releases/README.md) describe each version's scope, while [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability. Later development-tree changes and successful tests do not establish publication.
 
 Provider evidence remains narrower than implementation coverage. All 12 NOAA operations have owned-server qualification, while the retained live retest has ten successes and two non-SOAP GML failures; Escapia evidence covers selected Test reads. These limitations remain explicit in the [NOAA qualification](docs/noaa-ndfd-qualification.md) and [composition status](docs/roadmap/multi-service-gateway.md), without closing the broader coverage work.
 
