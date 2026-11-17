@@ -8,6 +8,13 @@
   <xs:simpleType name="DecimalList"><xs:list itemType="xs:decimal"/></xs:simpleType>
   <xs:simpleType name="BooleanFirst"><xs:union memberTypes="xs:boolean xs:integer"/></xs:simpleType>
   <xs:simpleType name="IntegerFirst"><xs:union memberTypes="xs:integer xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="StringOne"><xs:restriction base="xs:string"><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="StringTrue"><xs:restriction base="xs:string"><xs:enumeration value="true"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="StringFirst"><xs:union memberTypes="t:StringOne xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="DecimalFirst"><xs:union memberTypes="xs:decimal t:StringOne"/></xs:simpleType>
+  <xs:simpleType name="StringBoolean"><xs:union memberTypes="t:StringTrue xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="NestedAtomic"><xs:union memberTypes="t:BooleanFirst xs:decimal"><xs:simpleType><xs:restriction base="xs:string"><xs:enumeration value="word"/></xs:restriction></xs:simpleType></xs:union></xs:simpleType>
+  <xs:simpleType name="StringFirstEnumeration"><xs:restriction base="t:StringFirst"><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="HexFirst"><xs:union memberTypes="xs:hexBinary xs:base64Binary"/></xs:simpleType>
   <xs:simpleType name="Base64First"><xs:union memberTypes="xs:base64Binary xs:hexBinary"/></xs:simpleType>
   <xs:simpleType name="ShortToken"><xs:restriction base="xs:token">

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:atomic-unions" targetNamespace="urn:checked:atomic-unions">
+  <w:types><x:schema targetNamespace="urn:checked:atomic-unions" elementFormDefault="qualified">
+    <x:simpleType name="Automatic"><x:restriction base="x:string"><x:enumeration value="AUTO"/></x:restriction></x:simpleType>
+    <x:simpleType name="ExactInteger"><x:restriction base="x:integer"><x:minInclusive value="-999999999999999999999999999999999999"/><x:maxInclusive value="999999999999999999999999999999999999"/></x:restriction></x:simpleType>
+    <x:simpleType name="IntegerOrAutomatic"><x:union memberTypes="t:ExactInteger t:Automatic"/></x:simpleType>
+    <x:simpleType name="NestedInteger"><x:union memberTypes="t:IntegerOrAutomatic"/></x:simpleType>
+    <x:simpleType name="Amount"><x:union memberTypes="x:decimal t:Automatic"/></x:simpleType>
+    <x:simpleType name="Flag"><x:union memberTypes="x:boolean t:Automatic"/></x:simpleType>
+    <x:complexType name="UnionRecord"><x:sequence>
+      <x:element name="amount" type="t:Amount"/>
+      <x:element name="flag" type="t:Flag"/>
+      <x:element name="exact" type="t:NestedInteger"/>
+      <x:element name="inline" minOccurs="0"><x:simpleType><x:union><x:simpleType><x:restriction base="x:decimal"/></x:simpleType><x:simpleType><x:restriction base="t:Automatic"/></x:simpleType></x:union></x:simpleType></x:element>
+    </x:sequence></x:complexType>
+    <x:element name="Exchange" type="t:UnionRecord"/>
+    <x:element name="ExchangeResponse" type="t:UnionRecord"/>
+    <x:element name="UnionFault" type="t:UnionRecord"/>
+  </x:schema></w:types>
+  <w:message name="UnionInput"><w:part name="body" element="t:Exchange"/></w:message>
+  <w:message name="UnionOutput"><w:part name="body" element="t:ExchangeResponse"/></w:message>
+  <w:message name="UnionError"><w:part name="detail" element="t:UnionFault"/></w:message>
+  <w:portType name="AtomicPortType"><w:operation name="Exchange"><w:input message="t:UnionInput"/><w:output message="t:UnionOutput"/><w:fault name="UnionError" message="t:UnionError"/></w:operation></w:portType>
+  <w:binding name="Soap11" type="t:AtomicPortType"><s:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Exchange"><s:operation soapAction="urn:checked:atomic:Exchange"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output><w:fault name="UnionError"><s:fault name="UnionError" use="literal"/></w:fault></w:operation></w:binding>
+  <w:binding name="Soap12" type="t:AtomicPortType"><s12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Exchange"><s12:operation soapAction="urn:checked:atomic:Exchange"/><w:input><s12:body use="literal"/></w:input><w:output><s12:body use="literal"/></w:output><w:fault name="UnionError"><s12:fault name="UnionError" use="literal"/></w:fault></w:operation></w:binding>
+  <w:service name="AtomicService"><w:port name="Port11" binding="t:Soap11"><s:address location="http://127.0.0.1:1/soap11"/></w:port><w:port name="Port12" binding="t:Soap12"><s12:address location="http://127.0.0.1:1/soap12"/></w:port></w:service>
+</w:definitions>

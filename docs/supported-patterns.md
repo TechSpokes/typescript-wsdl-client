@@ -6,6 +6,12 @@ The matrix describes the existing legacy generator except where a row explicitly
 
 The qualified checked domain includes [keyed mixed, namespace-collision and source-permitted open values](checked-gateway.md#mixed-namespaced-and-open-values), with production conformance and installed request/response/fault evidence. Native strict/lax/skip checks remain distinct from schema-source wildcard checks and from the legacy rows below.
 
+## Checked atomic unions
+
+Checked document/literal values support effective atomic string, decimal/integer and boolean union members as lexical strings, preserving native declaration order, member whitespace and typed fixed/default equality. The complete dual SOAP 1.1/1.2 `assessment/atomic-unions.wsdl` fixture and independent generated/installed checks cover requests, success, faults and shared literal-header scalars. See the [lexical union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions) for exact representation and validation duties.
+
+Union list members, heterogeneous union list items and RPC parts, contextual/document-wide obligations and other primitive families remain excluded. Legacy union aliases and primitive-string union lists retain their existing contracts; this checked row does not replace the legacy `xs-union-simple-type` promise.
+
 ## Checked SOAP envelope receiver
 
 Incoming checked component SOAP 1.1/1.2 document/literal responses accept foreign qualified wrapper attributes while retaining native payload and fault validation. The default receiver enforces exact actor/role targeting and version-specific boolean lexicals; unknown targeted mandatory headers refuse before success or fault publication. Unprocessed blocks confer no trust or forwarding semantics. See the [receiver contract](checked-gateway.md#incoming-documentliteral-receiver) for URI identity, supported anyURI escaping, actual HTTP/XML Base context and `response-base-unavailable` limitations.
@@ -57,6 +63,7 @@ Candidate interpretations and test-only prototypes do not certify production ass
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `checked-atomic-unions` | partial | Checked document/literal atomic unions with effective string, decimal or boolean members use lexical strings in requests, responses, declared faults and literal headers. |
 | `checked-buffered-soap` | partial | Checked buffered SOAP reuses runtime credentials and declared literal headers, bounded HTTP entities and independently pinned metadata context. |
 | `checked-soap-envelope-receiver` | partial | Checked SOAP 1.1/1.2 document/literal responses admit qualified wrapper extensions and enforce default-receiver targeting with bounded URI/base support. |
 | `checked-one-way-document-literal` | partial | Checked document/literal input-only operations use V6/V7 bindings and empty 202 transport acknowledgements; legacy defaults remain unchanged. |

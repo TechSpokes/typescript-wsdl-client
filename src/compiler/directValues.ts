@@ -7,7 +7,7 @@ import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
 import {inspectDirectOperation, isRpcMessageRoot} from './directOperation.js';
 import type {DirectOperationContract, DirectMessageRoot, RpcMessageRoot} from './directOperation.js';
-import {inspectDirectStructuralMatch, matchDirectOperation} from './directStructure.js';
+import {inspectDirectStructuralMatch, matchDirectOperation, inspectDirectFixedOperand} from './directStructure.js';
 import type {DirectDirection, DirectScalarDuty, DirectStructuralMatch} from './directStructure.js';
 import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding} from './directStructurePlan.js';
 import type {DirectRootPlan, DirectProjectionPlan, DirectProjectionValue} from './directStructurePlan.js';
@@ -254,7 +254,7 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
   // This is a neutral lexical operand, not a schema LexicalValue or checked receipt.
   const core = datatypeValues<DirectScalarDuty>({
     step: (_owner, count = 1) => {check(); budget.chargeWork(count);},
-    text: text => {check(); return text;},
+    text: text => {check(); budget.chargeWork(4 * text.length + 1); return text;},
     fail, unsupported: unavailable, unresolved: unavailable, notation: unavailable,
   });
   let result: DatatypeOperand;
@@ -267,7 +267,9 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
       'rule' in assessed ? assessed.rule : 'request-budget', duty.schemaPath, duty.payloadPath, diagnostic());
     result = assessed.operand;
   }
-  if (duty.fixedCanonical !== undefined && budget.compareText(result.canonical, duty.fixedCanonical) !== 0)
+  const fixedOperand = inspectDirectFixedOperand(context, duty);
+  if (fixedOperand ? !core.sameValue(result, fixedOperand, duty)
+    : duty.fixedCanonical !== undefined && budget.compareText(result.canonical, duty.fixedCanonical) !== 0)
     throw new Stop('scalar-invalid', duty.declaration.kind === 'attribute' ? 'fixed-attribute-value' : 'fixed-element-value', duty.schemaPath, duty.payloadPath, diagnostic());
 
   const normalized = result.normalized ?? normalizeWhitespace(duty.lexical, whitespaceFor(duty.builtin.local));
@@ -297,7 +299,7 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
       items.push(present(item, duty.list.builtin, item.normalized, duty.list.retainLexical));
     }
     value = items;
-  // @why #422 primitive-string unions re-assess the complete pre-member lexical input on every inverse.
+  // @why #422/#490 unions re-assess the complete pre-member lexical input on every inverse.
   } else value = present(result, duty.builtin, result.selectedMembers ? duty.lexical : normalized, duty.retainLexical);
   return {...duty, normalized, canonical: result.canonical, value};
 }

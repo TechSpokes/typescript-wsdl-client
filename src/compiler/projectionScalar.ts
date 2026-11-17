@@ -64,23 +64,24 @@ function kernel(context: SemanticContext) {
       reference = content.view.content.type;
     }
     const plan = core.ensure(reference, declaration);
-    const stringUnion = (candidate: typeof plan): boolean => {
+    const atomicUnion = (candidate: typeof plan, primitives: readonly string[]): boolean => {
       if (candidate.variety !== 'union' || !candidate.members?.length || candidate.obligations?.length) return false;
       for (const reference of candidate.members) {
         check(); c.step(declaration);
         const member = core.ensure(reference, declaration);
-        if (member.variety !== 'atomic' || member.primitive !== 'string' || member.obligations?.length) return false;
+        if (member.variety !== 'atomic' || !primitives.includes(member.primitive ?? '') || member.obligations?.length) return false;
       }
       return true;
     };
     const union = plan.variety === 'union';
-    if (union && !stringUnion(plan)) return Object.freeze({kind: 'unavailable', rule: 'declared-scalar-union'});
+    if (union && !atomicUnion(plan, ['string', 'decimal', 'boolean'])) return Object.freeze({kind: 'unavailable', rule: 'declared-scalar-union'});
     if (plan.obligations?.length) return Object.freeze({kind: 'unavailable', rule: 'scalar-source-obligations'});
     let item: ProjectionScalarList | undefined;
     if (plan.variety === 'list') {
       if (!plan.item) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item'});
       const member = core.ensure(plan.item, declaration);
-      const unionItem = stringUnion(member);
+      // @why #490 preserves the existing string-only union list-item contract.
+      const unionItem = atomicUnion(member, ['string']);
       if (member.variety !== 'atomic' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-' + member.variety});
       if (member.obligations?.length || member.whitespace === 'member' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-source-obligations'});
       const local = unionItem ? 'string' : member.builtin ?? member.primitive;

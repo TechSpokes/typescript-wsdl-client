@@ -171,9 +171,11 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     }
     await writeFile(config, JSON.stringify(checkedComponents));
     const original = await readFile(source, 'utf8');
-    for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets', 'groups-default', 'groups-configured'] as const) {
+    for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets', 'groups-default', 'groups-configured', 'atomic-unions'] as const) {
       const grouped = mode.startsWith('groups-');
-      const variant = grouped ? (await readFile(path.join(root,'test/conformance/fixtures/assessment/application-groups.wsdl'),'utf8'))
+      const atomic = mode === 'atomic-unions';
+      const variant = atomic ? await readFile(path.join(root, 'test/conformance/fixtures/assessment/atomic-unions.wsdl'), 'utf8')
+        : grouped ? (await readFile(path.join(root,'test/conformance/fixtures/assessment/application-groups.wsdl'),'utf8'))
         .replaceAll('urn:checked:groups','urn:checked:forecast').replaceAll('PaymentPortType','ForecastPortType').replaceAll('PaymentBinding','ForecastBinding')
         .replaceAll('PaymentService','ForecastService').replaceAll('PaymentPort','ForecastPort').replaceAll('PaymentFault','ForecastFault').replaceAll('PaymentError','ForecastError')
         .replaceAll('SubmitResponse','GetForecastResponse').replaceAll('Submit','GetForecast')
@@ -184,11 +186,27 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
           .replace('type="t:ForecastResponse"', 'type="xs:int"').replace('name="ForecastFault" type="t:ForecastFault"', 'name="ForecastFault" type="xs:string"');
       const variantSource = path.join(consumer, mode + '.wsdl');
       await writeFile(variantSource, variant);
+      const modeComponents = atomic ? {...checkedComponents,
+        selectors: [{portType: {namespace: 'urn:checked:atomic-unions', local: 'AtomicPortType'},
+          binding: {namespace: 'urn:checked:atomic-unions', local: 'Soap11'}, operation: 'Exchange'}],
+        service: {namespace: 'urn:checked:atomic-unions', local: 'AtomicService'}, port: 'Port11'} : checkedComponents;
       let groupOptions: {names?: {target:string;propertyName?:string;typeName?:string}[]} | undefined = grouped ? {} : undefined;
-      const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents:{...checkedComponents,...(grouped?{applicationGroups:groupOptions}:{})},
+      const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents:{...modeComponents,...(grouped?{applicationGroups:groupOptions}:{})},
         clientOutDir: path.join(project, 'client'), openapi: {outFile: path.join(project, 'openapi.json')},
-        gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: mode === 'scalar' ? 'forecast-scalar' : 'forecast'},
+        gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: atomic ? 'atomic-unions' : mode === 'scalar' ? 'forecast-scalar' : 'forecast'},
         app: {appDir: project}, test: {testDir: path.join(project, 'test')}};
+      if (atomic) {
+        // @why This mode changes operation names; refresh disposable operation-bound scaffolds while retaining installed package pins.
+        await rm(path.join(project, 'server.ts'));
+        await rm(path.join(project, 'test'), {recursive: true, force: true});
+        await rm(path.join(project, 'dist'), {recursive: true, force: true});
+        await writeFile(config, JSON.stringify(modeComponents));
+        const args = [...installedGenerate];
+        args[args.indexOf('--wsdl-source') + 1] = variantSource;
+        args[args.indexOf('--gateway-service-name') + 1] = 'atomic-unions';
+        await run(mode + ' installed CLI generation', args, tooling);
+        await writeFile(config, JSON.stringify(checkedComponents));
+      }
       await run(mode + ' installed API generation', ['--permission', '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer,
         '--input-type=module', '-e',
         'import {runGenerationPipeline} from "@techspokes/typescript-wsdl-client"; await runGenerationPipeline(JSON.parse(process.argv[1]));',
@@ -207,6 +225,17 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
         args[args.indexOf('--wsdl-source')+1]=variantSource;
         await run('configured group CLI inventory-copy regeneration',args,tooling);
       }
+      if (atomic) await writeFile(path.join(project, 'atomic-union-contract.ts'), `import type {Request, Response} from './client/operations/0/client.js';
+const request: Request = {amount: '+01.00', flag: ' 1 ', exact: '+9007199254740993', inline: 'AUTO'};
+const response: Response = {amount: '-000.1250', flag: '0', exact: '9007199254740994', inline: '+007'};
+// @ts-expect-error Atomic union values remain lexical strings even when the selected member is decimal.
+const numeric: Request = {...request, amount: 1};
+// @ts-expect-error Atomic union values remain lexical strings even when the selected member is boolean.
+const boolean: Response = {...response, flag: true};
+// @ts-expect-error Callers cannot select an atomic union member through a tagged object.
+const tagged: Request = {...request, amount: {member: 'decimal', value: '+01.00'}};
+void [request, response, numeric, boolean, tagged];
+`);
       await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);
       if (mode === 'scalar') {
@@ -227,11 +256,17 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
           paths: ['/v1/forecast-scalar/GetForecast', '/v1/forecast/GetForecast']});
         await writeFile(path.join(evidence, 'composition.log'), composition.stdout + composition.stderr);
       }
+      if (atomic) await run(mode + ' production-only dependencies',
+        [npm, 'prune', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], project);
       const checked = await run(mode + ' independent HTTP/SOAP contract', ['--permission', '--allow-child-process', ...networkPermission,
         '--allow-fs-read=' + project, '--allow-fs-write=' + project,
         path.join(project, 'qualification.ts'), fixture, mode], project);
       expect(JSON.parse(checked.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: mode});
+      if (atomic) expect(JSON.parse(checked.stdout)).toMatchObject({productionOnly: true, artifactRefusals: 2});
       await writeFile(path.join(evidence, mode + '-wire.log'), checked.stdout + checked.stderr);
+      if (atomic) await run(mode + ' restore consumer development dependencies',
+        [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund'], project);
+      if (atomic) await rm(path.join(project, 'atomic-union-contract.ts'));
     }
     for (const version of ['11', '12']) {
       const oneWayProject = path.join(consumer, 'one-way-' + version), relocated = path.join(consumer, 'relocated-one-way-' + version);

@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(checked): support lexical string/decimal/boolean atomic unions with native member selection and typed fixed/default semantics.
 - docs: reconcile buffered delivery, record Escapia acceptance and prepare checked lexical atomic unions.
 
 ## [1.7.0] - 2026-11-17

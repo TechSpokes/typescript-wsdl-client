@@ -12,6 +12,8 @@ import {assessProjectionTypeOperand} from './projectionScalar.js';
 import {resolveLexicalQName, syntaxAttribute, syntaxElements, XSD_NAMESPACE, XML_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
 import {directDataOwnership} from './directExecutionPolicy.js';
+import {scalarSchemaAssessment} from './scalarSchemaAssessment.js';
+import {schemaScalarContext} from './schemaScalarContext.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/soap/envelope/';
 const ENC = 'http://schemas.xmlsoap.org/soap/encoding/';
@@ -40,6 +42,19 @@ export function planRpcParts(context: SemanticContext, root: RpcMessageRoot, con
     const resolved = context.resolve(part.type);
     const type = resolved.kind === 'builtin' ? resolved.name : resolved.kind === 'found' && resolved.node.identity.kind === 'global'
       ? resolved.node.identity.name : control.fail('unsupported', 'rpc-named-type-required');
+    if (resolved.kind === 'found' && resolved.node.kind === 'simpleType') {
+      // @why #490's lexical document-union specialization does not expand bounded RPC parts.
+      const native = scalarSchemaAssessment(schemaScalarContext(context));
+      const plan = native.ensure(part.type, owner);
+      if (plan.variety === 'union') {
+        for (const reference of plan.members ?? []) {
+          control.check(); context.budget.chargeWork();
+          const member = native.ensure(reference, owner);
+          if (member.variety !== 'atomic' || member.primitive !== 'string' || member.obligations?.length)
+            return control.fail('unsupported', 'rpc-scalar-union');
+        }
+      }
+    }
     const projection = planProjectionType(context, owner, part.type, control.check, () => control.fail('unsupported', 'rpc-native-type-shape'));
     const scalar = (value: DirectProjectionValue) => value.kind === 'scalar' && !value.list && !value.nillable
       && ['string', 'boolean', 'decimal', 'integer', 'date', 'dateTime'].includes(value.builtin.local);
