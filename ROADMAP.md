@@ -45,9 +45,9 @@ One-way acknowledgement confirms a complete allowed HTTP exchange, not business 
 
 The [buffered SOAP completion checklist](docs/roadmap/v1.0-buffered-soap-completion.md) is complete through merged [PR #488](https://github.com/TechSpokes/typescript-wsdl-client/pull/488), implementation `a994859`, merged/tagged main `933d42b`. Reviewed, preflight and merged trees are identical. Final conformance, release preflight, PR/main platform checks and uploaded artifact/provenance/install verification passed; #424 and #426 are closed. Preserve those implementations and reuse their evidence.
 
-The next selected slice is [published-package consumer acceptance](docs/roadmap/v1.0-published-consumer-acceptance.md). It verifies exact registry delivery and an ordinary generated-app dependency install without injecting a locally packed candidate. Use the npm-shipped Forecast example for this package boundary, retain its synthetic classification, and reuse existing authentic NOAA/provider-source evidence rather than repeating it.
+The maintainer-selected [Escapia consumer upgrade](docs/roadmap/v1.0-published-consumer-acceptance.md) passed exact npm 1.7.0 generation, maintained tests, relocated production-only owned HTTPS execution, packaging/privacy and historical replay without an SDK workaround. #489 is complete for that revised real-consumer scope. The proposed fresh Forecast-app manifest exercise was not run and is not claimed as passing.
 
-Select a later source/schema/value implementation by its concrete missing capability and consumer outcome in #397/#207. #478 remains an assessment with separate native/source/correspondence duties, not a preapproved gateway expansion. Streaming and incoming cryptographic security remain separate projects. No new release or repeated v1.7.0 gates follow from documentation reconciliation or a passing consumer acceptance run.
+The next selected source/value packet is [checked lexical atomic unions](docs/roadmap/v1.0-checked-atomic-unions.md): effective string, decimal/integer and boolean members, preserved lexical strings, native ordered selection and typed fixed-value equality. The existing legacy union promise and checked refusal make this a concrete replacement gap. #478 remains a separate assessment; streaming and incoming cryptographic security remain separate projects. No new release or repeated v1.7.0 gates follow from acceptance recording or preparation.
 
 ### Earlier routing context
 
@@ -59,8 +59,8 @@ The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/
 
 | Order | Outcome | Existing owners |
 |---|---|---|
-| 1 | Consume completed buffered evidence and qualify ordinary published-package delivery | #401/#397/#207; completed #488/#424/#426 |
-| 2 | Select and close a concrete source, schema or value gap | #179/#183/#184/#187; assessment #478 |
+| 1 | Reuse delivered buffered and accepted Escapia consumer evidence | #401/#397/#207; completed #488/#424/#426/#489 |
+| 2 | Implement selected lexical atomic unions, then choose further concrete gaps | #179/#183/#184/#187; separate assessment #478 |
 | 3 | Carry remaining existing capabilities through checked execution | #192-#194/#201-#203/#164; richer policy #429 |
 | 4 | Retire duplicate semantics with installed migration evidence | #204/#205/#207/#208 |
 

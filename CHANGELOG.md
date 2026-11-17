@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- docs: reconcile buffered SOAP delivery and prepare ordinary published-package consumer acceptance.
+- docs: reconcile buffered delivery, record Escapia acceptance and prepare checked lexical atomic unions.
 
 ## [1.7.0] - 2026-11-17
 
