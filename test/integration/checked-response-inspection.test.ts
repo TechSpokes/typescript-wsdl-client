@@ -1,5 +1,7 @@
 import {describe, expect, it, vi} from 'vitest';
 import path from 'node:path';
+import {gzipSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
 import {mkdir, mkdtemp, readFile, writeFile, rm} from 'node:fs/promises';
 import {HttpClient} from 'soap/lib/http.js';
 import {inspectCheckedResponse} from '../../src/checkedResponseInspection.js';
@@ -23,6 +25,21 @@ const soap = (body: string) => new TextEncoder().encode('<s:Envelope xmlns:s="ht
 const wrapped = (metadata: boolean) => soap(`<Envelope xmlns="${namespace}">${metadata ? '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>' : ''}${records}</Envelope>`);
 
 describe('offline checked SOAP response inspection', () => {
+  it.each(['11', '12'] as const)('inspects compressed SOAP %s while hashing original wire bytes', async version => {
+    const root = path.resolve('test/conformance/fixtures/soap/versions');
+    const selector = {portType: {namespace: 'urn:conformance:soap12', local: 'PingType'}, binding: {namespace: 'urn:conformance:soap12', local: 'Soap' + version}, operation: 'Ping'};
+    const xml = await readFile(path.join(root, `receiver${version}.xml`));
+    const wire = gzipSync(xml);
+    const inspect = (bytes: Buffer, maxBytes = 10_000) => inspectCheckedResponse(path.join(root, 'document-literal.wsdl'), {selector,
+      checkedComponents: {fileRoots: [root], sourceResources: [], sourceOrigins: [], selectors: [selector]}, responseBytes: bytes,
+      responseMetadata: {status: 200, contentType: version === '11' ? 'text/xml' : 'application/soap+xml', contentEncoding: 'gzip'}, limits: {maxBytes}});
+    expect(await inspect(wire)).toMatchObject({kind: 'conforming', response: {byteLength: wire.length, digest: createHash('sha256').update(wire).digest('hex')}});
+    expect(await inspect(wire.subarray(0, -3))).toMatchObject({kind: 'mismatch'});
+    const bomb = gzipSync(Buffer.from(xml.toString().replace('owned &amp; independent', 'x'.repeat(20_000))));
+    const report = await inspect(bomb, 2048);
+    expect(report.kind).toBe('refused');
+    expect(report.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({kind: 'resource-limit', rule: 'HTTP expanded response byte limit'})]));
+  });
   it.each(['11', '12'] as const)('reports SOAP %s receiver extensions and unavailable bases through the public inspector', async version => {
     const root = path.resolve('test/conformance/fixtures/soap/versions');
     const selector = {portType: {namespace: 'urn:conformance:soap12', local: 'PingType'}, binding: {namespace: 'urn:conformance:soap12', local: 'Soap' + version}, operation: 'Ping'};
@@ -31,11 +48,12 @@ describe('offline checked SOAP response inspection', () => {
       checkedComponents: {fileRoots: [root], sourceResources: [], sourceOrigins: [], selectors: [selector]}, responseBytes: Buffer.from(text)});
     expect(await inspect(xml)).toMatchObject({kind: 'conforming', executed: false});
     if (version === '12') {
-      for (const text of [xml.replace('s:role="urn:other"', 's:role="relative"'),
-        xml.replace('x:envelope="opaque"', 'xml:base="relative/"').replace('x:header="opaque"', 'xml:base="http://example.org/absolute/"')]) {
-        const report = await inspect(text); expect(report.kind).toBe('refused');
-        expect(report.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({kind: 'unsupported', rule: 'response-base-unavailable'})]));
-      }
+      const report = await inspect(xml.replace('s:role="urn:other"', 's:role="relative"')); expect(report.kind).toBe('refused');
+      expect(report.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({kind: 'unsupported', rule: 'response-base-unavailable'})]));
+      const overridden = xml.replace('x:envelope="opaque"', 'xml:base="relative/"').replace('x:header="opaque"', 'xml:base="http://example.org/absolute/"');
+      expect(await inspect(overridden)).toMatchObject({kind: 'conforming'});
+      const targeted = await inspect(overridden.replace('http://example.org/absolute/', 'http://www.w3.org/2003/05/soap-envelope/role/').replace('s:role="urn:other"', 's:role="next"'));
+      expect(targeted.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({kind: 'unsupported', rule: 'incoming mandatory SOAP header'})]));
       const malformed = await inspect(xml.replace('x:envelope="opaque"', 'xml:base="http://["'));
       expect(malformed.kind).toBe('mismatch');
     }

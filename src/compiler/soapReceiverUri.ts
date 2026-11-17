@@ -4,7 +4,7 @@
  */
 import {syntaxAttribute, XML_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {SyntaxElement} from '../loader/orderedSyntax.js';
-import {collapseXmlWhitespace, receiverUriLexical} from '../util/receiverUriReference.js';
+import {collapseXmlWhitespace, escapeReceiverAnyUri, receiverUriLexical} from '../util/receiverUriReference.js';
 export {collapseXmlWhitespace, receiverUriLexical} from '../util/receiverUriReference.js';
 
 const absolute = /^[A-Za-z][A-Za-z0-9+.-]*:/;
@@ -43,24 +43,25 @@ function resolveReference(value: string, base: string, check: (amount?: number) 
     + (target.query === undefined ? '' : '?' + target.query) + (target.fragment === undefined ? '' : '#' + target.fragment);
 }
 
-/** Resolve a role only from explicit raw XML Base ancestry, never from a transport or diagnostic locator.
+/** Resolve a role from raw XML Base ancestry and explicitly observed entity context.
  * @param ancestry Envelope through immediate Header block in document order.
+ * @param entityBase Trusted observed transport context, never a capture path or diagnostic locator.
  * @returns Exact absolute identifier or an explicit bounded-profile refusal.
  */
-export function resolveReceiverRole(value: string, ancestry: readonly SyntaxElement[], check: (amount?: number) => void): string | Refusal {
+export function resolveReceiverRole(value: string, ancestry: readonly SyntaxElement[], check: (amount?: number) => void, entityBase?: string): string | Refusal {
   check(128 + value.length * 16);
-  const role = collapseXmlWhitespace(value), lexical = receiverUriLexical(role);
-  if (lexical) return lexical;
+  const role = escapeReceiverAnyUri(collapseXmlWhitespace(value), check);
+  if (typeof role !== 'string') return role;
   if (absolute.test(role)) return role;
-  let base: string | undefined;
+  let base: string | undefined = entityBase;
   let unavailable = false;
   for (const node of ancestry) {
     check();
     const raw = syntaxAttribute(node, 'base', XML_NAMESPACE);
     if (raw === undefined) continue;
     check(128 + raw.length * 16);
-    const next = collapseXmlWhitespace(raw), failure = receiverUriLexical(next);
-    if (failure) return failure;
+    const next = escapeReceiverAnyUri(raw, check);
+    if (typeof next !== 'string') return next;
     if (absolute.test(next)) {base = next; unavailable = false;}
     else if (base) base = resolveReference(next, base, check);
     else unavailable = true;
@@ -68,4 +69,29 @@ export function resolveReceiverRole(value: string, ancestry: readonly SyntaxElem
   if (!base || unavailable || !(parts(base).authority !== undefined || parts(base).path.startsWith('/')))
     return {kind: 'unsupported', rule: 'response-base-unavailable'};
   return resolveReference(role, base, check);
+}
+
+/** Establish an entity base from observed retrieval context and SOAP 1.2's binding-specific Content-Location rule.
+ * @constraints These identifiers never authorize a request or cause dereferencing.
+ * @see https://www.w3.org/TR/soap12-part2/#httpbind
+ */
+export function observedSoapEntityBase(metadata: {retrievalUri?: string; contentLocation?: string} | undefined,
+  version: '1.1' | '1.2', check: (amount?: number) => void): string | Refusal | undefined {
+  if (!metadata) return undefined;
+  const retrieval = metadata.retrievalUri;
+  if (retrieval !== undefined) {
+    check(128 + retrieval.length * 16);
+    const failure = receiverUriLexical(retrieval);
+    if (failure) return failure;
+    if (!/^https?:\/\//i.test(retrieval) || retrieval.includes('#')) return {kind: 'unsupported', rule: 'response-base-unavailable'};
+  }
+  if (version !== '1.2' || metadata.contentLocation === undefined) return retrieval;
+  const location = metadata.contentLocation.replace(/^[\t ]+|[\t ]+$/g, '');
+  check(128 + location.length * 16);
+  const failure = receiverUriLexical(location);
+  if (failure) return failure;
+  if (location.includes('#')) return {kind: 'protocol', rule: 'HTTP Content-Location fragment'};
+  if (absolute.test(location)) return location;
+  if (!retrieval) return {kind: 'unsupported', rule: 'response-base-unavailable'};
+  return resolveReference(location, retrieval, check);
 }

@@ -84,6 +84,7 @@ beforeAll(async () => {
       : response.code(502).send({fault: true, value: result.decoded.validated.value});
     if (result.kind === 'soap-fault') throw new Error('SOAP 1.1 fixture requires native decoded declared fault detail');
     if (result.kind === 'soap-acknowledgement') throw new Error('Request-response fixture cannot acknowledge an absent output');
+    if (result.kind === 'soap-header-fault') return response.code(502).send({kind: result.kind, rule: 'declared SOAP header fault'});
     return response.code(result.phase === 'input' ? 400 : 502).send({kind: result.kind, rule: result.rule});
   });
   gateway = await app.listen({host: '127.0.0.1', port: 0});

@@ -301,6 +301,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.7.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.7.0.md) | Checked buffered credentials, declared headers and source fidelity |
 | [v1.6.5 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.5.md) | Strict ASCII and explicitly labelled UTF-16 checked SOAP responses |
 | [v1.6.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.1.md) | Accurate empty-extension assessment and typed syntax refusals |
 | [v1.6.3 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/v1.6.3/docs/releases/v1.6.3.md) | One-way SOAP acknowledgements and exact safe downstream HTTP names |
@@ -309,6 +310,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
 | [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
 | [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
+| [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Remaining adapter requirements, implementation owners and independent acceptance evidence |
 | [Streamable Responses (ADR-002)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
 | [Product and Research Boundary](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/004-product-research-boundary.md) | Package, validation and delivery responsibilities |
 | [Research Program](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/README.md) | Optional experiments, commands and historical investigation records |

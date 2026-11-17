@@ -1,7 +1,8 @@
 /** Ordered XML syntax boundary for the unreleased faithful compiler. */
 import {createHash} from "node:crypto";
 import {SaxesParser} from "saxes";
-import {collapseXmlWhitespace, receiverUriLexical} from '../util/receiverUriReference.js';
+import {MIMEType} from 'node:util';
+import {escapeReceiverAnyUri} from '../util/receiverUriReference.js';
 
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const XSD_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
@@ -81,11 +82,37 @@ const xmlEncodingDeclaration = /^<\?xml\s[^?]*encoding\s*=\s*["']([^"']+)["']/i;
 
 /** Decode private metadata text; original bytes remain the digest and snapshot authority.
  * @remarks ISO-8859-1 maps every byte to the same code point, including C1 controls.
- *   HTTP charset headers are not encoding authority here. Runtime XML uses its existing policy.
+ *   Retained HTTP charset, declaration and BOM assertions must agree; no precedence guessing occurs.
  * @throws SchemaLoadingError For malformed bytes or incompatible/unsupported declarations.
  */
-export function decodeMetadataXml(bytes: Uint8Array): string {
-  return decodeXml(bytes, true, true);
+export function decodeMetadataXml(bytes: Uint8Array, contentType?: string): string {
+  let charset: string | undefined;
+  if (contentType !== undefined) {
+    try {
+      charset = new MIMEType(contentType).params.get('charset')?.toLowerCase();
+      // @why MIMEType discards malformed parameters; raw syntax must not erase an encoding assertion.
+      let quoted = false, escaped = false, offset = 0, assertions = 0;
+      for (let index = 0; index <= contentType.length; index++) {
+        const character = contentType[index];
+        if (!quoted && (character === ';' || character === undefined)) {
+          const part = contentType.slice(offset, index);
+          if (offset === 0) {
+            if (!/^[\t ]*[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+[\t ]*$/.test(part)) throw new Error('Invalid media type');
+          } else {
+            const parameter = /^[\t ]*([!#$%&'*+.^_`|~0-9A-Za-z-]+)[\t ]*=[\t ]*(?:[!#$%&'*+.^_`|~0-9A-Za-z-]+|"(?:[\t\x20-\x21\x23-\x5b\x5d-\xff]|\\[\t\x20-\xff])*")[\t ]*$/.exec(part);
+            if (!parameter) throw new Error('Invalid media parameter');
+            if (parameter[1].toLowerCase() === 'charset') assertions++;
+          }
+          offset = index + 1;
+        }
+        if (character === '"' && !escaped) quoted = !quoted;
+        escaped = quoted && character === '\\' && !escaped;
+      }
+      if (quoted || assertions > 1 || assertions === 1 && !charset) throw new Error('Ambiguous charset');
+    }
+    catch {throw new SchemaLoadingError('invalid-schema', 'Invalid metadata HTTP Content-Type');}
+  }
+  return decodeXml(bytes, true, true, {charset});
 }
 
 function decodeXml(bytes: Uint8Array, strictBom = false, metadata = false, response?: {charset?: string}): string {
@@ -144,9 +171,11 @@ function decodeXml(bytes: Uint8Array, strictBom = false, metadata = false, respo
 /** Positions are one-based lines/columns and zero-based UTF-16 offsets in decoded XML. */
 export interface OrderedSyntaxOptions {
   /** Explicit component SOAP response policy; source and shipped direct decoding remain separate. */
-  componentResponseEncoding?: {charset?: string};
+  componentResponseEncoding?: {charset?: string; baseUri?: string};
   /** Internal metadata boundary; payload/capsule callers retain the existing encoding policy. */
   metadataEncoding?: boolean;
+  /** Observed HTTP media assertion or independently configured physical-snapshot context. */
+  metadataContentType?: string;
   maxDepth?: number;
   /** Optional bounded runtime boundary; legacy schema callers retain their policy. */
   maxBytes?: number;
@@ -170,7 +199,7 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: Orde
   const charge = (amount: number) => options.chargeWork?.(amount);
   charge(4096 + bytes.byteLength * 64);
   const digest = createHash("sha256").update(bytes).digest("hex");
-  const text = options.metadataEncoding ? decodeMetadataXml(bytes) : decodeXml(bytes, options.xml10Only, false, options.componentResponseEncoding);
+  const text = options.metadataEncoding ? decodeMetadataXml(bytes, options.metadataContentType) : decodeXml(bytes, options.xml10Only, false, options.componentResponseEncoding);
   const lines = [0];
   for (let i = 0; i < text.length; i++) {
     if (text[i] === "\r") { if (text[i + 1] === "\n") i++; lines.push(i + 1); }
@@ -218,17 +247,19 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: Orde
     // Relative xml:base resolution may copy an inherited URI much larger than
     // this tag. Charge its input/output envelope before the URL intrinsic.
     if (base !== undefined) charge(512 + (base.length + (parent?.baseUri ?? uri).length) * 16);
-    try { baseUri = base === undefined ? parent?.baseUri ?? uri : new URL(base, parent?.baseUri ?? uri).href; }
-    catch {
-      // @why Response inspection has a diagnostic locator, not an entity base (#487).
-      //   RFC-valid bases the URL intrinsic cannot resolve are capabilities, not malformed XML.
-      const relative = base === undefined ? undefined : collapseXmlWhitespace(base);
-      if (options.componentResponseEncoding && relative !== undefined) {
-        const lexical = receiverUriLexical(relative);
-        if (!lexical) return fail('invalid-schema', 'Unresolved response xml:base URI');
-        if (lexical?.kind === 'unsupported') return fail('invalid-schema', 'Unsupported response xml:base lexical profile');
+    const inheritedBase = parent?.baseUri ?? options.componentResponseEncoding?.baseUri ?? uri;
+    if (options.componentResponseEncoding && base !== undefined) {
+      const reference = escapeReceiverAnyUri(base, amount => charge(amount ?? 1));
+      if (typeof reference !== 'string') return fail('invalid-schema', reference.rule);
+      try {baseUri = new URL(reference, inheritedBase).href;}
+      catch {
+        // @why A diagnostic locator can be opaque, and URL rejects some valid URI authorities.
+        //   Routing resolves retained raw ancestry later; no unresolved reference gains base authority here.
+        baseUri = /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) ? reference : inheritedBase;
       }
-      return fail("invalid-schema", "Invalid xml:base URI");
+    } else {
+      try {baseUri = base === undefined ? inheritedBase : new URL(base, inheritedBase).href;}
+      catch {return fail('invalid-schema', 'Invalid xml:base URI');}
     }
     const node: Building = {kind: "element", name: Object.freeze({namespace: tag.uri, local: tag.local}), lexicalName: tag.name,
       attributes: Object.freeze(attributes), namespaces, baseUri, children: [], source: source(parent ? `${parent.source.path}/${parent.children.length}` : "/0", tagStart, parser.position)};

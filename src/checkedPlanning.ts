@@ -182,7 +182,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     }
     if (intake.namespaceLocations?.some(n => n.location === 'REQUIRED_SCHEMA_LOCATION')) throw new TypeError('Resolve REQUIRED_SCHEMA_LOCATION before loading');
     if (new Set(intake.namespaceLocations?.map(n => n.namespace)).size !== (intake.namespaceLocations?.length ?? 0)) throw new TypeError('Unique namespace locations required');
-    const snapshotUris = [root, ...intake.sourceResources.map(r => resolveResourceUri(r.uri))];
+    // @why The physical snapshot loader validates the one permitted root encoding-context entry.
+    const snapshotUris = intake.sourceResources.map(r => resolveResourceUri(r.uri));
     if (new Set(snapshotUris).size !== snapshotUris.length) throw new TypeError('Duplicate logical schema snapshot');
     if (intake.signal?.aborted) {add('cancelled', 'loading', 'caller-cancelled', 'Rerun with an active signal.', 'signal');}
     else {
@@ -243,13 +244,13 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         // @why Machine-derived snapshot bookkeeping is separate from authored schema semantics.
         const known = new Set(config.sourceResources.map(r => resolveResourceUri(r.uri)));
         config = {...config, sourceResources: [...config.sourceResources, ...input.resources.filter(r => r.uri !== input.root.uri && !known.has(r.uri) && new URL(r.uri).protocol === 'file:')
-          .map(r => ({uri: r.uri, file: fileURLToPath(r.uri)}))]};
+          .map(r => ({uri: r.uri, file: fileURLToPath(r.uri), ...(r.contentType === undefined ? {} : {contentType: r.contentType})}))]};
         preparingNative = true;
         native = await prepareComponentStages(source, config, correctedSources ? input : !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined,
           outputs, correctedSources, branchInputs);
         if (native.expected.length) {
           const fresh = inspectDirectOperation(native.expected[0]!.contract).source;
-          if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest))) {
+          if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest && n.contentType === r.contentType))) {
             add('operational-failure', 'native-preparation', 'source-changed-during-planning', 'Keep source files stable and rerun discovery and native checks.', 'wsdl/sourceResources');
           }
         }

@@ -84,7 +84,7 @@ export type SchemaInputOptions = {
  * @returns The actual physical root URI and complete offline loading configuration.
  * @throws SchemaLoadingError For non-file physical inputs, duplicates, denied roots or unavailable files.
  */
-export async function prepareSchemaSnapshotFiles(root: string, files: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[],
+export async function prepareSchemaSnapshotFiles(root: string, files: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string; readonly contentType?: string}[],
   options: Omit<SchemaInputOptions, 'offlineResources'>): Promise<{source: string; loading: SchemaInputOptions}> {
   const physical = async (reference: string) => {
     if (new URL(resolveResourceUri(reference)).protocol !== 'file:') throw new SchemaLoadingError('unsupported-capability', 'Physical schema snapshot file required');
@@ -92,11 +92,24 @@ export async function prepareSchemaSnapshotFiles(root: string, files: readonly {
   };
   const loader = await SchemaResourceLoader.create({fileRoots: options.policy.fileRoots}, options.limits, undefined, options.chargeWork, options.signal);
   const source = await physical(root), offlineResources = new Map<string, OfflineSchemaResource>([[source.uri, source]]);
+  const physicalContexts = new Map<string, string | undefined>();
+  const configuredUris = new Set<string>();
   for (const entry of files) {
     options.chargeWork?.(1);
     const uri = resolveResourceUri(entry.uri);
-    if (offlineResources.has(uri)) throw new SchemaLoadingError('invalid-schema', 'Duplicate logical schema snapshot');
-    offlineResources.set(uri, {...await physical(entry.file), canonicalUri: entry.canonicalUri});
+    if (configuredUris.has(uri)) throw new SchemaLoadingError('invalid-schema', 'Duplicate logical schema snapshot');
+    configuredUris.add(uri);
+    const snapshot = await physical(entry.file);
+    // @why A relocated physical root can require independently configured HTTP encoding context.
+    if (offlineResources.has(uri) && !(uri === source.uri && snapshot.uri === source.uri && entry.contentType !== undefined && entry.canonicalUri === undefined))
+      throw new SchemaLoadingError('invalid-schema', 'Duplicate logical schema snapshot');
+    if (physicalContexts.has(snapshot.uri) && physicalContexts.get(snapshot.uri) !== entry.contentType)
+      throw new SchemaLoadingError('invalid-schema', 'Conflicting physical snapshot Content-Type');
+    physicalContexts.set(snapshot.uri, entry.contentType);
+    if (snapshot.uri === source.uri && entry.contentType !== undefined)
+      offlineResources.set(source.uri, {...source, contentType: entry.contentType});
+    offlineResources.set(uri, {...snapshot, canonicalUri: entry.canonicalUri,
+      ...(entry.contentType === undefined ? {} : {contentType: entry.contentType})});
   }
   return {source: source.uri, loading: {...options, offlineResources}};
 }
@@ -151,7 +164,8 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     const resource = await loader.fetchResource(uri);
     let doc = documents.get(resource.uri);
     if (!doc) {
-      doc = parseOrderedSyntax(resource.bytes, resource.uri, {maxDepth: loader.limits.syntaxDepth, metadataEncoding: true});
+      doc = parseOrderedSyntax(resource.bytes, resource.uri, {maxDepth: loader.limits.syntaxDepth, metadataEncoding: true,
+        metadataContentType: resource.contentType});
       if (semanticValues) {
         options.chargeWork?.(128);
         originalBytes.set(resource.uri, resource.bytes);

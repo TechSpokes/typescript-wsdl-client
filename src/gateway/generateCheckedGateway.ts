@@ -226,6 +226,7 @@ ${selection === undefined ? '' : `      if (result.http) {
         if (!validateResponse(result.value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-response-shape'});
         return reply.type('application/json').serializer(value => JSON.stringify(value)).send(result.value);
       }`}
+      if (result.kind === 'soap-header-fault') return reply.code(502).send({kind: 'soap-header-fault', rule: 'upstream declared SOAP header fault'});
       if (result.kind === 'soap-fault') {
         ${soap12 ? `const fault = {version: result.fault.version, code: result.fault.code, string: result.fault.string,
           subcodes: result.fault.subcodes, reasons: result.fault.reasons,
@@ -316,8 +317,9 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   const literal = (value: unknown) => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   const names = operations.map(operation => operation.contract.selector.operation);
   const mixed = operations.some(operation => operation.responseBranches) && operations.some(operation => !operation.responseBranches);
+  const hasHeaders = operations.some(operation => operation.contract.headers?.length);
   const lines = ["import type {FastifyPluginAsync} from 'fastify';", "import {types} from 'node:util';",
-    `import type {Options} from ${literal(clientImport)};`,
+    hasHeaders ? `import {serviceOperationOptions, type Options} from ${literal(clientImport)};` : `import type {Options} from ${literal(clientImport)};`,
     ...operations.map((_, index) => `import operation_${index} from './routes/${index}/plugin.js';`),
     'export interface CheckedGatewayOptions {readonly clientOptions: Options; readonly capsules: Readonly<Record<string, Uint8Array>>}',
     `export const expectedOpenApiJson = ${literal(JSON.stringify(doc))};`,
@@ -331,10 +333,10 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
     'const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {',
     "  const outer = data(options, ['clientOptions', 'capsules', 'prefix']);",
     `  const clientOptions = data(outer.clientOptions, ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', ${operations.some(operation => operation.responseBranches) ? "'branchSources', " : ''}'soap']) as unknown as Options;`,
-    ...(mixed ? ['  const {branchSources, ...retainedClientOptions} = clientOptions;', '  void branchSources;'] : []),
+    ...(mixed && !hasHeaders ? ['  const {branchSources, ...retainedClientOptions} = clientOptions;', '  void branchSources;'] : []),
     `  const capsules = data(outer.capsules, ${literal(names)});`,
     ...operations.map((operation, index) => `  if (!Object.hasOwn(capsules, ${literal(operation.contract.selector.operation)})) throw new TypeError('Missing operation capsule');
-  await fastify.register(operation_${index}, {clientOptions: {...${mixed && !operation.responseBranches ? 'retainedClientOptions' : 'clientOptions'}, capsule: capsules[${literal(operation.contract.selector.operation)}] as Uint8Array}});`),
+  await fastify.register(operation_${index}, {clientOptions: {...${hasHeaders ? `serviceOperationOptions(clientOptions, ${index}, ${mixed && !operation.responseBranches})` : mixed && !operation.responseBranches ? 'retainedClientOptions' : 'clientOptions'}, capsule: capsules[${literal(operation.contract.selector.operation)}] as Uint8Array}});`),
     '};', 'export default plugin;', '',
   ];
   tick();

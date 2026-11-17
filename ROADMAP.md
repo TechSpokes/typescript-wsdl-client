@@ -39,6 +39,14 @@ One-way acknowledgement confirms a complete allowed HTTP exchange, not business 
 
 ## Next deliveries
 
+### Buffered completion checkpoint, November 17, 2026
+
+The active comprehensive [buffered SOAP completion checklist](docs/roadmap/v1.0-buffered-soap-completion.md) supersedes the dated preparation routing below. Response encoding shipped in v1.6.5; draft PR #488 contains the independently reviewed envelope/header receiver at `7946edb` with nine successful hosted checks. Preserve those implementations and reuse their evidence. Remaining work integrates transport queries/compression/entity bases, existing runtime security and typed headers, required metadata/bootstrap prerequisites and the buffered streaming handoff under #190/#191.
+
+Prepare one comprehensive release only after all agreed buffered acceptance is implemented and independently verified. Focused development checks precede final standalone conformance and release preflight; preflight owns full CI, package/skill and smoke gates. The candidate remains incomplete until the checklist is proven. Broader optional standards, streaming implementation and general attachments retain their existing owners.
+
+### Earlier routing context
+
 Use this roadmap for product direction and release boundaries, the [working-gateway coverage register](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) for current feature gaps, and the [product outcome](https://github.com/TechSpokes/typescript-wsdl-client/issues/401) for end-to-end acceptance. Issue [#379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379) preserves earlier restart history; its dated dispatch instructions do not select the next task.
 
 The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/425)/[#482](https://github.com/TechSpokes/typescript-wsdl-client/issues/482) delivery is complete through [PR #483](https://github.com/TechSpokes/typescript-wsdl-client/pull/483). The next prepared slice is [encoding and envelope gap closure](#encoding-and-envelope-gap-closure) within current checked document/literal execution, coordinated by [#190](https://github.com/TechSpokes/typescript-wsdl-client/issues/190). Authentication belongs to eventual existing-capability parity rather than the next separately selected expansion.

@@ -47,6 +47,23 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
   {
+    id: "checked-buffered-soap",
+    title: "Checked buffered SOAP transport, credentials and declared literal headers",
+    status: "partial",
+    featureTags: ["wsdl", "soap", "headers", "security", "checked"],
+    fixture: "soap/headers/declared-literal.wsdl",
+    docsAnchor: "checked-buffered-soap",
+    publicContract: "Checked buffered SOAP reuses runtime credentials and declared literal headers, bounded HTTP entities and independently pinned metadata context.",
+    decision: "partial-support",
+    decisionReason: "Owned wire, native source and installed consumers qualify the bounded profile; streaming, attachments, incoming cryptographic security and broader policy families remain separate.",
+    authority: "WSDL 1.1 SOAP binding; SOAP 1.1/1.2; XML 1.0; RFC 3986",
+    provenance: "Repository-owned SOAP declarations, independent token/signature/challenge assertions and original-byte metadata fixtures.",
+    license: "MIT",
+    fixtureKind: "interop-profile",
+    profile: "checked-components-v1",
+    evidence: {native: "integration/component-soap12.test.ts", installed: ["integration/component-transferred-installed.test.ts"]},
+  },
+  {
     id: "checked-soap-envelope-receiver",
     title: "Checked document/literal incoming envelope and header receiver",
     status: "partial",
@@ -55,7 +72,7 @@ export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
     docsAnchor: "checked-soap-envelope-receiver",
     publicContract: "Checked SOAP 1.1/1.2 document/literal responses admit qualified wrapper extensions and enforce default-receiver targeting with bounded URI/base support.",
     decision: "partial-support",
-    decisionReason: "Independent receiver, HTTP/verified HTTPS and installed client/gateway cases qualify incoming processing; typed headers, HTTP bases and wider bindings remain separate.",
+    decisionReason: "Independent receiver and observed HTTP/XML Base cases qualify incoming processing; typed headers have their own declared processing contract and wider bindings remain separate.",
     authority: "SOAP 1.1 section 4; SOAP 1.2 Part 1 section 5; RFC 3986 section 5.2",
     provenance: "Repository-owned handwritten SOAP 1.1/1.2 receiver and protocol-fault fixtures with independent expected outcomes.",
     license: "MIT",

@@ -205,11 +205,11 @@ describe('public component service pipeline', () => {
     upstream.listen(0, '127.0.0.1'); await once(upstream, 'listening');
     const address = upstream.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
     const endpoint = `https://127.0.0.1:${address.port}/owned`;
-    type Config = {localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string}[]; sourceOrigins: string[];
+    type Config = {localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; contentType?: string}[]; sourceOrigins: string[];
       recordSources: {selector: typeof selector; source: string}[]; standardLibraries: string[]};
     const example = await readGeneratedSourceConfiguration(project) as Config;
     const config = {...example, localSource: path.resolve(project, example.localSource), fileRoots: example.fileRoots.map(root => path.resolve(project, root)),
-      sourceResources: example.sourceResources.map(resource => ({uri: /^https?:/.test(resource.uri) ? resource.uri : pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
+      sourceResources: example.sourceResources.map(resource => ({...resource, uri: /^https?:/.test(resource.uri) ? resource.uri : pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
       recordSources: example.recordSources.map(record => ({...record, source: path.resolve(project, record.source)})), endpoint, allowedEndpoints: [endpoint], caFile: ca};
     expect(config.standardLibraries).toEqual(['w3c-xsd10-schema-element-2004-v1']);
     const {buildServer} = await import(pathToFileURL(path.join(project, 'server.ts')).href) as {buildServer(config: object): Promise<import('fastify').FastifyInstance>};
@@ -296,13 +296,13 @@ describe('public component service pipeline', () => {
     upstream.listen(0, '127.0.0.1'); await once(upstream, 'listening');
     const address = upstream.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
     const endpoint = `https://127.0.0.1:${address.port}/owned`;
-    type Config = {localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string}[]; sourceOrigins: string[]};
+    type Config = {localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; contentType?: string}[]; sourceOrigins: string[]};
     const example = await readGeneratedSourceConfiguration(project) as Config;
     const {buildServer} = await import(pathToFileURL(scaffold).href) as {buildServer(config: object): Promise<import('fastify').FastifyInstance>};
     let app: import('fastify').FastifyInstance | undefined;
     try {
       app = await buildServer({...example, localSource: path.resolve(project, example.localSource), fileRoots: example.fileRoots.map(root => path.resolve(project, root)),
-        sourceResources: example.sourceResources.map(resource => ({uri: pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
+        sourceResources: example.sourceResources.map(resource => ({...resource, uri: pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
         endpoint, allowedEndpoints: [endpoint], caFile: ca});
       const base = await app.listen({host: '127.0.0.1', port: 0});
       for (const operation of ['SubmitImported', 'Other']) {

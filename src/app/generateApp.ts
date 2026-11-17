@@ -29,7 +29,7 @@ import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
 import {info, success} from "../util/cli.js";
 import {computeRelativeImport} from "../util/imports.js";
-import {loadRuntimeTemplate} from "../util/runtimeSource.js";
+import {loadRuntimeTemplate, loadRuntimeSource} from "../util/runtimeSource.js";
 import {hasUpstreamRuntimeSecurity, loadSecurityConfigFile, type SecurityConfig} from "../util/securityConfig.js";
 
 /**
@@ -585,7 +585,12 @@ function generateSecurityFile(
   if (!shouldWriteScaffoldFile(filePath, force)) return;
 
   const upstreamJson = JSON.stringify(securityCfg?.upstream ?? {}, null, 2);
-  const content = loadRuntimeTemplate("appSecurity.tpl.txt").replace("__UPSTREAM_JSON__", upstreamJson);
+  const content = loadRuntimeTemplate("appSecurity.tpl.txt")
+    .replace('__FACTORY_SOURCE__', loadRuntimeSource('../util/upstreamSecurityTypes.ts') + '\n'
+      + loadRuntimeSource('../util/upstreamSecurity.ts')
+        .replace("import type {UpstreamSecurityConfig} from './upstreamSecurityTypes.js';", '')
+        .replace("export type {UpstreamSecurityConfig} from './upstreamSecurityTypes.js';", ''))
+    .replace("__UPSTREAM_JSON__", upstreamJson);
 
   writeGeneratedSource(filePath, content, "app");
 }
@@ -614,7 +619,7 @@ function generatePackageJson(appDir: string, force: boolean): void {
       fastify: "^5.12.8",
       "fastify-plugin": "^6.0.1",
       saxes: "^6.0.0",
-      soap: "^1.14.0",
+      soap: "^1.14.1",
     },
     devDependencies: {
       "@types/node": "^26.6.6",

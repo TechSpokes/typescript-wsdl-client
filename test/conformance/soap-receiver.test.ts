@@ -158,9 +158,9 @@ describe('SOAP receiver URI and encoding profiles', () => {
     ['', '', 'unsupported', 'response-base-unavailable'],
     ['urn:other', '', 'soap-response', undefined],
     [' urn:other ', '', 'soap-response', undefined],
-    ['urn:othér', '', 'unsupported', 'URI-lexical-profile'],
-    ['urn:other space', '', 'unsupported', 'URI-lexical-profile'],
-    ['urn:other&#xA0;', '', 'unsupported', 'URI-lexical-profile'],
+    ['urn:othér', '', 'soap-response', undefined],
+    ['urn:other space', '', 'soap-response', undefined],
+    ['urn:other&#xA0;', '', 'soap-response', undefined],
     ['urn:bad%xx', '', 'protocol', 'SOAP URI percent escape'],
     ['http://[', '', 'protocol', 'SOAP URI reference'],
     ['urn:other[', '', 'protocol', 'SOAP URI reference'],
@@ -175,7 +175,7 @@ describe('SOAP receiver URI and encoding profiles', () => {
     ['http://WWW.w3.org:80/2003/05/soap-envelope/role/next', '', 'soap-response', undefined],
     ['http://www.w3.org/2003/05/soap-envelope/role/%6Eext', '', 'soap-response', undefined],
     ['relative', 'xml:base="urn:opaque"', 'unsupported', 'response-base-unavailable'],
-    ['relative', 'xml:base="http://example.org/é/"', 'unsupported', 'URI-lexical-profile'],
+    ['relative', 'xml:base="http://example.org/é/"', 'soap-response', undefined],
     ['relative', 'xml:base="http://example.org/%xx/"', 'protocol', 'SOAP URI percent escape'],
   ])('resolves role %j from explicit ancestry %j', async (role, base, kind, rule) => {
     expect(await assess('12', envelope('12', header(`s:role="${role}" s:mustUnderstand="true"`), base)))
@@ -186,15 +186,19 @@ describe('SOAP receiver URI and encoding profiles', () => {
     expect(await assess('12', xml)).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'});
     expect((await assess('12', xml.replace(`xml:base="${soap[12]}/"`, `xml:base="${soap[12].replace('www.w3.org', 'WWW.w3.org')}/"`))).kind).toBe('soap-response');
   });
-  it('keeps a legal relative xml:base against the offline opaque locator explicitly unsupported', async () => {
+  it('defers legal unresolved XML Base ancestry so a later absolute override can recover', async () => {
     const xml = envelope('12', header('s:role="next"', '<x:Trace ATTR/>', `xml:base="${soap[12]}/role/"`), 'xml:base="relative/"');
-    expect(await assess('12', xml)).toMatchObject({kind: 'unsupported', rule: 'response-base-unavailable'});
+    expect(await assess('12', xml)).toMatchObject({kind: 'soap-response'});
+    expect(await assess('12', xml.replace(`xml:base="${soap[12]}/role/"`, '')))
+      .toMatchObject({kind: 'unsupported', rule: 'response-base-unavailable'});
+    expect(await assess('12', xml.replace('s:role="next"', 's:role="next" s:mustUnderstand="1"')))
+      .toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'});
     expect((await assess('12', xml.replace('relative/', 'http://['))).kind).toBe('xml-invalid');
     expect((await assess('12', xml.replace('relative/', '//['))).kind).toBe('xml-invalid');
     for (const base of ['relativé/', 'relative path/', 'relative&#xA0;/', 'http://exa mple.org/', 'http://example&#xA0;.org/'])
-      expect(await assess('12', xml.replace('relative/', base))).toMatchObject({kind: 'unsupported', rule: 'URI-lexical-profile'});
+      expect(await assess('12', xml.replace('relative/', base))).toMatchObject({kind: 'soap-response'});
     expect(await assess('12', xml.replace('relative/', 'http://[v1.example]/')))
-      .toMatchObject({kind: 'unsupported', rule: 'response-base-unavailable'});
+      .toMatchObject({kind: 'soap-response'});
   });
   it.each([
     ['', '', 'soap-response'],

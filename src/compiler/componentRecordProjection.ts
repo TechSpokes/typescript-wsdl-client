@@ -235,7 +235,7 @@ export function validateComponentRecordApplication(projection: ComponentRecordPr
  *   an actual declared fault mapping of the outer contract, always on nodes from the same parse.
  */
 export function decodeComponentRecordXml(outer: DirectOperationContract, projection: ComponentRecordProjection, bytes: Uint8Array,
-  options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; componentResponseEncoding?: {charset?: string};
+  options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; componentResponseEncoding?: {charset?: string; baseUri?: string};
     selectPayload?: (root: SyntaxElement) => {payload: SyntaxElement; mapping: ComponentRecordProjection | ComponentValueMapping}}> = {}):
   ComponentRecordDecodedXml | ComponentDecodedXml | DirectCodecFailure {
   const owned = inspectComponentRecordProjection(projection, outer), {budget} = inspectDirectOperation(outer).context;

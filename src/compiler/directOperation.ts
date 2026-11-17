@@ -2,7 +2,7 @@ import {directLimit, directLoadingLimits} from './directExecutionPolicy.js';
 /** Transient source-owned schema selection. This module grants no runtime admission. */
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
 import type {SchemaInput, SchemaInputOptions} from '../loader/schemaInput.js';
-import {SchemaLoadingError, WSDL_NAMESPACE, XSD_NAMESPACE, syntaxAttribute, syntaxElements, isXmlNCName} from '../loader/orderedSyntax.js';
+import {SchemaLoadingError, WSDL_NAMESPACE, XSD_NAMESPACE, syntaxAttribute, syntaxElements, isXmlNCName, resolveLexicalQName} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import {globalId} from './canonicalGraph.js';
 import type {ElementNode, GraphNode, Reference, WsdlNode} from './canonicalGraph.js';
@@ -33,6 +33,17 @@ export interface DirectMessageRoot {
   readonly type: Reference;
   readonly source: SyntaxSource;
 }
+/** An exact selected literal SOAP header declaration, independent of runtime processing acknowledgement.
+ * @since Unreleased
+ */
+export interface ComponentSoapHeaderDeclaration {
+  readonly id: string;
+  readonly direction: 'input' | 'output';
+  readonly kind: 'header' | 'header-fault';
+  readonly root: DirectMessageRoot;
+  readonly headerId?: string;
+  readonly source: SyntaxSource;
+}
 /** Source-owned RPC parameters; these are WSDL parts rather than schema element declarations.
  * @since 1.1.9
  */
@@ -60,6 +71,7 @@ interface OperationContractBase {
   readonly binding: Readonly<{version: '1.1' | '1.2'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; actionRequired?: boolean; source: SyntaxSource}>;
   readonly input: DirectMessageRoot | RpcMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
+  readonly headers?: readonly ComponentSoapHeaderDeclaration[];
   readonly policy?: BindingPolicyRequirements;
   readonly addressingActions?: Readonly<{required: false; input?: string; output?: string;
     faults: readonly Readonly<{name: string; action: string}>[]}>;
@@ -243,7 +255,8 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         portType: ['name'], operation: ['name', 'parameterOrder'], input: ['name', 'message'], output: ['name', 'message'], fault: ['name', 'message'],
         binding: ['name', 'type'], service: ['name'], port: ['name', 'binding'],
       };
-      const soapAttributes: Record<string, readonly string[]> = {binding: ['style', 'transport'], operation: ['soapAction', 'style'], body: profile === 'components' ? ['use', 'parts', 'namespace', 'encodingStyle'] : ['use', 'parts'], fault: ['name', 'use'], address: ['location']};
+      const soapAttributes: Record<string, readonly string[]> = {binding: ['style', 'transport'], operation: ['soapAction', 'style'], body: profile === 'components' ? ['use', 'parts', 'namespace', 'encodingStyle'] : ['use', 'parts'], fault: ['name', 'use'], address: ['location'],
+        ...(profile === 'components' ? {header: ['message', 'part', 'use'], headerfault: ['message', 'part', 'use']} : {})};
       for (const document of input.documents) {
         const stack = [document.root];
         while (stack.length) {
@@ -336,7 +349,8 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       const root = (messageSyntax: SyntaxElement, boundSyntax: SyntaxElement, faultName?: string): DirectMessageRoot => {
         attrs(messageSyntax, ['name', 'message']); attrs(boundSyntax, ['name']);
         shape(messageSyntax, [ws('documentation')]);
-        shape(boundSyntax, [soap(faultName === undefined ? 'body' : 'fault'), ws('documentation')]);
+        shape(boundSyntax, [soap(faultName === undefined ? 'body' : 'fault'), ws('documentation'),
+          ...(profile === 'components' && faultName === undefined ? [soap('header')] : [])]);
         const body = exactly(boundSyntax, soapNamespace, faultName === undefined ? 'body' : 'fault');
         shape(body, []);
         attrs(body, faultName === undefined ? ['use', 'parts'] : ['use', 'name']);
@@ -346,8 +360,13 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         if (message.kind !== 'wsdl' || message.role !== 'message') return refuse('selection-refused', 'message-reference');
         shape(message.syntax, [ws('part'), ws('documentation')]);
         const parts = children(message.syntax).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'part');
-        if (parts.length !== 1) return refuse('unsupported', 'single-part-required');
-        const part = parts[0]!, partName = attr(part, 'name');
+        const selectedParts = profile === 'components' && faultName === undefined
+          ? attr(body, 'parts')?.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, '').split(/[\t\r\n ]+/) : undefined;
+        const selected = profile === 'components' && faultName === undefined && selectedParts !== undefined
+          ? parts.filter(part => selectedParts.includes(attr(part, 'name') ?? '')) : parts;
+        if (selected.length !== 1 || selectedParts !== undefined && (selectedParts.length !== 1 || selectedParts[0] !== attr(selected[0]!, 'name')))
+          return refuse('unsupported', 'single-part-required');
+        const part = selected[0]!, partName = attr(part, 'name');
         if (!partName || !isXmlNCName(partName)) return refuse('selection-refused', 'part-name');
         if (attr(body, 'parts') !== undefined && attr(body, 'parts')!.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, '') !== partName) return refuse('selection-refused', 'body-parts');
         if (attr(part, 'type') !== undefined || attr(part, 'element') === undefined) return refuse('unsupported', 'global-element-part-required');
@@ -397,6 +416,46 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         return style === 'rpc' ? rpcRoot(declaration, boundIo, direction) : root(declaration, boundIo);
       };
       const requestRoot = io('input', abstractInput), responseRoot = abstractOutput && io('output', abstractOutput);
+      const headers: ComponentSoapHeaderDeclaration[] = [];
+      if (profile === 'components' && style === 'document') {
+        const declaration = (node: SyntaxElement, direction: 'input' | 'output', headerId?: string): ComponentSoapHeaderDeclaration => {
+          attrs(node, ['message', 'part', 'use']);
+          shape(node, headerId === undefined ? [soap('headerfault')] : []);
+          if (attr(node, 'use') !== 'literal') return refuse('unsupported', 'literal-header-required');
+          const lexicalMessage = attr(node, 'message'), partName = attr(node, 'part');
+          if (!lexicalMessage || !partName || !isXmlNCName(partName)) return refuse('selection-refused', 'header-message-part');
+          const message = wsdl('message', resolveLexicalQName(lexicalMessage, node));
+          shape(message.syntax, [ws('part'), ws('documentation')]);
+          const parts = children(message.syntax).filter(part => part.name.namespace === WSDL_NAMESPACE && part.name.local === 'part' && attr(part, 'name') === partName);
+          if (parts.length !== 1) return refuse('selection-refused', 'header-message-part');
+          const part = parts[0]!;
+          attrs(part, ['name', 'element']); shape(part, [ws('documentation')]);
+          if (attr(part, 'element') === undefined) return refuse('unsupported', 'global-element-header-required');
+          const element = reference(message, part, 'element');
+          if (element.kind !== 'element' || element.identity.kind !== 'global') return refuse('selection-refused', 'global-element-header-root');
+          if (element.type.kind === 'symbol' && !element.type.target) return refuse('selection-refused', 'header-element-type');
+          const id = JSON.stringify([direction, message.name.namespace, message.name.local, partName, headerId ?? null]);
+          if (headers.some(header => header.id === id)) return refuse('selection-refused', 'duplicate-header-declaration');
+          const result: ComponentSoapHeaderDeclaration = {id, direction, kind: headerId === undefined ? 'header' : 'header-fault',
+            root: {message: message.name, part: partName, element, type: element.type, source: part.source},
+            ...(headerId === undefined ? {} : {headerId}), source: node.source};
+          headers.push(result);
+          return result;
+        };
+        for (const direction of ['input', 'output'] as const) {
+          if (direction === 'output' && oneWay) continue;
+          for (const header of children(exactly(bound, WSDL_NAMESPACE, direction)).filter(node => node.name.namespace === soapNamespace && node.name.local === 'header')) {
+            const owner = declaration(header, direction);
+            for (const fault of children(header).filter(node => node.name.namespace === soapNamespace && node.name.local === 'headerfault')) declaration(fault, 'output', owner.id);
+          }
+        }
+        const names = new Set<string>();
+        for (const header of headers) {
+          const identity = JSON.stringify([header.direction, header.root.element.name]);
+          if (names.has(identity)) return refuse('unsupported', 'ambiguous-header-element');
+          names.add(identity);
+        }
+      }
       const declaredFaults = children(abstract).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'fault');
       const boundFaults = children(bound).filter(c => c.name.namespace === WSDL_NAMESPACE && c.name.local === 'fault');
       if (style === 'rpc' && (declaredFaults.length || boundFaults.length)) return refuse('unsupported', 'rpc-declared-fault');
@@ -419,6 +478,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         binding: {version: soapNamespace === SOAP12 ? '1.2' : '1.1', ...(soapNamespace === SOAP12 ? {actionRequired} : {}), style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
           ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
         input: requestRoot, ...(responseRoot ? {output: responseRoot} : {pattern: 'one-way' as const}), faults,
+        ...(headers.length ? {headers} : {}),
         ...(policyOwner ? {policy: policyOwner.forBinding(binding.syntax), addressingActions: {required: false as const,
           input: attr(abstractInput, 'Action', ADDRESSING_WSDL), output: abstractOutput && attr(abstractOutput, 'Action', ADDRESSING_WSDL),
           faults: declaredFaults.flatMap(fault => {const action = attr(fault, 'Action', ADDRESSING_WSDL);

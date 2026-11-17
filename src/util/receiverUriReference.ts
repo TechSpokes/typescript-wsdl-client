@@ -8,6 +8,27 @@ export const collapseXmlWhitespace = (value: string): string => value.replace(/[
 type Refusal = Readonly<{kind: 'protocol' | 'unsupported'; rule: string}>;
 const unreservedOrSubDelimiter = /^[A-Za-z0-9._~!$&'()*+,;=%-]*$/;
 
+/** Escape an XML anyURI/LEIRI reference late without canonicalizing existing URI spelling.
+ * @param value XML whitespace normalization, when required by the owning datatype, has already occurred.
+ * @returns RFC URI syntax or a malformed-reference refusal; existing percent escapes remain byte-for-byte unchanged.
+ * @throws Propagates invocation-owned cancellation and work-limit exceptions.
+ * @see https://www.w3.org/TR/xmlbase/#escaping
+ * @see https://www.w3.org/TR/leiri/
+ */
+export function escapeReceiverAnyUri(value: string, check: (amount?: number) => void): string | Refusal {
+  check(128 + value.length * 16);
+  if (/%(?![0-9A-Fa-f]{2})/.test(value)) return {kind: 'protocol', rule: 'SOAP URI percent escape'};
+  let escaped = '';
+  for (const character of value) {
+    check(32);
+    const point = character.codePointAt(0)!;
+    if (point >= 0xd800 && point <= 0xdfff || point < 0x20 && ![9, 10, 13].includes(point))
+      return {kind: 'protocol', rule: 'SOAP URI character'};
+    escaped += point >= 0x21 && point <= 0x7e && !/[<>"{}|\\^`]/.test(character) ? character : encodeURIComponent(character);
+  }
+  return receiverUriLexical(escaped) ?? escaped;
+}
+
 /** Qualify syntax without canonicalization, escaping or scheme-specific endpoint policy.
  * @returns A protocol/profile refusal, or undefined for a supported ASCII reference.
  */

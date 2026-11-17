@@ -6,6 +6,7 @@ import {createServer} from 'node:http';
 import {createServer as createHttpsServer} from 'node:https';
 import {HttpClient} from 'soap/lib/http.js';
 import {once} from 'node:events';
+import {gzipSync} from 'node:zlib';
 import type {Socket} from 'node:net';
 import Fastify from 'fastify';
 import type {FastifyPluginAsync} from 'fastify';
@@ -28,7 +29,7 @@ describe('one-way native exchange and generated routes', () => {
     await mkdir('tmp/conformance/one-way', {recursive: true});
     const root = await mkdtemp(path.resolve('tmp/conformance/one-way/case-'));
     const soap = version === '11' ? 'http://schemas.xmlsoap.org/soap/envelope/' : 'http://www.w3.org/2003/05/soap-envelope';
-    let status = 202, body = '', media: string | undefined, encoding: string | undefined, calls = 0;
+    let status = 202, body: string | Buffer = '', media: string | undefined, encoding: string | undefined, calls = 0;
     let hang = false, incomplete = false, arrived: (() => void) | undefined;
     const requests: {action: unknown; media: unknown; names: string[]; xml: string}[] = [];
     const sockets = new Set<Socket>();
@@ -117,6 +118,12 @@ describe('one-way native exchange and generated routes', () => {
       expect(await call()).toMatchObject({kind: 'soap-fault', fault: {version: version === '11' ? '1.1' : '1.2'}});
       const receiver = await readFile(path.resolve(`test/conformance/fixtures/soap/versions/receiver-fault${version}.xml`), 'utf8');
       const previous = body;
+      const compressedFault = gzipSync(Buffer.from(receiver));
+      body = compressedFault; encoding = 'gzip';
+      expect(await call()).toMatchObject({kind: 'soap-fault', responseBytes: new Uint8Array(compressedFault)});
+      status = 200; body = gzipSync(Buffer.alloc(0));
+      expect(await call()).toMatchObject({kind: 'protocol', rule: 'one-way-response-body'});
+      status = 500; encoding = undefined;
       body = receiver;
       expect(await call()).toMatchObject({kind: 'soap-fault', responseBytes: new Uint8Array(Buffer.from(receiver))});
       const receiverReply = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned'}});
@@ -171,8 +178,15 @@ describe('one-way native exchange and generated routes', () => {
       const abort = new AbortController(); abort.abort(); expect(await call(undefined, {...options.soap, signal: abort.signal})).toMatchObject({kind: 'cancelled'});
       for (const old of [checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3, checkedComponentRuntimeV4, checkedComponentRuntimeV5]) {
         expect(await generatedClient.createClient(old).Notify({value: 'owned'}, options)).toMatchObject({kind: 'incompatible-artifact'});
-        expect(await old.execute(Buffer.from(options.capsule).toString('base64'), {value: 'owned'}, options, old.version as never)).toMatchObject({kind: 'incompatible-artifact'});
       }
+      const literal = Buffer.from(options.capsule).toString('base64');
+      for (const execute of [
+        () => checkedComponentRuntimeV1.execute(literal, {value: 'owned'}, options, checkedComponentRuntimeV1.version),
+        () => checkedComponentRuntimeV2.execute(literal, {value: 'owned'}, options, checkedComponentRuntimeV2.version),
+        () => checkedComponentRuntimeV3.execute(literal, {value: 'owned'}, options, checkedComponentRuntimeV3.version),
+        () => checkedComponentRuntimeV4.execute(literal, {value: 'owned'}, options, checkedComponentRuntimeV4.version),
+        () => checkedComponentRuntimeV5.execute(literal, {value: 'owned'}, options, checkedComponentRuntimeV5.version),
+      ]) expect(await execute()).toMatchObject({kind: 'incompatible-artifact'});
       expect(calls).toBe(before);
     } finally {
       await app.close(); for (const socket of sockets) socket.destroy(); upstream.close(); await once(upstream, 'close');

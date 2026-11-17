@@ -2,6 +2,24 @@
 
 Executed local SOAP evidence for S02, #169, and the adapter consumers #190/#192/#193. See the root [README](../README.md).
 
+## Current buffered interface and streaming handoff
+
+The current checked buffered path retains the established SOAP dependency for envelope/security construction and HTTP execution. Native source qualification, typed mappings and input validation complete before dispatch. The dependency receives a private transport descriptor and the exact native encoded body; its name-keyed response parser never owns checked values. The sections below retain earlier seam evidence and narrower historical profiles.
+
+| Shared boundary for #192 | Existing typed owner | Required ordering |
+|---|---|---|
+| Binding and endpoint | `DirectOperationContract`, `ComponentSoapOptions` | Pin version/action/service/port; authorize exact endpoint before I/O |
+| Body serialization | `createComponentValueMapping`, `encodeComponentXml` | Native value, order and scalar checks precede envelope construction |
+| Envelope and credentials | `prepareComponentSoapWsdl`, shared upstream security builders | Emit declared headers and tokens; sign final bytes before validation/dispatch |
+| Capability and policy | `exchangeComponentSoap`, source policy and pinned declarations | Unknown controls and unmet policy refuse; no credential/header dropping |
+| Response observation | Raw HTTP capture, `ObservedSoapResponseMetadata` | Retain wire bytes; bounded decompression and explicit encoding/base context |
+| Receiver and native values | `assessSoapResponse`, declared header processors, native codec | Route and process mandatory headers before application normalization |
+| Terminal errors | `DirectSoapFailure`, protocol/declared/header faults and acknowledgements | Preserve distinct outcomes; no fault, invalid input or partial XML becomes success |
+
+Buffered runtime options expose per-call cancellation, explicit deadlines and capacities. SOAP header values and processors are invocation-owned; exact declaration IDs cannot grant unknown security semantics. Original response bytes remain available after decoding, and incoming signature/encryption requirements without an implemented verifier remain unsupported. Outbound signing evidence does not establish incoming authentication.
+
+#192 must reuse the native body inverse, scalar/occurrence owners, binding selection and declared header identities. Its dedicated incremental HTTP transport remains separate; copying a configured security object does not implement that security protocol. #193 owns incremental completion, late faults, cancellation and cleanup. No record may be yielded as authenticated before required verification completes. This buffered completion introduces no streaming implementation or default switch.
+
 ## P3.5 original-byte qualification
 
 The historical buffered `response` event described below exposes decoded text, not original HTTP entity bytes. Its event ordering and namespace-content observations remain useful, but it supplies no original encoding, BOM or byte-digest provenance. P3.5 supersedes that byte-provenance inference with an executed request-local hook in the locked `soap` 1.13.3 HTTP client.

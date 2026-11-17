@@ -12,7 +12,7 @@ describe('explicit component SOAP response encoding agreement', () => {
     const bytes = Buffer.from(xml('<?xml version="1.0" encoding="US-ASCII"?>', '&#xE9; &#x1F327;'));
     expect(parse(bytes, charset)).toMatchObject([{value: '\u00e9 \u{1f327}'}]);
     expect(parse(bytes)).toMatchObject([{value: '\u00e9 \u{1f327}'}]);
-    expect(() => decodeMetadataXml(bytes)).toThrow();
+    expect(decodeMetadataXml(bytes)).toContain('&#xE9; &#x1F327;');
     expect(() => parseOrderedSyntax(bytes, uri, {xml10Only: true})).toThrow();
     for (const byte of [0x80, 0xe9, 0xff]) {
       expect(() => parse(Buffer.concat([Buffer.from('<value>'), Buffer.from([byte]), Buffer.from('</value>')]), charset)).toThrow();
@@ -37,7 +37,7 @@ describe('explicit component SOAP response encoding agreement', () => {
     for (const header of [undefined, 'utf-16', charset]) {
       expect(parse(Buffer.concat([Buffer.from(bom), declared]), header)).toMatchObject([{value: '雪 🌧'}]);
     }
-    expect(() => decodeMetadataXml(declared)).toThrow();
+    expect(decodeMetadataXml(declared)).toContain('雪 🌧');
     expect(() => parseOrderedSyntax(declared, uri, {xml10Only: true})).toThrow();
   });
   it('checks independent UTF-16 code units and original byte digests', () => {

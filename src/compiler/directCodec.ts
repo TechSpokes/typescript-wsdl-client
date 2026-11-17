@@ -79,6 +79,7 @@ export interface ComponentXmlObservation {
   readonly kind: 'observed-component-xml'; readonly root: SyntaxElement; readonly usage: ResolverUsage;
 }
 const componentObservations = new WeakSet<object>();
+const parsedRoots = new WeakMap<SyntaxElement, SemanticBudget>();
 class Stop extends Error {
   constructor(readonly kind: DirectCodecFailure['kind'], readonly rule: string, readonly source?: SyntaxSource) {super(rule);}
 }
@@ -109,9 +110,11 @@ function runMapping<M extends CodecMapping, T extends {readonly usage: ResolverU
         || !(contract.binding.version === '1.1' || profile === componentProfile && contract.binding.version === '1.2' && !rpc) || !rpc && (contract.binding.style !== 'document' || contract.binding.use !== 'literal')
         || contract.binding.transport !== 'http://schemas.xmlsoap.org/soap/http') throw new Stop('unsupported', profile.rule);
       const direction = mapping.direction;
-      const root = direction.kind === 'fault' ? contract.faults.find(f => {
+      const root = direction.kind === 'header' && profile === componentProfile ? contract.headers?.find(header => {
+        check(); return budget.compareText(header.id, direction.id) === 0;
+      })?.root : direction.kind === 'fault' ? contract.faults.find(f => {
        check(); return budget.compareText(f.name, direction.name) === 0;
-      })?.root : contract[direction.kind];
+      })?.root : direction.kind === 'header' ? undefined : contract[direction.kind];
       if (mapping.root !== root) throw new TypeError('Incompatible direct codec root');
       const configured = options.limits === undefined ? {} : directDataOwnership(budget).snapshot(options.limits, check);
       if (!configured || typeof configured !== 'object' || Array.isArray(configured)) throw new TypeError('Data-only XML limits required');
@@ -291,7 +294,7 @@ export function encodeComponentXml(contract: DirectOperationContract, mapping: u
 }
 
 /** Retain the shared byte-copy, XML-version, entity and explicit capacity boundaries for both profiles. */
-function parseObservedXml(bytes: Uint8Array, {budget, limits, check}: Session, sourceUri?: string, componentResponseEncoding?: {charset?: string}): SyntaxElement {
+function parseObservedXml(bytes: Uint8Array, {budget, limits, check}: Session, sourceUri?: string, componentResponseEncoding?: {charset?: string; baseUri?: string}): SyntaxElement {
     const length = xmlByteLength(bytes);
     if (length > limits.maxBytes) throw new Stop('resource-limit', 'XML byte limit');
     check();
@@ -299,8 +302,10 @@ function parseObservedXml(bytes: Uint8Array, {budget, limits, check}: Session, s
     const uri = sourceUri ?? 'urn:typescript-wsdl-client:observed-direct-xml';
     if (typeof uri !== 'string') throw new TypeError('XML source URI must be a string');
     check();
-    return parseOrderedSyntax(input, uri, {...limits, xml10Only: true, componentResponseEncoding,
+    const root = parseOrderedSyntax(input, uri, {...limits, xml10Only: true, componentResponseEncoding,
       chargeWork: () => check(), reserveNode: () => {check(); budget.reserveNodes(1);}}).root;
+    parsedRoots.set(root, budget);
+    return root;
 }
 function assertObservedPayload(root: SyntaxElement, payload: SyntaxElement, check: () => void): void {
   const pending = [root];
@@ -319,7 +324,7 @@ function assertObservedPayload(root: SyntaxElement, payload: SyntaxElement, chec
  *   assessed here. Source qualification, wrapper scope and selected payload validation remain separate owners.
  */
 export function observeComponentXml(contract: DirectOperationContract, mapping: unknown, bytes: Uint8Array,
-  options: Options & Readonly<{uri?: string; componentResponseEncoding?: {charset?: string}}> = {}): ComponentXmlObservation | DirectCodecFailure {
+  options: Options & Readonly<{uri?: string; componentResponseEncoding?: {charset?: string; baseUri?: string}}> = {}): ComponentXmlObservation | DirectCodecFailure {
   const result = runComponent(contract, mapping, options, (_owned, session) => {
     const root = parseObservedXml(bytes, session, options.uri ?? 'urn:typescript-wsdl-client:observed-component-xml', options.componentResponseEncoding);
     directDataOwnership(session.budget).freeze(root);
@@ -363,6 +368,35 @@ export function assertComponentObservedPayload(observation: ComponentXmlObservat
   assertObservedPayload(observation.root, payload, check);
 }
 
+/** Assess an exact parsed header block through its source-owned mapping without treating SOAP routing attributes as application data.
+ * @param root Genuine codec-owned envelope from this request's parser and budget.
+ * @param payload Immediate Header block, retained unchanged as the receipt's raw payload.
+ * @returns Native header value or schema/scalar refusal; routing and semantic acknowledgement remain separate duties.
+ * @throws TypeError For foreign syntax, copied mappings or a non-header direction.
+ */
+export function assessParsedComponentHeaderPayload(contract: DirectOperationContract, mapping: unknown, root: SyntaxElement,
+  payload: SyntaxElement, options: Readonly<{signal?: AbortSignal}> = {}): ComponentDecodedXml | DirectCodecFailure {
+  const {context} = inspectDirectOperation(contract);
+  if (parsedRoots.get(root) !== context.budget) throw new TypeError('Request-owned parsed envelope required');
+  const owned = inspectComponentValueMapping(mapping, contract).mapping;
+  if (owned.direction.kind !== 'header' || isRpcMessageRoot(owned.root)) throw new TypeError('Source-owned document header mapping required');
+  const element = owned.root.element;
+  return runComponent(contract, mapping, options, (_owned, {budget, check}) => {
+    assertObservedPayload(root, payload, check);
+    const namespace = contract.binding.version === '1.1' ? 'http://schemas.xmlsoap.org/soap/envelope/' : 'http://www.w3.org/2003/05/soap-envelope';
+    const processing = contract.binding.version === '1.1' ? ['actor', 'mustUnderstand', 'encodingStyle'] : ['role', 'mustUnderstand', 'relay', 'encodingStyle'];
+    budget.chargeWork(128 + payload.attributes.length * 32);
+    // @constraints Only the protocol owner's selected SOAP attributes leave the application schema view; no raw bytes or other attributes change.
+    const view = {...payload, attributes: payload.attributes.filter(attribute => attribute.name.namespace !== namespace || !processing.includes(attribute.name.local))};
+    const structural = matchDirectProjection(context, element, view, options);
+    if (structural.kind !== 'projection-match') return structural;
+    const validated = assessProjectionScalars(context, structural, options, owned);
+    if (validated.kind !== 'projection-value') return validated;
+    return Object.freeze({kind: 'component-decoded' as const, admitted: false as const, payload, validated, mapping: owned,
+      usage: Object.freeze({...budget.usage()})});
+  });
+}
+
 /** Bounded observed bytes -> ordered syntax -> existing structural/scalar checks. */
 export function decodeDirectXml(contract: DirectOperationContract, mapping: unknown, bytes: Uint8Array,
   options: Options & Readonly<{uri?: string; selectPayload?: (root: SyntaxElement) => DirectPayloadSelection}> = {}): DirectDecodedXml | DirectCodecFailure {
@@ -391,7 +425,7 @@ export function decodeDirectXml(contract: DirectOperationContract, mapping: unkn
  * @returns A native-validated structured value or explicit XML/structure/scalar/unsupported/resource failure.
  */
 export function decodeComponentXml(contract: DirectOperationContract, mapping: unknown, bytes: Uint8Array,
-  options: Options & Readonly<{uri?: string; componentResponseEncoding?: {charset?: string}; selectPayload?: (root: SyntaxElement) => ComponentPayloadSelection}> = {}): ComponentDecodedXml | DirectCodecFailure {
+  options: Options & Readonly<{uri?: string; componentResponseEncoding?: {charset?: string; baseUri?: string}; selectPayload?: (root: SyntaxElement) => ComponentPayloadSelection}> = {}): ComponentDecodedXml | DirectCodecFailure {
   return runComponent(contract, mapping, options, (owned, session) => {
     const {budget, check} = session, {context} = inspectDirectOperation(contract);
     const root = parseObservedXml(bytes, session, options.uri ?? 'urn:typescript-wsdl-client:observed-component-xml', options.componentResponseEncoding);

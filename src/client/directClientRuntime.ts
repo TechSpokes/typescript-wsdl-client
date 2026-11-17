@@ -5,6 +5,9 @@ import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {DataOwnershipLimitError} from '../compiler/dataOwnership.js';
 import {types} from 'node:util';
 import {normalizeHttpResponseHeaders} from '../compiler/httpResponseHeaders.js';
+import {snapshotUpstreamSecurity} from '../util/upstreamSecurity.js';
+import {snapshotComponentHeaderProcessors} from '../compiler/componentSoapHeaders.js';
+import type {ComponentHeaderFaultResult} from '../compiler/directSoap.js';
 import type {HttpResponseObservation} from '../compiler/httpResponseHeaders.js';
 import {createApplicationBudget} from '../compiler/semanticBudget.js';
 import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudget.js';
@@ -28,7 +31,7 @@ export interface DirectClientOptions {
   readonly soap: DirectSoapOptions;
 }
 export interface ComponentClientOptions extends Omit<DirectClientOptions, 'soap'> {
-  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string; readonly contentType?: string}[];
   readonly sourceUri?: string;
   readonly sourceOrigins: readonly string[];
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
@@ -61,8 +64,9 @@ export interface DirectClientRuntime {
 /** Component-only protocol faults retain raw bytes without claiming an application value.
  * @since 1.3.0
  */
-export type ComponentClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap12FaultMetadata> = Exclude<DirectClientResult, {kind: 'soap-fault'}> | ComponentProtocolFault<F>
-  | Readonly<Omit<Extract<DirectClientResult, {kind: 'soap-fault'}>, 'fault'> & {fault: Omit<DeclaredSoapFault, 'codeNode'>}>;
+export type ComponentClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap12FaultMetadata> = (Exclude<DirectClientResult, {kind: 'soap-fault'}> | ComponentProtocolFault<F> | ComponentHeaderFaultResult
+  | Readonly<Omit<Extract<DirectClientResult, {kind: 'soap-fault'}>, 'fault'> & {fault: Omit<DeclaredSoapFault, 'codeNode'>}>)
+  & Readonly<{headerValues?: Readonly<Record<string, unknown>>; processedHeaders?: readonly string[]}>;
 export type ComponentBranchClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap11FaultMetadata | Soap12FaultMetadata> = ComponentClientResult<F> | Readonly<{
   http?: HttpResponseObservation;
   kind: 'application-error'; branch: string; value: DirectApplicationValue; status: number; admitted: false;
@@ -106,7 +110,7 @@ export const componentSoap12BranchClientRuntime = Object.freeze({
   version: COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION,
   execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => executeClient(expectedBase64, input, options, true, '1.2', true),
 });
-export type ComponentOneWayClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap11FaultMetadata | Soap12FaultMetadata> = DirectClientFailure | ComponentProtocolFault<F> | SoapAcknowledgement;
+export type ComponentOneWayClientResult<F extends Soap11FaultMetadata | Soap12FaultMetadata = Soap11FaultMetadata | Soap12FaultMetadata> = DirectClientFailure | ComponentProtocolFault<F> | SoapAcknowledgement | ComponentHeaderFaultResult;
 export const componentSoap11OneWayClientRuntime = Object.freeze({
   version: COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION,
   execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions) => executeClient(expectedBase64, input, options, true, '1.1', false, true),
@@ -154,7 +158,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
     let http: HttpResponseObservation | undefined;
     const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, ...(http ? {http} : {}), usage: Object.freeze({...budget.usage()})});
     try {
-      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget), component ? ['ca', 'httpResponseHeaders'] : []);
+      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget), component ? ['ca', 'httpResponseHeaders', 'upstream', 'headerValues', 'headerProcessors'] : []);
       if (optionRule) return fail('unsupported', optionRule);
       if (options.soap.signal !== undefined && !(options.soap.signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
@@ -163,11 +167,19 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
 
       const soap: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
       for (const key of Reflect.ownKeys(options.soap)) soap[key as string] = Object.getOwnPropertyDescriptor(options.soap, key)!.value;
+      if (component && soap.upstream !== undefined) {
+        try {soap.upstream = snapshotUpstreamSecurity(soap.upstream);}
+        catch {return fail('unsupported', 'runtime security configuration');}
+      }
+      if (component && soap.headerProcessors !== undefined) {
+        try {soap.headerProcessors = snapshotComponentHeaderProcessors(soap.headerProcessors);}
+        catch {return fail('unsupported', 'explicit SOAP header processors required');}
+      }
       if (component && Object.hasOwn(soap, 'httpResponseHeaders')) {
         try {soap.httpResponseHeaders = normalizeHttpResponseHeaders(soap.httpResponseHeaders);}
         catch {return fail('unsupported', 'httpResponseHeaders selection');}
       }
-      for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities', ...(component ? ['ca'] : [])]) {
+      for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities', ...(component ? ['ca', 'upstream', 'headerValues'] : [])]) {
         if (Object.hasOwn(soap, key)) soap[key] = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(soap[key], check));
       }
       options = Object.freeze({...options, fileRoots: directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(options.fileRoots, check)), soap: Object.freeze(soap) as unknown as DirectSoapOptions});
@@ -197,8 +209,9 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         for (const resource of sources.resources) {
           check();
           if (!resource || typeof resource.uri !== 'string' || typeof resource.file !== 'string'
-            || Object.keys(resource).some(k => !['uri', 'file', 'canonicalUri'].includes(k))
-            || resource.canonicalUri !== undefined && typeof resource.canonicalUri !== 'string') return fail('unsupported', 'explicit source resource required');
+            || Object.keys(resource).some(k => !['uri', 'file', 'canonicalUri', 'contentType'].includes(k))
+            || resource.canonicalUri !== undefined && typeof resource.canonicalUri !== 'string'
+            || resource.contentType !== undefined && typeof resource.contentType !== 'string') return fail('unsupported', 'explicit source resource required');
         }
         const namespaceLocations = new Map<string, string>();
         for (const location of sources.locations) {
@@ -213,6 +226,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         const fresh = await reconstructComponentSourceCapsuleInRequest(bytes, prepared.source, {loading: prepared.loading, signal,
           standardLibraries: sources.standards, recordSources: sources.records, branchSources: sources.branches, responseBranchMode: branches}, budget);
         if (fresh.kind !== 'reconstructed-component') return fresh;
+        if (!protocol && fresh.contract.headers?.length) return fail('incompatible-artifact', 'declared-headers-runtime-binding');
         if ((fresh.contract.pattern === 'one-way') !== oneWay || oneWay && fresh.contract.binding.version !== protocol) return fail('incompatible-artifact', 'one-way-runtime-binding');
         if (fresh.contract.binding.version === '1.2' && protocol !== '1.2') return fail('incompatible-artifact', 'SOAP 1.2 runtime binding required');
         if (branches && fresh.contract.binding.version !== protocol) return fail('incompatible-artifact', 'Matching response branch protocol binding required');
@@ -235,7 +249,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
       http = result.http;
       if (!('decoded' in result)) {
         if (result.kind === 'soap-fault' && result.fault.version !== protocol) throw new TypeError('Protocol fault requires its generated runtime binding');
-        if (result.kind === 'soap-fault' || result.kind === 'soap-acknowledgement') return result;
+        if (result.kind === 'soap-fault' || result.kind === 'soap-acknowledgement' || result.kind === 'soap-header-fault') return result;
         // @constraints Native source provenance can contain endpoint secrets; only the safe diagnostic crosses the runtime boundary.
         return Object.freeze({kind: result.kind, rule: result.rule, usage: result.usage,
           ...(http ? {http} : {}),
@@ -244,6 +258,8 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
 
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
       const common = {value: result.decoded.validated.value, status: result.status, admitted: false as const,
+        ...('headerValues' in result && result.headerValues ? {headerValues: result.headerValues} : {}),
+        ...('processedHeaders' in result && result.processedHeaders ? {processedHeaders: result.processedHeaders} : {}),
         ...(http ? {http} : {}),
         responseBytes: result.responseBytes, usage: Object.freeze({...budget.usage()})};
       if (result.kind === 'application-error') {

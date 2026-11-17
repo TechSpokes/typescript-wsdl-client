@@ -170,7 +170,7 @@ export function validateComponentApplicationError(branches: ComponentResponseBra
  * @throws TypeError For foreign handles, mappings or selected nodes.
  */
 export function decodeComponentResponseBranchesXml(outer: DirectOperationContract, branches: ComponentResponseBranches, bytes: Uint8Array,
-  options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; componentResponseEncoding?: {charset?: string};
+  options: Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits; uri?: string; componentResponseEncoding?: {charset?: string; baseUri?: string};
     selectPayload?: (root: SyntaxElement) => {payload: SyntaxElement; mapping: ComponentResponseBranches | ComponentValueMapping}}> = {}):
   ComponentRecordDecodedXml | ComponentDecodedXml | ComponentApplicationErrorDecodedXml | DirectCodecFailure {
   const owned = inspectComponentResponseBranches(branches, outer), {context} = inspectDirectOperation(outer), {budget} = context;

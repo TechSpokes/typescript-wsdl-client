@@ -1,4 +1,4 @@
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {createServer, type ServerResponse} from 'node:http';
 import type {Socket} from 'node:net';
 import {once, getEventListeners} from 'node:events';
@@ -165,10 +165,17 @@ describe('independent buffered SOAP transport/security controls', () => {
   it('closes the hanging response socket on deadline before server teardown', async () => {
     await owned(() => {}, async server => {
       const {contract, mapping} = await operation();
-      const result = await exchangeDirectSoap(contract, mapping, value, {...server.options, timeoutMs: 25});
-      expect(result).toMatchObject({kind: 'transport', rule: 'SOAP deadline exceeded'});
-      expect(server.count()).toBe(1);
-      await closedByAdapter(server.sockets);
+      // @why Establish actual in-flight HTTP before advancing the owned deadline; scheduler load must not turn this into a pre-dispatch test.
+      vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+      try {
+        const pending = exchangeDirectSoap(contract, mapping, value, {...server.options, timeoutMs: 60_000});
+        await vi.advanceTimersByTimeAsync(0);
+        await server.received;
+        expect(server.count()).toBe(1);
+        await vi.advanceTimersByTimeAsync(60_000);
+        expect(await pending).toMatchObject({kind: 'transport', rule: 'SOAP deadline exceeded'});
+        await closedByAdapter(server.sockets);
+      } finally {vi.useRealTimers();}
     });
   });
 });

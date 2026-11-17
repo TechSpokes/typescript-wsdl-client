@@ -24,7 +24,7 @@ export class ComponentSoapPreparation {
   async prepare(contract: DirectOperationContract, selection: {service: ExpandedName; port: string}, check: () => void): Promise<void> {
     const {source} = inspectDirectOperation(contract);
     validateComponentSoapSelection(contract, selection, check);
-    const key = JSON.stringify([selection.service, selection.port, contract.selector.binding]);
+    const key = JSON.stringify([selection.service, selection.port, contract.selector.binding, contract.selector.operation]);
     let entries = this.#sources.get(source);
     if (!entries) {entries = new Map(); this.#sources.set(source, entries);}
     let prepared = entries.get(key);

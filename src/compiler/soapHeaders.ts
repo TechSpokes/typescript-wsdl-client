@@ -20,8 +20,8 @@ export type ComponentSoapHeaderResult = Readonly<{kind: 'ignored-optional-header
  * @see https://www.w3.org/TR/soap12-part1/#soapheadblock
  */
 export function assessComponentSoapHeader(header: SyntaxElement, check: (amount?: number) => void, version: '1.1' | '1.2' = '1.1',
-  receiverAncestry?: readonly SyntaxElement[]): ComponentSoapHeaderResult {
-  if (receiverAncestry) return assessDocumentLiteralHeader(header, check, version, receiverAncestry);
+  receiverAncestry?: readonly SyntaxElement[], entityBase?: string): ComponentSoapHeaderResult {
+  if (receiverAncestry) return assessDocumentLiteralHeader(header, check, version, receiverAncestry, entityBase);
   check();
   const namespace = version === '1.2' ? 'http://www.w3.org/2003/05/soap-envelope' : SOAP;
   if (header.name.namespace !== namespace || header.name.local !== 'Header' || header.attributes.length)
@@ -87,7 +87,7 @@ export function assessReceiverWrapper(node: SyntaxElement, version: '1.1' | '1.2
 }
 
 function assessDocumentLiteralHeader(header: SyntaxElement, check: (amount?: number) => void, version: '1.1' | '1.2',
-  ancestry: readonly SyntaxElement[]): ComponentSoapHeaderResult {
+  ancestry: readonly SyntaxElement[], entityBase?: string): ComponentSoapHeaderResult {
   const namespace = version === '1.1' ? SOAP : 'http://www.w3.org/2003/05/soap-envelope';
   const wrapper = assessReceiverWrapper(header, version, check);
   if (wrapper) return wrapper;
@@ -120,7 +120,7 @@ function assessDocumentLiteralHeader(header: SyntaxElement, check: (amount?: num
         if (lexical || !/^[A-Za-z][A-Za-z0-9+.-]*:/.test(raw)) refusal ??= {kind: 'unsupported', rule: 'actor-URI-profile'};
         targeted = raw === 'http://schemas.xmlsoap.org/soap/actor/next';
       } else if (version === '1.2' && local === 'role') {
-        const resolved = resolveReceiverRole(raw, [...ancestry, header, child], check);
+        const resolved = resolveReceiverRole(raw, [...ancestry, header, child], check, entityBase);
         if (typeof resolved !== 'string') {
           if (resolved.kind === 'protocol') return resolved;
           refusal ??= resolved;

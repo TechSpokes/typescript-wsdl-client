@@ -45,7 +45,8 @@ export function registerContractCases(): void {
     for (const capability of checkedCapabilities) {
       test(`${capability.id} declares separately executed native and installed evidence`, () => {
         expect(capability.profile).toBe('checked-components-v1');
-        expect(capability.evidence.native).toMatch(/^conformance\/.+\.test\.ts$/);
+        expect(capability.evidence.native).toMatch(/^(?:conformance|integration)\/.+\.test\.ts$/);
+        expect(capability.evidence.native).not.toMatch(/installed\.test\.ts$/);
         expect(capability.evidence.installed.length).toBeGreaterThan(0);
         for (const evidence of [capability.evidence.native, ...capability.evidence.installed]) {
           expect(evidence).toMatch(/^(?:conformance|integration)\/[a-z0-9-]+\.test\.ts$/);

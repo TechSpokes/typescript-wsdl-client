@@ -3,7 +3,7 @@ import path from 'node:path';
 import type {DirectOperationSelector} from '../../src/compiler/directOperation.js';
 
 interface ExplicitSourceConfiguration {
-  localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; canonicalUri?: string}[];
+  localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; canonicalUri?: string; contentType?: string}[];
   sourceOrigins: string[]; sourceUri?: string; namespaceLocations?: {namespace: string; location: string}[];
   recordSources: {selector: DirectOperationSelector; source: string}[]; standardLibraries: string[];
   capsuleFiles?: Record<string, string>;
@@ -25,7 +25,8 @@ export async function readGeneratedSourceConfiguration(project: string): Promise
   return {...supplied, localSource: file(supplied.localSource), fileRoots: supplied.fileRoots.map(file),
     ...(supplied.capsuleFiles ? {capsuleFiles: Object.fromEntries(Object.entries(supplied.capsuleFiles).map(([name, location]) => [name, file(location)]))} : {}),
     sourceResources: supplied.sourceResources.map(resource => ({uri: logical(resource.uri), file: file(resource.file),
-      ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})),
+      ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)}),
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})})),
     ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: logical(location.location)}))} : {}),
     recordSources: (supplied.recordSources ?? []).map(record => ({...record, source: file(record.source)})),
     standardLibraries: supplied.standardLibraries ?? [],

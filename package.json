@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "1.6.5",
+  "version": "1.7.0",
   "description": "Turn legacy WSDL/SOAP services into typed TypeScript clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. Built for enterprise SOAP modernization.",
   "keywords": [
     "wsdl",
@@ -77,6 +77,8 @@
     "LICENSE",
     "llms.txt",
     "src/runtime/streamXml.ts",
+    "src/util/upstreamSecurity.ts",
+    "src/util/upstreamSecurityTypes.ts",
     "src/runtime/*.tpl.txt",
     "src/generation/preambles/**/*.preamble"
   ],
@@ -99,7 +101,7 @@
     "test:github": "vitest run test/unit test/snapshot test/integration test/tooling --exclude \"**/*installed.test.ts\"",
     "test:installed": "tsx scripts/run-verification.ts test:installed:run",
     "test:installed:run": "vitest run test/integration/checked-direct-installed.test.ts test/integration/checked-gateway-installed.test.ts test/integration/checked-intake-installed.test.ts test/integration/component-transferred-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/portable-installed.test.ts",
-    "test:platform": "vitest run test/conformance/soap-receiver.test.ts test/unit/soap-headers.test.ts test/unit/component-response-encoding.test.ts test/unit/checked-assessment.test.ts test/unit/direct-operation.test.ts test/unit/direct-structure.test.ts test/unit/direct-structure-evidence.test.ts test/unit/direct-values.test.ts test/unit/direct-codec.test.ts test/unit/direct-codec-independent.test.ts test/unit/direct-source-capsule.test.ts test/unit/direct-capsule-independent.test.ts test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/direct-normal-execution.test.ts test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts",
+    "test:platform": "vitest run test/conformance/soap-receiver.test.ts test/unit/soap-headers.test.ts test/unit/component-response-encoding.test.ts test/unit/checked-assessment.test.ts test/unit/direct-operation.test.ts test/unit/direct-structure.test.ts test/unit/direct-structure-evidence.test.ts test/unit/direct-values.test.ts test/unit/direct-codec.test.ts test/unit/direct-codec-independent.test.ts test/unit/direct-source-capsule.test.ts test/unit/direct-capsule-independent.test.ts test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/direct-normal-execution.test.ts test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts test/integration/component-soap12.test.ts test/integration/component-soap.test.ts test/unit/component-soap-source.test.ts test/unit/metadata-source-authority.test.ts test/unit/component-soap-headers.test.ts test/unit/buffered-http-entity.test.ts test/unit/soap-uri-references.test.ts test/unit/soap-entity-base.test.ts test/unit/upstream-security-runtime.test.ts test/integration/component-service-headers.test.ts",
     "test:conformance": "tsx scripts/run-verification.ts test:conformance:run",
     "test:conformance:run": "vitest run test/conformance --reporter=verbose",
     "test:conformance:contracts": "vitest run --config vitest.conformance.config.ts test/conformance/stages/contracts.stage.ts --reporter=verbose",
@@ -172,7 +174,7 @@
     "fast-xml-parser": "^5.12.1",
     "js-yaml": "^5.5.0",
     "saxes": "^6.0.0",
-    "soap": "^1.14.0",
+    "soap": "^1.14.1",
     "yargs": "^18.2.0"
   },
   "overrides": {

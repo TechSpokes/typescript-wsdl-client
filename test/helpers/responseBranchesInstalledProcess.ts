@@ -218,14 +218,15 @@ try {
     const saved = JSON.parse(await readFile(recordFile, 'utf8')) as {runtime: {
       capsuleFiles: Record<string, string>;
       localSource: string; fileRoots: string[]; sourceUri?: string; sourceOrigins: string[];
-      sourceResources: {uri: string; file: string; canonicalUri?: string}[];
+      sourceResources: {uri: string; file: string; canonicalUri?: string; contentType?: string}[];
       recordSources: {selector: object; source: string}[]; branchSources: {selector: object; branch: string; source: string}[];
     }};
     const owner = path.dirname(recordFile), physical = (file: string) => path.resolve(owner, file);
     const logical = (uri: string) => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(uri) ? uri : pathToFileURL(physical(uri)).href;
     const runtimeOptions = {...saved.runtime, localSource: physical(saved.runtime.localSource), fileRoots: [owner], capsule,
       sourceResources: saved.runtime.sourceResources.map(resource => ({uri: logical(resource.uri), file: physical(resource.file),
-        ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})),
+        ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)}),
+        ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})})),
       recordSources: saved.runtime.recordSources.map(item => ({...item, source: physical(item.source)})),
       branchSources: saved.runtime.branchSources.map(item => ({...item, source: physical(item.source)})),
       soap: {service: {namespace: 'urn:test:outer', local: 'Service'}, port: 'Port', endpoint, allowEndpoint: (url: URL) => url.href === endpoint,

@@ -26,6 +26,8 @@ const requiredFiles = [
   'src/runtime/appSecurity.tpl.txt', 'src/runtime/checkedGatewayHost.tpl.txt',
   'src/runtime/clientStreamMethods.tpl.txt',
   'src/runtime/operationsStreamHelper.tpl.txt', 'src/runtime/streamXml.ts',
+  'src/util/upstreamSecurity.ts',
+  'src/util/upstreamSecurityTypes.ts',
   'README.md', 'LICENSE', 'package.json', 'llms.txt',
 ];
 const forbidden = /^(?:agent-skill|scripts|test|research|tmp|\.github|\.idea|node_modules)\/|^dist\/(?:assets|agent-skill|runtime)\/|\.d\.ts\.map$|^src\/runtime\/(?:jsonArray|ndjson)\.ts$|^docs\/(?:content-model-|roadmap\/|releases\/|decisions\/|architecture\.md|reference-validation\.md|checked-consolidation-acceptance\.md|noaa-ndfd-qualification\.md)/;

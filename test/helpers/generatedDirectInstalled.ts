@@ -7,11 +7,12 @@ import {selectDirectOperation, selectComponentOperations} from '../../src/compil
 import {createDirectSourceCapsule, reconstructDirectSourceCapsule, createComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateDirectClient, generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
 import {runOwnedNode} from './ownedNodeProcess.js';
+import {prepareBufferedInstalled} from './bufferedInstalled.js';
 
 const COMMAND_TIMEOUT_MS = 180_000;
 export const GENERATED_INSTALLED_CLEANUP_TIMEOUT_MS = 60_000;
-// @why Pack, install, typecheck and runtime each retain their three-minute command deadline.
-export const GENERATED_INSTALLED_WORKFLOW_TIMEOUT_MS = 4 * COMMAND_TIMEOUT_MS + GENERATED_INSTALLED_CLEANUP_TIMEOUT_MS;
+// @why Pack, install, typecheck and two independent runtime processes retain their three-minute command deadline.
+export const GENERATED_INSTALLED_WORKFLOW_TIMEOUT_MS = 5 * COMMAND_TIMEOUT_MS + GENERATED_INSTALLED_CLEANUP_TIMEOUT_MS;
 
 /** Qualify generated clients through an isolated installed package and independent wire oracle.
  * @param binding Runtime binding whose compatibility and generated variants are exercised.
@@ -101,6 +102,7 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
       await writeFile(path.join(consumer, v.name + '.json'), generated.capsule);
       writeDirectClient(path.join(evidence, v.name + '.ts'), generated);
     }
+    if (binding === 'component') await prepareBufferedInstalled(root, consumer, signal);
     const packed = await run([npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', evidence], root);
     const filename = (JSON.parse(packed.stdout) as {filename: string}[])[0]!.filename;
     expect(path.basename(filename)).toBe(filename);
@@ -109,6 +111,7 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
     await copyFile(path.join(root, binding === 'component' ? 'test/helpers/checkedComponentInstalledProcess.ts' : binding === 'root' ? 'test/helpers/checkedDirectInstalledProcess.ts' : 'test/helpers/generatedDirectInstalledProcess.ts'), path.join(consumer, 'process.ts'));
     await copyFile(path.join(root, 'test/helpers/generatedDirectConsumer.ts'), path.join(consumer, 'generatedDirectConsumer.ts'));
     if (binding === 'component') await copyFile(path.join(root, 'test/conformance/fixtures/compatibility/v1.2.0/component-runtime-contract.ts'), path.join(consumer, 'frozen-component-runtime.ts'));
+    if (binding === 'component') await copyFile(path.join(root, 'test/conformance/fixtures/compatibility/v1.6.5/buffered-runtime-contracts.ts'), path.join(consumer, 'frozen-buffered-runtime.ts'));
     await writeFile(path.join(consumer, 'usage.ts'), `import type {Request, Response, DeclaredFault} from './forecast.js';
 ${binding !== 'private' ? `import {checkedDirectRuntimeV1} from '@techspokes/typescript-wsdl-client';
 import {createClient} from './forecast.js';
@@ -141,10 +144,22 @@ const extra: Empty = {other: ''};
 const boolean: Response = {city: '', temperature: [], complete: 1};
 void [request, shape, empty, exact, message];
 ${binding === 'component' ? `import {acceptComponentRuntime} from './frozen-component-runtime.js';
-import {checkedComponentRuntimeV1, checkedComponentRuntimeV2} from '@techspokes/typescript-wsdl-client';
+import {checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV4, checkedComponentRuntimeV5, checkedComponentRuntimeV6, checkedComponentRuntimeV7} from '@techspokes/typescript-wsdl-client';
+import {acceptBufferedRuntime, type FrozenBufferedRuntime} from './frozen-buffered-runtime.js';
 import {createClient as createSoap12Client} from './soap12.js';
 createSoap12Client(checkedComponentRuntimeV2);
 acceptComponentRuntime(checkedComponentRuntimeV1);
+acceptBufferedRuntime(checkedComponentRuntimeV2);
+acceptBufferedRuntime(checkedComponentRuntimeV3);
+acceptBufferedRuntime(checkedComponentRuntimeV4);
+acceptBufferedRuntime(checkedComponentRuntimeV5);
+acceptBufferedRuntime(checkedComponentRuntimeV6);
+acceptBufferedRuntime(checkedComponentRuntimeV7);
+declare const headerOptions: import('./forecast.js').Options;
+const extended = checkedComponentRuntimeV3.execute('', {}, headerOptions, checkedComponentRuntimeV3.version);
+// @ts-expect-error processor-capable options retain the extended header-fault outcome
+const oldOutcome: ReturnType<FrozenBufferedRuntime<'checked-component-soap11-runtime-v1'>['execute']> = extended;
+void oldOutcome;
 // @ts-expect-error an older SOAP 1.1 client requires declared application fault values
 acceptComponentRuntime(checkedComponentRuntimeV3);
 // @ts-expect-error a new SOAP 1.1 client requires the value-less fault protocol
@@ -159,13 +174,20 @@ acceptComponentRuntime(checkedComponentRuntimeV2);` : ''}
       .replace(binding === 'component' ? "import type {Request, Response, DeclaredFault} from './forecast.js';" : '\u0000',
         "import type {Request, Response, Result} from './forecast.js';\ntype DeclaredFault = Extract<Result, {kind: 'soap-fault'; value: unknown}>;\ntype ProtocolFault = Extract<Result, {kind: 'soap-fault'; value?: never}>;\ndeclare const protocol: ProtocolFault;\nconst version: '1.1' = protocol.fault.version;\nconst absent: undefined = protocol.value;")
       .replaceAll(binding === 'component' ? 'checked-direct-runtime-v1' : '\u0000', 'checked-component-soap11-runtime-v1'));
-    await writeFile(path.join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {strict: true, exactOptionalPropertyTypes: true, target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'compiled', types: []}, include: variants.map(v => v.name + '.ts').concat('usage.ts')}));
+    await writeFile(path.join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {strict: true, exactOptionalPropertyTypes: true, target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'compiled', types: []}, include: variants.map(v => v.name + '.ts').concat('usage.ts', ...(binding === 'component' ? ['buffered11/client/**/*.ts', 'buffered12/client/**/*.ts', 'buffered-source/client/**/*.ts'] : []))}));
     await run(['--permission', '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer,
       path.join(consumer, 'node_modules/typescript/bin/tsc'), '-p', path.join(consumer, 'tsconfig.json')]);
     const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
     const executed = await run(['--permission', ...networkPermission, '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer, path.join(consumer, 'process.ts'), fixture]);
     expect(JSON.parse(executed.stdout)).toMatchObject({kind: 'generated-installed-soap', admitted: false});
     await writeFile(path.join(evidence, 'consumer.log'), executed.stdout + executed.stderr);
+    if (binding === 'component') {
+      const buffered = await run(['--permission', ...networkPermission, '--allow-fs-read=' + consumer, path.join(consumer, 'buffered-process.ts'), fixture]);
+      expect(JSON.parse(buffered.stdout)).toMatchObject({kind: 'buffered-installed', originalCheckoutReadable: false, providerCalls: 0,
+        acknowledgements: 4, signatures: 2, proofs: 2, headerFaults: 2, missingProcessors: 4,
+        legalNames: ['constructor', '__proto__', 'toString'], xsdCycle: true, wsdlCycle: true, mixedHeaderCharsets: true});
+      await writeFile(path.join(evidence, 'buffered-consumer.log'), buffered.stdout + buffered.stderr);
+    }
   } catch (error) {
     const failure = error as Error & {stdout?: string; stderr?: string};
     await writeFile(path.join(evidence, 'failure.log'), failure.message + '\n' + (failure.stdout ?? '') + (failure.stderr ?? ''));
