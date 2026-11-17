@@ -40,14 +40,16 @@ export interface DirectValueMapping extends DirectRootPlan {
   readonly root: DirectMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
+/** Component-only declaration direction; header IDs authenticate selected message/part/source identity. */
+export type ComponentDirection = DirectDirection | Readonly<{kind: 'header'; id: string}>;
 export interface DocumentComponentValueMapping {
   readonly kind: 'component-mapping'; readonly version: 'component-values-v1'; readonly admitted: false;
-  readonly root: DirectMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
+  readonly root: DirectMessageRoot; readonly direction: ComponentDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
 export interface RpcComponentValueMapping {
   readonly kind: 'component-mapping'; readonly version: 'component-rpc-string-values-v1' | 'component-rpc-typed-values-v1'; readonly admitted: false;
-  readonly root: RpcMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
+  readonly root: RpcMessageRoot; readonly direction: ComponentDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
 export type ComponentValueMapping = DocumentComponentValueMapping | RpcComponentValueMapping;
@@ -145,7 +147,9 @@ function runContext<T>(context: SemanticContext, options: Options, work: (s: Ses
     throw error;
   }
 }
-function mappingRoot(contract: DirectOperationContract, direction: DirectDirection, s: Session): Readonly<{root: DirectMessageRoot | RpcMessageRoot; direction: DirectDirection}> {
+function mappingRoot(contract: DirectOperationContract, direction: DirectDirection, s: Session): Readonly<{root: DirectMessageRoot | RpcMessageRoot; direction: DirectDirection}>;
+function mappingRoot(contract: DirectOperationContract, direction: ComponentDirection, s: Session): Readonly<{root: DirectMessageRoot | RpcMessageRoot; direction: ComponentDirection}>;
+function mappingRoot(contract: DirectOperationContract, direction: ComponentDirection, s: Session): Readonly<{root: DirectMessageRoot | RpcMessageRoot; direction: ComponentDirection}> {
   inspectDirectOperation(contract);
   const {budget, check} = s;
   const owned = directDataOwnership(budget).snapshot(direction, check);
@@ -156,13 +160,19 @@ function mappingRoot(contract: DirectOperationContract, direction: DirectDirecti
     if (!selected) throw new Stop('unsupported', 'application-output-required');
     root = selected;
   }
-  else if (owned.kind === 'fault' && typeof owned.name === 'string') {
+  else if (owned.kind === 'header' && typeof owned.id === 'string') {
+    if (contract.basis !== 'native-component-premises-v1') throw new Stop('unsupported', 'component-header-profile-required');
+    const header = contract.headers?.find(header => budget.compareText(header.id, owned.id) === 0);
+    if (!header) throw new Stop('unsupported', 'unknown-header-declaration');
+    root = header.root;
+  } else if (owned.kind === 'fault' && typeof owned.name === 'string') {
 
     const fault = contract.faults.find(f => budget.compareText(f.name, owned.name) === 0);
     if (!fault) throw new Stop('unsupported', 'unknown-fault');
     root = fault.root;
   } else throw new Stop('unsupported', 'unknown-direction');
-  return {root, direction: owned.kind === 'fault' ? {kind: 'fault', name: owned.name} : {kind: owned.kind}};
+  return {root, direction: owned.kind === 'fault' ? {kind: 'fault', name: owned.name}
+    : owned.kind === 'header' ? {kind: 'header', id: owned.id} : {kind: owned.kind}};
 }
 function mappingFor(contract: DirectOperationContract, direction: DirectDirection, s: Session): DirectValueMapping {
   const {context} = inspectDirectOperation(contract), {check} = s;
@@ -189,7 +199,7 @@ export function createDirectValueMapping(contract: DirectOperationContract, dire
  *   It grants no codec, artifact or transport authority; copied mappings and mappings for other operations refuse.
  * @returns An operation-owned structured mapping or the existing unsupported/cancellation/resource diagnostic.
  */
-export function createComponentValueMapping(contract: DirectOperationContract, direction: DirectDirection, options: Options = {}, applicationGroups?: ApplicationGroupsOptions): ComponentValueMapping | DirectValueFailure {
+export function createComponentValueMapping(contract: DirectOperationContract, direction: ComponentDirection, options: Options = {}, applicationGroups?: ApplicationGroupsOptions): ComponentValueMapping | DirectValueFailure {
   return run(contract, options, s => {
     const {context} = inspectDirectOperation(contract);
     if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1')
@@ -220,7 +230,7 @@ export function createComponentValueMapping(contract: DirectOperationContract, d
  * @returns A fresh source-owned mapping retaining request-selected naming options, or a native refusal.
  * @throws TypeError For foreign/copy-shaped input mappings or malformed presentation options.
  */
-export function createComponentDirectionalMapping(contract: DirectOperationContract, supplied: unknown, direction: DirectDirection,
+export function createComponentDirectionalMapping(contract: DirectOperationContract, supplied: unknown, direction: ComponentDirection,
   options: Options = {}): ComponentValueMapping | DirectValueFailure {
   const input=inspectComponentValueMapping(supplied,contract).mapping;
   return createComponentValueMapping(contract,direction,options,componentMappings.get(input)!.applicationGroupsOptions);

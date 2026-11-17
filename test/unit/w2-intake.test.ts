@@ -62,13 +62,25 @@ it('denies cross-origin redirects, remote-to-file references and explicit offlin
   calls.length = 0;
   expect((await planCheckedComponents(origin + '/root', {sourceOrigins: []})).ready).toBe(false); expect(calls).toEqual([]);
 });
-it('retains cycle identity and reports the refusing native stage before generation', async () => {
-  transport({[origin + '/root']: fixture.replace('import-relative-types-types.xsd', 'types'),
+it('retains cycle identity through ready planning and original-byte generation', async () => {
+  const calls = transport({[origin + '/root']: fixture.replace('import-relative-types-types.xsd', 'types'),
     [origin + '/types']: schema.replace('<xs:complexType', '<xs:include schemaLocation="types"/><xs:complexType')});
   const loaded = await loadSemanticSchemaInput(origin + '/root', {policy: {allowedOrigins: [origin]}});
   expect(loaded.resources).toHaveLength(2); expect(loaded.edges.some(edge => edge.cycle)).toBe(true);
-  const report = await planCheckedComponents(origin + '/root'); expect(report.ready).toBe(false);
-  expect(report.blockers).toMatchObject([{stage: 'native-preparation', reason: expect.any(String)}]);
+  expect(loaded.documents).toHaveLength(2); expect(loaded.resourceAliases.get(origin + '/types')).toBe(origin + '/types');
+  const report = await planCheckedComponents(origin + '/root'); expect(report.ready).toBe(true); expect(report.blockers).toEqual([]);
+  const parent = path.resolve('tmp/conformance/w2-unit'); fs.mkdirSync(parent, {recursive: true});
+  const directory = fs.mkdtempSync(path.join(parent, 'cycle-')); temporary.push(directory);
+  const generated = await runGenerationPipeline({model: 'checked-components-v1', wsdl: origin + '/root', clientOutDir: path.join(directory, 'client'),
+    openapi: {outFile: path.join(directory, 'openapi.json')}, gateway: {outDir: path.join(directory, 'gateway'), serviceSlug: 'cycle', versionSlug: 'v1'}});
+  expect(generated.planning?.ready).toBe(true);
+  const capsule = JSON.parse(fs.readFileSync(path.join(directory, 'client/operations/0/contract.json'), 'utf8')) as {
+    resources: {digest: string; base64: string}[];
+  };
+  expect(capsule.resources.map(resource => resource.digest).sort()).toEqual(loaded.resources.map(resource => resource.digest).sort());
+  for (const resource of capsule.resources) expect(createHash('sha256').update(Buffer.from(resource.base64, 'base64')).digest('hex')).toBe(resource.digest);
+  expect(calls).toHaveLength(6);
+  for (const uri of [origin + '/root', origin + '/types']) expect(calls.filter(call => call === uri)).toHaveLength(3);
 });
 it.each([401, 403, 404])('keeps HTTP %s retrieval failure distinct from invalid schema', async status => {
   transport({[origin + '/root']: status}); const report = await planCheckedComponents(origin + '/root');

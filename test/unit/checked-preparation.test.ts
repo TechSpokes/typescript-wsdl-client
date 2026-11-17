@@ -69,7 +69,7 @@ it('rejects missing, overlapping and unsupported outputs before any metadata req
   } finally {await new Promise<void>(resolve => server.close(() => resolve()));}
 });
 
-it('shares metadata across operations and emits the prepared client and gateway lowerings once', async () => {
+it('prepares each operation transport once and emits the prepared client and gateway lowerings once', async () => {
   mkdirSync('tmp/test-generation', {recursive: true});
   const root = mkdtempSync(path.resolve('tmp/test-generation/preparation-'));
   const wsdl = path.join(root, 'source.wsdl');
@@ -83,7 +83,7 @@ it('shares metadata across operations and emits the prepared client and gateway 
       clientOutDir: path.join(root, 'client'), openapi: {outFile: path.join(root, 'openapi.json')},
       gateway: {outDir: path.join(root, 'gateway'), versionSlug: 'v1', serviceSlug: 'forecast'}});
     expect(result.checked?.operations.filter(o => o.generated).map(o => o.operation)).toEqual(['GetForecast', 'Other']);
-    expect(counts.metadata).toBe(1);
+    expect(counts.metadata).toBe(2);
     expect(client).toHaveBeenCalledTimes(2); expect(gateway).toHaveBeenCalledTimes(1);
     expect(JSON.parse(readFileSync(path.join(root, 'openapi.json'), 'utf8')).paths).toHaveProperty('/v1/forecast/Other');
     writeFileSync(wsdl, readFileSync(wsdl, 'utf8').replace('style="document"', 'style="rpc"'));

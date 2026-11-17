@@ -6,6 +6,14 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.6.5 to 1.7.0
+
+Update the runtime dependency for the completed bounded buffered SOAP path. Legacy generation remains the default, frozen direct clients keep their original restrictions, and the existing checked runtime bindings remain in use. Regenerate matched client/gateway/source artifacts when adopting declared SOAP headers or retained metadata Content-Type context; older artifacts without those additions retain their compatibility contract.
+
+Runtime `soap.upstream` and checked host `upstream` reuse the established credential configuration and environment references. Keep metadata acquisition credentials separate from SOAP endpoint credentials. An endpoint query is part of the authorized URL. Declared outgoing headers require their generated IDs and native values; mandatory incoming headers require implemented programmatic processors, not configuration acknowledgements. Handle the explicit `soap-header-fault` outcome when using declared header faults.
+
+HTTP content codings preserve compressed `responseBytes` while native decoding uses separately bounded expanded bytes. Actual observed retrieval/Content-Location context supplies SOAP 1.2 bases; file paths and diagnostic locators do not. Metadata snapshots now retain independently supplied charset context and original byte digests. See the [buffered contract](checked-gateway.md#buffered-transport-and-runtime-credentials) for combinations and exclusions.
+
 ## From 1.6.4 to 1.6.5
 
 Update the package used by the checked runtime to accept strict ASCII and explicitly labelled BOM-less UTF-16LE/BE SOAP responses. No generated artifact format or runtime binding changes are required; existing clients and gateways use the extended response decoder after their runtime dependency is updated.

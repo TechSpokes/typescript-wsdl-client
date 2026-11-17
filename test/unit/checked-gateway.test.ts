@@ -138,13 +138,13 @@ describe('native checked gateway lowering', () => {
     await expect(generateComponentGateway(JSON.parse(JSON.stringify(expected)) as ReconstructedComponentSource, opts)).rejects.toThrow(TypeError);
   });
 
-  it('retains native reserved-name refusals and accepts percent-encoded route segments', async () => {
+  it('preserves legal prototype-like source names and accepts percent-encoded route segments', async () => {
     const file = path.join(scratch, 'prototype.wsdl');
     await writeFile(file, (await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8')).replaceAll('name="city"', 'name="__proto__"'));
     const selected = await selectComponentOperation(file, expected.contract.selector, {limits: {}, loading: {policy: {fileRoots: [scratch]}}});
     if (selected.kind !== 'selected') throw new Error(selected.rule);
     const capsule = await createComponentSourceCapsule(selected.contract, selection);
-    expect(capsule).toMatchObject({kind: 'unsupported', rule: 'dependency reserved name'});
+    expect(capsule).toMatchObject({kind: 'component-capsule'});
     const result = await generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'prototype/gateway'),
       openapiFile: path.join(scratch, 'prototype/openapi.json'), routePath: '/v1/forecast/%CE%A9'});
     expect(result.doc).toHaveProperty(['paths', '/v1/forecast/%CE%A9']);

@@ -9,6 +9,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-17
+
+- feat(checked): preserve queried SOAP endpoints and decode bounded compressed responses while retaining original wire evidence.
+- feat(checked): reuse runtime credentials, mutual TLS, UsernameToken, outbound signatures and bounded NTLM in checked SOAP execution.
+- feat(checked): validate declared literal SOAP headers and require explicit processing before publishing header-fault outcomes.
+- feat(checked): retain metadata charset authority across portable snapshots and bootstrap legal names and cyclic graphs safely.
+- fix(soap): resolve observed HTTP response bases and XML Base without changing endpoint authority or URI identity.
+- fix(soap): admit checked document/literal wrapper extensions and enforce version-specific header targeting and URI/base limits.
+- chore(deps): align SOAP dependency and generated application pins with the maintained patch release.
+
 ## [1.6.5] - 2026-11-16
 
 - fix(soap): decode strict ASCII and explicitly labelled UTF-16LE/BE checked responses while preserving encoding assertion agreement.

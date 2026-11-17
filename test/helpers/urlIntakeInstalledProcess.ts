@@ -53,7 +53,7 @@ const {createClient} = await import(pathToFileURL(path.join(root, 'dist/client/c
   createClient(runtime: unknown): {SubmitImported(input: unknown, options: unknown): Promise<{kind: string; value?: unknown}>};
 };
 const record = JSON.parse(await readFile('client/source-resources.json', 'utf8')) as {version: string; runtime: {
-  localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; canonicalUri?: string}[];
+  localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; canonicalUri?: string; contentType?: string}[];
   namespaceLocations?: {namespace: string; location: string}[]; sourceOrigins: string[]; sourceUri?: string;
 }};
 assert.equal(record.version, 'checked-source-resources-v2');
@@ -62,7 +62,8 @@ const uri = (value: string) => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value) ? value :
 const resources = record.runtime.sourceResources;
 const capsules = {SubmitImported: await readFile('client/operations/0/contract.json')};
 const options = {...record.runtime, localSource: path.resolve(sourceBase, record.runtime.localSource), fileRoots: record.runtime.fileRoots.map(r => path.resolve(sourceBase, r)),
-  sourceResources: resources.map(r => ({uri: uri(r.uri), file: path.resolve(sourceBase, r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: uri(r.canonicalUri)})})),
+  sourceResources: resources.map(r => ({uri: uri(r.uri), file: path.resolve(sourceBase, r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: uri(r.canonicalUri)}),
+    ...(r.contentType === undefined ? {} : {contentType: r.contentType})})),
   ...(record.runtime.namespaceLocations ? {namespaceLocations: record.runtime.namespaceLocations.map(location => ({...location, location: uri(location.location)}))} : {}),
   soap: {service: {namespace: 'urn:owned:w2', local: 'Entry'}, port: 'Port', ca: await readFile('test-cert.pem', 'utf8')}};
 for (const key of ['host', 'port', 'capsuleFiles']) delete (options as Record<string, unknown>)[key];

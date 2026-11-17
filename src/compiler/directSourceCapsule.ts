@@ -79,11 +79,11 @@ function json(value: unknown, budget: SemanticBudget): string {
   directDataOwnership(budget).freeze(value);
   return canonicalJson(value);
 }
-function record(value: unknown, fields: readonly string[]): Record<string, unknown> {
+function record(value: unknown, fields: readonly string[], optional: readonly string[] = []): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return reject('data-record-required');
   const result = value as Record<string, unknown>;
   const keys = Object.keys(result);
-  if (keys.length !== fields.length || keys.some(key => !fields.includes(key))) return reject('missing-or-unknown-field');
+  if (!fields.every(field => Object.hasOwn(result, field)) || keys.some(key => !fields.includes(key) && !optional.includes(key))) return reject('missing-or-unknown-field');
   return result;
 }
 function text(value: unknown): asserts value is string {if (typeof value !== 'string') reject('string-required');}
@@ -264,7 +264,7 @@ const typedRpcComponentVersions = Object.freeze({...componentVersions, scope: 'c
 type ComponentRoot = Readonly<{element: ExpandedName; message: ExpandedName; part: string}> | Readonly<{
   kind: 'rpc-typed-parts-v1'; message: ExpandedName; wrapper: ExpandedName; bodyNamespace: string;
   encoding: string; parts: readonly {name: string; type: ExpandedName}[]}>;
-interface ComponentResource {readonly key: string; readonly base64: string; readonly digest: string}
+interface ComponentResource {readonly key: string; readonly base64: string; readonly digest: string; readonly contentType?: string}
 interface ComponentRecordSource {
   readonly selector: DirectOperationSelector; readonly action: string; readonly output: ComponentRoot;
   readonly libraries: readonly string[]; readonly resources: readonly ComponentResource[];
@@ -278,6 +278,7 @@ interface ComponentCompatibilityBase extends DirectSourceSelection {
   readonly binding?: Readonly<{version: '1.2'; actionRequired: boolean}>;
   readonly selector: DirectOperationSelector; readonly action: string;
   readonly input: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
+  readonly headers?: readonly {id: string; direction: 'input' | 'output'; kind: 'header' | 'header-fault'; headerId?: string; root: ComponentRoot}[];
 }
 type ComponentCompatibility = ComponentCompatibilityBase & (
   {readonly output: ComponentRoot; readonly pattern?: never} | {readonly pattern: 'one-way'; readonly output?: never}
@@ -312,7 +313,8 @@ function componentResources(contract: DirectOperationContract, signal?: AbortSig
   const {source, context: {budget}} = inspectDirectOperation(contract);
   const resources = source.resources.map(resource => {
     check(budget, signal); const bytes = copyOriginalSchemaResource(source, resource.uri, amount => {check(budget, signal); budget.chargeWork(amount);});
-    return {key: componentResourceKey(source, resource.uri), base64: Buffer.from(bytes).toString('base64'), digest: resource.digest};
+    return {key: componentResourceKey(source, resource.uri), base64: Buffer.from(bytes).toString('base64'), digest: resource.digest,
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})};
   }).sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
   if (new Set(resources.map(resource => resource.key)).size !== resources.length) throw new Stop('unsupported', 'ambiguous-resource-key');
   return resources;
@@ -350,9 +352,12 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
   if (contract.pattern === 'one-way' && (responseProjection || responseBranches)) throw new Stop('unsupported', 'application-output-required');
   const input = make({kind: 'input'}), output = contract.pattern === 'one-way' ? undefined : make({kind: 'output'});
   const faults = contract.faults.map(fault => ({name: fault.name, root: make({kind: 'fault', name: fault.name})}));
+  const headers = contract.headers?.map(header => ({id: header.id, direction: header.direction, kind: header.kind,
+    ...(header.headerId === undefined ? {} : {headerId: header.headerId}), root: make({kind: 'header', id: header.id})}));
   const compatibility: ComponentCompatibility = {selector: contract.selector, service: owned.service, port: owned.port,
     ...(contract.binding.version === '1.2' ? {binding: {version: '1.2' as const, actionRequired: contract.binding.actionRequired!}} : {}),
-    action: contract.binding.action, input, ...(output ? {output} : {pattern: 'one-way' as const}), faults};
+    action: contract.binding.action, input, ...(output ? {output} : {pattern: 'one-way' as const}), faults,
+    ...(headers?.length ? {headers} : {})};
   let projection: ComponentProjectionData | null = null;
   if (responseProjection) {
     const {companion} = inspectComponentRecordProjection(responseProjection, contract);
@@ -539,7 +544,7 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
       validateComponentLibraries(source.libraries); validateComponentResources(source.resources, budget, signal);
     }
   }
-  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', oneWay ? 'pattern' : 'output', 'faults', ...(soap12 ? ['binding'] : [])]);
+  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', oneWay ? 'pattern' : 'output', 'faults', ...(soap12 ? ['binding'] : [])], ['headers']);
   if (oneWay && (c.pattern !== 'one-way' || !Array.isArray(c.faults) || c.faults.length)) reject('one-way-pattern');
   if (soap12) {
     const binding = record(c.binding, ['version', 'actionRequired']);
@@ -556,6 +561,19 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
   for (const entry of c.faults as unknown[]) {
     check(budget, signal); const fault = record(entry, ['name', 'root']); ncname(fault.name); root(fault.root);
     if (names.has(fault.name)) reject('duplicate-fault'); names.add(fault.name);
+  }
+  if (c.headers !== undefined) {
+    if (!Array.isArray(c.headers) || !c.headers.length || rpc) reject('declared-headers');
+    const ids = new Set<string>();
+    for (const entry of c.headers as unknown[]) {
+      check(budget, signal); const header = record(entry, ['id', 'direction', 'kind', 'root'], ['headerId']);
+      text(header.id); root(header.root);
+      if (!['input', 'output'].includes(header.direction as string) || !['header', 'header-fault'].includes(header.kind as string)
+        || ids.has(header.id as string)) reject('declared-header-identity');
+      if (header.headerId !== undefined) text(header.headerId);
+      if ((header.kind === 'header-fault') !== (header.headerId !== undefined)) reject('declared-header-fault-parent');
+      ids.add(header.id as string);
+    }
   }
   text(parsed.fingerprint);
   if (hash(json({versions: actual, resources: parsed.resources, compatibility: c,
@@ -576,7 +594,8 @@ function validateComponentResources(value: unknown, budget: SemanticBudget, sign
   if (!Array.isArray(value) || !value.length) return reject('resources-required');
   let previous = '';
   for (const entry of value as unknown[]) {
-    check(budget, signal); const resource = record(entry, ['key', 'base64', 'digest']); text(resource.key); text(resource.base64); text(resource.digest);
+    check(budget, signal); const resource = record(entry, ['key', 'base64', 'digest'], ['contentType']); text(resource.key); text(resource.base64); text(resource.digest);
+    if (resource.contentType !== undefined) text(resource.contentType);
     if (resource.key <= previous) reject('sorted-unique-resources-required'); previous = resource.key;
     const original = Buffer.from(resource.base64, 'base64');
     if (original.toString('base64') !== resource.base64 || hash(original) !== resource.digest) reject('corrupt-source');
@@ -681,7 +700,10 @@ async function selectPinnedComponentSource(resources: readonly ComponentResource
   const physical = await loader.fetchResource(localSource), expectedRoot = resources.find(resource => resource.key === 'root')!;
   if (physical.digest !== expectedRoot.digest || Buffer.from(physical.bytes).toString('base64') !== expectedRoot.base64) reject('local-source-changed');
   const offline = options.loading.offlineResources ? new Map(options.loading.offlineResources) : undefined;
-  offline?.set(physical.uri, physical);
+  if (offline) {
+    const contentType = offline.get(physical.uri)?.contentType;
+    offline.set(physical.uri, {...physical, ...(contentType === undefined ? {} : {contentType})});
+  }
   const loading = {...options.loading, ...(offline ? {offlineResources: offline} : {})};
   const selected = await selectComponentOperationInRequest(loading.sourceUri ?? physical.uri, selector, {loading, signal: options.signal,
     standardLibraries: libraries.map(acquireStandardSchemaLibrary)}, budget);

@@ -16,8 +16,8 @@ export type SchemaResourcePolicy = Readonly<{
   /** Exact HTTP(S) origins, including ports. No implicit host or scheme permission. */
   allowedOrigins?: readonly string[];
 }>;
-export type OfflineSchemaResource = Readonly<{bytes: Uint8Array; digest: string; canonicalUri?: string}>;
-export type ResourceMetadata = Readonly<{uri: string; digest: string; byteLength: number}>;
+export type OfflineSchemaResource = Readonly<{bytes: Uint8Array; digest: string; canonicalUri?: string; contentType?: string}>;
+export type ResourceMetadata = Readonly<{uri: string; digest: string; byteLength: number; contentType?: string}>;
 export type FetchedSchemaResource = ResourceMetadata & Readonly<{bytes: Uint8Array}>;
 
 export function loadingLimits(overrides: Partial<LoadingLimits> = {}): LoadingLimits {
@@ -84,20 +84,38 @@ export class SchemaResourceLoader {
     const snapshots = offline ? new Map<string, OfflineSchemaResource>() : undefined;
     if (offline) for (const [uri, value] of offline) {
       charge?.(256 + uri.length * 32);
-      snapshots!.set(resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest, canonicalUri: value.canonicalUri});
+      if (value.contentType !== undefined && typeof value.contentType !== 'string') throw new TypeError('Metadata Content-Type must be a string');
+      charge?.(128 + (value.contentType?.length ?? 0) * 16);
+      snapshots!.set(resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest, canonicalUri: value.canonicalUri,
+        ...(value.contentType === undefined ? {} : {contentType: value.contentType})});
     }
     return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots, charge, signal);
   }
 
   get metadata(): readonly ResourceMetadata[] {
     this.charge?.(128 + this.resources.size * 256);
-    return Object.freeze([...this.resources.values()].map(({uri, digest, byteLength}) => Object.freeze({uri, digest, byteLength})));
+    return Object.freeze([...this.resources.values()].map(({uri, digest, byteLength, contentType}) => Object.freeze({uri, digest, byteLength,
+      ...(contentType === undefined ? {} : {contentType})})));
   }
   get metrics(): Readonly<{resources: number; totalBytes: number; ioMs: number}> {
     return Object.freeze({resources: this.resources.size, totalBytes: this.totalBytes, ioMs: this.ioMs});
   }
 
   get resourceAliases(): ReadonlyMap<string, string> {return new Map(this.aliases);}
+
+  private retainedContext(resource: FetchedSchemaResource, uri: string): FetchedSchemaResource {
+    const snapshot = this.offline?.get(uri);
+    if (snapshot) {
+      if (snapshot.contentType !== resource.contentType) throw new SchemaLoadingError('invalid-schema', 'Conflicting offline alias encoding context');
+      if (snapshot.bytes.byteLength > this.limits.resourceBytes) throw new SchemaLoadingError('resource-limit', 'Decompressed schema byte budget exceeded');
+      if (this.signal?.aborted) throw new SchemaLoadingError('transport', 'Schema resource I/O cancelled');
+      this.charge?.(64 + snapshot.bytes.byteLength * 8);
+      if (snapshot.digest !== resource.digest || snapshot.bytes.byteLength !== resource.byteLength
+        || createHash('sha256').update(snapshot.bytes).digest('hex') !== snapshot.digest)
+        throw new SchemaLoadingError('invalid-schema', 'Conflicting offline alias bytes');
+    }
+    return resource;
+  }
 
   private async authorize(uri: string): Promise<string> {
     this.charge?.(1024 + uri.length * 32 + this.roots.length * 256);
@@ -119,7 +137,7 @@ export class SchemaResourceLoader {
     const requested = resolveResourceUri(reference);
     // A previously authorized alias returns the compilation's pinned bytes without new I/O.
     const pinned = this.resources.get(this.resourceKeys.get(this.aliases.get(requested) ?? requested) ?? "");
-    if (pinned) return pinned;
+    if (pinned) return this.retainedContext(pinned, requested);
     const started = performance.now();
     const remaining = this.limits.totalIoMs === 0 ? Infinity : this.limits.totalIoMs - this.ioMs;
     if (remaining < 0) throw new SchemaLoadingError("transport", "Total schema I/O deadline exhausted");
@@ -139,7 +157,7 @@ export class SchemaResourceLoader {
         let uri = await this.authorize(requested);
         if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError("transport", "Schema I/O deadline exceeded");
         const cached = this.resources.get(this.resourceKeys.get(this.aliases.get(uri) ?? uri) ?? "");
-        if (cached) return cached;
+        if (cached) return this.retainedContext(cached, uri);
         const checkResourceCount = () => {
           if (this.resources.size >= this.limits.resources) throw new SchemaLoadingError("resource-limit", `Schema resource count exceeds ${this.limits.resources}`);
         };
@@ -147,6 +165,7 @@ export class SchemaResourceLoader {
         const redirectAliases = [requested, uri];
         const chunks: Uint8Array[] = [];
         let byteLength = 0;
+        let contentType: string | undefined;
         const accept = (chunk: Uint8Array) => {
           if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError("transport", "Schema I/O deadline exceeded");
           // Reserve copying, hashing, decoding and bounded syntax preparation before retaining bytes.
@@ -160,6 +179,7 @@ export class SchemaResourceLoader {
         if (this.offline) {
           const snapshot = this.offline.get(uri);
           if (!snapshot) throw new SchemaLoadingError("transport", "Schema resource is absent from the offline snapshot");
+          contentType = snapshot.contentType;
           if (snapshot.bytes.byteLength > this.limits.resourceBytes) throw new SchemaLoadingError('resource-limit', 'Decompressed schema byte budget exceeded');
           const snapshotDigest = (value: OfflineSchemaResource) => {
             if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError('transport', 'Schema I/O deadline exceeded');
@@ -170,7 +190,7 @@ export class SchemaResourceLoader {
             if (new URL(uri).protocol !== 'file:' && new URL(resolveResourceUri(snapshot.canonicalUri)).protocol === 'file:') throw new SchemaLoadingError('unsupported-capability', 'Remote metadata cannot select local resources');
             const canonical = await this.authorize(snapshot.canonicalUri);
             const target = this.offline.get(canonical);
-            if (target && (target.digest !== snapshot.digest || target.bytes.byteLength !== snapshot.bytes.byteLength)) {
+            if (target && (target.digest !== snapshot.digest || target.bytes.byteLength !== snapshot.bytes.byteLength || target.contentType !== snapshot.contentType)) {
               throw new SchemaLoadingError('invalid-schema', 'Conflicting offline alias bytes');
             }
             if (target) {
@@ -182,7 +202,7 @@ export class SchemaResourceLoader {
             redirectAliases.push(uri);
             const cached = this.resources.get(this.resourceKeys.get(uri) ?? '');
             if (cached) {
-              if (snapshot.digest !== cached.digest || snapshotDigest(snapshot) !== snapshot.digest) {
+              if (snapshot.digest !== cached.digest || snapshotDigest(snapshot) !== snapshot.digest || snapshot.contentType !== cached.contentType) {
                 throw new SchemaLoadingError('invalid-schema', 'Conflicting offline alias bytes');
               }
               for (const alias of redirectAliases) this.aliases.set(alias, uri); return cached;
@@ -226,6 +246,8 @@ export class SchemaResourceLoader {
               continue;
             }
             if (!response.ok) { await response.body?.cancel(); throw new SchemaLoadingError("transport", `Schema retrieval returned HTTP ${response.status}`); }
+            contentType = response.headers.get('content-type') ?? undefined;
+            this.charge?.(128 + (contentType?.length ?? 0) * 16);
             if (this.resources.size >= this.limits.resources) {
               await response.body?.cancel();
               checkResourceCount();
@@ -248,7 +270,7 @@ export class SchemaResourceLoader {
         if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError("transport", "Schema I/O deadline exceeded");
         const bytes = Buffer.concat(chunks, byteLength);
         const digest = createHash("sha256").update(bytes).digest("hex");
-        const resource = Object.freeze({uri, digest, byteLength, bytes});
+        const resource = Object.freeze({uri, digest, byteLength, bytes, ...(contentType === undefined ? {} : {contentType})});
         // Byte cache identity is (final canonical URI, digest); aliases never change context's final URI.
         const resourceKey = JSON.stringify([uri, digest]);
         this.resources.set(resourceKey, resource);

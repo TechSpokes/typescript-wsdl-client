@@ -1,5 +1,6 @@
 /** Explicit, source-pinned XML corrections for loaded schema inputs. */
 import {createHash} from "node:crypto";
+import {MIMEType} from 'node:util';
 import {copyOriginalSchemaResource} from "../loader/schemaInput.js";
 import type {SchemaInput} from "../loader/schemaInput.js";
 import {decodeMetadataXml, isXmlNCName, syntaxAttribute, syntaxElements, XSD_NAMESPACE} from "../loader/orderedSyntax.js";
@@ -60,7 +61,7 @@ type DeclaredTypeCorrection = Readonly<{kind: "set-declared-type"; target: Sourc
   expectedType: Readonly<{namespace: string; local: string}>; type: Readonly<{namespace: string; local: string}>}>;
 type Correction = OccursCorrection | WildcardCorrection | InsertCorrection | DeclaredTypeCorrection;
 type Recipe = Readonly<{version: 1; resources: readonly Readonly<{uri: string; digest: string}>[]; corrections: readonly Correction[]}>;
-type SourceRecord = {uri: string; digest: string; bytes: Uint8Array; aliases: Set<string>};
+type SourceRecord = {uri: string; digest: string; bytes: Uint8Array; aliases: Set<string>; contentType?: string};
 type TargetRecord = {node: GraphNode; syntax: SyntaxElement; ambiguousContext: boolean; universes: CanonicalGraph[]};
 type Patch = {start: number; end: number; text: string; label: string};
 type LexicalBudget = {remaining: number};
@@ -305,12 +306,13 @@ function targetMap(inputs: readonly SchemaInput[], signal?: AbortSignal): {inven
       checkAbort(signal);
       if (bytes.byteLength !== resource.byteLength || sha256(bytes) !== resource.digest) fail("stale-source", "Loaded source resource bytes do not match their pinned digest");
       const prior = sources.get(resource.uri);
-      if (prior && (prior.digest !== resource.digest || !Buffer.from(prior.bytes).equals(Buffer.from(bytes)))) fail("stale-source", "Inputs disagree about bytes for a shared schema resource");
+      if (prior && (prior.digest !== resource.digest || prior.contentType !== resource.contentType || !Buffer.from(prior.bytes).equals(Buffer.from(bytes)))) fail("stale-source", "Inputs disagree about bytes or encoding context for a shared schema resource");
       if (!prior) {
         if (sources.size >= resourceCountLimit) fail("resource-limit", "Combined source correction resource count exceeds the loading limit");
         byteCount += bytes.byteLength;
         if (byteCount > totalLimit || bytes.byteLength > resourceLimit) fail("resource-limit", "Combined source correction resource bytes exceed the loading limit");
-        sources.set(resource.uri, {uri: resource.uri, digest: resource.digest, bytes, aliases: new Set()});
+        sources.set(resource.uri, {uri: resource.uri, digest: resource.digest, bytes, aliases: new Set(),
+          ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})});
       }
     }
     for (const [alias, uri] of input.resourceAliases) {
@@ -593,7 +595,7 @@ function validateDeclaredType(target: TargetRecord, replacement: DeclaredTypeCor
 function decodedResource(source: SourceRecord, cache: Map<string, string>): string {
   const prior = cache.get(source.uri);
   if (prior !== undefined) return prior;
-  const decoded = decodeMetadataXml(source.bytes);
+  const decoded = decodeMetadataXml(source.bytes, source.contentType);
   cache.set(source.uri, decoded);
   return decoded;
 }
@@ -779,8 +781,13 @@ export function prepareCorrectedSourceInputs(inputs: readonly SchemaInput[], rec
     outputGrowth += Math.max(0, bytes.byteLength - source.bytes.byteLength);
     if (outputGrowth > MAX_OUTPUT_GROWTH) fail("resource-limit", "Correction output growth exceeds the limit");
     const effectiveDigest = sha256(bytes), changed = effectiveDigest !== source.digest;
+    let contentType = source.contentType;
+    if (changed && contentType !== undefined) {
+      // @why Corrected snapshots are explicitly emitted as UTF-8; original HTTP assertions remain on original inputs.
+      const media = new MIMEType(contentType); media.params.set('charset', 'utf-8'); contentType = media.toString();
+    }
     // @constraints Encoding-declaration rewriting is outside edit-span correspondence; refuse rather than guess.
-    if (!edits.length || decodeMetadataXml(bytes) === updated) for (const node of inventory.nodes) {
+    if (!edits.length || decodeMetadataXml(bytes, contentType) === updated) for (const node of inventory.nodes) {
       checkAbort(signal);
       if (node.uri !== source.uri || node.digest !== source.digest) continue;
       let effectiveStart = node.start, established = true;
@@ -794,15 +801,15 @@ export function prepareCorrectedSourceInputs(inputs: readonly SchemaInput[], rec
         namespace: node.namespace, kind: node.kind, ambiguous: node.ambiguousContext,
         target: Object.freeze({id: node.id, uri: node.uri, digest: node.digest}), ...(declaredType ? {declaredType} : {})}));
     }
-    const resource = Object.freeze({bytes: new Uint8Array(bytes), digest: effectiveDigest});
+    const resource = Object.freeze({bytes: new Uint8Array(bytes), digest: effectiveDigest, ...(contentType === undefined ? {} : {contentType})});
     resources.set(source.uri, resource);
-    for (const alias of source.aliases) if (alias !== source.uri) resources.set(alias, Object.freeze({bytes: resource.bytes, digest: resource.digest, canonicalUri: source.uri}));
+    for (const alias of source.aliases) if (alias !== source.uri) resources.set(alias, Object.freeze({...resource, canonicalUri: source.uri}));
     provenanceResources.push(Object.freeze({uri: source.uri, originalDigest: source.digest, effectiveDigest, changed}));
   }
   for (const [alias, canonical] of aliases.entries()) {
     const direct = sources.get(alias), actual = sources.get(canonical);
     if (!actual) fail("stale-source", "Offline alias lost its canonical source resource");
-    if (direct && alias !== canonical && (direct.digest !== actual.digest || !Buffer.from(direct.bytes).equals(Buffer.from(actual.bytes)))) {
+    if (direct && alias !== canonical && (direct.digest !== actual.digest || direct.contentType !== actual.contentType || !Buffer.from(direct.bytes).equals(Buffer.from(actual.bytes)))) {
       fail("ambiguous-target", "A schema alias conflicts with another canonical resource URI");
     }
   }

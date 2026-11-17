@@ -20,7 +20,7 @@ export interface GenerateCheckedAppOptions {
   readonly component: {
     readonly source: string;
     readonly capsules: Readonly<Record<string, string>>;
-    readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+    readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string; readonly contentType?: string}[];
     readonly sourceUri?: string;
     readonly sourceOrigins: readonly string[];
     readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
@@ -74,7 +74,7 @@ export async function generateCheckedApp(options: GenerateCheckedAppOptions): Pr
     name: 'checked-component-gateway', version: '0.0.0', private: true, type: 'module',
     engines: {node: '>=24.0.0'},
     scripts: {typecheck: 'tsc --noEmit', test: 'vitest run', build: 'tsc', start: 'node dist/server.js'},
-    dependencies: {'@techspokes/typescript-wsdl-client': `^${ownPackage.version}`, ajv: '^8.20.0', fastify: '^5.12.8', soap: '^1.14.0'},
+    dependencies: {'@techspokes/typescript-wsdl-client': `^${ownPackage.version}`, ajv: '^8.20.0', fastify: '^5.12.8', soap: '^1.14.1'},
     devDependencies: {'@types/node': '^26.6.6', typescript: '^6.0.3', vitest: '^5.1.0'},
   };
   const files: Record<string, string> = {

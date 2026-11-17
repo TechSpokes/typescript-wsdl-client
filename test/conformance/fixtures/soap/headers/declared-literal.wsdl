@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:conformance:headers" targetNamespace="urn:conformance:headers">
+  <w:types><x:schema targetNamespace="urn:conformance:headers" elementFormDefault="qualified">
+    <x:element name="Request" type="x:string"/>
+    <x:element name="Response" type="x:string"/>
+    <x:element name="Session"><x:complexType><x:sequence><x:element name="token" type="x:string"/></x:sequence></x:complexType></x:element>
+    <x:element name="Receipt"><x:complexType><x:sequence><x:element name="count" type="x:int"/></x:sequence></x:complexType></x:element>
+    <x:element name="HeaderProblem"><x:complexType><x:sequence><x:element name="code" type="x:int"/></x:sequence></x:complexType></x:element>
+  </x:schema></w:types>
+  <w:message name="Input"><w:part name="body" element="t:Request"/><w:part name="session" element="t:Session"/></w:message>
+  <w:message name="Output"><w:part name="body" element="t:Response"/><w:part name="receipt" element="t:Receipt"/></w:message>
+  <w:message name="HeaderError"><w:part name="problem" element="t:HeaderProblem"/></w:message>
+  <w:portType name="HeaderPortType"><w:operation name="Invoke"><w:input message="t:Input"/><w:output message="t:Output"/></w:operation></w:portType>
+  <w:binding name="Soap11" type="t:HeaderPortType"><s:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Invoke"><s:operation soapAction="urn:headers:11"/><w:input><s:body parts="body" use="literal"/><s:header message="t:Input" part="session" use="literal"><s:headerfault message="t:HeaderError" part="problem" use="literal"/></s:header></w:input><w:output><s:body parts="body" use="literal"/><s:header message="t:Output" part="receipt" use="literal"/></w:output></w:operation></w:binding>
+  <w:binding name="Soap12" type="t:HeaderPortType"><s12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Invoke"><s12:operation soapAction="urn:headers:12"/><w:input><s12:body parts="body" use="literal"/><s12:header message="t:Input" part="session" use="literal"><s12:headerfault message="t:HeaderError" part="problem" use="literal"/></s12:header></w:input><w:output><s12:body parts="body" use="literal"/><s12:header message="t:Output" part="receipt" use="literal"/></w:output></w:operation></w:binding>
+  <w:service name="HeaderService"><w:port name="Port11" binding="t:Soap11"><s:address location="http://127.0.0.1:1/soap11"/></w:port><w:port name="Port12" binding="t:Soap12"><s12:address location="http://127.0.0.1:1/soap12"/></w:port></w:service>
+</w:definitions>

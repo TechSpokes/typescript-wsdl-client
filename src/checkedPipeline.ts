@@ -60,7 +60,7 @@ export interface CheckedComponentOptions {
   readonly fileRoots: readonly string[];
   readonly signal?: AbortSignal;
   readonly selectors: readonly DirectOperationSelector[];
-  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string; readonly contentType?: string}[];
   readonly sourceUri?: string;
   readonly sourceOrigins: readonly string[];
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
@@ -157,8 +157,9 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
   const selectors = data.selectors === undefined ? undefined : array(data.selectors).map(selector);
   if (selectors && (!selectors.length || new Set(selectors.map(selector => JSON.stringify(selector))).size !== selectors.length)) throw new TypeError('Nonempty unique component selectors required');
   const fileRoots = data.fileRoots === undefined ? undefined : array(data.fileRoots).map(text);
-  const sourceResources = data.sourceResources === undefined ? undefined : array(data.sourceResources).map(input => {const r = record(input, ['uri', 'file', 'canonicalUri'], ['uri', 'file']);
-    return {uri: text(r.uri), file: text(r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: resolveResourceUri(text(r.canonicalUri))})};});
+  const sourceResources = data.sourceResources === undefined ? undefined : array(data.sourceResources).map(input => {const r = record(input, ['uri', 'file', 'canonicalUri', 'contentType'], ['uri', 'file']);
+    return {uri: text(r.uri), file: text(r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: resolveResourceUri(text(r.canonicalUri))}),
+      ...(r.contentType === undefined ? {} : {contentType: text(r.contentType)})};});
   const sourceOrigins = data.sourceOrigins === undefined ? undefined : array(data.sourceOrigins).map(text);
   const standardLibraries = data.standardLibraries === undefined ? undefined : libraries(data.standardLibraries);
   const recordProjections = data.recordProjections === undefined ? undefined : array(data.recordProjections).map<CheckedComponentRecordProjection>(input => {
@@ -416,7 +417,8 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     limits: directLoadingLimits(budget), signal: config.signal, chargeWork: (amount: number) => {tick(); budget.chargeWork(amount);}};
   const offlineResources = acquired ? new Map([...acquired.resourceAliases].map(([alias, uri]) => {
     const resource = acquired.resources.find(r => r.uri === uri)!;
-    return [alias, {bytes: copyOriginalSchemaResource(acquired, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri}] as const;
+    return [alias, {bytes: copyOriginalSchemaResource(acquired, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri,
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})}] as const;
   })) : undefined;
   const prepared = acquired ? {source: resolveResourceUri(wsdl), loading: {...loading, offlineResources}}
     : await prepareSchemaSnapshotFiles(wsdl, config.sourceResources, {...loading, sourceUri: config.sourceUri});
@@ -436,7 +438,8 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     const companionInput = (correctedSources?.companions ?? branchInputs?.companions)?.get(resolveResourceUri(first.source));
     const companionOffline = companionInput ? new Map([...companionInput.resourceAliases].map(([alias, uri]) => {
       const resource = companionInput.resources.find(item => item.uri === uri)!;
-      return [alias, {bytes: copyOriginalSchemaResource(companionInput, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri}] as const;
+      return [alias, {bytes: copyOriginalSchemaResource(companionInput, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri,
+        ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})}] as const;
     })) : undefined;
     const source = companionInput ? {source: companionInput.root.uri, loading: {...loading, offlineResources: companionOffline}}
       : await prepareSchemaSnapshotFiles(first.source, config.sourceResources, {policy: {
@@ -471,7 +474,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       const offline = new Map([...input.resourceAliases].map(([alias, uri]) => {
         const resource = input.resources.find(item => item.uri === uri)!;
         return [alias, {bytes: copyOriginalSchemaResource(input, uri, amount => {tick(); branchBudget.chargeWork(amount);}),
-          digest: resource.digest, canonicalUri: uri}] as const;
+          digest: resource.digest, canonicalUri: uri, ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})}] as const;
       }));
       const error = await selectComponentOperationInRequest(input.root.uri, branch.selector,
         {loading: {...loading, offlineResources: offline}, signal: config.signal,
@@ -558,7 +561,7 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
     assertCanonicalSourceLayout(source, tick);
     for (const resource of source.resources) {
       tick(); const previous = resources.get(resource.uri);
-      if (previous && (previous.resource.digest !== resource.digest || !Buffer.from(copyOriginalSchemaResource(previous.input, resource.uri, tick))
+      if (previous && (previous.resource.digest !== resource.digest || previous.resource.contentType !== resource.contentType || !Buffer.from(copyOriginalSchemaResource(previous.input, resource.uri, tick))
         .equals(Buffer.from(copyOriginalSchemaResource(source, resource.uri, tick))))) throw new Error('Conflicting original source snapshots');
       resources.set(resource.uri, {input: source, resource});
     }
@@ -589,11 +592,16 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   }
   const root = copied.get(input.root.uri)!;
   const relocated = (uri: string): string => new URL(uri).protocol === 'file:' && copied.has(uri) ? pathToFileURL(copied.get(uri)!).href : uri;
-  const sourceResources: {uri: string; file: string; canonicalUri?: string}[] = allResources
-    .filter(resource => resource.uri !== input.root.uri || new URL(resource.uri).protocol !== 'file:')
-    .map(resource => ({uri: relocated(resource.uri), file: copied.get(resource.uri)!}));
+  const sourceResources: {uri: string; file: string; canonicalUri?: string; contentType?: string}[] = allResources
+    .filter(resource => resource.uri !== input.root.uri || new URL(resource.uri).protocol !== 'file:' || resource.contentType !== undefined)
+    .map(resource => ({uri: relocated(resource.uri), file: copied.get(resource.uri)!,
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})}));
   for (const {input: source} of resources.values()) for (const [alias, uri] of source.resourceAliases) {
-    if (alias !== uri && !sourceResources.some(r => r.uri === alias)) sourceResources.push({uri: alias, file: copied.get(uri)!, canonicalUri: relocated(uri)});
+    if (alias !== uri && !sourceResources.some(r => r.uri === alias)) {
+      const resource = allResources.find(resource => resource.uri === uri)!;
+      sourceResources.push({uri: alias, file: copied.get(uri)!, canonicalUri: relocated(uri),
+        ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})});
+    }
   }
   sourceResources.sort((a, b) => a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0);
   const namespaceLocations = [...namespaces].map(([namespace, location]) => ({namespace,
@@ -606,6 +614,7 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   }
   const sourceRecords = allResources.map(resource => ({originalUri: resource.uri,
     logicalUri: relocated(resource.uri), file: path.relative(clientDir, copied.get(resource.uri)!).replaceAll('\\', '/'), digest: resource.digest,
+    ...(resource.contentType === undefined ? {} : {contentType: resource.contentType}),
     aliases: [...new Set([...resources.values()].flatMap(({input: source}) => [...source.resourceAliases]
       .filter(([alias, uri]) => uri === resource.uri && alias !== uri).map(([alias]) => alias)))].sort()}));
   if (!native.gateway) throw new TypeError('Prepared gateway required');
@@ -640,7 +649,8 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     runtime: {localSource: relativeFile(component.source), fileRoots: ['.'],
       capsuleFiles: Object.fromEntries(Object.entries(component.capsules).map(([name, file]) => [name, relativeFile(file)])),
       sourceResources: component.sourceResources.map(resource => ({uri: logical(resource.uri), file: relativeFile(resource.file),
-        ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})), sourceOrigins: component.sourceOrigins,
+        ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)}),
+        ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})})), sourceOrigins: component.sourceOrigins,
       ...(component.sourceUri === undefined ? {} : {sourceUri: component.sourceUri}),
       ...(component.namespaceLocations ? {namespaceLocations: component.namespaceLocations.map(location => ({...location, location: logical(location.location)}))} : {}),
       ...(component.recordSources ? {recordSources: component.recordSources.map(record => ({...record, source: relativeFile(record.source)}))} : {}),

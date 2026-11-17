@@ -6,17 +6,21 @@ import {createServer} from 'node:http';
 import {createServer as createSecureServer} from 'node:https';
 import type {RequestListener} from 'node:http';
 import {once} from 'node:events';
+import {gzipSync, deflateSync, brotliCompressSync} from 'node:zlib';
 import type {Socket} from 'node:net';
 import Fastify from 'fastify';
 import type {FastifyPluginAsync} from 'fastify';
 import {SaxesParser} from 'saxes';
+import {createHash, createHmac} from 'node:crypto';
+import {DOMParser} from '@xmldom/xmldom';
+import {SignedXml} from 'xml-crypto';
 import {selectComponentOperation, selectDirectOperation} from '../../src/compiler/directOperation.js';
-import {createComponentValueMapping} from '../../src/compiler/directValues.js';
-import {exchangeComponentSoap, inspectComponentSoapResponse} from '../../src/compiler/directSoap.js';
+import {createComponentValueMapping, createDirectValueMapping} from '../../src/compiler/directValues.js';
+import {exchangeComponentSoap, exchangeDirectSoap, inspectComponentSoapResponse} from '../../src/compiler/directSoap.js';
 import {createComponentSourceCapsule, reconstructComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
 import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway.js';
-import {checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3} from '../../src/index.js';
+import {checkedComponentRuntimeV1, checkedComponentRuntimeV2, checkedComponentRuntimeV3, checkedComponentRuntimeV6, checkedComponentRuntimeV7} from '../../src/index.js';
 import {acceptComponentRuntime} from '../conformance/fixtures/compatibility/v1.2.0/component-runtime-contract.js';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 import {composeCheckedDocumentation, validateCheckedDocumentation} from '../helpers/checkedDocumentation.js';
@@ -51,28 +55,334 @@ async function source(version: '11' | '12' = '12', text = original) {
 }
 
 async function owned<T>(work: (server: {
-  endpoint: string; requests: {path: string; xml: string; action?: string; contentType?: string}[];
-  reply: (xml: string | Buffer, status?: number, contentType?: string) => void;
-}) => Promise<T>, secure = false) {
+  endpoint: string; requests: {path: string; xml: string; action?: string; contentType?: string; headers: Readonly<Record<string, unknown>>}[];
+  reply: (xml: string | Buffer, status?: number, contentType?: string, contentEncoding?: string, headers?: Record<string, string | string[]>) => void;
+}) => Promise<T>, secure = false, mutual = false) {
   const sockets = new Set<Socket>();
-  const requests: {path: string; xml: string; action?: string; contentType?: string}[] = [];
+  const requests: {path: string; xml: string; action?: string; contentType?: string; headers: Readonly<Record<string, unknown>>}[] = [];
   let bytes: string | Buffer = response, status = 200, contentType = 'application/soap+xml; charset=utf-8';
+  let contentEncoding: string | undefined;
+  let responseHeaders: Record<string, string | string[]> = {};
   const listener: RequestListener = async (request, reply) => {
     const chunks: Buffer[] = []; for await (const chunk of request) chunks.push(Buffer.from(chunk));
-    requests.push({path: request.url!, xml: Buffer.concat(chunks).toString('utf8'), action: request.headers.soapaction as string | undefined, contentType: request.headers['content-type']});
+    requests.push({path: request.url!, xml: Buffer.concat(chunks).toString('utf8'), action: request.headers.soapaction as string | undefined, contentType: request.headers['content-type'], headers: {...request.headers}});
     const is11 = request.url === '/soap11';
-    reply.writeHead(status, {'content-type': is11 ? contentType.replace('application/soap+xml', 'text/xml') : contentType});
+    reply.writeHead(status, {'content-type': is11 ? contentType.replace('application/soap+xml', 'text/xml') : contentType,
+      ...(contentEncoding ? {'content-encoding': contentEncoding} : {}), ...responseHeaders});
     reply.end(is11 && typeof bytes === 'string' ? bytes.replaceAll(soap12, soap11) : bytes);
   };
-  const server = secure ? createSecureServer({cert, key}, listener) : createServer(listener);
+  const server = secure ? createSecureServer({cert, key, ...(mutual ? {ca: cert, requestCert: true, rejectUnauthorized: true} : {})}, listener) : createServer(listener);
   server.on('connection', socket => {sockets.add(socket); socket.once('close', () => sockets.delete(socket));});
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const address = server.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
-  try {return await work({endpoint: `${secure ? 'https' : 'http'}://127.0.0.1:${address.port}`, requests, reply(xml, code = 200, media = 'application/soap+xml; charset=utf-8') {bytes = xml; status = code; contentType = media;}});}
+  try {return await work({endpoint: `${secure ? 'https' : 'http'}://127.0.0.1:${address.port}`, requests, reply(xml, code = 200, media = 'application/soap+xml; charset=utf-8', coding, headers = {}) {bytes = xml; status = code; contentType = media; contentEncoding = coding; responseHeaders = headers;}});}
   finally {for (const socket of sockets) socket.destroy(); server.close(); await once(server, 'close');}
 }
 
 describe('SOAP 1.2 component binding and wire execution', () => {
+  it.each(['11', '12'] as const)('retains explicit SOAP %s one-way declared header faults after protocol validation', async version => {
+    const namespace = 'urn:conformance:headers', root = await mkdtemp(path.join(directory, 'one-way-headers-'));
+    const file = path.join(root, 'source.wsdl');
+    const text = (await readFile('test/conformance/fixtures/soap/headers/declared-literal.wsdl', 'utf8'))
+      .replace(/<w:output\b[^>]*\/>|<w:output>[\s\S]*?<\/w:output>/g, '');
+    await writeFile(file, text);
+    const selected = await selectComponentOperation(file, {portType: {namespace, local: 'HeaderPortType'}, binding: {namespace, local: 'Soap' + version}, operation: 'Invoke'},
+      {loading: {policy: {fileRoots: [root]}}});
+    if (selected.kind !== 'selected') throw new Error(selected.kind + ':' + selected.rule);
+    const choice = {service: {namespace, local: 'HeaderService'}, port: 'Port' + version};
+    const capsule = await createComponentSourceCapsule(selected.contract, choice);
+    if (capsule.kind !== 'component-capsule') throw new Error(capsule.kind + ':' + capsule.rule);
+    const inputId = selected.contract.headers!.find(header => header.direction === 'input')!.id;
+    const faultId = selected.contract.headers!.find(header => header.kind === 'header-fault')!.id;
+    const envelopeNamespace = version === '11' ? soap11 : soap12;
+    const body = version === '11' ? '<s:Fault><faultcode>s:Server</faultcode><faultstring>Header problem</faultstring></s:Fault>'
+      : '<s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">Header problem</s:Text></s:Reason></s:Fault>';
+    const bytes = Buffer.from(`<s:Envelope xmlns:s="${envelopeNamespace}" xmlns:t="${namespace}"><s:Header><t:HeaderProblem s:mustUnderstand="1"><t:code>5</t:code></t:HeaderProblem></s:Header><s:Body>${body}</s:Body></s:Envelope>`);
+    await owned(async server => {
+      server.reply(bytes, 500, version === '11' ? 'text/xml' : 'application/soap+xml');
+      const options = {localSource: file, fileRoots: [root], sourceResources: [], sourceOrigins: [], capsule: capsule.bytes,
+        soap: {...choice, endpoint: server.endpoint + '/soap' + version, headerValues: {[inputId]: {token: 'owned'}},
+          headerProcessors: {[faultId]: (value: unknown) => {expect(value).toEqual({code: 5}); return true as const;}}}};
+      const literal = Buffer.from(capsule.bytes).toString('base64');
+      const result = version === '11' ? await checkedComponentRuntimeV6.execute(literal, 'owned', options, checkedComponentRuntimeV6.version)
+        : await checkedComponentRuntimeV7.execute(literal, 'owned', options, checkedComponentRuntimeV7.version);
+      expect(result).toMatchObject({kind: 'soap-header-fault', headerFaults: {[faultId]: {code: 5}}, responseBytes: new Uint8Array(bytes)});
+      expect(result).not.toHaveProperty('value');
+    });
+  });
+  it.each(['11', '12'] as const)('executes source-pinned SOAP %s headers and distinct header faults through generated reconstruction', async version => {
+    const root = path.resolve('test/conformance/fixtures/soap/headers'), file = path.join(root, 'declared-literal.wsdl');
+    const namespace = 'urn:conformance:headers', envelopeNamespace = version === '11' ? soap11 : soap12;
+    const selected = await selectComponentOperation(file, {portType: {namespace, local: 'HeaderPortType'}, binding: {namespace, local: 'Soap' + version}, operation: 'Invoke'},
+      {loading: {policy: {fileRoots: [root]}}});
+    if (selected.kind !== 'selected') throw new Error(selected.kind + ':' + selected.rule);
+    const selection = {service: {namespace, local: 'HeaderService'}, port: 'Port' + version};
+    const capsule = await createComponentSourceCapsule(selected.contract, selection);
+    if (capsule.kind !== 'component-capsule') throw new Error(capsule.kind + ':' + capsule.rule);
+    const reconstructed = await reconstructComponentSourceCapsule(capsule.bytes, file, {loading: {policy: {fileRoots: [root]}}});
+    if (reconstructed.kind !== 'reconstructed-component') throw new Error(reconstructed.kind + ':' + reconstructed.rule);
+    const generated = await generateComponentClient(reconstructed);
+    if (generated.kind !== 'generated-component-client') throw new Error(generated.kind);
+    expect(generated.source).toContain('export type RequestHeaders'); expect(generated.source).toContain('soap-header-fault');
+    const requestId = selected.contract.headers!.find(header => header.direction === 'input')!.id;
+    const receiptId = selected.contract.headers!.find(header => header.root.part === 'receipt')!.id;
+    const faultId = selected.contract.headers!.find(header => header.kind === 'header-fault')!.id;
+    const literal = Buffer.from(capsule.bytes).toString('base64');
+    const execute = (options: Parameters<typeof checkedComponentRuntimeV3.execute>[2]) => version === '11'
+      ? checkedComponentRuntimeV3.execute(literal, 'native request', options, checkedComponentRuntimeV3.version)
+      : checkedComponentRuntimeV2.execute(literal, 'native request', options, checkedComponentRuntimeV2.version);
+    const xml = (header: string) => `<s:Envelope xmlns:s="${envelopeNamespace}" xmlns:t="${namespace}"><s:Header>${header}</s:Header><s:Body><t:Response>native body</t:Response></s:Body></s:Envelope>`;
+    await owned(async server => {
+      const options = {localSource: file, fileRoots: [root], sourceResources: [], sourceOrigins: [], capsule: capsule.bytes,
+        soap: {...selection, endpoint: server.endpoint + '/soap' + version, headerValues: {[requestId]: {token: 'native session'}}}};
+      const call = (processors?: import('../../src/compiler/componentSoapHeaders.js').ComponentHeaderProcessors) => execute(
+        {...options, soap: {...options.soap, ...(processors ? {headerProcessors: processors} : {})}});
+      server.reply(xml('<t:Receipt s:mustUnderstand="1"><t:count>7</t:count></t:Receipt>'));
+      expect(await call()).toMatchObject({kind: 'unsupported', rule: 'incoming SOAP header processing required'});
+      let consumed = 0;
+      const processors = {[receiptId]: (value: unknown) => {expect(value).toEqual({count: 7}); consumed++; return true as const;}};
+      expect(await call(processors)).toMatchObject({kind: 'soap-response', value: 'native body', headerValues: {[receiptId]: {count: 7}}, processedHeaders: [receiptId]});
+      expect(consumed).toBe(1);
+      const outgoing = new DOMParser().parseFromString(server.requests.at(-1)!.xml, 'text/xml');
+      expect(outgoing.getElementsByTagNameNS(namespace, 'Session')[0]!.textContent).toBe('native session');
+      expect(outgoing.getElementsByTagNameNS(namespace, 'Request')[0]!.textContent).toBe('native request');
+      server.reply(xml('<t:Receipt s:mustUnderstand="1"><t:count>wrong</t:count></t:Receipt>'));
+      expect(await call(processors)).toMatchObject({kind: 'scalar-invalid'}); expect(consumed).toBe(1);
+      server.reply(xml('<t:Receipt s:mustUnderstand="1"><t:count>7</t:count></t:Receipt><t:Unknown s:mustUnderstand="1"/>'));
+      expect(await call(processors)).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'}); expect(consumed).toBe(1);
+      server.reply(xml('<t:HeaderProblem><t:code>5</t:code></t:HeaderProblem>'));
+      const fault = await call({[faultId]: (value: unknown) => {expect(value).toEqual({code: 5}); return true;}});
+      expect(fault).toMatchObject({kind: 'soap-header-fault', headerFaults: {[faultId]: {code: 5}}}); expect(fault).not.toHaveProperty('value');
+      server.reply(xml('<t:HeaderProblem><t:code>5</t:code></t:HeaderProblem>').replace('<t:Response>native body</t:Response>', '<s:Fault><garbage/></s:Fault>'), 500);
+      expect(await call({[faultId]: () => true})).toMatchObject({kind: 'protocol'});
+      server.reply(xml('<t:HeaderProblem><t:code>5</t:code></t:HeaderProblem>').replace('<t:Response>native body</t:Response>', '<t:Response><t:invalid/></t:Response>'));
+      expect(await call({[faultId]: () => true})).toMatchObject({kind: 'mismatch'});
+      const count = server.requests.length;
+      expect(await execute({...options, soap: {...options.soap, headerValues: {[requestId]: {token: 3}}}})).toMatchObject({kind: 'value-invalid', phase: 'input'});
+      expect(server.requests).toHaveLength(count);
+    });
+  });
+  it.each(['response', 'fault', 'repeated-challenge', 'malformed-challenge'] as const)('bounds checked NTLM and independently checks its proof (%s)', async mode => {
+    const selected = await source('12');
+    vi.stubEnv('CHECKED_NTLM_USER', 'User'); vi.stubEnv('CHECKED_NTLM_PASSWORD', 'Password');
+    vi.stubEnv('CHECKED_NTLM_DOMAIN', 'Domain'); vi.stubEnv('CHECKED_NTLM_WORKSTATION', 'Owned');
+    const challenge = Buffer.from('0123456789abcdef', 'hex'), domain = Buffer.from('Domain', 'utf16le');
+    const type2 = Buffer.alloc(48 + domain.length + 4);
+    type2.write('NTLMSSP\0', 0, 'ascii'); type2.writeUInt32LE(2, 8);
+    type2.writeUInt16LE(domain.length, 12); type2.writeUInt16LE(domain.length, 14); type2.writeUInt32LE(48, 16);
+    type2.writeUInt32LE(0x00880201, 20); challenge.copy(type2, 24); domain.copy(type2, 48);
+    type2.writeUInt16LE(4, 40); type2.writeUInt16LE(4, 42); type2.writeUInt32LE(48 + domain.length, 44);
+    let calls = 0, proofChecked = false;
+    const sockets = new Set<Socket>(), identities: Socket[] = [];
+    const server = createServer(async (request, reply) => {
+      for await (const _chunk of request) { /* Drain the bounded owned request before authentication retry. */ }
+      calls++; identities.push(request.socket);
+      const auth = request.headers.authorization;
+      const token = auth?.startsWith('NTLM ') ? Buffer.from(auth.slice(5), 'base64') : undefined;
+      const kind = token && token.length >= 12 ? token.readUInt32LE(8) : 0;
+      if (mode === 'repeated-challenge' || !kind) {reply.writeHead(401, {'www-authenticate': 'NTLM'}); reply.end(); return;}
+      if (kind === 1) {
+        reply.writeHead(401, {'www-authenticate': mode === 'malformed-challenge' ? 'NTLM ' + 'A'.repeat(80) : 'NTLM ' + type2.toString('base64')}); reply.end(); return;
+      }
+      const field = (offset: number) => {
+        const length = token!.readUInt16LE(offset), start = token!.readUInt32LE(offset + 4);
+        expect(start + length).toBeLessThanOrEqual(token!.length); return token!.subarray(start, start + length);
+      };
+      expect(kind).toBe(3); expect(field(28).toString('utf16le')).toBe('Domain');
+      expect(field(36).toString('utf16le')).toBe('User'); expect(field(44).toString('utf16le')).toBe('Owned');
+      // @provenance Published NT hash for the owned password "Password"; proof calculation is independent of axios-ntlm.
+      const key = createHmac('md5', Buffer.from('a4f49c406510bdcab6824ee7c30fd852', 'hex')).update(Buffer.from('USERDomain', 'utf16le')).digest();
+      const nt = field(20), proof = createHmac('md5', key).update(Buffer.concat([challenge, nt.subarray(16)])).digest();
+      expect(nt.subarray(0, 16)).toEqual(proof); proofChecked = true;
+      reply.writeHead(mode === 'fault' ? 500 : 200, {'content-type': 'application/soap+xml'});
+      reply.end(mode === 'fault' ? fault : response);
+    });
+    server.on('connection', socket => {sockets.add(socket); socket.once('close', () => sockets.delete(socket));});
+    server.listen(0, '127.0.0.1'); await once(server, 'listening');
+    const address = server.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
+    try {
+      const result = await exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection('12'), endpoint: `http://127.0.0.1:${address.port}/ntlm`,
+        upstream: {profile: 'ntlm', usernameEnv: 'CHECKED_NTLM_USER', passwordEnv: 'CHECKED_NTLM_PASSWORD', domainEnv: 'CHECKED_NTLM_DOMAIN', workstationEnv: 'CHECKED_NTLM_WORKSTATION'}});
+      expect(result.kind).toBe(mode === 'response' ? 'soap-response' : mode === 'fault' ? 'soap-fault' : 'transport');
+      expect(calls).toBeLessThanOrEqual(3);
+      if (mode === 'response' || mode === 'fault') {expect(proofChecked).toBe(true); expect(new Set(identities).size).toBe(1);}
+      if (mode === 'repeated-challenge') expect(calls).toBe(3);
+    } finally {for (const socket of sockets) socket.destroy(); server.close(); await once(server, 'close');}
+  });
+  it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('executes checked SOAP %s authentication, UsernameToken and final Body signatures (HTTPS=%s)', async (version, secure) => {
+    const selected = await source(version);
+    vi.stubEnv('CHECKED_TEST_USER', 'owned-user'); vi.stubEnv('CHECKED_TEST_PASSWORD', 'owned<&password');
+    vi.stubEnv('CHECKED_TEST_TOKEN', 'owned-bearer');
+    vi.stubEnv('CHECKED_TEST_KEY', path.resolve('test/conformance/fixtures/soap/content-model/test-key.pem'));
+    vi.stubEnv('CHECKED_TEST_CERT', path.resolve('test/conformance/fixtures/soap/content-model/test-cert.pem'));
+    await owned(async server => {
+      const endpoint = server.endpoint + '/soap' + version;
+      const call = (upstream: import('../../src/util/upstreamSecurity.js').UpstreamSecurityConfig) => exchangeComponentSoap(selected.contract, selected.mapping, input,
+        {...selection(version), endpoint, upstream, ...(secure ? {ca: cert} : {})});
+      const credentials = {usernameEnv: 'CHECKED_TEST_USER', passwordEnv: 'CHECKED_TEST_PASSWORD',
+        wsdlHeaders: {'x-metadata-only': 'must-not-dispatch'}, requestHeaders: {'x-runtime-test': 'owned'}};
+      expect(await call({...credentials, profile: 'basic'})).toMatchObject({kind: 'soap-response'});
+      expect(server.requests.at(-1)!.headers).toMatchObject({authorization: 'Basic ' + Buffer.from('owned-user:owned<&password').toString('base64'), 'x-runtime-test': 'owned'});
+      expect(server.requests.at(-1)!.headers).not.toHaveProperty('x-metadata-only');
+      expect(await call({profile: 'bearer', tokenEnv: 'CHECKED_TEST_TOKEN'})).toMatchObject({kind: 'soap-response'});
+      expect(server.requests.at(-1)!.headers.authorization).toBe('Bearer owned-bearer');
+      expect(await call({...credentials, profile: 'ws-security-username-token', wsSecurity: {passwordType: 'PasswordDigest', hasNonce: true, mustUnderstand: true, actor: 'urn:owned&role'}}))
+        .toMatchObject({kind: 'soap-response'});
+      const xml = server.requests.at(-1)!.xml, doc = new DOMParser().parseFromString(xml, 'text/xml');
+      const wsse = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+      const wsu = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd';
+      const node = doc.getElementsByTagNameNS(wsse, 'Security')[0]!;
+      expect(node.getAttributeNS(version === '11' ? soap11 : soap12, version === '11' ? 'actor' : 'role')).toBe('urn:owned&role');
+      expect(node.hasAttributeNS(version === '11' ? soap11 : soap12, version === '11' ? 'role' : 'actor')).toBe(false);
+      const nonce = doc.getElementsByTagNameNS(wsse, 'Nonce')[0]!.textContent!;
+      const created = doc.getElementsByTagNameNS(wsu, 'Created')[1]!.textContent!;
+      const digest = createHash('sha1').update(Buffer.concat([Buffer.from(nonce, 'base64'), Buffer.from(created), Buffer.from('owned<&password')])).digest('base64');
+      expect(doc.getElementsByTagNameNS(wsse, 'Password')[0]!.textContent).toBe(digest);
+      const signedResult = await call({profile: 'x509', keyFileEnv: 'CHECKED_TEST_KEY', certFileEnv: 'CHECKED_TEST_CERT'});
+      if (signedResult.kind !== 'soap-response') throw new Error(JSON.stringify(signedResult));
+      const signed = server.requests.at(-1)!.xml;
+      const signature = new DOMParser().parseFromString(signed, 'text/xml').getElementsByTagNameNS('http://www.w3.org/2000/09/xmldsig#', 'Signature')[0]!;
+      const verifier = new SignedXml({publicCert: cert, getCertFromKeyInfo: () => null}); verifier.loadSignature(signature);
+      expect(verifier.checkSignature(signed)).toBe(true);
+      expect(verifier.checkSignature(signed.replace('owned &amp; independent', 'tampered'))).toBe(false);
+      for (const field of ['username', 'password']) {
+        const username = field === 'username' ? 'owned soap:actor=user' : 'owned-user';
+        const password = field === 'password' ? 'owned soap:actor=password' : 'owned<&password';
+        vi.stubEnv('CHECKED_TEST_USER', username); vi.stubEnv('CHECKED_TEST_PASSWORD', password);
+        expect(await call({...credentials, profile: 'ws-security-username-token', wsSecurity: {passwordType: 'PasswordText', hasTimeStamp: false}})).toMatchObject({kind: 'soap-response'});
+        const plain = new DOMParser().parseFromString(server.requests.at(-1)!.xml, 'text/xml');
+        expect(plain.getElementsByTagNameNS(wsse, 'Username')[0]!.textContent).toBe(username);
+        expect(plain.getElementsByTagNameNS(wsse, 'Password')[0]!.textContent).toBe(password);
+        expect(plain.getElementsByTagNameNS(wsse, 'Security')[0]!.hasAttributeNS(version === '11' ? soap11 : soap12, 'role')).toBe(false);
+      }
+      vi.stubEnv('CHECKED_TEST_USER', 'owned-user'); vi.stubEnv('CHECKED_TEST_PASSWORD', 'owned<&password');
+      const count = server.requests.length;
+      expect(await call({profile: 'basic', usernameEnv: 'MISSING_CHECKED_TEST_USER', passwordEnv: 'CHECKED_TEST_PASSWORD'})).toMatchObject({kind: 'unsupported', rule: 'runtime security configuration'});
+      expect(await call({...credentials, profile: 'basic', requestHeaders: {Authorization: 'conflict'}})).toMatchObject({kind: 'unsupported'});
+      expect(server.requests).toHaveLength(count);
+    }, secure);
+  });
+  it.each(['client-ssl', 'client-ssl-pfx'] as const)('uses checked %s credentials with independent peer verification', async profile => {
+    const selected = await source('12');
+    vi.stubEnv('CHECKED_TLS_KEY', path.resolve('test/conformance/fixtures/soap/content-model/test-key.pem'));
+    vi.stubEnv('CHECKED_TLS_CERT', path.resolve('test/conformance/fixtures/soap/content-model/test-cert.pem'));
+    vi.stubEnv('CHECKED_TLS_PFX', path.resolve('test/conformance/fixtures/soap/content-model/test-credentials.pfx'));
+    vi.stubEnv('CHECKED_TLS_PASSPHRASE', 'owned-fixture');
+    await owned(async server => {
+      const upstream = {profile, keyFileEnv: 'CHECKED_TLS_KEY', certFileEnv: 'CHECKED_TLS_CERT', pfxFileEnv: 'CHECKED_TLS_PFX', passphraseEnv: 'CHECKED_TLS_PASSPHRASE'};
+      const options = {...selection('12'), endpoint: server.endpoint + '/soap12', upstream};
+      expect(await exchangeComponentSoap(selected.contract, selected.mapping, input, {...options, ca: cert})).toMatchObject({kind: 'soap-response'});
+      expect(await exchangeComponentSoap(selected.contract, selected.mapping, input, options)).toMatchObject({kind: 'transport'});
+      expect(await exchangeComponentSoap(selected.contract, selected.mapping, input, {...options, upstream: {profile: 'none'}, ca: cert})).toMatchObject({kind: 'transport'});
+      if (profile === 'client-ssl-pfx') {
+        vi.stubEnv('CHECKED_TLS_PASSPHRASE', 'wrong-fixture-passphrase');
+        expect(await exchangeComponentSoap(selected.contract, selected.mapping, input, {...options, ca: cert})).toMatchObject({kind: 'transport'});
+        vi.stubEnv('CHECKED_TLS_PASSPHRASE', 'owned-fixture');
+      }
+      expect(server.requests).toHaveLength(1);
+    }, true, true);
+  });
+  it.each([false, true])('uses actual HTTP entity bases and SOAP 1.2 Content-Location without changing dispatch authority (HTTPS=%s)', async secure => {
+    const selected = await source('12');
+    const xml = (await readFile(path.join(fixture, 'receiver12.xml'), 'utf8')).replace('s:role="urn:other"', 's:role="next"');
+    await owned(async server => {
+      const endpoint = server.endpoint + '/actual/request?selected=1';
+      const call = () => exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection('12'), endpoint,
+        allowEndpoint: url => url.href === endpoint, ...(secure ? {ca: cert} : {})});
+      server.reply(Buffer.from(xml), 200, 'application/soap+xml');
+      expect(await call()).toMatchObject({kind: 'soap-response'});
+      server.reply(Buffer.from(xml), 200, 'application/soap+xml', undefined, {'content-location': soap12 + '/role/'});
+      expect(await call()).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'});
+      const inherited = xml.replace('x:envelope="opaque"', 'xml:base="./"').replace('x:header="opaque"', 'xml:base="sub/../"');
+      server.reply(Buffer.from(inherited), 200, 'application/soap+xml', undefined, {'content-location': soap12 + '/role/'});
+      expect(await call()).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'});
+      server.reply(Buffer.from(inherited.replace('xml:base="./"', 'xml:base="http://example.org/other/"')), 200,
+        'application/soap+xml', undefined, {'content-location': soap12 + '/role/'});
+      expect(await call()).toMatchObject({kind: 'soap-response'});
+      server.reply(Buffer.from(xml), 200, 'application/soap+xml', undefined, {'content-location': ['/first', '/second']});
+      expect(await call()).toMatchObject({kind: 'protocol', rule: 'ambiguous HTTP Content-Location'});
+      expect(server.requests).toHaveLength(5);
+      expect(server.requests.every(request => request.path === '/actual/request?selected=1')).toBe(true);
+    }, secure);
+  });
+  it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('decodes bounded compressed SOAP %s entities and preserves wire evidence (HTTPS=%s)', async (version, secure) => {
+    const selected = await source(version);
+    const xml = await readFile(path.join(fixture, `receiver${version}.xml`));
+    const faultXml = await readFile(path.join(fixture, `receiver-fault${version}.xml`));
+    const media = version === '11' ? 'text/xml' : 'application/soap+xml';
+    await owned(async server => {
+      const call = (limits?: {maxBytes: number}) => exchangeComponentSoap(selected.contract, selected.mapping, input,
+        {...selection(version), endpoint: server.endpoint + '/soap' + version, ...(secure ? {ca: cert} : {}), ...(limits ? {limits} : {})});
+      for (const [coding, encode] of [['gzip', gzipSync], ['deflate', deflateSync], ['br', brotliCompressSync]] as const) {
+        for (const [entity, status, kind] of [[xml, 200, 'soap-response'], [faultXml, 500, 'soap-fault']] as const) {
+          const wire = encode(entity); server.reply(wire, status, media, coding);
+          expect(await call()).toMatchObject({kind, responseBytes: new Uint8Array(wire)});
+        }
+        const wire = encode(xml); server.reply(wire.subarray(0, wire.length - 3), 200, media, coding);
+        const invalid = await call(); expect(invalid).toMatchObject({kind: 'protocol', rule: 'HTTP compressed response invalid'});
+        expect(invalid).not.toHaveProperty('decoded');
+      }
+      const bomb = gzipSync(Buffer.from('<value>' + 'x'.repeat(20_000) + '</value>'));
+      server.reply(bomb, 200, media, 'gzip');
+      expect(await call({maxBytes: 2048})).toMatchObject({kind: 'resource-limit', rule: 'HTTP expanded response byte limit'});
+      server.reply(xml, 200, media, 'unknown');
+      expect(await call()).toMatchObject({kind: 'unsupported', rule: 'HTTP content coding'});
+    }, secure);
+  });
+  it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('preserves exact SOAP %s endpoint queries through authorization and dispatch (HTTPS=%s)', async (version, secure) => {
+    const selected = await source(version);
+    await owned(async server => {
+      const endpoint = server.endpoint + '/soap' + version + '?tenant=A%2Fb&tenant=second&empty=';
+      server.reply(Buffer.from(response.replaceAll(soap12, version === '11' ? soap11 : soap12)), 200, version === '11' ? 'text/xml' : 'application/soap+xml');
+      const options = {...selection(version), endpoint, ...(secure ? {ca: cert} : {})};
+      const observed: string[] = [];
+      const result = await exchangeComponentSoap(selected.contract, selected.mapping, input, {...options, allowEndpoint: url => {observed.push(url.href); return url.href === endpoint;}});
+      expect(result).toMatchObject({kind: 'soap-response'});
+      expect(observed).toEqual([endpoint]);
+      expect(server.requests.map(request => request.path)).toEqual(['/soap' + version + '?tenant=A%2Fb&tenant=second&empty=']);
+      const before = server.requests.length;
+      expect(await exchangeComponentSoap(selected.contract, selected.mapping, input, {...options, allowEndpoint: url => url.href === endpoint.replace('A%2Fb', 'other')}))
+        .toMatchObject({kind: 'unsupported', rule: 'endpoint authorization'});
+      expect(server.requests).toHaveLength(before);
+    }, secure);
+  });
+  it('retains the frozen direct incoming wrapper restriction', async () => {
+    const file = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl');
+    const namespace = 'urn:checked:forecast';
+    const direct = await selectDirectOperation(file, {portType: {namespace, local: 'ForecastPortType'},
+      binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}, {loading: {policy: {fileRoots: [path.dirname(file)]}}});
+    if (direct.kind !== 'selected') throw new Error(direct.kind);
+    const mapping = createDirectValueMapping(direct.contract, {kind: 'input'});
+    if (mapping.kind !== 'direct-mapping') throw new Error(mapping.kind);
+    await owned(async server => {
+      server.reply(`<e:Envelope xmlns:e="${soap11}" xmlns:x="urn:extension" x:extension="opaque"><e:Body><f:GetForecastResponse xmlns:f="${namespace}"><f:city>Paris</f:city><f:complete>true</f:complete></f:GetForecastResponse></e:Body></e:Envelope>`);
+      expect(await exchangeDirectSoap(direct.contract, mapping, {city: 'Paris', days: 2}, {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort',
+        endpoint: server.endpoint + '/soap11', allowEndpoint: () => true}))
+        .toMatchObject({kind: 'protocol'});
+    });
+  });
+  it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('qualifies SOAP %s receiver extensions, native validity and fault routing (HTTPS=%s)', async (version, secure) => {
+    const selected = await source(version);
+    const accepted = await readFile(path.join(fixture, `receiver${version}.xml`), 'utf8');
+    const protocol = await readFile(path.join(fixture, `receiver-fault${version}.xml`), 'utf8');
+    const declared = version === '12' ? protocol.replace('</s:Fault>', '<s:Detail><t:Problem xmlns:t="urn:conformance:soap12"><t:code>MISSING</t:code><t:message>Missing input</t:message></t:Problem></s:Detail></s:Fault>')
+      : protocol.replace('</s:Fault>', '<detail><t:Problem xmlns:t="urn:conformance:soap12"><t:code>MISSING</t:code><t:message>Missing input</t:message></t:Problem></detail></s:Fault>');
+    await owned(async server => {
+      const call = () => exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection(version), endpoint: server.endpoint + '/soap' + version, ...(secure ? {ca: cert} : {})});
+      for (const [xml, status, kind] of [[accepted, 200, 'soap-response'], [declared, 500, 'soap-fault'], [protocol, 500, 'soap-fault']] as const) {
+        const bytes = Buffer.from(xml); server.reply(bytes, status, version === '11' ? 'text/xml' : 'application/soap+xml');
+        const result = await call(); expect(result, JSON.stringify(result)).toMatchObject({kind, responseBytes: new Uint8Array(bytes)});
+        if (xml === protocol) expect(result).not.toHaveProperty('decoded');
+        else expect(result).toHaveProperty('decoded.validated');
+        server.reply(Buffer.from(xml.replace(version === '11' ? 's:actor="urn:other"' : 's:role="urn:other"', '')), status, version === '11' ? 'text/xml' : 'application/soap+xml');
+        const refused = await call(); expect(refused).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'}); expect(refused).not.toHaveProperty('decoded');
+      }
+      for (const invalid of [accepted.replace('<t:value>', '<t:wrong>').replace('</t:value>', '</t:wrong>'), declared.replace('<t:code>MISSING</t:code>', '')]) {
+        server.reply(Buffer.from(invalid), invalid.includes('Fault') ? 500 : 200, version === '11' ? 'text/xml' : 'application/soap+xml');
+        const result = await call(); expect(result.kind).not.toBe('soap-response'); expect(result).not.toHaveProperty('decoded');
+      }
+    }, secure);
+  });
   it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('decodes exact encoded SOAP %s response bytes (HTTPS=%s)', async (version, secure) => {
     const selected = await source(version);
     await owned(async server => {

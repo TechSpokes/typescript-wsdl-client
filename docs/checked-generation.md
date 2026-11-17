@@ -6,13 +6,13 @@ This is a bounded preview, not general WSDL/XSD or production-provider qualifica
 
 ## Install and try the bundled contract
 
-The examples use published 1.6.2 for the bundled request-response contract. One-way support and exact downstream HTTP names are prepared for 1.6.3; until that candidate is published, trial those additions from a locally packed candidate. Earlier releases retain their own documented contracts.
+The examples use published 1.6.5 for the bundled contract, including delivered one-way and response-encoding support. Trial the comprehensive v1.7.0 buffered additions from a locally packed candidate until the maintainer publishes it. Earlier releases retain their documented contracts.
 
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.6.2
+npm install --save-dev @techspokes/typescript-wsdl-client@1.6.5
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```

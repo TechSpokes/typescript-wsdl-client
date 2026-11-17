@@ -32,6 +32,7 @@ export {
   parseSecurityConfig,
   SecurityConfigError,
   type SecurityConfig,
+  type UpstreamSecurityConfig,
 } from "./util/securityConfig.js";
 export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
@@ -171,3 +172,4 @@ export {assessSchemaSource, serializeAssessmentReport, parseAssessmentReport, as
 export type {ApplicationGroupsOptions, ApplicationGroupName} from './compiler/applicationGroups.js';
 export type {CheckedAssessmentReport, AssessmentObligation, AssessedOperation, AssessmentStatus} from './compiler/checkedAssessment.js';
 export type {CheckedPayloadDiagnostic} from './compiler/payloadDiagnostics.js';
+export type {ComponentHeaderProcessor, ComponentHeaderProcessors, ComponentHeaderProcessingContext} from './compiler/componentSoapHeaders.js';

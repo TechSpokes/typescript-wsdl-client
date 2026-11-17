@@ -237,12 +237,27 @@ describe('component SOAP exchange through the existing dependency and native che
     });
   });
 
-  it.each([policy.replace('RequireClientCertificate="false"', 'RequireClientCertificate="true"'),
-    policy.replace('<s:Layout>', '<s:IncludeTimestamp/><s:Layout>')])('refuses unimplemented security requirements before I/O', async assertion => {
-    const contract = await selected(assertion), map = mapping(contract);
+  it('refuses missing required TLS credentials before I/O', async () => {
+    const contract = await selected(policy.replace('RequireClientCertificate="false"', 'RequireClientCertificate="true"')), map = mapping(contract);
     await owned(true, reply, async server => {
-      expect(await exchangeComponentSoap(contract, map, input, server.options)).toMatchObject({kind: 'unsupported', rule: 'message security or client certificate capability required'});
+      expect(await exchangeComponentSoap(contract, map, input, server.options)).toMatchObject({kind: 'unsupported', rule: 'policy requires client credentials'});
       expect(server.requests).toHaveLength(0);
+    });
+  });
+
+  it('discharges transport-policy timestamps with actual generated Security content', async () => {
+    const contract = await selected(policy.replace('<s:Layout>', '<s:IncludeTimestamp/><s:Layout>')), map = mapping(contract);
+    await owned(true, reply, async server => {
+      expect(await exchangeComponentSoap(contract, map, input, server.options)).toMatchObject({kind: 'soap-response'});
+      expect(server.requests).toHaveLength(1);
+      expect(server.requests[0]!.xml).toContain('<wsu:Timestamp>');
+      expect(server.requests[0]!.xml).not.toContain('UsernameToken');
+      vi.stubEnv('CHECKED_POLICY_USER', 'owned'); vi.stubEnv('CHECKED_POLICY_PASSWORD', 'fixture'); vi.stubEnv('CHECKED_POLICY_TOKEN', 'owned-bearer');
+      for (const upstream of [{profile: 'basic' as const, usernameEnv: 'CHECKED_POLICY_USER', passwordEnv: 'CHECKED_POLICY_PASSWORD'},
+        {profile: 'bearer' as const, tokenEnv: 'CHECKED_POLICY_TOKEN'}]) {
+        expect(await exchangeComponentSoap(contract, map, input, {...server.options, upstream})).toMatchObject({kind: 'soap-response'});
+        expect(server.requests.at(-1)!.xml).toContain('<wsu:Timestamp>');
+      }
     });
   });
 

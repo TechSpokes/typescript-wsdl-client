@@ -25,6 +25,9 @@ export interface CheckedGatewayConfig {
   readonly timeoutMs?: number;
   readonly limits?: Options['soap']['limits'];
   readonly capabilities?: Options['soap']['capabilities'];
+  readonly upstream?: Options['soap']['upstream'];
+  readonly headerValues?: Options['soap']['headerValues'];
+  readonly headerProcessors?: Options['soap']['headerProcessors'];
   readonly signal?: AbortSignal;
 }
 type SourceConfig = CheckedGatewayConfig & Required<Pick<CheckedGatewayConfig,
@@ -72,7 +75,8 @@ function generatedSources(): SourceConfig {
   return {...supplied, localSource: sourceFile(supplied.localSource), fileRoots: [owner],
     capsuleFiles: Object.fromEntries(Object.entries(supplied.capsuleFiles ?? {}).map(([name, file]) => [name, ownedFile(file)])),
     sourceResources: supplied.sourceResources.map(resource => ({uri: logical(resource.uri), file: sourceFile(resource.file),
-      ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})),
+      ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)}),
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})})),
     ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: logical(location.location)}))} : {}),
     ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),__BRANCH_GENERATED__
   };
@@ -85,7 +89,7 @@ function generatedSources(): SourceConfig {
  */
 export async function buildServer(supplied: CheckedGatewayConfig = {}) {
   const supported = ['localSource', 'fileRoots', 'endpoint', 'allowedEndpoints', 'capsuleFiles', 'sourceResources', 'sourceOrigins',
-    'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', __BRANCH_KEY__'caFile', 'host', 'port', 'timeoutMs', 'limits', 'capabilities', 'signal'];
+    'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', __BRANCH_KEY__'caFile', 'host', 'port', 'timeoutMs', 'limits', 'capabilities', 'signal', 'upstream', 'headerValues', 'headerProcessors'];
   if (!supplied || typeof supplied !== 'object' || types.isProxy(supplied)
     || ![null, Object.prototype].includes(Object.getPrototypeOf(supplied) as object | null)
     || Reflect.ownKeys(supplied).some(key => typeof key !== 'string' || !supported.includes(key)
@@ -116,6 +120,9 @@ export async function buildServer(supplied: CheckedGatewayConfig = {}) {
       ...(config.signal ? {signal: config.signal} : {}), ...(config.timeoutMs === undefined ? {} : {timeoutMs: config.timeoutMs}),
       ...(config.limits === undefined ? {} : {limits: config.limits}), ...(config.capabilities === undefined ? {} : {capabilities: config.capabilities}),
       ...(config.caFile === undefined ? {} : {ca: fs.readFileSync(config.caFile, 'utf8')}),
+      ...(config.upstream === undefined ? {} : {upstream: config.upstream}),
+      ...(config.headerValues === undefined ? {} : {headerValues: config.headerValues}),
+      ...(config.headerProcessors === undefined ? {} : {headerProcessors: config.headerProcessors}),
     },
   };
   const app = Fastify({logger: false});
@@ -139,7 +146,8 @@ async function start(): Promise<void> {
     ...(supplied.localSource === undefined ? {} : {localSource: path.resolve(base, supplied.localSource)}),
     ...(supplied.fileRoots === undefined ? {} : {fileRoots: supplied.fileRoots.map(root => path.resolve(base, root))}),
     ...(supplied.sourceResources === undefined ? {} : {sourceResources: supplied.sourceResources.map(resource => ({uri: uri(resource.uri),
-      file: path.resolve(base, resource.file), ...(resource.canonicalUri === undefined ? {} : {canonicalUri: uri(resource.canonicalUri)})}))}),
+      file: path.resolve(base, resource.file), ...(resource.canonicalUri === undefined ? {} : {canonicalUri: uri(resource.canonicalUri)}),
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})}))}),
     ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: uri(location.location)}))} : {}),
     ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),__BRANCH_EXPLICIT__
     ...(supplied.caFile ? {caFile: path.resolve(base, supplied.caFile)} : {}),

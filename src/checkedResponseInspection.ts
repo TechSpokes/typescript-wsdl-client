@@ -14,6 +14,7 @@ import type {CheckedComponentOptions} from './checkedPipeline.js';
 import {inspectDirectOperation, selectComponentOperations} from './compiler/directOperation.js';
 import type {DirectOperationContract, DirectOperationSelector} from './compiler/directOperation.js';
 import {inspectComponentSoapResponse} from './compiler/directSoap.js';
+import {decodeBufferedHttpEntity, BufferedHttpEntityError} from './compiler/bufferedHttpEntity.js';
 import type {ObservedSoapResponseMetadata} from './compiler/directSoap.js';
 import {createComponentValueMapping} from './compiler/directValues.js';
 import {observeComponentXml, assessObservedComponentPayload, DIRECT_XML_LIMITS} from './compiler/directCodec.js';
@@ -140,11 +141,13 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   let metadata: ObservedSoapResponseMetadata | undefined;
   let metadataOverLimit = false;
   if (supplied.responseMetadata !== undefined) {
-    const value = record(supplied.responseMetadata, ['status', 'contentType', 'contentEncoding']);
+    const value = record(supplied.responseMetadata, ['status', 'contentType', 'contentEncoding', 'retrievalUri', 'contentLocation']);
     if (!Number.isSafeInteger(value.status) || (value.status as number) < 100 || (value.status as number) > 599 || typeof value.contentType !== 'string'
-      || value.contentEncoding !== undefined && typeof value.contentEncoding !== 'string') throw new TypeError('Actual HTTP status and content-type metadata required');
-    metadata = {status: value.status as number, contentType: value.contentType, ...(value.contentEncoding === undefined ? {} : {contentEncoding: value.contentEncoding as string})};
-    metadataOverLimit = metadata.contentType.length > 8192 || (metadata.contentEncoding?.length ?? 0) > 256;
+      || ['contentEncoding', 'retrievalUri', 'contentLocation'].some(key => value[key] !== undefined && typeof value[key] !== 'string')) throw new TypeError('Actual HTTP status and content-type metadata required');
+    metadata = {status: value.status as number, contentType: value.contentType, ...(value.contentEncoding === undefined ? {} : {contentEncoding: value.contentEncoding as string}),
+      ...(value.retrievalUri === undefined ? {} : {retrievalUri: value.retrievalUri as string}), ...(value.contentLocation === undefined ? {} : {contentLocation: value.contentLocation as string})};
+    metadataOverLimit = metadata.contentType.length > 8192 || (metadata.contentEncoding?.length ?? 0) > 256
+      || (metadata.retrievalUri?.length ?? 0) > 8192 || (metadata.contentLocation?.length ?? 0) > 8192;
   }
   let truncated = false;
   const bounded = (value: string, max = 512): string => {if (value.length > max) truncated = true; return value.slice(0, max);};
@@ -166,7 +169,7 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
   };
   const withinByteLimit = responseByteLength <= (limits.maxBytes as number);
   const computedDigest = withinByteLimit && !signal?.aborted;
-  const bytes = computedDigest ? snapshotXmlBytes(responseBytes) : responseBytes;
+  let bytes = computedDigest ? snapshotXmlBytes(responseBytes) : responseBytes;
   const responseIdentity: CheckedResponseInspectionReport['response'] = {byteLength: responseByteLength,
     digestAssessment: computedDigest ? 'computed' : signal?.aborted ? 'unassessed-cancelled' : 'unassessed-limit', ...(computedDigest ? {digest: digest(bytes)} : {})};
   const location = (at: SyntaxSource): InspectionLocation => ({resource: at.uri === 'urn:typescript-wsdl-client:inspected-response' ? 'response' : locations.get(at.uri)?.resource ?? 'unlocated-source',
@@ -290,6 +293,18 @@ export async function inspectCheckedResponse(source: string, options: CheckedRes
     if (projection) retain(inspectDirectOperation(inspectComponentRecordProjection(projection).companion).source);
     if (native.responseBranches) for (const branch of inspectComponentResponseBranches(native.responseBranches, native.contract).errors)
       retain(inspectDirectOperation(branch.contract).source);
+    if (metadata?.contentEncoding && metadata.contentEncoding.toLowerCase() !== 'identity') {
+      try {
+        const {budget} = inspectDirectOperation(native.contract).context;
+        bytes = await decodeBufferedHttpEntity(Buffer.from(bytes), metadata.contentEncoding,
+          {maxBytes: limits.maxBytes as number, signal, check: amount => budget.chargeWork(amount ?? 1)});
+        metadata = {...metadata, contentEncoding: 'identity'};
+      } catch (error) {
+        if (!(error instanceof BufferedHttpEntityError)) throw error;
+        kind = failureAssessment(error.kind); responseOutcome = {assessment: kind, rule: error.rule};
+        add('response', {kind: error.kind, rule: error.rule}); return finish();
+      }
+    }
     const controls = {signal, limits: limits as DirectXmlLimits,
       uri: 'urn:typescript-wsdl-client:inspected-response', responseMetadata: metadata, responseProjection: projection};
     const assessed = native.responseBranches
@@ -498,7 +513,8 @@ async function independentCompanion(entry: NonNullable<CheckedComponentOptions['
     namespaceLocations: new Map(choices.namespaceLocations?.map(item => [item.namespace, item.location]))};
   const offlineResources = effective ? new Map([...effective.resourceAliases].map(([alias, uri]) => {
     const resource = effective.resources.find(resource => resource.uri === uri)!;
-    return [alias, {bytes: copyOriginalSchemaResource(effective, uri, () => {}), digest: resource.digest, canonicalUri: uri}] as const;
+    return [alias, {bytes: copyOriginalSchemaResource(effective, uri, () => {}), digest: resource.digest, canonicalUri: uri,
+      ...(resource.contentType === undefined ? {} : {contentType: resource.contentType})}] as const;
   })) : undefined;
   const closed = effective ? {source: effective.root.uri, loading: {...loading, offlineResources}}
     : await prepareSchemaSnapshotFiles(localFile(entry.source), choices.sourceResources ?? [], loading);

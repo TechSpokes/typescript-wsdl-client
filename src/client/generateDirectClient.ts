@@ -15,6 +15,7 @@ import type {ResolverUsage, SemanticBudget} from '../compiler/semanticBudget.js'
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
 import {COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {componentServiceHeaderRouting} from '../generation/componentServiceHeaders.js';
 
 const MAX_SOURCE_BYTES = 512 * 1024;
 const generatedArtifacts = new WeakMap<object, SemanticBudget>();
@@ -162,6 +163,9 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
     const response = oneWay ? {type: 'never', declarations: []} : lowerComponentShape(expected.contract, output, 'Response', check);
     const faults = mappings.filter(mapping => mapping.direction.kind === 'fault').map((mapping, index) => ({mapping,
       shape: lowerComponentShape(expected.contract, mapping, `Fault_${index}`, check)}));
+    const headers = mappings.filter(mapping => mapping.direction.kind === 'header').map((mapping, index) => ({mapping,
+      declaration: expected.contract.headers!.find(header => mapping.direction.kind === 'header' && header.id === mapping.direction.id)!,
+      shape: lowerComponentShape(expected.contract, mapping, `Header_${index}`, check)}));
     const errors = expected.responseBranches ? inspectComponentResponseBranches(expected.responseBranches).errors.map((branch, index) => ({id: branch.id,
       shape: lowerComponentShape(branch.contract, branch.mapping, `ApplicationError_${index}`, check)})) : [];
     const grouped = mappings.some(mapping => mapping.kind === 'component-mapping'
@@ -180,6 +184,13 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       `// Checked component client; inject ${oneWay ? soap12 ? 'checkedComponentRuntimeV7' : 'checkedComponentRuntimeV6' : expected.responseBranches ? soap12 ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4' : soap12 ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3'} from the package root.`,
       '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
       ...declarations,
+      ...headers.flatMap(({shape}, index) => [...shape.declarations, `export type Header_${index} = ${shape.type};`]),
+      'export type RequestHeaders = {' + headers.map(({declaration}, index) => declaration.direction === 'input' && declaration.kind === 'header'
+        ? `readonly ${literal(declaration.id)}: Header_${index}` : '').filter(Boolean).join('; ') + '};',
+      'export type ResponseHeaders = {' + headers.map(({declaration}, index) => declaration.direction === 'output' && declaration.kind === 'header'
+        ? `readonly ${literal(declaration.id)}?: Header_${index}` : '').filter(Boolean).join('; ') + '};',
+      'export type HeaderFaults = {' + headers.map(({declaration}, index) => declaration.direction === 'output' && declaration.kind === 'header-fault'
+        ? `readonly ${literal(declaration.id)}?: Header_${index}` : '').filter(Boolean).join('; ') + '};',
       ...errors.flatMap(({shape}, index) => [...shape.declarations, `export type ApplicationError_${index} = ${shape.type};`]),
       'export interface Usage {readonly nodes: number; readonly work: number}',
       'export interface Name {readonly namespace: string; readonly local: string}',
@@ -187,7 +198,7 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       ...(soap12 ? ['export interface Soap12Fault {readonly version: "1.2"; readonly code: Name; readonly subcodes: readonly Name[]; readonly reasons: readonly {readonly lang: string; readonly text: string}[]; readonly string: string; readonly node?: string; readonly role?: string}'] : []),
       'export interface Options {',
       '  readonly localSource: string; readonly fileRoots: readonly string[]; readonly capsule: Uint8Array;',
-      '  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[]; readonly sourceOrigins: readonly string[];',
+      '  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string; readonly contentType?: string}[]; readonly sourceOrigins: readonly string[];',
       '  readonly sourceUri?: string;',
       '  readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];',
       '  readonly standardLibraries?: readonly string[];',
@@ -196,18 +207,23 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       '  readonly soap: {readonly service: Name; readonly port: string; readonly endpoint?: string;',
       '    readonly allowEndpoint?: (endpoint: URL) => boolean; readonly signal?: AbortSignal; readonly timeoutMs?: number;',
       '    readonly capabilities?: readonly string[]; readonly ca?: string; readonly httpResponseHeaders?: readonly string[];',
+      '    readonly upstream?: import("@techspokes/typescript-wsdl-client").UpstreamSecurityConfig;',
+      '    readonly headerValues?: RequestHeaders;',
+      '    readonly headerProcessors?: import("@techspokes/typescript-wsdl-client").ComponentHeaderProcessors;',
       '    readonly limits?: {readonly maxBytes?: number; readonly maxDepth?: number; readonly maxNodes?: number; readonly maxText?: number}};',
       '}',
       'export interface Failure {readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
       '  readonly http?: HttpObservation; readonly rule: string; readonly repair?: string; readonly phase?: "input" | "response"; readonly usage: Usage; readonly diagnostic?: import("@techspokes/typescript-wsdl-client").CheckedPayloadDiagnostic}',
-      `export interface NativeSuccess {readonly kind: ${oneWay ? '"soap-acknowledgement" | "soap-fault"' : '"soap-response" | "soap-fault"'}${expected.responseBranches ? ' | "application-error"; readonly branch?: string' : ''}; readonly value?: unknown; readonly admitted: false;`,
+      `export interface NativeSuccess {readonly kind: "soap-header-fault" | ${oneWay ? '"soap-acknowledgement" | "soap-fault"' : '"soap-response" | "soap-fault"'}${expected.responseBranches ? ' | "application-error"; readonly branch?: string' : ''}; readonly value?: unknown; readonly admitted: false;`,
+      '  readonly headerFaults?: HeaderFaults; readonly headerValues?: ResponseHeaders; readonly processedHeaders?: readonly string[];',
       '  readonly http?: HttpObservation; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
       '  readonly fault?: {readonly name?: string; readonly code: Name; readonly string: string; readonly actor?: string}}',
       `export interface Runtime {readonly version: ${literal(runtimeVersion)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(runtimeVersion)}): Promise<Failure | NativeSuccess>}`,
-      'type Common = {readonly http?: HttpObservation; readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array};',
+      'type Common = {readonly http?: HttpObservation; readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array; readonly headerValues?: ResponseHeaders; readonly processedHeaders?: readonly string[]};',
       oneWay ? 'export type Result = Failure | (Common & {readonly kind: "soap-acknowledgement"; readonly value?: never; readonly decoded?: never; readonly fault?: never; readonly branch?: never})'
         : 'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
       ...errors.map(({id}, index) => `  | (Common & {readonly kind: "application-error"; readonly branch: ${literal(id)}; readonly value: ApplicationError_${index}})`),
+      '  | (Common & {readonly kind: "soap-header-fault"; readonly headerFaults: HeaderFaults; readonly value?: never})',
       ...faults.map(({mapping}, index) => {
         if (mapping.direction.kind !== 'fault') throw new TypeError('Native fault mapping required');
         return soap12 ? `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: Soap12Fault & {readonly name: ${literal(mapping.direction.name)}}})`
@@ -263,15 +279,19 @@ export async function writeComponentServiceClient(expected: readonly Reconstruct
   const branched = operations.some(operation => operation.responseBranches || operation.contract.pattern === 'one-way');
   const binding = (operation: ReconstructedComponentSource) => `${operation.contract.binding.version}:${operation.contract.pattern ?? 'request-response'}:${!!operation.responseBranches}`;
   const mixed = branched && operations.some(operation => binding(operation) !== binding(operations[0]!));
-  if (mixed) lines.push("import {types} from 'node:util';");
-  if (branched) lines.push(...operations.map((_, index) => `import type {Runtime as Runtime_${index}, Options as Options_${index}} from './operations/${index}/client.js';`));
-  lines.push(...(branched ? [
+  const hasHeaders = operations.some(operation => operation.contract.headers?.length);
+  if (mixed && !hasHeaders) lines.push("import {types} from 'node:util';");
+  if (branched || hasHeaders) lines.push(...operations.map((_, index) => `import type {Runtime as Runtime_${index}, Options as Options_${index}} from './operations/${index}/client.js';`));
+  lines.push(...(branched || hasHeaders ? [
     `export type Options = Omit<${operations.map((_, index) => `Options_${index}`).join(' & ')}, 'capsule'>;`,
     mixed ? `export type Runtime = {${operations.map((operation, index) => `readonly ${JSON.stringify(operation.contract.selector.operation)}: Runtime_${index}`).join('; ')}};`
       : 'export type Runtime = Runtime_0;',
   ] : ["import type {Runtime, Options as OperationOptions} from './operations/0/client.js';", "export type Options = Omit<OperationOptions, 'capsule'>;"]),
     `export const selection = ${JSON.stringify(JSON.stringify(operations[0]!.selection))};`,
-    ...(mixed ? [
+    ...(hasHeaders ? componentServiceHeaderRouting(operations.map(operation => ({
+      values: operation.contract.headers?.filter(header => header.direction === 'input' && header.kind === 'header').map(header => header.id) ?? [],
+      processors: operation.contract.headers?.filter(header => header.direction === 'output').map(header => header.id) ?? [],
+    }))) : mixed ? [
       '// @constraints Only branchSources is service-owned; preserve all other fields for retained runtime validation.',
       'function retainedOptions<T extends object>(options: T): T {',
       "  if (!options || typeof options !== 'object' || types.isProxy(options) || ![Object.prototype, null].includes(Object.getPrototypeOf(options) as object | null)) return options;",
@@ -282,12 +302,14 @@ export async function writeComponentServiceClient(expected: readonly Reconstruct
       '}',
     ] : []),
     'export function createClient(runtime: Runtime) {',
-    ...(mixed ? operations.flatMap((operation, index) => operation.responseBranches ? []
-      : [`  const retained_${index} = operation_${index}(runtime[${JSON.stringify(operation.contract.selector.operation)}]);`]) : []),
+    ...operations.flatMap((operation, index) => hasHeaders || mixed && !operation.responseBranches
+      ? [`  const retained_${index} = operation_${index}(${mixed ? `runtime[${JSON.stringify(operation.contract.selector.operation)}]` : 'runtime'});`] : []),
     '  return Object.freeze({',
-    ...operations.map((operation, index) => mixed && !operation.responseBranches
-      ? `    [${JSON.stringify(operation.contract.selector.operation)}]: (input: Parameters<typeof retained_${index}[${JSON.stringify(operation.contract.selector.operation)}]>[0], options: Options & {readonly capsule: Uint8Array}) => retained_${index}[${JSON.stringify(operation.contract.selector.operation)}](input, retainedOptions(options)),`
-      : `    ...operation_${index}(${mixed ? `runtime[${JSON.stringify(operation.contract.selector.operation)}]` : 'runtime'}),`), '  });', '}', '');
+    ...operations.map((operation, index) => hasHeaders
+      ? `    [${JSON.stringify(operation.contract.selector.operation)}]: (input: Parameters<typeof retained_${index}[${JSON.stringify(operation.contract.selector.operation)}]>[0], options: Options & {readonly capsule: Uint8Array}) => retained_${index}[${JSON.stringify(operation.contract.selector.operation)}](input, serviceOperationOptions(options, ${index}, ${mixed && !operation.responseBranches})),`
+      : mixed && !operation.responseBranches
+        ? `    [${JSON.stringify(operation.contract.selector.operation)}]: (input: Parameters<typeof retained_${index}[${JSON.stringify(operation.contract.selector.operation)}]>[0], options: Options & {readonly capsule: Uint8Array}) => retained_${index}[${JSON.stringify(operation.contract.selector.operation)}](input, retainedOptions(options)),`
+        : `    ...operation_${index}(${mixed ? `runtime[${JSON.stringify(operation.contract.selector.operation)}]` : 'runtime'}),`), '  });', '}', '');
   for (const [index, operation] of operations.entries()) {
     const dir = path.join(directory, 'operations', String(index));
     mkdirSync(dir, {recursive: true}); writeDirectClient(path.join(dir, 'client.ts'), generated[index]!);
