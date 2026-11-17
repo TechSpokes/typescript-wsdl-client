@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs: reconcile buffered SOAP delivery and prepare ordinary published-package consumer acceptance.
+
 ## [1.7.0] - 2026-11-17
 
 - feat(checked): preserve queried SOAP endpoints and decode bounded compressed responses while retaining original wire evidence.

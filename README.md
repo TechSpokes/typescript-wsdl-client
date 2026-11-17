@@ -310,7 +310,8 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
 | [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
 | [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
-| [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Remaining adapter requirements, implementation owners and independent acceptance evidence |
+| [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Completed v1.7.0 adapter checklist, verification and continuing scope exclusions |
+| [Published-Package Consumer Acceptance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) | Next slice: exact registry artifact, ordinary generated-app install and owned execution |
 | [Streamable Responses (ADR-002)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
 | [Product and Research Boundary](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/004-product-research-boundary.md) | Package, validation and delivery responsibilities |
 | [Research Program](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/README.md) | Optional experiments, commands and historical investigation records |

@@ -6,13 +6,13 @@ This is a bounded preview, not general WSDL/XSD or production-provider qualifica
 
 ## Install and try the bundled contract
 
-The examples use published 1.6.5 for the bundled contract, including delivered one-way and response-encoding support. Trial the comprehensive v1.7.0 buffered additions from a locally packed candidate until the maintainer publishes it. Earlier releases retain their documented contracts.
+The examples use published 1.7.0 for the bundled contract, including buffered transport, credential/header and metadata fidelity. Install the exact registry version for a reproducible trial; earlier releases retain their documented contracts. The [published consumer acceptance plan](roadmap/v1.0-published-consumer-acceptance.md) separately qualifies ordinary generated-app dependency installation.
 
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.6.5
+npm install --save-dev --save-exact @techspokes/typescript-wsdl-client@1.7.0
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```
