@@ -22,6 +22,9 @@ export async function exerciseSoap12(runtime: typeof checkedComponentRuntimeV2):
   const root = await realpath(process.cwd()), namespace = 'http://www.w3.org/2003/05/soap-envelope';
   const captured: {contentType?: string; action?: string; xml: string}[] = [];
   let reply = `<e:Envelope xmlns:e="${namespace}"><e:Body><f:GetForecastResponse xmlns:f="urn:checked:forecast"><f:city>Paris</f:city><f:complete>true</f:complete></f:GetForecastResponse></e:Body></e:Envelope>`;
+  const receiver = (xml: string) => xml.replace('<e:Envelope ', '<e:Envelope xmlns:x="urn:extension" x:envelope="opaque" ')
+    .replace('<e:Body>', '<e:Header x:header="opaque"><x:Trace e:role="urn:other" e:mustUnderstand="true"/></e:Header><e:Body x:body="opaque">');
+  reply = receiver(reply);
   let status = 200;
   const server = createServer(async (request, response) => {
     let xml = ''; for await (const chunk of request) xml += String(chunk);
@@ -47,8 +50,15 @@ export async function exerciseSoap12(runtime: typeof checkedComponentRuntimeV2):
     parser.on('opentag', tag => {envelope ??= {local: tag.local, uri: tag.uri};});
     parser.write(captured[0]!.xml).close();
     assert.deepEqual(envelope, {local: 'Envelope', uri: namespace});
+    const normal = reply;
+    reply = normal.replace('e:role="urn:other"', '');
+    const refused = await call({city: 'Paris', days: 2}, options);
+    assert.equal(refused.kind, 'unsupported'); assert.equal('value' in refused, false);
+    reply = normal.replace('<f:complete>true</f:complete>', '<f:complete>yes</f:complete>');
+    assert.equal((await call({city: 'Paris', days: 2}, options)).kind, 'scalar-invalid');
     status = 400;
     reply = `<e:Envelope xmlns:e="${namespace}"><e:Body><e:Fault><e:Code><e:Value>e:Sender</e:Value></e:Code><e:Reason><e:Text xml:lang="en">Invalid</e:Text></e:Reason></e:Fault></e:Body></e:Envelope>`;
+    reply = receiver(reply);
     const protocol = await call({city: 'Paris', days: 2}, options);
     assert.equal(protocol.kind, 'soap-fault', JSON.stringify(protocol)); assert.equal('value' in protocol, false);
     assert.deepEqual(Buffer.from('responseBytes' in protocol ? protocol.responseBytes : []).toString(), reply);
@@ -86,7 +96,9 @@ export async function exerciseGenerated(directClientRuntime: DirectClientRuntime
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const address = server.address(); assert.ok(address && typeof address !== 'string');
   const endpoint = `http://127.0.0.1:${address.port}/owned`;
-  const envelope = (body: string) => `<s:Envelope xmlns:s="${SOAP}"><s:Body>${body}</s:Body></s:Envelope>`;
+  const envelope = (body: string) => component
+    ? `<s:Envelope xmlns:s="${SOAP}" xmlns:x="urn:extension" x:envelope="opaque"><s:Header x:header="opaque"><x:Trace s:actor="urn:other" s:mustUnderstand="1"/></s:Header><s:Body x:body="opaque">${body}</s:Body></s:Envelope>`
+    : `<s:Envelope xmlns:s="${SOAP}"><s:Body>${body}</s:Body></s:Envelope>`;
   const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
   let calls = 0, refusals = 0;
   try {
@@ -139,6 +151,18 @@ export async function exerciseGenerated(directClientRuntime: DirectClientRuntime
         const limited = await call(input, {...options, soap: {...options.soap, limits: {maxBytes: 1024}}});
         assert.equal(limited.kind, 'resource-limit'); assert.equal(requests.length, before); refusals++;
         if (!component) continue;
+      }
+      if (component && v.name === 'forecast') {
+        const normal = reply;
+        reply = normal.replace('s:actor="urn:other"', '');
+        const mandatory = await call(input, options); calls++;
+        assert.equal(mandatory.kind, 'unsupported'); assert.equal('value' in mandatory, false);
+        reply = normal.replace('<r:complete>true</r:complete>', '<r:complete>yes</r:complete>');
+        assert.equal((await call(input, options)).kind, 'scalar-invalid'); calls++;
+        reply = envelope('<s:Fault s:mustUnderstand="yes"><faultcode s:actor="relative">s:Server</faultcode><faultstring>protocol</faultstring></s:Fault>');
+        const protocol = await call(input, options); calls++;
+        assert.equal(protocol.kind, 'soap-fault'); assert.equal('value' in protocol, false);
+        assert.equal(Buffer.from('responseBytes' in protocol ? protocol.responseBytes : []).toString(), reply);
       }
       for (status of [200, 500]) {
         const detail = scalar ? 'fault text' : empty ? '' : '<r:code>NO_CITY</r:code><r:message>Unknown city</r:message>';

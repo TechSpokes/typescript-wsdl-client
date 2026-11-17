@@ -622,6 +622,24 @@ try {
       {code: expected.fault.detail.code, message: expected.fault.detail.message});
   }
   reply = normal; replyStatus = 200; replyContentType = 'text/xml; charset=utf-8';
+  const receiver = (xml: string) => xml.replace('<s:Envelope ', '<s:Envelope xmlns:x="urn:extension" x:envelope="opaque" ')
+    .replace('<s:Body>', '<s:Header x:header="opaque"><x:Trace s:actor="urn:other" s:mustUnderstand="1"/></s:Header><s:Body x:body="opaque">');
+  reply = receiver(normal);
+  assert.deepEqual(await post(expected.request), {status: 200, value: expected.response});
+  replyStatus = 500; reply = receiver(fault);
+  const extendedDeclared = await post(expected.request);
+  assert.equal(extendedDeclared.status, 502); assert.equal((extendedDeclared.value as {fault: {name: string}}).fault.name, expected.fault.name);
+  reply = receiver('<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><s:Fault><faultcode>s:Server</faultcode><faultstring>protocol</faultstring></s:Fault></s:Body></s:Envelope>');
+  const protocolFault = await post(expected.request);
+  assert.equal(protocolFault.status, 502); assert.equal((protocolFault.value as {fault: {version: string}}).fault.version, '1.1');
+  assert.equal(Object.hasOwn(protocolFault.value as object, 'value'), false);
+  reply = reply.replace('s:actor="urn:other"', '');
+  const mandatory = await post(expected.request);
+  assert.equal(mandatory.status, 502); assert.equal((mandatory.value as {rule: string}).rule, 'incoming mandatory SOAP header');
+  reply = receiver(normal.replace('>true<', '>yes<')); replyStatus = 200;
+  const invalidReceiver = await post(expected.request);
+  assert.equal(invalidReceiver.status, 502); assert.equal(Object.hasOwn(invalidReceiver.value as object, 'value'), false);
+  reply = normal;
   for (const value of [{city: 'Paris', days: '2'}, {city: 'Paris'}, {city: 'Paris', days: 2, extra: true},
     {city: 7, days: 2}, {city: 'Paris', days: 2147483648}, {city: 'Paris', days: 1.5},
     null, [], {city: 'Paris', days: false}]) {

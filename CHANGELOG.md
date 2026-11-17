@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(soap): admit checked document/literal wrapper extensions and enforce version-specific header targeting and URI/base limits.
+
 ## [1.6.5] - 2026-11-16
 
 - fix(soap): decode strict ASCII and explicitly labelled UTF-16LE/BE checked responses while preserving encoding assertion agreement.

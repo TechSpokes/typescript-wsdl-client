@@ -63,6 +63,14 @@ try {
   const fault = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned & installed'}});
   assert.equal(fault.statusCode, 502); assert.equal(fault.json().fault.version, version === '11' ? '1.1' : '1.2');
   assert.equal(fault.headers['x-provider-status'], '500'); assert.equal(fault.json().value, undefined);
+  body = body.replace('<s:Envelope ', '<s:Envelope xmlns:x="urn:extension" x:envelope="opaque" ')
+    .replace('<s:Body>', `<s:Header x:header="opaque"><x:Trace s:${version === '11' ? 'actor' : 'role'}="urn:other" s:mustUnderstand="1"/></s:Header><s:Body x:body="opaque">`);
+  const extendedFault = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned & installed'}});
+  assert.equal(extendedFault.statusCode, 502); assert.deepEqual(extendedFault.json(), fault.json());
+  assert.equal(extendedFault.headers['x-provider-status'], '500'); assert.equal(extendedFault.json().value, undefined);
+  body = body.replace(`s:${version === '11' ? 'actor' : 'role'}="urn:other"`, '');
+  const mandatory = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned & installed'}});
+  assert.equal(mandatory.statusCode, 502); assert.equal(mandatory.json().kind, 'unsupported'); assert.equal(mandatory.json().rule, 'incoming mandatory SOAP header');
   const before = calls;
   assert.equal((await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 42}})).statusCode, 400);
   assert.equal(calls, before);

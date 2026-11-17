@@ -1,6 +1,7 @@
 /** Ordered XML syntax boundary for the unreleased faithful compiler. */
 import {createHash} from "node:crypto";
 import {SaxesParser} from "saxes";
+import {collapseXmlWhitespace, receiverUriLexical} from '../util/receiverUriReference.js';
 
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const XSD_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
@@ -218,7 +219,17 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: Orde
     // this tag. Charge its input/output envelope before the URL intrinsic.
     if (base !== undefined) charge(512 + (base.length + (parent?.baseUri ?? uri).length) * 16);
     try { baseUri = base === undefined ? parent?.baseUri ?? uri : new URL(base, parent?.baseUri ?? uri).href; }
-    catch { return fail("invalid-schema", "Invalid xml:base URI"); }
+    catch {
+      // @why Response inspection has a diagnostic locator, not an entity base (#487).
+      //   RFC-valid bases the URL intrinsic cannot resolve are capabilities, not malformed XML.
+      const relative = base === undefined ? undefined : collapseXmlWhitespace(base);
+      if (options.componentResponseEncoding && relative !== undefined) {
+        const lexical = receiverUriLexical(relative);
+        if (!lexical) return fail('invalid-schema', 'Unresolved response xml:base URI');
+        if (lexical?.kind === 'unsupported') return fail('invalid-schema', 'Unsupported response xml:base lexical profile');
+      }
+      return fail("invalid-schema", "Invalid xml:base URI");
+    }
     const node: Building = {kind: "element", name: Object.freeze({namespace: tag.uri, local: tag.local}), lexicalName: tag.name,
       attributes: Object.freeze(attributes), namespaces, baseUri, children: [], source: source(parent ? `${parent.source.path}/${parent.children.length}` : "/0", tagStart, parser.position)};
     if (parent) parent.children.push(node);

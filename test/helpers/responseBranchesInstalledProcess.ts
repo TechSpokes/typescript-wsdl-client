@@ -27,6 +27,7 @@ const expectedError = {kind: 'application-error', branch: 'application-error', v
 const ns11 = 'http://schemas.xmlsoap.org/soap/envelope/', ns12 = 'http://www.w3.org/2003/05/soap-envelope';
 let body = success, status = 200, protocol = ns11, hold = false;
 let charset = 'utf-8';
+let targetedHeader = false;
 let aliasedPublication = false;
 let arrived: (() => void) | undefined, released: (() => void) | undefined;
 const observed: {xml: string; action?: string; contentType?: string; method?: string; url?: string}[] = [];
@@ -43,7 +44,7 @@ const upstream = createServer(async (request, response) => {
     response.once('close', () => released?.());
     response.write(`<s:Envelope xmlns:s="${protocol}"><s:Body>`); arrived?.(); return;
   }
-  const responseXml = `<s:Envelope xmlns:s="${protocol}"><s:Body>${body}</s:Body></s:Envelope>`;
+  const responseXml = `<s:Envelope xmlns:s="${protocol}" xmlns:x="urn:extension" x:envelope="opaque"><s:Header x:header="opaque"><x:Trace ${targetedHeader ? '' : `s:${protocol === ns11 ? 'actor' : 'role'}="urn:other"`} s:mustUnderstand="1"/></s:Header><s:Body x:body="opaque">${body}</s:Body></s:Envelope>`;
   const bytes = Buffer.from(responseXml, charset === 'utf-16le' || charset === 'utf-16be' ? 'utf16le' : 'utf8');
   response.end(request.headers.soapaction === '"urn:test:notify"' ? '' : charset === 'utf-16be' ? bytes.swap16() : bytes);
 });
@@ -106,6 +107,12 @@ try {
     body = applicationError;
     const error = await send(); assert.equal(error.statusCode, 502, error.body); assert.deepEqual(error.json(), expectedError);
     metadata(error, 200);
+    for (const content of [success, applicationError]) {
+      body = content; targetedHeader = true;
+      const mandatory = await send(); assert.equal(mandatory.statusCode, 502); assert.equal(mandatory.json().kind, 'unsupported');
+      assert.equal(mandatory.json().rule, 'incoming mandatory SOAP header'); assert.equal(mandatory.json().value, undefined);
+      targetedHeader = false;
+    }
     body = mode !== 'soap12'
       ? '<s:Fault><faultcode>s:Server</faultcode><faultstring>synthetic fault</faultstring></s:Fault>'
       : '<s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">synthetic fault</s:Text></s:Reason></s:Fault>';
@@ -115,6 +122,9 @@ try {
     assert.equal(fault.json().kind, 'soap-fault'); assert.equal(fault.json().fault.string, 'synthetic fault');
     assert.equal(fault.json().fault.version, mode !== 'soap12' ? '1.1' : '1.2');
     assert.equal(acceptsUpstream(fault.json()), true); assert.equal(acceptsSuccess(fault.json()), false);
+    targetedHeader = true;
+    const targetedFault = await send(); assert.equal(targetedFault.statusCode, 502); assert.equal(targetedFault.json().kind, 'unsupported');
+    assert.equal(targetedFault.json().value, undefined); targetedHeader = false;
     for (const encoding of ['US-ASCII', 'utf-16le', 'utf-16be']) {
       charset = encoding;
       const encoded = await send(); assert.equal(encoded.statusCode, 502, encoded.body);

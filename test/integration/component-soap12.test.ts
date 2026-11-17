@@ -11,8 +11,8 @@ import Fastify from 'fastify';
 import type {FastifyPluginAsync} from 'fastify';
 import {SaxesParser} from 'saxes';
 import {selectComponentOperation, selectDirectOperation} from '../../src/compiler/directOperation.js';
-import {createComponentValueMapping} from '../../src/compiler/directValues.js';
-import {exchangeComponentSoap, inspectComponentSoapResponse} from '../../src/compiler/directSoap.js';
+import {createComponentValueMapping, createDirectValueMapping} from '../../src/compiler/directValues.js';
+import {exchangeComponentSoap, exchangeDirectSoap, inspectComponentSoapResponse} from '../../src/compiler/directSoap.js';
 import {createComponentSourceCapsule, reconstructComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
 import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway.js';
@@ -73,6 +73,43 @@ async function owned<T>(work: (server: {
 }
 
 describe('SOAP 1.2 component binding and wire execution', () => {
+  it('retains the frozen direct incoming wrapper restriction', async () => {
+    const file = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl');
+    const namespace = 'urn:checked:forecast';
+    const direct = await selectDirectOperation(file, {portType: {namespace, local: 'ForecastPortType'},
+      binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}, {loading: {policy: {fileRoots: [path.dirname(file)]}}});
+    if (direct.kind !== 'selected') throw new Error(direct.kind);
+    const mapping = createDirectValueMapping(direct.contract, {kind: 'input'});
+    if (mapping.kind !== 'direct-mapping') throw new Error(mapping.kind);
+    await owned(async server => {
+      server.reply(`<e:Envelope xmlns:e="${soap11}" xmlns:x="urn:extension" x:extension="opaque"><e:Body><f:GetForecastResponse xmlns:f="${namespace}"><f:city>Paris</f:city><f:complete>true</f:complete></f:GetForecastResponse></e:Body></e:Envelope>`);
+      expect(await exchangeDirectSoap(direct.contract, mapping, {city: 'Paris', days: 2}, {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort',
+        endpoint: server.endpoint + '/soap11', allowEndpoint: () => true}))
+        .toMatchObject({kind: 'protocol'});
+    });
+  });
+  it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('qualifies SOAP %s receiver extensions, native validity and fault routing (HTTPS=%s)', async (version, secure) => {
+    const selected = await source(version);
+    const accepted = await readFile(path.join(fixture, `receiver${version}.xml`), 'utf8');
+    const protocol = await readFile(path.join(fixture, `receiver-fault${version}.xml`), 'utf8');
+    const declared = version === '12' ? protocol.replace('</s:Fault>', '<s:Detail><t:Problem xmlns:t="urn:conformance:soap12"><t:code>MISSING</t:code><t:message>Missing input</t:message></t:Problem></s:Detail></s:Fault>')
+      : protocol.replace('</s:Fault>', '<detail><t:Problem xmlns:t="urn:conformance:soap12"><t:code>MISSING</t:code><t:message>Missing input</t:message></t:Problem></detail></s:Fault>');
+    await owned(async server => {
+      const call = () => exchangeComponentSoap(selected.contract, selected.mapping, input, {...selection(version), endpoint: server.endpoint + '/soap' + version, ...(secure ? {ca: cert} : {})});
+      for (const [xml, status, kind] of [[accepted, 200, 'soap-response'], [declared, 500, 'soap-fault'], [protocol, 500, 'soap-fault']] as const) {
+        const bytes = Buffer.from(xml); server.reply(bytes, status, version === '11' ? 'text/xml' : 'application/soap+xml');
+        const result = await call(); expect(result, JSON.stringify(result)).toMatchObject({kind, responseBytes: new Uint8Array(bytes)});
+        if (xml === protocol) expect(result).not.toHaveProperty('decoded');
+        else expect(result).toHaveProperty('decoded.validated');
+        server.reply(Buffer.from(xml.replace(version === '11' ? 's:actor="urn:other"' : 's:role="urn:other"', '')), status, version === '11' ? 'text/xml' : 'application/soap+xml');
+        const refused = await call(); expect(refused).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'}); expect(refused).not.toHaveProperty('decoded');
+      }
+      for (const invalid of [accepted.replace('<t:value>', '<t:wrong>').replace('</t:value>', '</t:wrong>'), declared.replace('<t:code>MISSING</t:code>', '')]) {
+        server.reply(Buffer.from(invalid), invalid.includes('Fault') ? 500 : 200, version === '11' ? 'text/xml' : 'application/soap+xml');
+        const result = await call(); expect(result.kind).not.toBe('soap-response'); expect(result).not.toHaveProperty('decoded');
+      }
+    }, secure);
+  });
   it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('decodes exact encoded SOAP %s response bytes (HTTPS=%s)', async (version, secure) => {
     const selected = await source(version);
     await owned(async server => {

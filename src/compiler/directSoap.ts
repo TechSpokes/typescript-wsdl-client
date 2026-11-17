@@ -24,7 +24,7 @@ import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedS
 import type {ResolverUsage} from './semanticBudget.js';
 import {decodeComponentRecordXml, inspectComponentRecordProjection} from './componentRecordProjection.js';
 import type {ComponentRecordProjection, ComponentRecordDecodedXml} from './componentRecordProjection.js';
-import {assessComponentSoapHeader} from './soapHeaders.js';
+import {assessComponentSoapHeader, assessReceiverWrapper, ignoredSoapProcessingAttribute} from './soapHeaders.js';
 import {decodeComponentResponseBranchesXml, inspectComponentResponseBranches} from './componentResponseBranches.js';
 import type {ComponentResponseBranches, ComponentApplicationErrorDecodedXml} from './componentResponseBranches.js';
 
@@ -562,7 +562,7 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
   const stop = (kind: DirectSoapFailure['kind'], rule: string): never => {throw new Stop(kind, rule);};
   try {
     check();
-    const {elements, shape, bodyRoot, ignoredHeaders} = soapProtocolSelection(contract, profile.component, check, stop);
+    const {elements, shape, bodyRoot, ignoredHeaders, faultAttributeAllowed} = soapProtocolSelection(contract, profile.component, check, stop);
     let charset: string | undefined;
     const metadata = options.responseMetadata;
     if (metadata) {
@@ -605,7 +605,7 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
           if (!/^Code,Reason(?:,Node)?(?:,Role)?(?:,Detail)?$/.test(names.join(','))) stop('protocol', 'SOAP 1.2 Fault children');
           const scalar = (node: SyntaxElement, language = false): string => {
             check();
-            if (elements(node).length || node.attributes.some(a => !(language && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')))
+            if (elements(node).length || node.attributes.some(a => !faultAttributeAllowed(a) && !(language && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')))
               stop('protocol', 'SOAP 1.2 Fault scalar child');
             return node.children.map(n => n.kind === 'text' ? n.value : '').join('');
           };
@@ -655,6 +655,7 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
           const metadata: Soap12FaultMetadata = {version: '1.2', code, subcodes: codes.slice(1), reasons, string: reasons[0]!.text,
             ...(node === undefined ? {} : {node}), ...(role === undefined ? {} : {role})};
           const detailNode = children.find(n => n.name.local === 'Detail');
+          if (detailNode) for (const attribute of detailNode.attributes) {check(); faultAttributeAllowed(attribute);}
           // @see SOAP 1.2 section 5.4.5 permits attributes on Detail; these protocol-wrapper attributes stay in the original bytes.
           if (detailNode?.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP 1.2 Fault Detail text');
           const detail = detailNode ? elements(detailNode) : [];
@@ -675,7 +676,7 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
           stop('protocol', 'SOAP Fault children');
         }
         const text = (node: SyntaxElement) => {
-          if (node.attributes.some(a => !(node.name.local === 'faultstring' && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')) || elements(node).length) stop('protocol', 'SOAP Fault scalar child');
+          if (node.attributes.some(a => !faultAttributeAllowed(a) && !(node.name.local === 'faultstring' && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')) || elements(node).length) stop('protocol', 'SOAP Fault scalar child');
 
           return node.children.map(n => n.kind === 'text' ? n.value : '').join('');
         };
@@ -709,6 +710,11 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
         ...(ignoredHeaders.length ? {ignoredHeaders: Object.freeze(ignoredHeaders)} : {}), usage: Object.freeze({...budget.usage()})});
     }
     if (!decoded) throw new TypeError('Missing decoded SOAP response');
+    if (profile.component && contract.binding.style === 'document' && contract.binding.use === 'literal'
+      && !('validated' in decoded) && decoded.kind === 'xml-invalid') {
+      if (decoded.rule === 'Unresolved response xml:base URI') return fail('unsupported', 'response-base-unavailable', 'response');
+      if (decoded.rule === 'Unsupported response xml:base lexical profile') return fail('unsupported', 'URI-lexical-profile', 'response');
+    }
     if (!('validated' in decoded)) return profile.component ? Object.freeze({...decoded, phase: 'response' as const})
       : Object.freeze({...fail(decoded.kind, decoded.rule), ...(decoded.diagnostic ? {diagnostic: decoded.diagnostic} : {})});
     check(); check();
@@ -737,6 +743,20 @@ function soapProtocolSelection(contract: DirectOperationContract, component: boo
   const soap12 = component && contract.binding.version === '1.2';
   const SOAP = soap12 ? 'http://www.w3.org/2003/05/soap-envelope' : SOAP11;
   const rpc = contract.binding.style === 'rpc';
+  const receiver = component && !rpc && contract.binding.use === 'literal';
+  const receiverBudget = inspectDirectOperation(contract).context.budget;
+  const receiverCheck = (amount = 1) => {receiverBudget.chargeWork(amount); check();};
+  let incomingReceiver = false;
+  const faultAttributeAllowed = (attribute: SyntaxElement['attributes'][number]): boolean => {
+    if (!incomingReceiver || attribute.name.namespace !== SOAP) return false;
+    if (ignoredSoapProcessingAttribute(attribute.name.local, contract.binding.version)) return true;
+    if (attribute.name.local === 'encodingStyle') {
+      if (soap12) stop('protocol', 'SOAP 1.2 encodingStyle placement');
+      if (/[^\t\r\n ]/.test(attribute.value)) stop('unsupported', 'SOAP 1.1 response encodingStyle');
+      return true;
+    }
+    return stop('unsupported', 'unknown SOAP Fault attribute');
+  };
     const elements = (node: SyntaxElement): SyntaxElement[] => {
      check();
       return node.children.filter((child): child is SyntaxElement => child.kind === 'element');
@@ -744,28 +764,47 @@ function soapProtocolSelection(contract: DirectOperationContract, component: boo
 
     const shape = (node: SyntaxElement, encodedScope = false): SyntaxElement[] => {
       const children = elements(node);
-      if (node.attributes.some(a => !(encodedScope && a.name.namespace === SOAP && a.name.local === 'encodingStyle'
+      if (node.attributes.some(a => !faultAttributeAllowed(a) && !(encodedScope && a.name.namespace === SOAP && a.name.local === 'encodingStyle'
         && a.value === 'http://schemas.xmlsoap.org/soap/encoding/')) || node.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP protocol attributes or text');
       return children;
     };
     const ignoredHeaders: ExpandedName[] = [];
     const bodyRoot = (root: SyntaxElement, incoming = false): SyntaxElement => {
+      incomingReceiver = incoming && receiver;
       if (!same(root.name, {namespace: SOAP, local: 'Envelope'})) stop('protocol', `SOAP ${contract.binding.version} Envelope required`);
-      const children = shape(root, rpc);
+      const wrapperShape = (node: SyntaxElement) => {
+        if (!incomingReceiver) return shape(node, rpc);
+        const refusal = assessReceiverWrapper(node, contract.binding.version, receiverCheck);
+        if (refusal) stop(refusal.kind, refusal.rule);
+        if (node.children.some(n => n.kind === 'text' && /[^\t\r\n ]/.test(n.value))) stop('protocol', 'SOAP protocol text');
+        return elements(node);
+      };
+      const children = wrapperShape(root);
       if (children[0]?.name.namespace === SOAP && children[0].name.local === 'Header') {
         if (component && incoming) {
-          const assessed = assessComponentSoapHeader(children[0], check, contract.binding.version);
+          const assessed = assessComponentSoapHeader(children[0], incomingReceiver ? receiverCheck : check, contract.binding.version, incomingReceiver ? [root] : undefined);
           if (assessed.kind !== 'ignored-optional-headers') stop(assessed.kind, assessed.rule);
           else for (const name of assessed.headers) {check(); ignoredHeaders.push(name);}
         } else if (shape(children[0]).length) stop('unsupported', 'incoming SOAP headers');
         children.shift();
       }
       if (children.length !== 1 || !same(children[0]!.name, {namespace: SOAP, local: 'Body'})) stop('protocol', 'one SOAP Body required');
-      const body = shape(children[0]!, rpc);
+      const bodyNode = children[0]!;
+      const body = wrapperShape(bodyNode);
       if (rpc && !body.some(n => same(n.name, {namespace: SOAP, local: 'Fault'}))) return children[0]!;
       if (body.length !== 1) stop('protocol', 'one SOAP Body payload required');
+      if (incomingReceiver && !soap12) {
+        // @constraints Header encoding scope never flows into Body; a reset overrides only its own ancestry.
+        let encoding = '';
+        for (const node of [root, bodyNode, body[0]!]) {
+          check();
+          const style = syntaxAttribute(node, 'encodingStyle', SOAP);
+          if (style !== undefined) encoding = style;
+        }
+        if (/[^\t\r\n ]/.test(encoding)) stop('unsupported', 'SOAP 1.1 response encodingStyle');
+      }
       return body[0]!;
     };
 
-  return {elements, shape, bodyRoot, ignoredHeaders};
+  return {elements, shape, bodyRoot, ignoredHeaders, faultAttributeAllowed};
 }

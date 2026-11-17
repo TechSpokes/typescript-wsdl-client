@@ -23,6 +23,23 @@ const soap = (body: string) => new TextEncoder().encode('<s:Envelope xmlns:s="ht
 const wrapped = (metadata: boolean) => soap(`<Envelope xmlns="${namespace}">${metadata ? '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>' : ''}${records}</Envelope>`);
 
 describe('offline checked SOAP response inspection', () => {
+  it.each(['11', '12'] as const)('reports SOAP %s receiver extensions and unavailable bases through the public inspector', async version => {
+    const root = path.resolve('test/conformance/fixtures/soap/versions');
+    const selector = {portType: {namespace: 'urn:conformance:soap12', local: 'PingType'}, binding: {namespace: 'urn:conformance:soap12', local: 'Soap' + version}, operation: 'Ping'};
+    const xml = await readFile(path.join(root, `receiver${version}.xml`), 'utf8');
+    const inspect = (text: string) => inspectCheckedResponse(path.join(root, 'document-literal.wsdl'), {selector,
+      checkedComponents: {fileRoots: [root], sourceResources: [], sourceOrigins: [], selectors: [selector]}, responseBytes: Buffer.from(text)});
+    expect(await inspect(xml)).toMatchObject({kind: 'conforming', executed: false});
+    if (version === '12') {
+      for (const text of [xml.replace('s:role="urn:other"', 's:role="relative"'),
+        xml.replace('x:envelope="opaque"', 'xml:base="relative/"').replace('x:header="opaque"', 'xml:base="http://example.org/absolute/"')]) {
+        const report = await inspect(text); expect(report.kind).toBe('refused');
+        expect(report.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({kind: 'unsupported', rule: 'response-base-unavailable'})]));
+      }
+      const malformed = await inspect(xml.replace('x:envelope="opaque"', 'xml:base="http://["'));
+      expect(malformed.kind).toBe('mismatch');
+    }
+  });
   it('attributes a companion scalar failure to its independent same-QName universe with an existing recipe', async () => {
     await mkdir('tmp/conformance', {recursive: true});
     const temporary = await mkdtemp(path.resolve('tmp/conformance/inspect-scoped-target-'));

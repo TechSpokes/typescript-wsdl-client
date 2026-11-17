@@ -115,6 +115,19 @@ describe('one-way native exchange and generated routes', () => {
       body = version === '11' ? `<s:Envelope xmlns:s="${soap}"><s:Body><s:Fault><faultcode>s:Server</faultcode><faultstring>owned</faultstring></s:Fault></s:Body></s:Envelope>`
         : `<s:Envelope xmlns:s="${soap}"><s:Body><s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">owned</s:Text></s:Reason></s:Fault></s:Body></s:Envelope>`;
       expect(await call()).toMatchObject({kind: 'soap-fault', fault: {version: version === '11' ? '1.1' : '1.2'}});
+      const receiver = await readFile(path.resolve(`test/conformance/fixtures/soap/versions/receiver-fault${version}.xml`), 'utf8');
+      const previous = body;
+      body = receiver;
+      expect(await call()).toMatchObject({kind: 'soap-fault', responseBytes: new Uint8Array(Buffer.from(receiver))});
+      const receiverReply = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned'}});
+      expect(receiverReply.statusCode).toBe(502);
+      body = receiver.replace(version === '11' ? 's:actor="urn:other"' : 's:role="urn:other"', '');
+      expect(await call()).toMatchObject({kind: 'unsupported', rule: 'incoming mandatory SOAP header'});
+      const refusedReply = await app.inject({method: 'POST', url: '/v1/notices/Notify', payload: {value: 'owned'}});
+      expect(refusedReply.statusCode).toBe(502); expect(refusedReply.body).not.toBe(receiverReply.body);
+      body = receiver; status = 200;
+      expect(await call()).toMatchObject({kind: 'protocol', rule: 'one-way-response-body'});
+      status = 500; body = previous;
       if (version === '12') {
         status = 400; body = body.replace('s:Receiver', 's:Sender'); expect(await call()).toMatchObject({kind: 'soap-fault'});
         body = body.replace('s:Sender', 's:Receiver'); expect(await call()).toMatchObject({kind: 'protocol', rule: 'HTTP 400 requires SOAP Sender Fault'});

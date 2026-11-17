@@ -85,7 +85,7 @@ Regenerated SOAP 1.1 clients use `checkedComponentRuntimeV3` and `checked-compon
 
 SOAP 1.2 faults retain code, nested subcodes, language-tagged reasons and optional Node/Role metadata. Declared application detail uses the existing native mapping and gateway fault validation. A valid protocol fault without declared application detail carries fault metadata without a typed application value; the client retains original response bytes. Gateways return HTTP 502 for upstream faults, including SOAP Sender faults received on HTTP 400. SOAP 1.2 protocol rules follow [the messaging framework](https://www.w3.org/TR/soap12-part1/#soapfault) and [HTTP binding](https://www.w3.org/TR/soap12-part2/#soapinhttp).
 
-SOAP 1.2 header processing uses the default ultimate receiver and next roles. Unknown mandatory blocks targeted at this receiver refuse; other-role and optional blocks may be ignored. The `mustUnderstand` and `relay` attributes accept SOAP 1.2 Boolean lexical forms. This does not enable outgoing application headers, WS-Security, streaming or RPC/encoded SOAP 1.2.
+SOAP 1.2 header processing uses the default ultimate receiver and exact next/ultimateReceiver roles. Unknown mandatory blocks targeted at this receiver refuse; none-role, other-role and optional blocks remain unprocessed. The `mustUnderstand` and `relay` attributes accept XML Schema Boolean lexical forms after XML whitespace collapse. See the [incoming receiver profile](#incoming-documentliteral-receiver) for URI/base and wrapper limits.
 
 The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the shipped direct runtime and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
 
@@ -110,7 +110,34 @@ Absent assertions default to UTF-8. Invalid bytes never trigger guessing or repl
 
 [XML 1.0](https://www.w3.org/TR/xml/#charencoding) requires UTF-8/UTF-16 support and malformed encoding failure; this bounded profile adds selected optional labels, not a complete charset catalogue. [RFC 3902](https://www.rfc-editor.org/rfc/rfc3902.html#section-2) defines SOAP 1.2 media semantics. Unknown charsets, contradictory byte order and illegal or truncated XML refuse before native validated values are returned; schema, scalar, mapping, fault, byte-limit and cancellation checks remain authoritative.
 
-Original response bytes are retained. Metadata/source decoding and digests, outgoing UTF-8, frozen `checkedDirectRuntimeV1` and legacy behavior retain their existing contracts. Empty one-way acknowledgements remain bodyless; encoded nonempty success-status entities remain failures. Envelope/header-role processing, metadata charset authority and broader charset support remain #190/#426/#462 work.
+Original response bytes are retained. Metadata/source decoding and digests, outgoing UTF-8, frozen `checkedDirectRuntimeV1` and legacy behavior retain their existing contracts. Empty one-way acknowledgements remain bodyless; encoded nonempty success-status entities remain failures. Metadata charset authority and broader charset support remain #426/#462 work.
+
+### Incoming document/literal receiver
+
+Incoming checked component SOAP 1.1/1.2 document/literal responses admit foreign namespace-qualified attributes on Envelope, Header and Body, including XML context attributes. Namespace declarations supply parser context; default namespaces do not qualify unprefixed attributes. Unqualified wrapper attributes still refuse: SOAP 1.1 Header/Body refusal is a selected-profile limitation, not a universal SOAP grammar rule. Accepted extension attributes confer no application or security semantics. Outgoing checks, bounded RPC, frozen direct clients, runtime versions and legacy defaults retain their contracts.
+
+Only immediate qualified Header blocks control routing. SOAP 1.1 targets this receiver when actor is absent or exactly `http://schemas.xmlsoap.org/soap/actor/next`; other supported absolute actor URIs remain unassumed. SOAP 1.2 targets this receiver when role is absent or exactly the standard next/ultimateReceiver identifier; none and other resolved roles remain unassumed. An unknown mandatory targeted block is terminal `unsupported`, even when the Body is a declared or protocol Fault. Ignored blocks remain unprocessed, untrusted and without a forwarding guarantee; relay never waives mandatory processing.
+
+| Incoming case | SOAP 1.1 outcome | SOAP 1.2 outcome |
+|---|---|---|
+| Foreign qualified attribute on each wrapper | Native body/fault validation | Native body/fault validation |
+| Unqualified Header/Body attribute | Unsupported profile | Protocol failure |
+| Unknown mandatory block with absent target or exact next | Unsupported header | Unsupported header |
+| Unknown mandatory block with another absolute target | Unprocessed | Unprocessed |
+| Mandatory exact ultimateReceiver / none | Ordinary unassumed absolute actors | Unsupported header / unprocessed |
+| Padded numeric mustUnderstand | Unsupported lexical profile | Collapsed boolean |
+| Relative target without explicit usable base | Unsupported actor profile | response-base-unavailable |
+| Wrapper encodingStyle inherited by Body | Unsupported unless reset empty | Protocol placement error |
+
+SOAP 1.1 `mustUnderstand` accepts exact `0`/`1`; XML-whitespace-padded numerics are an unsupported lexical profile, while word booleans and other values are invalid. SOAP 1.2 `mustUnderstand`/`relay` accept `true`, `false`, `0`, `1` after XML whitespace collapse. NBSP is significant and invalid in booleans. Foreign, unqualified and nested lookalikes never activate SOAP processing. Protocol-owned Fault structure/scalars ignore only version-selected processing attributes; application payload/detail validation remains native.
+
+Absolute actor/role identifiers retain their spelling, percent escapes, host case and explicit ports. Reserved identities require exact comparison. Relative, empty or padded SOAP 1.1 actors are an unsupported actor-URI profile. SOAP 1.2 roles and needed XML Base values support ASCII URI references with valid percent escapes after XML whitespace collapse; Unicode, NBSP and remaining spaces return `unsupported` URI-lexical-profile rather than being silently escaped. Malformed references and percent escapes fail protocol/syntax validation.
+
+Relative or empty SOAP 1.2 roles require an explicit usable absolute hierarchical `xml:base`, with inherited and relative overrides reconstructed from raw attributes. Missing bases return `unsupported` with rule `response-base-unavailable`, live and offline. Request endpoints, WSDL addresses, capture paths and synthetic diagnostic URNs supply no fallback base. The existing parser can reject otherwise legal bases, including an IPvFuture authority or a relative `xml:base` against an opaque offline locator before a later absolute override; these bounded cases also return `response-base-unavailable`. Complete XML Base, HTTP-derived bases and Content-Location remain #190/#429 work; there is no new public base option.
+
+SOAP 1.2 `encodingStyle` on wrappers and structural Fault nodes is a placement error; other reserved wrapper attributes conservatively return `unsupported` reserved-wrapper-profile. SOAP 1.1 wrapper actor/mustUnderstand attributes are ignored for routing. SOAP 1.1 encoding styles inherit through the consumed Body ancestry, with empty reset semantics; an effective unsupported claim refuses instead of enabling an encoded decoder. Unprocessed optional/untargeted header encoding claims need no codec and do not flow into Body. Wrapper order, one Body and payload, XML whitespace, Fault grammar, native scalar/order constraints and declared detail checks remain enforced.
+
+The [receiver evidence row](supported-patterns.md#checked-soap-envelope-receiver) covers ordinary responses, application branches, declared/protocol faults and real one-way faults. Public offline inspection still requires application output and refuses one-way inspection. Original bytes, source/artifact/endpoint denials, verified TLS, capacities, cancellation and awaited cleanup remain authoritative. Typed headers, authentication, intermediaries and wider bindings remain separate capabilities.
 
 ### Service planning
 
@@ -353,7 +380,7 @@ Complete explicit source configurations remain advanced inputs, including older 
 
 The component transport applies optional endpoint restrictions and requires verified HTTPS when required by source policy. An optional CA file does not disable verification. Client certificates, timestamps, required WS-Addressing, supporting tokens and security headers remain unsupported and refuse. Scalar facets, ordered particle languages and strict wildcard membership remain native supplemental checks, so OpenAPI marks JSON shape completeness false. `admitted:false` remains the full-profile marker. Generated scaffold tests are separate from independently specified HTTP/SOAP wire and provider/business evidence.
 
-For [SOAP 1.1 response headers](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/), qualified optional blocks for the default receiver may be ignored when `mustUnderstand` is absent or `0`. Unknown mandatory blocks and actor-directed processing refuse; malformed attributes and unqualified blocks fail protocol checks. This processing grants no header security semantics or outgoing header capability.
+For [SOAP 1.1 response headers](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/), qualified optional or other-actor blocks may remain unprocessed. Unknown mandatory blocks targeted at the default receiver or exact next actor refuse; malformed values and unqualified blocks fail. The [incoming document/literal receiver](#incoming-documentliteral-receiver) defines the selected actor, wrapper and encoding scope without adding security semantics or outgoing headers.
 
 The copied-source scaffold records authorized HTTP redirect aliases for offline reconstruction. Local symlink aliases still refuse before emission; native loading authorization alone does not establish a relocatable local tree. Directory names beginning with two dots are ordinary names, not parent segments.
 

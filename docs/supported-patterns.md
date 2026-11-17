@@ -6,6 +6,12 @@ The matrix describes the existing legacy generator except where a row explicitly
 
 The qualified checked domain includes [keyed mixed, namespace-collision and source-permitted open values](checked-gateway.md#mixed-namespaced-and-open-values), with production conformance and installed request/response/fault evidence. Native strict/lax/skip checks remain distinct from schema-source wildcard checks and from the legacy rows below.
 
+## Checked SOAP envelope receiver
+
+Incoming checked component SOAP 1.1/1.2 document/literal responses accept foreign qualified wrapper attributes while retaining native payload and fault validation. The default receiver enforces exact actor/role targeting and version-specific boolean lexicals; unknown targeted mandatory headers refuse before success or fault publication. Unprocessed blocks confer no trust or forwarding semantics. See the [receiver contract](checked-gateway.md#incoming-documentliteral-receiver) for URI spelling, ASCII lexical support, explicit XML Base requirements and `response-base-unavailable` limitations.
+
+Handwritten XML and expected outcomes qualify wrappers, structure, targeting, lexicals, namespace identity, URI/base and encoding inheritance/reset through the production assessor. Owned HTTP/verified HTTPS and installed generated clients/gateways cover both versions, success/refusal, native invalid payload/detail, application-error branches and declared/protocol/one-way faults. The full receiver table runs in Linux/Windows Node 24/26 installed-product jobs. Outgoing, frozen direct and bounded RPC profiles retain their earlier boundaries; HTTP bases, typed headers and broader protocol coverage remain open.
+
 ## Checked one-way document literal
 
 The checked-components profile supports WSDL 1.1 input-only document/literal operations over SOAP 1.1 and SOAP 1.2 HTTP(S). Complete empty 200/202/204 responses produce transport acknowledgements and an empty downstream 202; nonempty acknowledgement bodies, other statuses and contradictory source patterns refuse. Native protocol-fault, source/security, cancellation and body limits remain authoritative. RPC and multipart one-way forms remain unsupported; legacy defaults do not adopt the new contract.
@@ -45,6 +51,7 @@ Candidate interpretations and test-only prototypes do not certify production ass
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `checked-soap-envelope-receiver` | partial | Checked SOAP 1.1/1.2 document/literal responses admit qualified wrapper extensions and enforce default-receiver targeting with bounded URI/base support. |
 | `checked-one-way-document-literal` | partial | Checked document/literal input-only operations use V6/V7 bindings and empty 202 transport acknowledgements; legacy defaults remain unchanged. |
 | `declared-derivation-boundaries` | research | Legacy compilation characterizes omitted groups, appended restriction content and named recursive references; faithful resolution/composition remain internal. |
 | `content-model-boundaries` | research | Characterization records current projection limits; it does not claim faithful content-model support. |
