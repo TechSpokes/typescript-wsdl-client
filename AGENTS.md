@@ -39,7 +39,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
 - Update the version before preflight; preflight verifies versions and must not update tracked files.
 - Release preflight already runs full CI and packages the agent skill artifact; do not run those final gates separately.
-- After preflight passes, commit the exact validated tree and tag it without rerunning preflight.
+- Commit the validated tree after preflight. Tag the merged main commit only after its tree and CI are verified.
 - If another command changes tracked release files after preflight, rerun preflight on the new final candidate before committing.
 - A rejected tagged candidate is permanently consumed; never move, delete for reuse, or force-update its release tag.
 - Use the `Abandon Release Candidate` workflow to create `abandoned/vX.Y.Z` on the same commit and preserve the rejected draft.
@@ -60,6 +60,8 @@ Use `npm test -- <path>` for targeted work and `npm run ci` for delivery. The de
 Keep broad Vitest discovery in `npm test` and `npm run ci`. GitHub runs `npm run ci` on Linux with Node 24 and `npm run ci:platform` for representative compatibility. Use `npm run ci:platform:full` when the complete installed matrix is needed on a given platform.
 
 Assign one owner to final verification. Inspect script coverage before launching overlapping gates. Use full CI as capability evidence when it already runs the affected suite. Run explicitly required separate checks in sequence. Follow [verification orchestration](docs/testing.md#verification-orchestration) for evidence ownership, deadlines and failure classification.
+
+Follow the [pre-push sequence](docs/testing.md#before-opening-or-updating-a-pull-request) before opening or updating a PR, including a draft.
 
 Allow at least six minutes for full conformance on Windows. Use the narrowest capability stage while developing. Follow the [Windows setup](docs/testing.md#windows-and-certificates) for scoped elevation on affected controls and verified certificate trust. Consumer-project agents should use the [consumer testing guidance](docs/testing.md#for-consumer-projects).
 

@@ -1,4 +1,5 @@
 import {readFileSync} from "node:fs";
+import {spawnSync} from "node:child_process";
 import { describe, expect, it } from "vitest";
 import * as releasePreflightUtils from "../../scripts/lib/release-preflight-utils.mjs";
 
@@ -11,6 +12,17 @@ const {
   verifySkillDeliveryGate,
   verifyTrackedTreeStable,
 } = releasePreflightUtils;
+
+it("stops an invalid release candidate before running delivery or packaging", () => {
+  const result = spawnSync(process.execPath, ["scripts/release-preflight.mjs", "v0.0.0"], {
+    encoding: "utf8", timeout: 15_000, windowsHide: true,
+  });
+  expect(result.error).toBeUndefined();
+  expect(result.status).toBe(1);
+  expect(result.stdout).toContain("[FAIL] package-version");
+  expect(result.stdout).not.toMatch(/\[(PASS|FAIL)\] (dep-freshness|examples-fresh|npm-run-ci|skill-artifact)/);
+  expect(result.stdout).not.toContain("Next steps:");
+});
 
 describe("findDatedChangelogSection", () => {
   it("finds a dated semver changelog section", () => {

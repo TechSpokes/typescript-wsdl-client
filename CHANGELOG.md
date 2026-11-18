@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-11-18
+
+- test(tooling): shorten routine CI while preserving installed consumer and platform verification.
+- fix(release): stop preflight on failed prerequisites and direct tagging through verified merged main.
+- docs: finish local verification and independent review before triggering pull request CI.
+
 ## [1.8.0] - 2026-11-18
 
 - feat(checked): compose lexical atomic union lists with native typed equality and retained whole-list witnesses.

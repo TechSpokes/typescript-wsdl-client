@@ -10,7 +10,6 @@ import {
   failIfErrors,
   readJson,
   runNpm,
-  verifyGeneratedApp,
   verifyRootManifestAndLock,
   writeJson,
 } from "./lib/deps.mjs";
@@ -78,9 +77,7 @@ function main() {
   failIfErrors(verifyRootManifestAndLock(ranges));
 
   console.log("Generating app scaffold for dependency verification...");
-  runNpm(["run", "smoke:pipeline"], {stdio: "inherit"});
-
-  failIfErrors(verifyGeneratedApp(ranges));
+  runNpm(["run", "smoke:pipeline", "--", "--verify-app-deps"], {stdio: "inherit"});
   console.log("Dependency maintenance completed successfully.");
 }
 

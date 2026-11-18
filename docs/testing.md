@@ -49,6 +49,18 @@ Run an affected capability stage while iterating. Full delivery already runs the
 
 A checkout has one owner for `dist/` during delivery, platform qualification, or corpus verification. Wait for that run before starting a manual build or any focused check that reads `dist/`. Use another checkout when both genuinely need to run at once.
 
+### Before opening or updating a pull request
+
+1. Finish and self-review the complete diff, including applicable tests, docs, examples and release metadata.
+2. Run the focused local checks that cover the diff. Fix failures before handing the candidate to a reviewer.
+3. Give a reviewer the local diff and check results. Use extra reviewers for distinct risks and batch the fixes.
+4. Have one owner run the remaining local verification. For releases, review the final uncommitted tree and run release preflight once.
+5. Open the PR or push the reviewed and verified candidate to the existing PR branch. Draft PRs also trigger CI.
+
+Give reviewers the existing results so they can focus on the diff. Run checks that share build or packaging outputs in sequence. Record results in the PR summary and keep transient logs outside the candidate tree.
+
+When a check needs hosted infrastructure, record which local checks passed and what GitHub still needs to verify. Reuse valid results when retrying a hosted failure on the same candidate. After a fix, repeat the affected checks and review material changes before pushing again.
+
 ### Temporary output and recovery
 
 Ordinary verification prints its unique directory under `tmp/verification/`. Conformance, generated-test, smoke and package scratch stay in that workspace. The runner allocates and records a separate operating-system temporary directory for installs so Node cannot resolve checkout dependencies through their ancestors.

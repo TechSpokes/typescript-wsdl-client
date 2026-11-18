@@ -139,6 +139,8 @@ Run `npm run ci` for full verification. It covers the independent reference suit
 
 See the [Testing Guide](docs/testing.md#running-tests) for prerequisites, the Windows sandbox and certificate setup, output ownership, and recovery. The ordinary delivery gate restores any build present before it started and cleans its own scratch after success or failure. Release preflight owns the final release gate and preserves its release artifacts.
 
+Follow the [pre-push sequence](docs/testing.md#before-opening-or-updating-a-pull-request) when opening a PR or pushing a new head to an existing PR.
+
 ### Test Structure
 
 ```text
@@ -175,7 +177,7 @@ Include release notes, versions, changelog, and the root documentation link befo
 
 Set the release version before preflight. Preflight verifies release metadata, writes only ignored build and temporary outputs, and fails if it changes tracked content.
 
-After preflight passes, commit the exact validated tree without further tracked-file changes. Tag and push that commit without rerunning preflight, full CI, package validation, or skill packaging. If another command changes tracked files, complete the fixes and rerun preflight on the new final candidate.
+After preflight passes, commit the exact validated tree and push the release PR. Tag the merged main commit after its CI passes and its tree matches preflight. If tracked release files change, validate the new candidate before delivery.
 
 Pushing the matching `vX.Y.Z` tag creates or updates a GitHub draft release from the release notes file after CI passes. The draft release workflow strips the release-note H1 for GitHub display, packages and uploads the agent skill ZIP, and refuses to mutate a published non-draft release.
 

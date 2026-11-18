@@ -60,7 +60,7 @@ When an abandoned major or minor candidate contains the complete launch narrativ
 The supported release path keeps final-form tags immutable:
 
 1. Prepare versions, changelog, release notes, and the documentation index before pushing the release PR.
-2. Run release preflight on the final uncommitted tree and commit that exact validated tree.
+2. Include new release files in the staging index. Review the final uncommitted tree, run preflight once, and commit that exact tree.
 3. Push the PR and require Node 24 and Node 26 checks on its final head before merging.
 4. Verify the merged main tree matches the validated tree and require CI on the merged commit.
 5. Tag the validated merged main commit and push the tag to start the draft workflow.

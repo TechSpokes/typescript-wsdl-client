@@ -158,6 +158,8 @@ Full conformance generates consumer-style projects and launches nested TypeScrip
 
 The Linux Node 24 job runs `npm run ci`. The compatibility jobs run audited reference, platform controls and representative installed consumers. Use `npm run ci:platform:full` or manual CI dispatch for exhaustive platform qualification. Each job builds once and reuses one packed candidate for its installed checks.
 
+Follow the [pre-push sequence](../docs/testing.md#before-opening-or-updating-a-pull-request) before opening a PR or pushing a new head, including on drafts.
+
 Give each checkout one delivery build owner and allow its child commands to close before cleanup. Follow [temporary output and recovery](../docs/testing.md#temporary-output-and-recovery) for cancellation or a stopped owner. Use the [Windows setup](../docs/testing.md#windows-and-certificates) for scoped permissions and certificate trust.
 
 Have a fresh reviewer examine the coherent diff, boundary tests and verification results. Correct the cause of any failed or interrupted run and repeat the affected check. Report incomplete gates explicitly.

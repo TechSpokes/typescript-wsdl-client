@@ -1,6 +1,7 @@
-import {mkdir, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {runOwnedNode} from '../test/helpers/ownedNodeProcess.js';
+import {directDependencyRanges, failIfErrors, verifyGeneratedApp} from './lib/deps.mjs';
 
 const workspace = process.env.WSDL_TEST_RUN_DIR;
 if (!workspace) throw new Error('Run this check using npm run smoke:pipeline');
@@ -24,3 +25,9 @@ await writeFile(config, JSON.stringify({
   include: ['**/*.ts', path.join(root, 'src/types/soap.d.ts')],
 }));
 await run(['node_modules/typescript/bin/tsc', '-p', config]);
+
+if (process.argv.includes('--verify-app-deps')) {
+  const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8')) as Parameters<typeof directDependencyRanges>[0];
+  failIfErrors(verifyGeneratedApp(directDependencyRanges(pkg), path.join(out, 'app', 'package.json')));
+  console.log('Fresh generated app dependency pins match the repository manifest.');
+}

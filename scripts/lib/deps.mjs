@@ -10,7 +10,6 @@ export const ROOT = path.resolve(__dirname, "..", "..");
 export const PACKAGE_JSON = path.join(ROOT, "package.json");
 export const PACKAGE_LOCK_JSON = path.join(ROOT, "package-lock.json");
 export const APP_GENERATOR = path.join(ROOT, "src", "app", "generateApp.ts");
-export const GENERATED_APP_PACKAGE = path.join(ROOT, "tmp", "smoke", "app", "package.json");
 
 export const APP_DEPENDENCIES = {
   dependencies: ["fastify", "fastify-plugin", "saxes", "soap"],
@@ -181,8 +180,8 @@ export function verifyGeneratedAppSource(content, ranges) {
   return errors;
 }
 
-export function verifyGeneratedApp(ranges) {
-  const generated = readJson(GENERATED_APP_PACKAGE);
+export function verifyGeneratedApp(ranges, manifestPath) {
+  const generated = readJson(manifestPath);
   const errors = [];
 
   for (const [section, names] of Object.entries(APP_DEPENDENCIES)) {

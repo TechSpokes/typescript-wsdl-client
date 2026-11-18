@@ -13,15 +13,7 @@ Briefly describe the change and its motivation.
 - [ ] Docs updated (README/CLI help) if user-facing
 - [ ] No breaking changes or clearly documented
 
-## How to test
+## Verification
 
-Commands and steps to validate locally:
-
-```bash
-npm ci
-npm run build
-npm run typecheck
-# optional smoke
-npm run smoke
-```
+Record the focused checks and review completed before pushing. For a release, record the final preflight result. See the [pre-push sequence](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/testing.md#before-opening-or-updating-a-pull-request).
 
