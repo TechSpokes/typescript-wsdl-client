@@ -14,11 +14,11 @@ Product changes do not wait for unrelated universal research completion. Each ch
 
 ## Published baseline
 
-Version [1.6.4](docs/releases/v1.6.4.md) is the current published baseline. It corrects generated HTTP publication tuple types for strict consumer compilation, following checked SOAP 1.1/1.2 input-only operations and configured downstream HTTP names in 1.6.3. Checked composition and checked streaming remain incomplete; a bounded release does not establish broader provider or standards coverage.
+Version [1.7.0](docs/releases/v1.7.0.md) is published on GitHub and completes the agreed buffered SOAP work: queried endpoints, bounded compression, observed response bases, configured credentials, declared literal headers and portable metadata/bootstrap. Checked composition, checked streaming and the documented richer security/binding families remain incomplete; this release does not establish universal provider or standards coverage.
 
 ### Release availability and upgrade impact
 
-Version 1.6.4 is published on [GitHub](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.6.4) and was verified in the npm registry on November 16, 2026. Verify the exact version in the [npm registry](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) before installing it; workflow completion alone does not establish registry availability. Versions 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. See the [version migration guide](docs/migration.md).
+Version 1.7.0 was published on [GitHub](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.7.0) on November 17, 2026. Its [npm publication workflow](https://github.com/TechSpokes/typescript-wsdl-client/actions/runs/44135561064) passed, and the [exact npm version and integrity](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client/1.7.0) were verified the same day. Package-wide metadata and latest tags can lag the exact version; verify the pinned artifact independently before consumer acceptance. Versions 1.1.6 and 1.1.7 were unpublished candidates whose preview work reached npm in 1.1.8. See the [version migration guide](docs/migration.md#from-165-to-170).
 
 | Delivery state | Scope |
 |---|---|
@@ -31,33 +31,37 @@ Version 1.6.4 is published on [GitHub](https://github.com/TechSpokes/typescript-
 | Published in 1.6.2 | Bounded HTTP observation and separately selected gateway publication |
 | Released in 1.6.3 | SOAP 1.1/1.2 input-only acknowledgements and exact safe downstream HTTP names |
 | Published in 1.6.4 | Strict consumer compilation of HTTP publication pairs |
+| Published on GitHub in 1.6.5 | Strict ASCII and explicitly labelled UTF-16 checked responses |
+| Published on GitHub in 1.7.0 | Buffered transport, credentials, typed literal headers and metadata/source fidelity |
 | Deferred | Checked composition, checked incremental decoding and broader protocol/security coverage |
 
 Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values when crossing 1.2.0. The [migration guide](docs/migration.md) retains those impacts and describes the separately adopted SOAP 1.2 runtime in 1.3.0.
 
-One-way acknowledgement confirms a complete allowed HTTP exchange, not business processing. Adopt matching V6/V7 generated artifacts deliberately; existing request-response bindings and defaults remain unchanged. HTTP publication names do not add authentication or typed SOAP headers, and safe generated data keys do not remove the SOAP dependency's reserved source-name restrictions.
+One-way acknowledgement confirms a complete allowed HTTP exchange, not business processing. Adopt matching V6/V7 generated artifacts deliberately; existing request-response bindings and defaults remain unchanged. Version 1.7.0 adds configured authentication, typed literal SOAP headers and private bootstrap for supported legal names/cycles; wider source, policy and incoming cryptographic duties retain their owners.
 
 ## Next deliveries
 
 ### Buffered completion checkpoint, November 17, 2026
 
-The active comprehensive [buffered SOAP completion checklist](docs/roadmap/v1.0-buffered-soap-completion.md) supersedes the dated preparation routing below. Response encoding shipped in v1.6.5; draft PR #488 contains the independently reviewed envelope/header receiver at `7946edb` with nine successful hosted checks. Preserve those implementations and reuse their evidence. Remaining work integrates transport queries/compression/entity bases, existing runtime security and typed headers, required metadata/bootstrap prerequisites and the buffered streaming handoff under #190/#191.
+The [buffered SOAP completion checklist](docs/roadmap/v1.0-buffered-soap-completion.md) is complete through merged [PR #488](https://github.com/TechSpokes/typescript-wsdl-client/pull/488), implementation `a994859`, merged/tagged main `933d42b`. Reviewed, preflight and merged trees are identical. Final conformance, release preflight, PR/main platform checks and uploaded artifact/provenance/install verification passed; #424 and #426 are closed. Preserve those implementations and reuse their evidence.
 
-Prepare one comprehensive release only after all agreed buffered acceptance is implemented and independently verified. Focused development checks precede final standalone conformance and release preflight; preflight owns full CI, package/skill and smoke gates. The candidate remains incomplete until the checklist is proven. Broader optional standards, streaming implementation and general attachments retain their existing owners.
+The maintainer-selected [Escapia consumer upgrade](docs/roadmap/v1.0-published-consumer-acceptance.md) passed exact npm 1.7.0 generation, maintained tests, relocated production-only owned HTTPS execution, packaging/privacy and historical replay without an SDK workaround. #489 is complete for that revised real-consumer scope. The proposed fresh Forecast-app manifest exercise was not run and is not claimed as passing.
+
+The next selected source/value packet is [checked lexical atomic unions](docs/roadmap/v1.0-checked-atomic-unions.md): effective string, decimal/integer and boolean members, preserved lexical strings, native ordered selection and typed fixed-value equality. The existing legacy union promise and checked refusal make this a concrete replacement gap. #478 remains a separate assessment; streaming and incoming cryptographic security remain separate projects. No new release or repeated v1.7.0 gates follow from acceptance recording or preparation.
 
 ### Earlier routing context
 
 Use this roadmap for product direction and release boundaries, the [working-gateway coverage register](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) for current feature gaps, and the [product outcome](https://github.com/TechSpokes/typescript-wsdl-client/issues/401) for end-to-end acceptance. Issue [#379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379) preserves earlier restart history; its dated dispatch instructions do not select the next task.
 
-The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/425)/[#482](https://github.com/TechSpokes/typescript-wsdl-client/issues/482) delivery is complete through [PR #483](https://github.com/TechSpokes/typescript-wsdl-client/pull/483). The next prepared slice is [encoding and envelope gap closure](#encoding-and-envelope-gap-closure) within current checked document/literal execution, coordinated by [#190](https://github.com/TechSpokes/typescript-wsdl-client/issues/190). Authentication belongs to eventual existing-capability parity rather than the next separately selected expansion.
+The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/425)/[#482](https://github.com/TechSpokes/typescript-wsdl-client/issues/482) delivery completed through [PR #483](https://github.com/TechSpokes/typescript-wsdl-client/pull/483). Encoding/envelope work and bounded authentication/typed headers followed in v1.6.5/v1.7.0; their [completed checklist](docs/roadmap/v1.0-buffered-soap-completion.md) supersedes the earlier preparation sequence.
 
 ### Completion sequence
 
 | Order | Outcome | Existing owners |
 |---|---|---|
-| 1 | Complete current byte, envelope, header-role and fault boundaries | #190/#191/#426/#462 |
-| 2 | Close agreed source, schema and value gaps | #179/#183/#184/#187/#478 |
-| 3 | Carry existing capabilities through checked execution | #192-#194/#201-#203/#424/#164 |
+| 1 | Reuse delivered buffered and accepted Escapia consumer evidence | #401/#397/#207; completed #488/#424/#426/#489 |
+| 2 | Implement selected lexical atomic unions, then choose further concrete gaps | #179/#183/#184/#187; separate assessment #478 |
+| 3 | Carry remaining existing capabilities through checked execution | #192-#194/#201-#203/#164; richer policy #429 |
 | 4 | Retire duplicate semantics with installed migration evidence | #204/#205/#207/#208 |
 
 Use [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [#207](https://github.com/TechSpokes/typescript-wsdl-client/issues/207) for a paired legacy/checked capability register. Each row identifies its source/profile, legacy promise, checked behavior, independently expected wire/HTTP result, remaining gap and owner. Distinguish working execution, valid unsupported input, unresolved qualification, invalid input and deliberate policy denial; refusal coverage does not prove replacement parity.
@@ -66,7 +70,7 @@ Prioritize existing supported behavior and the agreed WSDL 1.1/XSD 1.0/SOAP 1.1/
 
 ### Encoding and envelope gap closure
 
-Prepare one coherent implementation under #190 with source decoding under #426, charset analysis under #462 and independent wire qualification under #191. This packet completes boundaries of existing checked buffered document/literal request-response and one-way profiles. Preparation does not dispatch implementation, add a release target or claim fresh runtime qualification.
+The preparation below is retained history for the work delivered through v1.6.5 and v1.7.0. The completed [buffered checklist](docs/roadmap/v1.0-buffered-soap-completion.md) and [#488 ledger](https://github.com/TechSpokes/typescript-wsdl-client/pull/488#issuecomment-6950230376) own its actual acceptance; these earlier instructions do not dispatch it again. Wider charset policy remains #462 investigation.
 
 #### Byte decoding contract
 
@@ -74,15 +78,15 @@ Specify metadata acquisition, SOAP responses and outgoing requests separately. R
 
 Assess explicit US-ASCII, UTF-8, UTF-16 and UTF-16LE/BE labels, BOM presence, XML declarations and HTTP charset precedence against [XML 1.0](https://www.w3.org/TR/xml/#charencoding), [RFC 7303](https://www.rfc-editor.org/rfc/rfc7303.html#section-3) and [SOAP media rules](https://www.rfc-editor.org/rfc/rfc3902.html#section-2). Distinguish mandatory UTF-8/UTF-16 support from optional byte-order labels and other charsets. Decide whether to retain contradiction refusal or adopt specified precedence, recording compatibility consequences before implementation.
 
-Before the standalone #190 response-encoding batch, checked responses refused explicit ASCII and unmarked UTF-16LE/BE. The [implemented response profile](docs/checked-gateway.md#checked-response-encoding) now accepts strict ASCII and explicitly labelled BOM-less UTF-16LE/BE while retaining assertion agreement and exact ISO-8859-1. Metadata HTTP charset authority remains unchanged under #426; Windows-1252 is a distinct mapping, and broader charset ranking remains #462 work.
+Before the standalone #190 response-encoding batch, checked responses refused explicit ASCII and unmarked UTF-16LE/BE. The [implemented response profile](docs/checked-gateway.md#checked-response-encoding) accepts strict ASCII and explicitly labelled BOM-less UTF-16LE/BE while retaining assertion agreement and exact ISO-8859-1. Metadata HTTP charset authority and portable context followed in v1.7.0 under closed #426; Windows-1252 is a distinct mapping, and broader charset ranking remains #462 work.
 
 #### Envelope and processing contract
 
-Assess namespace-qualified attributes on Envelope/Header/Body, SOAP 1.1 actor and SOAP 1.2 role/relay/mustUnderstand processing, and normal/protocol/declared fault selection against [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/) and [SOAP 1.2 Part 1](https://www.w3.org/TR/soap12-part1/). Current shape checks reject those attributes except a narrow encoding case; establish legal examples and independent expected outcomes before changing them. Unknown mandatory blocks targeted at this receiver remain terminal unless their semantics are implemented.
+The earlier assessment covered namespace-qualified attributes on Envelope/Header/Body, SOAP 1.1 actor and SOAP 1.2 role/relay/mustUnderstand processing, and normal/protocol/declared fault selection against [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/) and [SOAP 1.2 Part 1](https://www.w3.org/TR/soap12-part1/). Before #487, shape checks rejected these attributes except a narrow encoding case; the delivered receiver and buffered completion now have independent positive/refusal evidence. Unknown mandatory blocks targeted at this receiver remain terminal unless their semantics are implemented.
 
-Keep the selected single-element document/literal body contract. Multipart bodies and general SOAP encoding remain #427; accepting a legal envelope must not admit an unsupported application body. Typed application/security headers remain #424, and source-required security cannot be ignored.
+The selected single-element document/literal body contract remains bounded. Multipart bodies and general SOAP encoding remain #427; accepting a legal envelope does not admit an unsupported application body. Typed literal headers and configured credentials were delivered under #424; source-required security and richer unimplemented policies retain their checks and owners.
 
-Record endpoint query strings, HTTP compression and SOAP 1.2 GET SOAP-response exchanges as explicit follow-up dispositions under #190/#429. The [standard HTTP binding](https://www.w3.org/TR/soap12-part2/#httpbind) covers more than current POST execution; this packet cannot certify complete HTTP-binding support by omission.
+Endpoint queries, bounded HTTP compression and observed response bases were delivered in v1.7.0. SOAP 1.2 GET SOAP-response and broader binding families remain #190/#429 work. The [standard HTTP binding](https://www.w3.org/TR/soap12-part2/#httpbind) covers more than the selected POST profile; the completed buffered packet does not certify universal binding support.
 
 #### Acceptance and verification
 
@@ -101,8 +105,8 @@ Assign one verification owner, inspect script coverage and reuse unchanged evide
 
 | Remaining work | Current owner |
 |---|---|
-| Configured authentication, TLS client credentials and typed SOAP headers | [#424](https://github.com/TechSpokes/typescript-wsdl-client/issues/424) |
-| Metadata decoding, cyclic bootstrap and dependency-sensitive legal source names | [#426](https://github.com/TechSpokes/typescript-wsdl-client/issues/426) |
+| Richer policy, type-part/encoded headers and incoming cryptographic security | Delivered bounded #424; remaining [#429](https://github.com/TechSpokes/typescript-wsdl-client/issues/429)/#190/#191 |
+| Wider source semantics and charset policy beyond supported metadata/bootstrap | Delivered bounded #426; remaining [#179](https://github.com/TechSpokes/typescript-wsdl-client/issues/179)/#462 |
 | RPC/literal, document multipart and broader encoded message graphs | [#427](https://github.com/TechSpokes/typescript-wsdl-client/issues/427) |
 | MIME attachments and MTOM/XOP binary ownership | [#428](https://github.com/TechSpokes/typescript-wsdl-client/issues/428) |
 | WSDL 2.0, XSD 1.1, other bindings and additional protocol adapters | [#429](https://github.com/TechSpokes/typescript-wsdl-client/issues/429) |
@@ -145,7 +149,7 @@ Use representative corpus exchanges alongside independent native checks, install
 
 Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The development tree includes the released 1.6.4 implementation. [Release notes](docs/releases/README.md) describe each version's scope, while [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability. Later development-tree changes and successful tests do not establish publication.
+The development tree includes the tagged 1.7.0 implementation and subsequent documentation follow-ups. [Release notes](docs/releases/README.md) describe each version's scope, while [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability. Development-tree changes and successful tests do not establish publication or ordinary consumer installability.
 
 Provider evidence remains narrower than implementation coverage. All 12 NOAA operations have owned-server qualification, while the retained live retest has ten successes and two non-SOAP GML failures; Escapia evidence covers selected Test reads. These limitations remain explicit in the [NOAA qualification](docs/noaa-ndfd-qualification.md) and [composition status](docs/roadmap/multi-service-gateway.md), without closing the broader coverage work.
 

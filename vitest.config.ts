@@ -7,6 +7,8 @@ const heavy = [
   "test/unit/schema-loading-budgets.test.ts",
   "test/unit/app-security.test.ts",
   "test/unit/client-choice-union-types.test.ts",
+  "test/unit/cli-contract.test.ts",
+  "test/unit/inspect-response-cli.test.ts",
   "test/unit/schema-scalar-completeness-review.test.ts",
 ];
 

@@ -263,6 +263,33 @@ describe('independently specified schema scalar operands', () => {
     ]);
   });
 
+  it('selects the first successful atomic member and compares typed families independently of canonical text', async () => {
+    const {kernel, owner, lexical} = await setup();
+    for (const [type, input, family, canonical] of [
+      ['StringFirst', '1', 'string', '1'],
+      ['StringFirst', '+1', 'decimal', '1'],
+      ['StringFirst', ' 1 ', 'decimal', '1'],
+      ['DecimalFirst', '1', 'decimal', '1'],
+      ['BooleanFirst', ' 1 ', 'boolean', 'true'],
+      ['IntegerFirst', '1', 'decimal', '1'],
+      ['NestedAtomic', '+01.00', 'decimal', '1'],
+      ['NestedAtomic', 'word', 'string', 'word'],
+      ['NestedAtomic', '9007199254740993', 'decimal', '9007199254740993'],
+      ['NestedAtomic', '0.123456789012345678901', 'decimal', '0.123456789012345678901'],
+      ['StringBoolean', 'true', 'string', 'true'],
+      ['StringBoolean', '1', 'boolean', 'true'],
+    ]) {
+      expect(value(kernel.assess(named(type), lexical(input), owner)).operand).toMatchObject({family, canonical});
+    }
+    expect(value(kernel.equivalent(named('StringFirst'), lexical('1'), named('StringFirst'), lexical('+1'), owner))).toBe(false);
+    expect(value(kernel.equivalent(named('DecimalFirst'), lexical('+01.00'), named('IntegerFirst'), lexical('1'), owner))).toBe(true);
+    expect(value(kernel.equivalent(named('StringBoolean'), lexical('true'), named('StringBoolean'), lexical('1'), owner))).toBe(false);
+    // @why #490: a union facet failure after selection cannot retry another member.
+    expect(kernel.assess(named('StringFirstEnumeration'), lexical('+1'), owner))
+      .toMatchObject({kind: 'invalid-schema', rule: 'cvc-enumeration-valid'});
+    expect(kernel.assess(named('NestedAtomic'), lexical('invalid'), owner)).toMatchObject({kind: 'invalid-schema'});
+  });
+
   it('keeps disjoint binary primitive value spaces and ordered union member identity', async () => {
     const {kernel, owner, lexical} = await setup();
     expect(value(kernel.equivalent(builtin('hexBinary'), lexical('ab'), builtin('hexBinary'), lexical('AB'), owner))).toBe(true);

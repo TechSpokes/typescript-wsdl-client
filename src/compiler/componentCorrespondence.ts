@@ -34,7 +34,7 @@ const contextual = new Set(['QName', 'NOTATION', 'ID', 'IDREF', 'IDREFS', 'ENTIT
 
 /** Audit a closed representation fragment after whole native construction; this is not a second schema checker.
  * @remarks Source syntax/values and component legality remain the native S4S, construction and aggregate owners.
- *   This sufficient route excludes redefine/chameleon, identity/substitution, non-string unions and wider faceted families,
+ *   This sufficient route excludes redefine/chameleon, identity/substitution, unions outside string/decimal/boolean and wider faceted families,
  *   source complex restrictions, contextual/explicit ur-type references, foreign attributes and endpoint-shadowing witnesses.
  *   Endpoint-shadowing witnesses remain inconclusive until component-valued TYPE/SCOPE interpretation is established.
  * @returns An authenticated correspondence or an inconclusive scope/resource result; never a schema-invalid judgment.
@@ -94,7 +94,7 @@ export function checkComponentCorrespondence(input: SchemaInput, supplied: Nativ
       if (plan.variety === 'union') {
         for (const reference of plan.members ?? []) {
           check(); const member = scalar.ensure(reference, owner);
-          if (member.variety !== 'atomic' || member.primitive !== 'string' || member.obligations?.length)
+          if (member.variety !== 'atomic' || !['string', 'decimal', 'boolean'].includes(member.primitive ?? '') || member.obligations?.length)
             return outside('scalar-union-correspondence-scope');
         }
       }

@@ -68,9 +68,9 @@ describe('native declared scalar payload enforcement', () => {
     expect(matchDirectProjection(context, root, xml(payload)).kind).toBe('projection-match');
   });
 
-  it.each(['Union'])('refuses unimplemented %s representation rather than returning a string', async name => {
+  it.each(['Union'])('retains admitted %s values as lexical strings', async name => {
     const {context, root} = await source(name);
-    expect(expandProjectionValue(context, root, '1')).toMatchObject({kind: 'unsupported'});
+    expect(expandProjectionValue(context, root, '1')).toMatchObject({kind: 'projection-expanded', validated: {value: '1'}});
   });
 
   it('represents a list explicitly as an array rather than a primitive string', async () => {

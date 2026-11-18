@@ -6,13 +6,13 @@ This is a bounded preview, not general WSDL/XSD or production-provider qualifica
 
 ## Install and try the bundled contract
 
-The examples use published 1.6.5 for the bundled contract, including delivered one-way and response-encoding support. Trial the comprehensive v1.7.0 buffered additions from a locally packed candidate until the maintainer publishes it. Earlier releases retain their documented contracts.
+The examples use published 1.7.0 for the bundled contract, including buffered transport, credential/header and metadata fidelity. Install the exact registry version for a reproducible trial; earlier releases retain their documented contracts. The [published consumer acceptance plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) separately qualifies ordinary generated-app dependency installation.
 
 Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.6.5
+npm install --save-dev --save-exact @techspokes/typescript-wsdl-client@1.7.0
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```
@@ -137,7 +137,7 @@ The older `assessSchemaSource` API and `assess` command retain the narrow `check
 
 ## Supported scope and direction
 
-The qualified component fragment includes imported schemas, nested/repeated and inherited records, attributes, simple content, ordered values and supported scalar restrictions. [Keyed mixed/namespace/open values](checked-gateway.md#mixed-namespaced-and-open-values) additionally preserve source-permitted wildcard data with native strict/lax/skip checks. Escapia qualification retains 15 Main operations and two Content operations against owned services. Content uses explicit companion configuration with scoped validation and buffered delivery; it is not automatic companion discovery or checked streaming.
+The qualified component fragment includes imported schemas, nested/repeated and inherited records, attributes, simple content, ordered values and supported scalar restrictions. [Lexical atomic unions](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions) admit effective atomic string/decimal/boolean members as strings with native member selection and typed fixed/default semantics; heterogeneous list items and RPC parts stay excluded. [Keyed mixed/namespace/open values](checked-gateway.md#mixed-namespaced-and-open-values) additionally preserve source-permitted wildcard data with native strict/lax/skip checks. Escapia qualification retains 15 Main operations and two Content operations against owned services. Content uses explicit companion configuration with scoped validation and buffered delivery; it is not automatic companion discovery or checked streaming.
 
 The [bounded SOAP 1.1 RPC/encoded profile](supported-patterns.md#checked-soap-11-rpc-string-profile) supports typed scalar parts, native restrictions, one flat required Boolean record and one opaque string result. [NOAA qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) covers all 12 operations against an owned server; ten live operations succeeded and two GML operations returned non-SOAP failures. There is no parsed DWML/GML or geographic correctness claim.
 

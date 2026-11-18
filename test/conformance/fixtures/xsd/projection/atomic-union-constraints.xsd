@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:atomic-union-constraints" targetNamespace="urn:atomic-union-constraints" elementFormDefault="qualified">
+  <xs:simpleType name="One"><xs:restriction base="xs:string"><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="True"><xs:restriction base="xs:string"><xs:enumeration value="true"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="StringDecimal"><xs:union memberTypes="t:One xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="DecimalString"><xs:union memberTypes="xs:decimal t:One"/></xs:simpleType>
+  <xs:simpleType name="StringBoolean"><xs:union memberTypes="t:True xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="BooleanDecimal"><xs:union memberTypes="xs:boolean xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="DecimalBoolean"><xs:union memberTypes="xs:decimal xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="Alias"><xs:restriction base="t:StringDecimal"/></xs:simpleType>
+  <xs:simpleType name="Nested"><xs:union memberTypes="t:Alias"><xs:simpleType><xs:restriction base="xs:boolean"/></xs:simpleType></xs:union></xs:simpleType>
+  <xs:simpleType name="OnlyStringOne"><xs:restriction base="t:StringDecimal"><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OnlyDecimalOne"><xs:restriction base="t:DecimalString"><xs:enumeration value="+1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ExactDecimalBounds"><xs:restriction base="xs:decimal"><xs:minInclusive value="9007199254740993.000000000000000001"/><xs:maxExclusive value="9007199254740993.000000000000000003"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SignedExactDecimal"><xs:restriction base="t:ExactDecimalBounds"><xs:pattern value="\+[0-9]+\.[0-9]+"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedDecimalUnion"><xs:union memberTypes="t:SignedExactDecimal t:One"/></xs:simpleType>
+  <xs:simpleType name="ExactIntegerBounds"><xs:restriction base="xs:integer"><xs:minInclusive value="9007199254740993"/><xs:maxInclusive value="9007199254740994"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SignedExactInteger"><xs:restriction base="t:ExactIntegerBounds"><xs:pattern value="\+[0-9]+"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedIntegerUnion"><xs:union memberTypes="t:SignedExactInteger t:One"/></xs:simpleType>
+  <xs:simpleType name="StringItems"><xs:union memberTypes="t:One t:True"/></xs:simpleType>
+  <xs:simpleType name="RetainedList"><xs:list itemType="t:StringItems"/></xs:simpleType>
+  <xs:simpleType name="ExcludedList"><xs:list itemType="t:StringDecimal"/></xs:simpleType>
+  <xs:simpleType name="ExcludedUnion"><xs:union><xs:simpleType><xs:list itemType="xs:string"/></xs:simpleType><xs:simpleType><xs:restriction base="xs:decimal"/></xs:simpleType></xs:union></xs:simpleType>
+  <xs:complexType name="Base"><xs:attribute name="fixedString" type="t:StringDecimal" fixed="1"/><xs:attribute name="fixedDecimal" type="t:DecimalString" fixed="+1"/><xs:attribute name="fixedBoolean" type="t:StringBoolean" fixed="true"/><xs:attribute name="defaultAlias" type="t:Alias" default="+1"/></xs:complexType>
+  <xs:complexType name="Derived"><xs:complexContent><xs:extension base="t:Base"><xs:sequence><xs:element name="optional" type="t:Alias" default="+1" minOccurs="0"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="Simple"><xs:simpleContent><xs:extension base="t:StringDecimal"><xs:attribute name="fixedString" type="t:StringDecimal" fixed="1"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:element name="StringDecimal" type="t:StringDecimal"/>
+  <xs:element name="DecimalString" type="t:DecimalString"/>
+  <xs:element name="StringBoolean" type="t:StringBoolean"/>
+  <xs:element name="BooleanDecimal" type="t:BooleanDecimal"/>
+  <xs:element name="DecimalBoolean" type="t:DecimalBoolean"/>
+  <xs:element name="Nested" type="t:Nested"/>
+  <xs:element name="OnlyStringOne" type="t:OnlyStringOne"/>
+  <xs:element name="OnlyDecimalOne" type="t:OnlyDecimalOne"/>
+  <xs:element name="BoundedDecimalUnion" type="t:BoundedDecimalUnion"/>
+  <xs:element name="BoundedIntegerUnion" type="t:BoundedIntegerUnion"/>
+  <xs:element name="FixedString" type="t:StringDecimal" fixed="1" nillable="true"/>
+  <xs:element name="FixedDecimal" type="t:DecimalString" fixed="+1"/>
+  <xs:element name="FixedBoolean" type="t:StringBoolean" fixed="true"/>
+  <xs:element name="Default" type="t:StringDecimal" default="+1"/>
+  <xs:element name="Record" type="t:Derived" nillable="true"/>
+  <xs:element name="Simple" type="t:Simple" fixed="1"/>
+  <xs:element name="NilSimple" type="t:Simple" nillable="true"/>
+  <xs:element name="RetainedList" type="t:RetainedList"/>
+  <xs:element name="ExcludedList" type="t:ExcludedList"/>
+  <xs:element name="ExcludedUnion" type="t:ExcludedUnion"/>
+  <xs:element name="LongFixed" type="xs:string" fixed="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"/>
+  <xs:element name="LongOpen" type="xs:string"/>
+</xs:schema>

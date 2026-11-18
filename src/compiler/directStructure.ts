@@ -3,7 +3,8 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
 import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand} from './directStructurePlan.js';
+import type {DatatypeOperand} from './datatypeValues.js';
 import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
@@ -27,6 +28,18 @@ export interface DirectScalarDuty {
   readonly fixedCanonical?: string;
   readonly retainLexical?: true;
   readonly list?: ProjectionScalarList;
+}
+const fixedOperands = new WeakMap<DirectScalarDuty, Readonly<{context: SemanticContext; operand: DatatypeOperand}>>();
+/** Read transient typed fixed evidence without changing direct receipt or artifact shapes.
+ * @param context Exact native source context.
+ * @param duty Source-issued scalar duty.
+ * @returns Typed fixed value when the duty has a source constraint.
+ * @throws TypeError For foreign fixed evidence.
+ */
+export function inspectDirectFixedOperand(context: SemanticContext, duty: DirectScalarDuty): DatatypeOperand | undefined {
+  const evidence = fixedOperands.get(duty);
+  if (evidence && evidence.context !== context) throw new TypeError('Foreign scalar fixed evidence');
+  return evidence?.operand;
 }
 export type DirectMatchedNode = Readonly<{
   kind: 'unassessed'; declaration: ElementNode; payloadPath: string; payload: SyntaxElement;
@@ -182,7 +195,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
       budget.chargeWork(64);
       const occurrences: DirectScalarDuty[] = [];
       const operand = (node: SyntaxElement, declaration: ElementNode | AttributeNode, builtin: ExpandedName, lexical: string, path: string,
-        fixedCanonical?: string, retainLexical?: true, list?: ProjectionScalarList) => {
+        constraint?: DirectProjectionValue['constraint'], retainLexical?: true, list?: ProjectionScalarList) => {
         budget.chargeWork(256 + lexical.length * 4 + path.length * 4);
         // Project only typed retained facts. Generic snapshots deliberately preserve
         // unknown values; caller extension fields must not become receipt authority.
@@ -196,10 +209,13 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         const payloadSource = budget.snapshot({uri: s.uri, digest: s.digest, path: s.path,
           start: {offset: s.start.offset, line: s.start.line, column: s.start.column},
           end: {offset: s.end.offset, line: s.end.line, column: s.end.column}});
-        occurrences.push({declaration, type: declaration.type, builtin, lexical, namespaces,
+        const fixedCanonical = constraint?.kind === 'fixed' ? constraint.canonical : undefined;
+        const duty: DirectScalarDuty = {declaration, type: declaration.type, builtin, lexical, namespaces,
           payloadSource, payloadPath: path, schemaPath: declaration.context.source.path,
           knownLocation: declaration.kind === 'attribute' ? appendDiagnosticLocation(currentLocation, '@' + diagnosticName(declaration.name)) : currentLocation,
-          ...(fixedCanonical === undefined ? {} : {fixedCanonical}), ...(retainLexical ? {retainLexical} : {}), ...(list ? {list} : {})});
+          ...(fixedCanonical === undefined ? {} : {fixedCanonical}), ...(retainLexical ? {retainLexical} : {}), ...(list ? {list} : {})};
+        if (constraint?.kind === 'fixed') fixedOperands.set(duty, {context, operand: inspectProjectionConstraintOperand(context, constraint)});
+        occurrences.push(duty);
       };
       const text = (node: SyntaxElement, declaration: ElementNode, path: string): string => {
         budget.chargeWork(64);
@@ -213,7 +229,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
       const elementOperand = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, shape: DirectProjectionValue, retainLexical?: true, list?: ProjectionScalarList) => {
         const lexical = text(node, declaration, path);
         operand(node, declaration, builtin, lexical === '' && shape.constraint ? shape.constraint.lexical : lexical,
-          path, shape.constraint?.kind === 'fixed' ? shape.constraint.canonical : undefined, retainLexical, list);
+          path, shape.constraint, retainLexical, list);
       };
       const leaf = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, shape: DirectProjectionValue, retainLexical?: true, list?: ProjectionScalarList) => {
         attributes(node, declaration, path);
@@ -319,7 +335,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             matchedAttributes.push({declaration: expected.declaration, operand: occurrences.length, payloadPath: path, origin: 'present',
               ...(dynamic ? {bag: true as const, ...(attribute.name.namespace ? {namespaceChoice: true as const} : {})} : attributeChannel(expected))});
             operand(node, expected.declaration, expected.builtin, attribute.value, path,
-              expected.constraint?.kind === 'fixed' ? expected.constraint.canonical : undefined, expected.retainLexical, expected.list);
+              expected.constraint, expected.retainLexical, expected.list);
           }
           for (const expected of record.attributes) {
             check();
@@ -331,7 +347,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
                 ...attributeChannel(expected),
                 origin: expected.constraint.kind === 'fixed' ? 'schema-fixed' : 'schema-default'});
               operand(node, expected.declaration, expected.builtin, expected.constraint.lexical, path,
-                expected.constraint.kind === 'fixed' ? expected.constraint.canonical : undefined, expected.retainLexical, expected.list);
+                expected.constraint, expected.retainLexical, expected.list);
             }
           }
         }

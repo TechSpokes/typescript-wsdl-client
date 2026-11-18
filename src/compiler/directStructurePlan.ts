@@ -11,6 +11,7 @@ import {occurrenceAlgebra} from './occurrenceAnalysis.js';
 import {describeProjectionScalar, describeProjectionType, assessProjectionScalarOperand} from './projectionScalar.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
 import {builtinListItem} from './datatypeValues.js';
+import type {DatatypeOperand} from './datatypeValues.js';
 import {prepareSemanticParticleView, assertSemanticParticleView} from './particleSemanticView.js';
 import type {SemanticParticle, SemanticParticleView} from './particleSemanticView.js';
 import {effectiveSubstitutionMembers} from './schemaTypeRelations.js';
@@ -20,6 +21,27 @@ import type {SelectedParticleWildcard} from './schemaParticleWildcardProperties.
 import type {AttributeWildcard} from './schemaAttributeUses.js';
 export interface DirectSlot {readonly element: ElementNode; readonly particle: ParticleNode; readonly builtin: ExpandedName}
 export interface DirectRootPlan {readonly rootBuiltin?: ExpandedName; readonly slots: readonly DirectSlot[]}
+type ProjectionConstraint = Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
+// @why #490 native typed evidence is transient; portable artifacts reconstruct it from source.
+const constraintOperands = new WeakMap<ProjectionConstraint, Readonly<{context: SemanticContext; operand: DatatypeOperand}>>();
+function projectionConstraint(context: SemanticContext, kind: 'fixed' | 'default', lexical: string, operand: DatatypeOperand): ProjectionConstraint {
+  context.budget.chargeWork(64);
+  const constraint = Object.freeze({kind, lexical, canonical: operand.canonical});
+  constraintOperands.set(constraint, {context, operand: context.budget.freeze(operand)});
+  return constraint;
+}
+/** Read private native constraint evidence only for its exact source context.
+ * @param context Native source context.
+ * @param constraint Exact source-derived constraint.
+ * @returns The native typed value retained during planning.
+ * @throws TypeError For copied or foreign constraints.
+ */
+export function inspectProjectionConstraintOperand(context: SemanticContext, constraint: ProjectionConstraint): DatatypeOperand {
+  assertSemanticContext(context);
+  const evidence = constraintOperands.get(constraint);
+  if (!evidence || evidence.context !== context) throw new TypeError('Authenticated projection constraint required');
+  return evidence.operand;
+}
 export type DirectProjectionValue = Readonly<({kind: 'scalar'; builtin: ExpandedName; declared?: true; retainLexical?: true; list?: ProjectionScalarList} | {kind: 'record'; type: NodeId}) & {
   nillable?: true; constraint?: Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
 }>;
@@ -225,8 +247,8 @@ export function selectProjectionAttribute(context: SemanticContext, record: Dire
   if (constraint && constraint.kind !== 'projection-scalar-operand') return unsupported();
   return {attribute: Object.freeze({declaration, required: false, bag: true, builtin: scalar.builtin,
     ...(scalar.retainLexical ? {retainLexical: true as const} : {}), ...(scalar.list ? {list: scalar.list} : {}),
-    ...(declaration.value && constraint?.kind === 'projection-scalar-operand' ? {constraint: Object.freeze({kind: declaration.value.kind,
-      lexical: declaration.value.lexical.value, canonical: constraint.operand.canonical})} : {})})};
+    ...(declaration.value && constraint?.kind === 'projection-scalar-operand' ? {constraint: projectionConstraint(context, declaration.value.kind,
+      declaration.value.lexical.value, constraint.operand)} : {})})};
 }
 
 /**
@@ -285,7 +307,7 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
       if (!element.value) return {};
       const assessed = assessProjectionScalarOperand(context, element, element.value.lexical, check);
       if (assessed.kind !== 'projection-scalar-operand') return unavailable(element, 'element-value-constraint');
-      return {constraint: Object.freeze({kind: element.value.kind, lexical: element.value.lexical.value, canonical: assessed.operand.canonical})};
+      return {constraint: projectionConstraint(context, element.value.kind, element.value.lexical.value, assessed.operand)};
     })()};
     return typeValue(element, element.type, facts);
   };
@@ -353,7 +375,7 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
         attributes.push(Object.freeze({declaration: use.declaration, required: presence.required, builtin,
           ...(retainLexical ? {retainLexical} : {}),
           ...(list ? {list} : {}),
-          ...(effective ? {constraint: Object.freeze({kind: effective.kind, lexical: effective.value.lexical.value, canonical: effective.value.operand.canonical})} : {})}));
+          ...(effective ? {constraint: projectionConstraint(context, effective.kind, effective.value.lexical.value, effective.value.operand)} : {})}));
       }
     }
     const content = deriveActualComplexContent(context, type.id);

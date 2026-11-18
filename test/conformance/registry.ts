@@ -47,6 +47,23 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
   {
+    id: "checked-atomic-unions",
+    title: "Checked lexical string, decimal and boolean atomic unions",
+    status: "partial",
+    featureTags: ["xsd", "simple-type", "union", "checked"],
+    fixture: "assessment/atomic-unions.wsdl",
+    docsAnchor: "checked-atomic-unions",
+    publicContract: "Checked document/literal atomic unions with effective string, decimal or boolean members use lexical strings in requests, responses, declared faults and literal headers.",
+    decision: "partial-support",
+    decisionReason: "Native member ordering, whitespace and typed equality govern the bounded subset; list-valued members, heterogeneous list items, heterogeneous RPC parts and contextual or other primitive families remain excluded.",
+    authority: "XSD 1.0 Datatypes union order, member whitespace and primitive equality; WSDL 1.1 SOAP binding",
+    provenance: "Repository-authored dual-binding source, independent lexical JSON and handwritten SOAP request/success/fault expectations.",
+    license: "MIT",
+    fixtureKind: "interop-profile",
+    profile: "checked-components-v1",
+    evidence: {native: "integration/checked-atomic-unions.test.ts", installed: ["integration/checked-gateway-installed.test.ts"]},
+  },
+  {
     id: "checked-buffered-soap",
     title: "Checked buffered SOAP transport, credentials and declared literal headers",
     status: "partial",

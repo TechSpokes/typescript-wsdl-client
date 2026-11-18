@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test: schedule source CLI checks with bounded consumer workflows to reduce compiler contention.
+- feat(checked): support lexical string/decimal/boolean atomic unions with native member selection and typed fixed/default semantics.
+- docs: reconcile buffered delivery, record Escapia acceptance and prepare checked lexical atomic unions.
+
 ## [1.7.0] - 2026-11-17
 
 - feat(checked): preserve queried SOAP endpoints and decode bounded compressed responses while retaining original wire evidence.

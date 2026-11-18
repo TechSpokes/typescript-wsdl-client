@@ -88,8 +88,9 @@ const start = async (overrides: Record<string, unknown> = {}): Promise<string> =
     current.once('exit', code => {clearTimeout(timer); reject(new Error(`Gateway exited ${code}: ${output}`));});
   });
 };
-const route = (process.argv[3] === 'scalar' ? '/v1/forecast-scalar/' : '/v1/forecast/')
-  + (process.argv[3] === 'noaa' ? 'LatLonListZipCode' : 'GetForecast');
+const route = process.argv[3] === 'atomic-unions' ? '/v1/atomic-unions/Exchange'
+  : (process.argv[3] === 'scalar' ? '/v1/forecast-scalar/' : '/v1/forecast/')
+    + (process.argv[3] === 'noaa' ? 'LatLonListZipCode' : 'GetForecast');
 let calls = 0, refusals = 0;
 try {
   let url = await start();
@@ -360,6 +361,67 @@ try {
     const refused=await post(value);assert.equal(refused.status,502);assert.ok(!Object.hasOwn(refused.value as object,'value'));refusals++;
     process.stdout.write(JSON.stringify({kind:'checked-gateway-installed',originalCheckoutReadable:false,variant:mode,calls,refusals,upstreamRequests:upstream.length,
       scope:'default/configured groups; fresh independent XML order, nil, attributes, nested/multiple/reused/recursive definitions and installed request/response/fault HTTP serialization'})+'\n');
+  } else if (mode === 'atomic-unions') {
+    await assert.rejects(readFile(path.join(root, 'node_modules/typescript/package.json')), {code: 'ENOENT'});
+    const ns = 'urn:checked:atomic-unions', soapNs = 'http://schemas.xmlsoap.org/soap/envelope/';
+    const envelope = (content: string) => `<s:Envelope xmlns:s="${soapNs}" xmlns:t="${ns}"><s:Body>${content}</s:Body></s:Envelope>`;
+    const input = {amount: '+01.00', flag: ' 1 ', exact: '+9007199254740993', inline: 'AUTO'};
+    const output = {amount: '-000.1250', flag: '0', exact: '9007199254740994', inline: '+007'};
+    const detail = {amount: '+007', flag: 'false', exact: 'AUTO'};
+    const responseXml = envelope('<t:ExchangeResponse><t:amount>-000.1250</t:amount><t:flag>0</t:flag>'
+      + '<t:exact>9007199254740994</t:exact><t:inline>+007</t:inline></t:ExchangeResponse>');
+    const faultXml = envelope('<s:Fault><faultcode>s:Server</faultcode><faultstring>atomic fault</faultstring>'
+      + '<detail><t:UnionFault><t:amount>+007</t:amount><t:flag>false</t:flag><t:exact>AUTO</t:exact></t:UnionFault></detail></s:Fault>');
+    reply = responseXml;
+    const submitted = structuredClone(input);
+    assert.deepEqual(await post(submitted), {status: 200, value: output});
+    assert.deepEqual(submitted, input);
+    assert.deepEqual(events(upstream.at(-1)!.xml), events(envelope('<t:Exchange><t:amount>+01.00</t:amount>'
+      + '<t:flag> 1 </t:flag><t:exact>+9007199254740993</t:exact><t:inline>AUTO</t:inline></t:Exchange>')));
+    assert.equal(upstream.at(-1)!.action, '"urn:checked:atomic:Exchange"');
+    assert.equal(upstream.at(-1)!.contentType, 'text/xml; charset=utf-8');
+    assert.equal(upstream.at(-1)!.method, 'POST'); assert.equal(upstream.at(-1)!.path, '/owned-forecast');
+    // @why A second fresh inverse must retain the complete lexical witness, including whitespace and numeric spelling.
+    assert.deepEqual(await post(structuredClone(input)), {status: 200, value: output});
+    replyStatus = 500; reply = faultXml;
+    assert.deepEqual(await post(input), {status: 502, value: {
+      fault: {name: 'UnionError', code: {namespace: soapNs, local: 'Server'}, string: 'atomic fault'}, value: detail}});
+    const before = upstream.length;
+    for (const invalid of [{...input, amount: 1}, {...input, flag: true}, {...input, amount: {member: 'decimal', value: '+01.00'}},
+      {...input, amount: 'invalid'}, {...input, flag: 'yes'}, {...input, exact: '1.5'}, {...input, inline: false},
+      {...input, extra: 'unknown'}, null]) {
+      const result = await post(invalid);
+      assert.equal(result.status, 400); assert.ok(!Object.hasOwn(result.value as object, 'value')); refusals++;
+    }
+    assert.equal(upstream.length, before, 'Invalid lexical union inputs must refuse before SOAP dispatch');
+    for (const [isFault, original] of [[false, responseXml], [true, faultXml]] as const) {
+      for (const [from, to] of isFault
+        ? [['>+007</t:amount>', '>invalid</t:amount>'], ['>false</t:flag>', '>yes</t:flag>'], ['>AUTO</t:exact>', '>1.5</t:exact>']]
+        : [['>-000.1250</t:amount>', '>invalid</t:amount>'], ['>0</t:flag>', '>yes</t:flag>'], ['>9007199254740994</t:exact>', '>1.5</t:exact>']]) {
+        replyStatus = isFault ? 500 : 200; reply = original.replace(from!, to!);
+        const result = await post(input);
+        assert.equal(result.status, 502); assert.ok(!Object.hasOwn(result.value as object, 'value')); refusals++;
+      }
+    }
+    replyStatus = 200; reply = responseXml;
+    let artifactRefusals = 0;
+    const beforeArtifacts = upstream.length;
+    for (const [file, replacement] of [[source, (await readFile(source, 'utf8')) + '\n<!-- changed actual union source -->\n'],
+      [path.join(root, 'client/operations/0/contract.json'), '{}']] as const) {
+      const original = await readFile(file);
+      await writeFile(file, replacement);
+      try {
+        url = await start();
+        const refused = await post(input);
+        assert.ok(refused.status >= 400); assert.ok(!Object.hasOwn(refused.value as object, 'value')); artifactRefusals++;
+      } finally {await writeFile(file, original);}
+      assert.equal(upstream.length, beforeArtifacts, 'Mismatched union source/artifacts must refuse before SOAP dispatch');
+    }
+    url = await start();
+    assert.deepEqual(await post(input), {status: 200, value: output});
+    process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
+      variant: mode, productionOnly: true, calls, refusals, artifactRefusals, upstreamRequests: upstream.length,
+      scope: 'lexical atomic unions; public CLI/API generation, fresh source reconstruction, independent request/success/fault and artifact refusals'}) + '\n');
   } else if (mode === 'facets') {
     const ns = 'urn:checked:forecast', soapNs = 'http://schemas.xmlsoap.org/soap/envelope/', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
     const envelope = (content: string) => `<s:Envelope xmlns:s="${soapNs}" xmlns:t="${ns}" xmlns:xsi="${xsi}"><s:Body>${content}</s:Body></s:Envelope>`;

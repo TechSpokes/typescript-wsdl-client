@@ -212,6 +212,8 @@ The generated OpenAPI schema uses the same component name with a scalar enum sch
 }
 ```
 
+Checked generation has a separate [lexical atomic union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions): effective atomic string/decimal/boolean members use one lexical string rather than a TypeScript member union. Native declaration order selects the member; fixed values compare typed families and defaults preserve source lexical witnesses. This does not change legacy alias generation.
+
 ### Same-Name Global Elements
 
 Some WSDLs declare a named simple type and a global element with the same local name. When the element references that simple type, the generator treats the element as the scalar alias rather than creating a wrapper interface.
