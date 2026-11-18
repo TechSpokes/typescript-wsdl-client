@@ -47,11 +47,11 @@ The [buffered SOAP completion checklist](docs/roadmap/v1.0-buffered-soap-complet
 
 The maintainer-selected [Escapia consumer upgrade](docs/roadmap/v1.0-published-consumer-acceptance.md) passed exact npm 1.7.0 generation, maintained tests, relocated production-only owned HTTPS execution, packaging/privacy and historical replay without an SDK workaround. #489 is complete for that revised real-consumer scope. The proposed fresh Forecast-app manifest exercise was not run and is not claimed as passing.
 
-### Atomic-union review and follow-up, November 18, 2026
+### Checked atomic unions and lists, November 18, 2026
 
-[Checked lexical atomic unions](docs/roadmap/v1.0-checked-atomic-unions.md) are implemented in draft [PR #491](https://github.com/TechSpokes/typescript-wsdl-client/pull/491), head `dbdb1c5`. Fresh native/source and integration/evidence reviews found no actionable findings, and all nine exact-head checks passed. The draft is ready for the maintainer's review/merge decision; this is not a release or publication decision.
+[Checked lexical atomic unions](docs/roadmap/v1.0-checked-atomic-unions.md) and [lists of those unions](docs/roadmap/v1.0-checked-atomic-union-lists.md) are implemented in PRs [#491](https://github.com/TechSpokes/typescript-wsdl-client/pull/491) and [#493](https://github.com/TechSpokes/typescript-wsdl-client/pull/493). Ordinary union lists use ordered lexical tokens and retain existing whole-list pattern witnesses. Native validation owns member order, XML tokenization and typed sequence equality.
 
-The next prepared source/value packet is [lists of the selected atomic unions](docs/roadmap/v1.0-checked-atomic-union-lists.md): lexical item arrays with existing whole-list witnesses, native token/member rules and typed sequence equality. It closes a concrete projection composition refusal without adding another primitive family. #478 remains assessment-first; streaming and incoming cryptographic security remain separate projects. Preparation reuses the unchanged candidate evidence and does not rerun release gates.
+Both implementations passed independent review. The combined candidate has owned SOAP 1.1/1.2 and isolated installed gateway evidence. RPC lists, list-valued union members and wider or contextual atomic families remain outside the selected profile. #478 remains assessment-first, and streaming and incoming cryptographic security retain separate owners.
 
 ### Earlier routing context
 
@@ -64,7 +64,7 @@ The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/
 | Order | Outcome | Existing owners |
 |---|---|---|
 | 1 | Reuse delivered buffered and accepted Escapia consumer evidence | #401/#397/#207; completed #488/#424/#426/#489 |
-| 2 | Review/merge the atomic-union candidate; next qualify its list-item composition | #490/#491 and #179/#183/#184/#187; assessment #478 |
+| 2 | Deliver the verified atomic-union and union-list candidates together | #490/#491 and #492/#493 |
 | 3 | Carry remaining existing capabilities through checked execution | #192-#194/#201-#203/#164; richer policy #429 |
 | 4 | Retire duplicate semantics with installed migration evidence | #204/#205/#207/#208 |
 
@@ -153,7 +153,7 @@ Use representative corpus exchanges alongside independent native checks, install
 
 Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The development tree includes tagged 1.7.0 and the reviewed, unreleased atomic-union candidate plus planning follow-ups. [Release notes](docs/releases/README.md) describe each version's scope, while [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability. Development-tree changes and successful tests do not establish publication or ordinary consumer installability.
+The development tree builds on tagged 1.7.0 and includes the reviewed atomic-union and union-list implementations. [Release notes](docs/releases/README.md) describe each version's scope, and [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability.
 
 Provider evidence remains narrower than implementation coverage. All 12 NOAA operations have owned-server qualification, while the retained live retest has ten successes and two non-SOAP GML failures; Escapia evidence covers selected Test reads. These limitations remain explicit in the [NOAA qualification](docs/noaa-ndfd-qualification.md) and [composition status](docs/roadmap/multi-service-gateway.md), without closing the broader coverage work.
 

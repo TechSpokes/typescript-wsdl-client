@@ -229,6 +229,3 @@ it.each(['11', '12'] as const)('shares SOAP %s literal header union-list values 
     expect(server.requests).toHaveLength(dispatched);
   });
 });
-
-
-
