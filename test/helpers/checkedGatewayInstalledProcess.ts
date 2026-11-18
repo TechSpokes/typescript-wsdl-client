@@ -365,19 +365,19 @@ try {
     await assert.rejects(readFile(path.join(root, 'node_modules/typescript/package.json')), {code: 'ENOENT'});
     const ns = 'urn:checked:atomic-unions', soapNs = 'http://schemas.xmlsoap.org/soap/envelope/';
     const envelope = (content: string) => `<s:Envelope xmlns:s="${soapNs}" xmlns:t="${ns}"><s:Body>${content}</s:Body></s:Envelope>`;
-    const input = {amount: '+01.00', flag: ' 1 ', exact: '+9007199254740993', inline: 'AUTO'};
-    const output = {amount: '-000.1250', flag: '0', exact: '9007199254740994', inline: '+007'};
-    const detail = {amount: '+007', flag: 'false', exact: 'AUTO'};
+    const input = {amount: '+01.00', flag: ' 1 ', exact: '+9007199254740993', inline: 'AUTO', collection: ['+007', 'AUTO'], collectionWitness: '+01.00 AUTO'};
+    const output = {amount: '-000.1250', flag: '0', exact: '9007199254740994', inline: '+007', collection: ['-00.50', 'AUTO'], collectionWitness: '+01.00 AUTO'};
+    const detail = {amount: '+007', flag: 'false', exact: 'AUTO', collection: ['+01.00'], collectionWitness: '+01.00 AUTO'};
     const responseXml = envelope('<t:ExchangeResponse><t:amount>-000.1250</t:amount><t:flag>0</t:flag>'
-      + '<t:exact>9007199254740994</t:exact><t:inline>+007</t:inline></t:ExchangeResponse>');
+      + '<t:exact>9007199254740994</t:exact><t:inline>+007</t:inline><t:collection>-00.50\tAUTO</t:collection><t:collectionWitness>+01.00 AUTO</t:collectionWitness></t:ExchangeResponse>');
     const faultXml = envelope('<s:Fault><faultcode>s:Server</faultcode><faultstring>atomic fault</faultstring>'
-      + '<detail><t:UnionFault><t:amount>+007</t:amount><t:flag>false</t:flag><t:exact>AUTO</t:exact></t:UnionFault></detail></s:Fault>');
+      + '<detail><t:UnionFault><t:amount>+007</t:amount><t:flag>false</t:flag><t:exact>AUTO</t:exact><t:collection>+01.00</t:collection><t:collectionWitness>+01.00 AUTO</t:collectionWitness></t:UnionFault></detail></s:Fault>');
     reply = responseXml;
     const submitted = structuredClone(input);
     assert.deepEqual(await post(submitted), {status: 200, value: output});
     assert.deepEqual(submitted, input);
     assert.deepEqual(events(upstream.at(-1)!.xml), events(envelope('<t:Exchange><t:amount>+01.00</t:amount>'
-      + '<t:flag> 1 </t:flag><t:exact>+9007199254740993</t:exact><t:inline>AUTO</t:inline></t:Exchange>')));
+      + '<t:flag> 1 </t:flag><t:exact>+9007199254740993</t:exact><t:inline>AUTO</t:inline><t:collection>+007 AUTO</t:collection><t:collectionWitness>+01.00 AUTO</t:collectionWitness></t:Exchange>')));
     assert.equal(upstream.at(-1)!.action, '"urn:checked:atomic:Exchange"');
     assert.equal(upstream.at(-1)!.contentType, 'text/xml; charset=utf-8');
     assert.equal(upstream.at(-1)!.method, 'POST'); assert.equal(upstream.at(-1)!.path, '/owned-forecast');
@@ -389,15 +389,17 @@ try {
     const before = upstream.length;
     for (const invalid of [{...input, amount: 1}, {...input, flag: true}, {...input, amount: {member: 'decimal', value: '+01.00'}},
       {...input, amount: 'invalid'}, {...input, flag: 'yes'}, {...input, exact: '1.5'}, {...input, inline: false},
-      {...input, extra: 'unknown'}, null]) {
+      {...input, extra: 'unknown'}, null, {...input, collection: [1]}, {...input, collection: [true]},
+      {...input, collection: [{member: 'decimal', value: '+1'}]}, {...input, collection: ['']}, {...input, collection: ['1 2']},
+      {...input, collection: ['bad']}, {...input, collectionWitness: ['+01.00', 'AUTO']}, {...input, collectionWitness: '1 AUTO'}]) {
       const result = await post(invalid);
       assert.equal(result.status, 400); assert.ok(!Object.hasOwn(result.value as object, 'value')); refusals++;
     }
     assert.equal(upstream.length, before, 'Invalid lexical union inputs must refuse before SOAP dispatch');
     for (const [isFault, original] of [[false, responseXml], [true, faultXml]] as const) {
       for (const [from, to] of isFault
-        ? [['>+007</t:amount>', '>invalid</t:amount>'], ['>false</t:flag>', '>yes</t:flag>'], ['>AUTO</t:exact>', '>1.5</t:exact>']]
-        : [['>-000.1250</t:amount>', '>invalid</t:amount>'], ['>0</t:flag>', '>yes</t:flag>'], ['>9007199254740994</t:exact>', '>1.5</t:exact>']]) {
+        ? [['>+007</t:amount>', '>invalid</t:amount>'], ['>false</t:flag>', '>yes</t:flag>'], ['>AUTO</t:exact>', '>1.5</t:exact>'], ['>+01.00</t:collection>', '>bad</t:collection>'], ['>+01.00 AUTO</t:collectionWitness>', '>1 AUTO</t:collectionWitness>']]
+        : [['>-000.1250</t:amount>', '>invalid</t:amount>'], ['>0</t:flag>', '>yes</t:flag>'], ['>9007199254740994</t:exact>', '>1.5</t:exact>'], ['>-00.50\tAUTO</t:collection>', '>bad</t:collection>'], ['>+01.00 AUTO</t:collectionWitness>', '>1 AUTO</t:collectionWitness>']]) {
         replyStatus = isFault ? 500 : 200; reply = original.replace(from!, to!);
         const result = await post(input);
         assert.equal(result.status, 502); assert.ok(!Object.hasOwn(result.value as object, 'value')); refusals++;
@@ -421,7 +423,7 @@ try {
     assert.deepEqual(await post(input), {status: 200, value: output});
     process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
       variant: mode, productionOnly: true, calls, refusals, artifactRefusals, upstreamRequests: upstream.length,
-      scope: 'lexical atomic unions; public CLI/API generation, fresh source reconstruction, independent request/success/fault and artifact refusals'}) + '\n');
+      scope: 'lexical atomic unions and lists, whole-list witnesses; public CLI/API generation, fresh source reconstruction, independent request/success/fault and artifact refusals'}) + '\n');
   } else if (mode === 'facets') {
     const ns = 'urn:checked:forecast', soapNs = 'http://schemas.xmlsoap.org/soap/envelope/', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
     const envelope = (content: string) => `<s:Envelope xmlns:s="${soapNs}" xmlns:t="${ns}" xmlns:xsi="${xsi}"><s:Body>${content}</s:Body></s:Envelope>`;

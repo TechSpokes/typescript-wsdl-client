@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(checked): compose lexical atomic union lists with native typed equality and retained whole-list witnesses.
+
 - docs: record atomic-union review and prepare lexical union-list support.
 
 - test: schedule source CLI checks with bounded consumer workflows to reduce compiler contention.

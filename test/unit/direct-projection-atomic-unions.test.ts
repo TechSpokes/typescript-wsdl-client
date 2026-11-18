@@ -121,13 +121,13 @@ describe('checked lexical atomic unions and typed constraints', () => {
     expect(await observed('FixedString', '', 'xsi:nil="true"')).toMatchObject({kind: 'mismatch', rule: 'nil-fixed-value'});
   });
 
-  it('preserves the narrower primitive-string union list policy and refuses list members', async () => {
+  it('preserves primitive-string union lists, composes atomic items and refuses list members', async () => {
     const kept = await source('RetainedList');
     expect(expandProjectionValue(kept.context, kept.root, ['1', 'true'])).toMatchObject({kind: 'projection-expanded', validated: {value: ['1', 'true']}});
-    for (const name of ['ExcludedList', 'ExcludedUnion']) {
-      const {context, root} = await source(name);
-      expect(expandProjectionValue(context, root, name === 'ExcludedList' ? ['1'] : '1')).toMatchObject({kind: 'unsupported'});
-    }
+    const composed = await source('ExcludedList');
+    expect(expandProjectionValue(composed.context, composed.root, ['1', '+01.00'])).toMatchObject({kind: 'projection-expanded', validated: {value: ['1', '+01.00']}});
+    const excluded = await source('ExcludedUnion');
+    expect(expandProjectionValue(excluded.context, excluded.root, '1')).toMatchObject({kind: 'unsupported'});
   });
 
   it('does not turn cancellation or sticky exhaustion into failed-member fallthrough', async () => {

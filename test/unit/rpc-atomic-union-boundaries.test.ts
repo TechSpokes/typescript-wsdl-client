@@ -12,6 +12,11 @@ async function select(operation: string) {
 }
 
 describe('retained bounded RPC union contract', () => {
+  it('refuses newly projected union lists before encoding or network execution', async () => {
+    const selected = await select('ListEcho');
+    if (selected.kind !== 'selected') throw new Error(JSON.stringify(selected));
+    expect(createComponentValueMapping(selected.contract, {kind: 'input'})).toMatchObject({kind: 'unsupported', rule: 'rpc-scalar-representation'});
+  });
   it('keeps primitive-string union parameters lexical', async () => {
     const selected = await select('StringEcho');
     if (selected.kind !== 'selected') throw new Error(JSON.stringify(selected));

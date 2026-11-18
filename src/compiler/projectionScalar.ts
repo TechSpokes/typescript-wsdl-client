@@ -80,8 +80,8 @@ function kernel(context: SemanticContext) {
     if (plan.variety === 'list') {
       if (!plan.item) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item'});
       const member = core.ensure(plan.item, declaration);
-      // @why #490 preserves the existing string-only union list-item contract.
-      const unionItem = atomicUnion(member, ['string']);
+      // @why #492 composes the qualified atomic union subset without changing native token or equality ownership.
+      const unionItem = atomicUnion(member, ['string', 'decimal', 'boolean']);
       if (member.variety !== 'atomic' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-' + member.variety});
       if (member.obligations?.length || member.whitespace === 'member' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-source-obligations'});
       const local = unionItem ? 'string' : member.builtin ?? member.primitive;

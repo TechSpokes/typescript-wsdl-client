@@ -19,7 +19,6 @@ describe('checked native facet production path', () => {
   it.each([
     ['contradictory inherited length', '<xs:maxLength value="4"/>', '<xs:maxLength value="1"/>', 'native-construction-unestablished'],
     ['invalid bound formation', '9007199254740993.99', '9007199254740993.00', 'native-construction-unestablished'],
-    ['heterogeneous union list items', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:boolean"', 'native-component-shape'],
     ['excluded float member', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:float"', 'scalar-union-correspondence-scope'],
     ['list member in union', '</xs:schema>', '<xs:simpleType name="Outside"><xs:union memberTypes="t:Codes t:Word"/></xs:simpleType></xs:schema>', 'scalar-union-correspondence-scope'],
     ['contextual second member', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:QName"', 'scalar-correspondence-scope'],
@@ -32,5 +31,13 @@ describe('checked native facet production path', () => {
     const result = await planCheckedComponents(file);
     expect(result.ready).toBe(false);
     expect(JSON.stringify(result.blockers)).toContain(rule);
+  });
+
+  it('composes qualified heterogeneous union list items through public planning', async () => {
+    const directory = path.resolve('tmp/conformance/checked-facets'); await mkdir(directory, {recursive: true});
+    const project = await mkdtemp(path.join(directory, 'union-list-')), file = path.join(project, 'source.wsdl');
+    const original = await readFile('test/conformance/fixtures/assessment/facets.wsdl', 'utf8');
+    await writeFile(file, original.replace('memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:boolean"'));
+    expect((await planCheckedComponents(file)).ready).toBe(true);
   });
 });
