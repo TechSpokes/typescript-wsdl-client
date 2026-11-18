@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -35,8 +36,8 @@ const faultBody = (version: '11' | '12', value = detail) => version === '11'
   : `<s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">Independent union fault</s:Text></s:Reason><s:Detail>${value}</s:Detail></s:Fault>`;
 let directory: string, original: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/atomic-unions', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/atomic-unions/suite-'));
+  await mkdir(verificationPath('tmp/conformance/atomic-unions'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/atomic-unions/suite-')));
   original = await readFile(fixture, 'utf8');
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});

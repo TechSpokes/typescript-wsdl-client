@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it} from 'vitest';
 import path from 'node:path';
 import {mkdir,mkdtemp,readFile,writeFile} from 'node:fs/promises';
@@ -108,8 +109,8 @@ describe('source-owned application groups',()=>{
     expect(()=>{(groups.targets[0]!.resolved as {typeName:string}).typeName='Tampered';}).toThrow();
   });
   it('keeps source targets after relocation and unrelated declaration reorder, and guards relevant edits',async()=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/identity-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/identity-'))),original=await readFile(file,'utf8');
     const initial=await prepare(),targets=inspectComponentValueMapping(initial.mapping,initial.contract).applicationGroups!.targets;
     const declarations=original.match(/      <xs:complexType name="(?:Nested|MultipleChoices)"[^\n]+\n/g)!;
     const changed=original.replace(declarations[0]!,'').replace(declarations[1]!,declarations[1]!+declarations[0]!);
@@ -122,8 +123,8 @@ describe('source-owned application groups',()=>{
     expect(inspectComponentValueMapping(edited.mapping,edited.contract).applicationGroups!.targets.map(t=>t.target)).not.toContain(old);
   });
   it('allocates default collisions from source identity without altering business fields',async()=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/collision-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/collision-'))),original=await readFile(file,'utf8');
     const source=path.join(dir,'collision.wsdl');await writeFile(source,original.replaceAll('Nested','PaymentChoiceChoice'));
     const {contract,mapping}=await prepare({},source),groups=inspectComponentValueMapping(mapping,contract).applicationGroups!;
     const choice=groups.targets.find(t=>t.role==='choice' && t.source.startsWith('{'+namespace+'}PaymentChoice choice'))!;
@@ -133,8 +134,8 @@ describe('source-owned application groups',()=>{
     expect(encodeComponentXml(contract,mapping,value).kind).toBe('component-encoded');
   });
   it('retains variable-width repeated alternatives but executes differing fixed-width alternatives',async()=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/partition-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/partition-'))),original=await readFile(file,'utf8');
     const source=path.join(dir,'partition.wsdl');
     await writeFile(source,original.replace('<xs:sequence><xs:element name="A" type="xs:int"/><xs:element name="B" type="xs:string" nillable="true"/></xs:sequence>',
       '<xs:element name="A" type="xs:int" minOccurs="1" maxOccurs="2"/>'));
@@ -149,8 +150,8 @@ describe('source-owned application groups',()=>{
     expect(decoded.validated.value).toEqual(value);
   });
   it('rejects nested sequence-item alias collisions in one object scope',async()=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/scopes-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/scopes-'))),original=await readFile(file,'utf8');
     const source=path.join(dir,'scopes.wsdl');
     await writeFile(source,original.replace('<xs:element name="E" type="xs:string"/>','<xs:choice><xs:element name="E" type="xs:string"/><xs:element name="EE" type="xs:string"/></xs:choice>'));
     const initial=await prepare({},source),targets=inspectComponentValueMapping(initial.mapping,initial.contract).applicationGroups!.targets.filter(t=>t.role==='choice' && t.source.startsWith('{'+namespace+'}Nested '));
@@ -158,8 +159,8 @@ describe('source-owned application groups',()=>{
     await expect(prepare({names:targets.map(t=>({target:t.target,propertyName:'$payment'}))},source)).rejects.toThrow(/propertyName collision/);
   });
   it.each(['leading','trailing'])('recovers repeated sequence boundaries with optional %s fields',async(mode)=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/delimiter-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/delimiter-'))),original=await readFile(file,'utf8');
     const source=path.join(dir,'delimiter.wsdl');
     await writeFile(source,original.replace(mode==='leading'?'<xs:element name="K" type="xs:int"/>':'<xs:element name="L" type="xs:string"/>',
       mode==='leading'?'<xs:element name="K" type="xs:int" minOccurs="0"/>':'<xs:element name="L" type="xs:string" minOccurs="0"/>'));
@@ -188,8 +189,8 @@ describe('source-owned application groups',()=>{
     expect(JSON.stringify(invalid)).toBe(before);
   });
   it.each(['__proto__','definitions','toString'])('preserves the source-owned %s data key alongside groups',async(key)=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/data-key-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/data-key-'))),original=await readFile(file,'utf8');
     const source=path.join(dir,'data-key.wsdl');
     await writeFile(source,key==='definitions'?original:original.replace('name="choice" type="xs:string"','name="'+key+'" type="xs:string"'));
     const {contract,mapping}=await prepare({},source),value={id:'data-key',[key]:'business data',$choice:[{A:1,B:'b'}]};
@@ -202,8 +203,8 @@ describe('source-owned application groups',()=>{
     expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
   });
   it('keeps distinct direction-scoped source stems and reserves record symbols across the selected source',async()=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/directions-')),original=await readFile(file,'utf8');
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const dir=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/directions-'))),original=await readFile(file,'utf8');
     const source=path.join(dir,'directions.wsdl'),type='<xs:complexType name="Foo_bar"><xs:choice><xs:element name="Q" type="xs:string"/><xs:element name="R" type="xs:int"/></xs:choice></xs:complexType>';
     await writeFile(source,original.replaceAll('PaymentChoice','Foo-bar').replace('<xs:element name="SubmitResponse" type="t:Foo-bar"/>',
       type+'<xs:element name="SubmitResponse" type="t:Foo_bar"/>'));

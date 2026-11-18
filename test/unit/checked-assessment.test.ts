@@ -1,4 +1,5 @@
 /** Expectations follow direct XSD rules and observable diagnostic/admission guarantees. */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import {mkdtemp, readFile, writeFile, mkdir, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -14,7 +15,7 @@ import {planCheckedComponents} from '../../src/checkedPlanning.js';
 const root = path.resolve('test/conformance/fixtures/assessment');
 let artifacts: string;
 beforeAll(async () => {
-  const parent = path.resolve('tmp/conformance/assessment');
+  const parent = path.resolve(verificationPath('tmp/conformance/assessment'));
   await mkdir(parent, {recursive: true});
   artifacts = await mkdtemp(path.join(parent, 'suite-'));
 });

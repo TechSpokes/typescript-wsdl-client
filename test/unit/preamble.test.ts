@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, it, expect, afterEach, vi} from "vitest";
 import fs from "node:fs";
 import path from "node:path";
@@ -5,7 +6,7 @@ import {createPreambleResolver, composeGeneratedSource, resolvePreamble} from ".
 import {writeGeneratedSource} from "../../src/generation/writeGeneratedSource.js";
 import {validatePreamble, validatePreambleDirectory} from "../../scripts/lib/preamble-validation.mjs";
 
-const base = path.resolve("tmp/test-generation/preambles");
+const base = path.resolve(verificationPath("tmp/test-generation/preambles"));
 const roots: string[] = [];
 function fixture() {
   fs.mkdirSync(base, {recursive: true});

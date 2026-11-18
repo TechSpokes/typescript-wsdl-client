@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it} from 'vitest';
 import {mkdtemp, mkdir, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -6,7 +7,7 @@ import {planCheckedComponents} from '../../src/checkedPlanning.js';
 
 describe('checked native facet production path', () => {
   it('generates inherited string length and exact numeric bounds through the public pipeline', async () => {
-    const directory = path.resolve('tmp/conformance/checked-facets');
+    const directory = path.resolve(verificationPath('tmp/conformance/checked-facets'));
     await mkdir(directory, {recursive: true});
     const project = await mkdtemp(path.join(directory, 'candidate-'));
     await runGenerationPipeline({model: 'checked-components-v1', wsdl: path.resolve('test/conformance/fixtures/assessment/facets.wsdl'),
@@ -24,7 +25,7 @@ describe('checked native facet production path', () => {
     ['contextual second member', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:QName"', 'scalar-correspondence-scope'],
     ['wider patterned family', 'base="xs:int"><xs:pattern value="[+]00[0-9]"', 'base="xs:float"><xs:pattern value="[+]00[0-9]"', 'scalar-facet-correspondence-scope'],
   ])('keeps %s distinct from payload invalidity', async (_label, from, to, rule) => {
-    const directory = path.resolve('tmp/conformance/checked-facets'); await mkdir(directory, {recursive: true});
+    const directory = path.resolve(verificationPath('tmp/conformance/checked-facets')); await mkdir(directory, {recursive: true});
     const project = await mkdtemp(path.join(directory, 'refusal-')), file = path.join(project, 'source.wsdl');
     const original = await readFile('test/conformance/fixtures/assessment/facets.wsdl', 'utf8');
     await writeFile(file, original.replace(from, to));
@@ -34,7 +35,7 @@ describe('checked native facet production path', () => {
   });
 
   it('composes qualified heterogeneous union list items through public planning', async () => {
-    const directory = path.resolve('tmp/conformance/checked-facets'); await mkdir(directory, {recursive: true});
+    const directory = path.resolve(verificationPath('tmp/conformance/checked-facets')); await mkdir(directory, {recursive: true});
     const project = await mkdtemp(path.join(directory, 'union-list-')), file = path.join(project, 'source.wsdl');
     const original = await readFile('test/conformance/fixtures/assessment/facets.wsdl', 'utf8');
     await writeFile(file, original.replace('memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:boolean"'));

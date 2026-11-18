@@ -9,7 +9,7 @@ function hasBroadVitestRun(script: string): boolean {
 function ciRunsBroadTests(script: string): boolean {
   let referenceCompleted = false;
   for (const command of script.split(/\s*&&\s*/)) {
-    if (/^npm\s+run\s+test:reference$/.test(command.trim())) referenceCompleted = true;
+    if (/^npm\s+run\s+test:reference(?::run)?$/.test(command.trim())) referenceCompleted = true;
     const productCommand = referenceCompleted
       ? command.replace(/(?:^|\s)--exclude\s+(["']?)test[\\/]conformance[\\/]reference[\\/]\*\*\1(?=\s|$)/g, "")
       : command;

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {mkdtemp, mkdir, writeFile, readFile, rm} from 'node:fs/promises';
@@ -10,7 +11,7 @@ const namespace = 'urn:checked:forecast';
 const selector = {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'};
 let directory: string;
 beforeAll(async () => {
-  const parent = path.resolve('tmp/conformance'); await mkdir(parent, {recursive: true});
+  const parent = path.resolve(verificationPath('tmp/conformance')); await mkdir(parent, {recursive: true});
   directory = await mkdtemp(path.join(parent, 'inspect-cli-'));
   await writeFile(path.join(directory, 'config.json'), JSON.stringify({selectors: [selector], fileRoots: [path.dirname(source)], sourceResources: [], sourceOrigins: []}));
 });

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -36,8 +37,8 @@ const selector = (version: '11' | '12') => ({portType: {namespace: ns, local: 'P
 const selection = (version: '11' | '12') => ({service: {namespace: ns, local: 'PingService'}, port: 'Port' + version});
 let directory: string, original: string, response: string, fault: string, cert: string, key: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/soap12', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/soap12/suite-'));
+  await mkdir(verificationPath('tmp/conformance/soap12'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/soap12/suite-')));
   [original, response, fault] = await Promise.all(['document-literal.wsdl', 'response.xml', 'fault.xml'].map(file => readFile(path.join(fixture, file), 'utf8')));
   [cert, key] = await Promise.all(['test-cert.pem', 'test-key.pem'].map(file => readFile(path.resolve('test/conformance/fixtures/soap/content-model', file), 'utf8')));
 });

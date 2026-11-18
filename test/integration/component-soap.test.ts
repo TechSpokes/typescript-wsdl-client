@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import Fastify from 'fastify';
 import type {FastifyPluginAsync} from 'fastify';
@@ -35,8 +36,8 @@ const SETTLEMENT_TIMEOUT_MS = 60_000;
 const GENERATED_EXCHANGE_TIMEOUT_MS = COMPILER_TIMEOUT_MS + SETTLEMENT_TIMEOUT_MS;
 let directory: string, original: string, schema: string, cert: string, key: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/component-soap', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/component-soap/suite-'));
+  await mkdir(verificationPath('tmp/conformance/component-soap'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/component-soap/suite-')));
   [original, schema, cert, key] = await Promise.all([
     readFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl', 'utf8'),
     readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', 'utf8'),

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import path from 'node:path';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -55,8 +56,8 @@ async function native(actual: Physical) {
 }
 let author: Awaited<ReturnType<typeof native>>, originalSource: Physical, bytes: Uint8Array, legacy: Uint8Array;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/response-branches-capsule', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/response-branches-capsule/suite-'));
+  await mkdir(verificationPath('tmp/conformance/response-branches-capsule'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/response-branches-capsule/suite-')));
   for (const file of files) originals.set(file, await readFile(path.join(fixture, file)));
   originalSource = await source(); author = await native(originalSource);
   const current = await createComponentSourceCapsule(author.outer, selection, undefined, author.projection, author.branches);

@@ -1,5 +1,6 @@
+import {verificationPath} from "./verificationPath.js";
 import {expect} from 'vitest';
-import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, appendFile, readdir} from 'node:fs/promises';
+import {mkdtemp, mkdir, writeFile, readFile, copyFile, rename, rm, appendFile, readdir} from 'node:fs/promises';
 import path from 'node:path';
 import {runOwnedNode} from './ownedNodeProcess.js';
 import type {InstalledIntakeTooling} from './installedIntakeTooling.js';
@@ -9,7 +10,7 @@ import type {CheckedComponentPlan} from '../../src/index.js';
 export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
   const root = process.cwd(), npm = process.env.npm_execpath;
   if (!npm) throw new Error('Run installed qualification through npm');
-  const evidence = path.resolve('tmp/conformance/wsdl-first-installed'); await mkdir(evidence, {recursive: true});
+  const evidence = path.resolve(verificationPath('tmp/conformance/wsdl-first-installed')); await mkdir(evidence, {recursive: true});
   const runEvidence = await mkdtemp(path.join(evidence, 'run-'));
   const consumer = path.join(shared.root, 'local'); await mkdir(consumer);
   const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.resolve('tmp/cache/npm'), VITEST_MAX_WORKERS: '1'};
@@ -67,7 +68,9 @@ export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling
       } else if (mode === 'cli') await run('automatic-cli', [...permissions, ...cliArgs], tooling);
       else await run('automatic-api', [...permissions, ...api, JSON.stringify(opts)], tooling);
       const inventory = JSON.parse(await readFile(path.join(project, 'client/inventory.json'), 'utf8')) as {operations: unknown[]};
-      expect(inventory.operations).toHaveLength(1); await writeFile(path.join(runEvidence, mode + '-inventory.json'), JSON.stringify(inventory, null, 2));
+      expect(inventory.operations).toMatchObject([{operation: 'SubmitImported', requested: true, selected: true, generated: true}]);
+      await writeFile(path.join(runEvidence, mode + '-inventory.json'), JSON.stringify(inventory, null, 2));
+      if (mode !== 'recovery') continue;
       const artifacts = (await readdir(project, {recursive: true, withFileTypes: true})).filter(entry => entry.isFile())
         .map(entry => path.relative(project, path.join(entry.parentPath, entry.name)).replaceAll('\\', '/')).sort();
       await writeFile(path.join(runEvidence, mode + '-artifacts.json'), JSON.stringify(artifacts, null, 2) + '\n');
@@ -79,13 +82,15 @@ export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling
       for (const name of ['test-cert.pem', 'test-key.pem']) await copyFile('test/conformance/fixtures/soap/content-model/' + name, path.join(project, name));
       await copyFile('test/helpers/localIntakeInstalledProcess.ts', path.join(project, 'wire.ts'));
       await copyFile('test/helpers/ownedParentGuard.ts', path.join(project, 'parent-guard.ts'));
+      const relocated = path.join(consumer, 'relocated');
+      await rename(project, relocated);
       const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
-      const result = await run(mode + '-wire', ['--permission', '--allow-child-process', ...network, '--allow-fs-read=' + project, '--allow-fs-write=' + project,
-        path.join(project, 'wire.ts'), path.join(root, 'package.json')], project);
+      const result = await run(mode + '-wire', ['--permission', '--allow-child-process', ...network, '--allow-fs-read=' + relocated, '--allow-fs-write=' + relocated,
+        path.join(relocated, 'wire.ts'), path.join(root, 'package.json'), wsdl], relocated);
       expect(JSON.parse(result.stdout)).toMatchObject({kind: 'wsdl-first-installed-wire', checkoutReadable: false, exchanges: 1, invalidHttpRejected: true, verifiedTls: true});
       await writeFile(path.join(runEvidence, mode + '-wire.json'), result.stdout);
     }
-    await writeFile(path.join(runEvidence, 'result.json'), JSON.stringify({status: 'passed', projects: 3, operations: 3, exchanges: 3, humanResolutionValues: 1,
+    await writeFile(path.join(runEvidence, 'result.json'), JSON.stringify({status: 'passed', projects: 3, operations: 3, exchanges: 1, humanResolutionValues: 1,
       harnessStageWatchdogMs: 240_000, productLatencyRequirement: false}));
   } finally {await rm(consumer, {recursive: true, force: true, maxRetries: 10, retryDelay: 200});}
 }

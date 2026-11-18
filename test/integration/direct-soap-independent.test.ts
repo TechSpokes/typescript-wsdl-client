@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {createServer, type ServerResponse} from 'node:http';
 import type {Socket} from 'node:net';
@@ -15,8 +16,8 @@ let original: string, response: Buffer, scratch: string;
 beforeAll(async () => {
   original = await readFile(fixture, 'utf8');
   response = await readFile(path.join(path.dirname(fixture), 'forecast-messages/response.xml'));
-  await mkdir('tmp/conformance/direct-soap-independent', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/direct-soap-independent/suite-'));
+  await mkdir(verificationPath('tmp/conformance/direct-soap-independent'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/direct-soap-independent/suite-')));
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});
 async function operation(text?: string) {

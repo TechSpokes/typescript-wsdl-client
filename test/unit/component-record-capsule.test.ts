@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, writeFile, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -10,7 +11,7 @@ import {createComponentSourceCapsule, reconstructComponentSourceCapsule, reconst
 import {generateComponentClient} from '../../src/client/generateDirectClient.js';
 
 const fixtures = path.resolve('test/conformance/fixtures/xsd/standard-schema-element');
-const parent = path.resolve('tmp/conformance/record-capsule'), ns = 'urn:owned:wrapper';
+const parent = path.resolve(verificationPath('tmp/conformance/record-capsule')), ns = 'urn:owned:wrapper';
 const name = (local: string) => ({namespace: ns, local});
 const selector = {portType: name('WrapperPortType'), binding: name('WrapperBinding'), operation: 'Fetch'};
 const selection = {service: name('WrapperService'), port: 'WrapperPort'};

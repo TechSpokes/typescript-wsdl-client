@@ -1,4 +1,5 @@
 /** Nonauthor expectations use literal schema/wire meanings, not capsule internals. */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdtemp, readFile, writeFile, mkdir, rm, symlink} from 'node:fs/promises';
 import path from 'node:path';
@@ -41,8 +42,8 @@ function edit(change: (value: Record<string, any>) => void) {
 }
 const read = (bytes: Uint8Array) => readDirectSourceCapsule(bytes, createSemanticBudget());
 beforeAll(async () => {
-  await mkdir('tmp/conformance/p36-independent', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/p36-independent/suite-'));
+  await mkdir(verificationPath('tmp/conformance/p36-independent'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/p36-independent/suite-')));
   original = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
   baseline = capsule(await contract());
   const copied = await source();

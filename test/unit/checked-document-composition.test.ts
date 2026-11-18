@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -17,8 +18,8 @@ const namespace = 'urn:checked:forecast';
 const selector = {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'};
 
 it('composes independently generated identical selectors without conflating structural contracts or runtime resources', async () => {
-  await mkdir('tmp/test-generation', {recursive: true});
-  const root = await mkdtemp(path.resolve('tmp/test-generation/checked-composition-'));
+  await mkdir(verificationPath('tmp/test-generation'), {recursive: true});
+  const root = await mkdtemp(path.resolve(verificationPath('tmp/test-generation/checked-composition-')));
   try {
     const original = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
     const documents: {key: string; document: Document}[] = [];

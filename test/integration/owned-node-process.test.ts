@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -15,8 +16,8 @@ describe('qualification command ownership', () => {
 
   for (const reason of ['cancellation', 'deadline', 'early-exit'] as const) {
     it(`closes an actual descendant HTTP listener after ${reason}`, async context => {
-      await mkdir('tmp/test-generation', {recursive: true});
-      const directory = await mkdtemp(path.resolve('tmp/test-generation/owned-node-'));
+      await mkdir(verificationPath('tmp/test-generation'), {recursive: true});
+      const directory = await mkdtemp(path.resolve(verificationPath('tmp/test-generation/owned-node-')));
       const marker = path.join(directory, 'listener.json');
       const controller = new AbortController();
       const signal = AbortSignal.any([controller.signal, context.signal]);

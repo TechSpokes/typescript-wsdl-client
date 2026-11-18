@@ -1,14 +1,14 @@
 /** Packed-consumer qualification for an explicitly completed SOAP wrapper contract.
  * @since Unreleased
  */
+import {verificationPath} from "./verificationPath.js";
 import {expect} from 'vitest';
 import {appendFile, copyFile, mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
-import {pathToFileURL} from 'node:url';
 import {inspectSourceCorrectionInventory} from '../../src/compiler/sourceCorrections.js';
 import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 import {runOwnedNode} from './ownedNodeProcess.js';
-import {installIntakeProject, type InstalledIntakeTooling} from './installedIntakeTooling.js';
+import {installIntakeVariants, type InstalledIntakeTooling} from './installedIntakeTooling.js';
 
 /**
  * Generate and execute original and corrected apps using one independently packed candidate.
@@ -20,7 +20,7 @@ import {installIntakeProject, type InstalledIntakeTooling} from './installedInta
  */
 export async function qualifyCorrectedIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
   const npm = process.env.npm_execpath; if (!npm) throw new Error('Run installed qualification through npm');
-  const evidence = path.resolve('tmp/conformance/source-corrections-installed'); await mkdir(evidence, {recursive: true});
+  const evidence = path.resolve(verificationPath('tmp/conformance/source-corrections-installed')); await mkdir(evidence, {recursive: true});
   const logs = await mkdtemp(path.join(evidence, 'run-'));
   const consumer = path.join(shared.root, 'corrected'); await mkdir(consumer);
   const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.resolve('tmp/cache/npm')};
@@ -68,7 +68,8 @@ export async function qualifyCorrectedIntakeInstalled(shared: InstalledIntakeToo
       standardLibraries: ['w3c-xsd10-schema-element-2004-v1'], recordProjections: [{selector, source: companion,
         recordSelector: {portType: name('RecordPortType'), binding: name('RecordBinding'), operation: 'Fetch'}, scope: 'records-with-declared-wrapper-scope'}]};
     const permissions = ['--permission', '--allow-fs-read=' + consumer, '--allow-fs-read=' + shared.tooling, '--allow-fs-write=' + consumer];
-    for (const mode of ['original', 'completed']) {
+    const variants = ['original', 'completed'] as const;
+    for (const mode of variants) {
       const project = path.join(consumer, mode), configuration = path.join(consumer, mode + '.json');
       await writeFile(configuration, JSON.stringify({...config, ...(mode === 'completed' ? {sourceCorrectionsFile: recipeFile} : {})}));
       await run(mode + '-generate', [...permissions, shared.cli, 'pipeline', '--model', 'checked-components-v1', '--wsdl-source', source,
@@ -80,8 +81,10 @@ export async function qualifyCorrectedIntakeInstalled(shared: InstalledIntakeToo
         expect(record.corrections.map(change => change.kind).sort()).toEqual(['insert-element', 'set-occurs', 'set-wildcard-namespaces']);
         await copyFile(provenance, path.join(logs, 'completed-provenance.json'));
       } else await expect(readFile(provenance)).rejects.toMatchObject({code: 'ENOENT'});
-      await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      for (const command of ['typecheck', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
+    }
+    await installIntakeVariants(shared, consumer, variants, logs, env, run);
+    for (const variant of variants) {
+      await run(variant + '-build', [npm, 'run', 'build'], path.join(consumer, variant));
     }
     await rm(inputs, {recursive: true}); await rm(recipeFile);
     await copyFile('test/helpers/correctedIntakeInstalledProcess.ts', path.join(consumer, 'wire.ts'));

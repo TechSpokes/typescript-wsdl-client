@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterEach, expect, it, vi} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,8 +9,8 @@ import * as componentOwner from '../../src/checkedPipeline.js';
 const roots: string[] = [];
 afterEach(() => {for (const root of roots.splice(0)) fs.rmSync(root, {recursive: true, force: true});});
 function setup(fixture = 'test/conformance/fixtures/xsd/imports/import-relative-types.wsdl') {
-  fs.mkdirSync('tmp/test-generation', {recursive: true});
-  const root = fs.mkdtempSync(path.resolve('tmp/test-generation/wsdl-first-')); roots.push(root);
+  fs.mkdirSync(verificationPath('tmp/test-generation'), {recursive: true});
+  const root = fs.mkdtempSync(path.resolve(verificationPath('tmp/test-generation/wsdl-first-'))); roots.push(root);
   const wsdl = path.join(root, 'source.wsdl'), dependency = path.join(root, 'import-relative-types-types.xsd');
   fs.copyFileSync(fixture, wsdl);
   fs.copyFileSync('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', dependency);

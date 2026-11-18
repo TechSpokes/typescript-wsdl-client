@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import path from "node:path";
 import {createHash} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
@@ -100,8 +101,8 @@ describe("exact occurrence analysis", () => {
     const result = analyzeOccurrences(composed, {maxSteps: 1000});
     expect(result).toMatchObject({kind: "failure", diagnostic: {category: "resource-limit"}});
     expect("analysis" in result).toBe(false);
-    mkdirSync("tmp/conformance/analysis", {recursive: true});
-    writeFileSync("tmp/conformance/analysis/measurements.json", JSON.stringify(results, null, 2) + "\n");
+    mkdirSync(verificationPath("tmp/conformance/analysis"), {recursive: true});
+    writeFileSync(verificationPath("tmp/conformance/analysis/measurements.json"), JSON.stringify(results, null, 2) + "\n");
   });
 
   it("measures the default node budget before allocating traversal indexes", async () => {
@@ -114,8 +115,8 @@ describe("exact occurrence analysis", () => {
       measurements.push({nodes: count, outcome: result.kind === "analyzed" ? "passes" : result.diagnostic.category, elapsedMs: performance.now() - start});
     }
     expect(measurements.map(r => r.outcome)).toEqual(["passes", "resource-limit"]);
-    mkdirSync("tmp/conformance/analysis", {recursive: true});
-    writeFileSync("tmp/conformance/analysis/node-measurements.json", JSON.stringify(measurements, null, 2) + "\n");
+    mkdirSync(verificationPath("tmp/conformance/analysis"), {recursive: true});
+    writeFileSync(verificationPath("tmp/conformance/analysis/node-measurements.json"), JSON.stringify(measurements, null, 2) + "\n");
   });
 
   it("charges expanded-name serialization before allocating large property keys", async () => {

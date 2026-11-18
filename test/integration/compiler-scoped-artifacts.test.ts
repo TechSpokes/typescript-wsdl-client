@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, describe, expect, it} from "vitest";
 import {mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync} from "node:fs";
 import {join} from "node:path";
@@ -19,7 +20,7 @@ import {loadWsdl, type WsdlCatalog} from "../../src/loader/wsdlLoader.js";
 import {generateOpenAPI} from "../../src/openapi/generateOpenAPI.js";
 
 const fixtureRoot = join(process.cwd(), "test/conformance/fixtures/xsd/types/scoped-identities");
-const parent = join(process.cwd(), "tmp/conformance");
+const parent = join(process.cwd(), verificationPath("tmp/conformance"));
 mkdirSync(parent, {recursive: true});
 const root = mkdtempSync(join(parent, "wsdl-scoped-artifacts-"));
 afterAll(() => rmSync(root, {recursive: true, force: true}));

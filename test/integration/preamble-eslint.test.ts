@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {beforeAll, afterAll, describe, it, expect} from "vitest";
 import fs from "node:fs";
 import path from "node:path";
@@ -8,7 +9,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import {compileWsdlToProject} from "../../src/index.js";
 
-const base = path.resolve("tmp/test-generation/preamble-eslint");
+const base = path.resolve(verificationPath("tmp/test-generation/preamble-eslint"));
 let root: string;
 let generated: string;
 const handwritten = "export class Maintained {}\n";

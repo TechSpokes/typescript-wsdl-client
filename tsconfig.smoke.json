@@ -9,10 +9,5 @@
     "paths": {
       "soap": ["./src/types/soap.d.ts"]
     }
-  },
-  "include": [
-    "tmp/smoke/**/*.ts",
-    "tmp/smoke/**/*.tsx",
-    "src/types/soap.d.ts"
-  ]
+  }
 }

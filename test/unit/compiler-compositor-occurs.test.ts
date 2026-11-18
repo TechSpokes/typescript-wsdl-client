@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, describe, expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
@@ -9,7 +10,7 @@ import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCom
 import {resolveCompilerOptions} from "../../src/config.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
 
-const tmpParent = join(process.cwd(), "tmp", "conformance");
+const tmpParent = join(process.cwd(), verificationPath("tmp/conformance"));
 mkdirSync(tmpParent, {recursive: true});
 const tmpRoot = mkdtempSync(join(tmpParent, "compiler-sequence-occurs-"));
 

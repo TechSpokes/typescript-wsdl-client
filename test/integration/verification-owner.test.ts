@@ -1,60 +1,137 @@
 import {it, expect} from 'vitest';
-import {mkdtemp, mkdir, writeFile, readFile, rm, access} from 'node:fs/promises';
-import {execFileSync} from 'node:child_process';
+import {mkdtemp, mkdir, writeFile, readFile, rename, rm, access, readdir, symlink} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {setTimeout as delay} from 'node:timers/promises';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
-it('refuses a competing owner and releases ownership after success, failure and cancellation', async context => {
-  const base = path.resolve('tmp/conformance/verification-owner');
-  await mkdir(base, {recursive: true});
-  const root = await mkdtemp(path.join(base, 'case-'));
+it('cleans the delivery workspace after success, nonzero exit and cancellation', async context => {
+  const root = await mkdtemp(path.join(tmpdir(), 'wsdl-verification-owner-'));
   const runner = path.resolve('scripts/run-verification.ts');
-  const lock = path.join(root, 'tmp/conformance/verification/active.json');
-  execFileSync('git', ['init', '--quiet', root], {windowsHide: true});
-  await writeFile(path.join(root, 'package.json'), JSON.stringify({private: true, type: 'module', scripts: {'test:run': 'node fixture.ts'}}));
-  await writeFile(path.join(root, 'fixture.ts'), `import {writeFileSync} from 'node:fs';
-writeFileSync('ready', String(process.pid));
-if (process.env.PROBE_MODE === 'hold') setInterval(() => {}, 1000);
-else process.exitCode = process.env.PROBE_MODE === 'fail' ? 1 : 0;
+  const tsx = import.meta.resolve('tsx');
+  const control = path.join(root, 'ready.json');
+  const cache = path.join(root, 'tmp/cache');
+  const asset = path.join(root, 'dist/assets/release.zip');
+  const base = path.join(root, 'tmp/verification');
+  const outside = path.join(root, 'protected');
+  const pending: Promise<number>[] = [];
+  const transcript: string[] = [];
+  context.onTestFinished(async () => {
+    await Promise.allSettled(pending);
+    await rm(root, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  }, 60_000);
+
+  for (const directory of [cache, path.dirname(asset), outside]) await mkdir(directory, {recursive: true});
+  await writeFile(path.join(cache, 'keep'), 'cache');
+  await writeFile(path.join(outside, 'keep'), 'protected');
+  await writeFile(asset, 'release');
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({private: true, type: 'module', scripts: {'ci:run': 'node fixture.ts'}}));
+  await writeFile(path.join(root, 'fixture.ts'), `import {writeFileSync, symlinkSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {spawn} from 'node:child_process';
+import path from 'node:path';
+const run = process.env.WSDL_TEST_RUN_DIR;
+symlinkSync(path.resolve('protected'), path.join(run, 'linked'), process.platform === 'win32' ? 'junction' : 'dir');
+writeFileSync('dist/owned.js', '');
+writeFileSync(path.join(tmpdir(), 'outside-scratch.txt'), '');
+const nested = process.env.PROBE_MODE === 'hold' || process.env.PROBE_MODE === 'kill-npm'
+  ? spawn(process.execPath, ['-e', "const server = require('node:http').createServer((_req, res) => res.end('owned verification fixture')); server.listen(0, '127.0.0.1', () => console.log(server.address().port));"], {
+    detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'inherit'],
+  })
+  : undefined;
+const port = nested ? Number(await new Promise(resolve => nested.stdout.once('data', resolve))) : undefined;
+writeFileSync('ready.json', JSON.stringify({port, nested: nested?.pid, name: path.basename(run), external: tmpdir()}));
+if (nested) setInterval(() => {}, 1000);
+else if (process.env.PROBE_MODE === 'fail') process.exitCode = 23;
 `);
   await writeFile(path.join(root, 'entry.ts'), `import {existsSync} from 'node:fs';
-const timer = setInterval(() => {if (existsSync('cancel')) {clearInterval(timer); process.emit('SIGINT');}}, 50);
-process.argv = [process.execPath, ${JSON.stringify(runner)}, 'test:run'];
+const timer = setInterval(() => {if (existsSync('cancel')) {clearInterval(timer); process.emit('SIGINT');}}, 25);
 try {await import(${JSON.stringify(pathToFileURL(runner).href)});} finally {clearInterval(timer);}
 `);
-  const pending: Promise<boolean>[] = [];
-  const start = (mode: string) => {
-    let output = '';
-    const done = runOwnedNode(['--import', 'tsx', path.join(root, 'entry.ts')], {cwd: root,
-      timeoutMs: 20_000, signal: context.signal, env: {...process.env, PROBE_MODE: mode},
-      onOutput: chunk => {output += chunk;}}).then(() => true, error => {output += String(error); return false;});
-    pending.push(done);
-    return {done, output: () => output};
+  const launch = (mode: string, args = ['ci:run']) => {
+    const result = runOwnedNode(['--import', tsx, path.join(root, 'entry.ts'), ...args], {
+      cwd: root, timeoutMs: 25_000, signal: context.signal, env: {...process.env, PROBE_MODE: mode},
+      onOutput: text => transcript.push(text),
+    }).then(() => 0, (error: Error & {exitCode?: number}) => {
+      if (error.exitCode === undefined) throw error;
+      return error.exitCode;
+    });
+    pending.push(result);
+    return result;
   };
-  context.onTestFinished(async () => {await Promise.all(pending);}, 60_000);
-  try {
-    for (const mode of ['success', 'fail']) {
-      const run = start(mode);
-      expect(await run.done, run.output()).toBe(mode === 'success');
-      await expect(access(lock)).rejects.toMatchObject({code: 'ENOENT'});
-    }
-    await rm(path.join(root, 'ready'));
-    const owner = start('hold');
+  const expectClean = async () => {
+    expect(await readdir(base), transcript.join('')).toEqual([]);
+    await expect(access(path.join(root, 'dist/owned.js'))).rejects.toMatchObject({code: 'ENOENT'});
+    expect(await readFile(asset, 'utf8')).toBe('release');
+    expect(await readFile(path.join(cache, 'keep'), 'utf8')).toBe('cache');
+    expect(await readFile(path.join(outside, 'keep'), 'utf8')).toBe('protected');
+    const {external} = JSON.parse(await readFile(control, 'utf8')) as {external: string};
+    await expect(access(external)).rejects.toMatchObject({code: 'ENOENT'});
+  };
+  expect(await launch('success')).toBe(0);
+  await expectClean();
+  expect(await launch('fail')).toBe(23);
+  await expectClean();
+
+  const modes = process.platform === 'win32' ? ['hold'] : ['hold', 'kill-npm'];
+  for (const mode of modes) {
+    await rm(control);
+    const active = launch(mode);
+    let listener: {port: number; nested: number} | undefined;
     try {
-      for (let n = 0; ; n++) {
-        if (await access(path.join(root, 'ready')).then(() => true, () => false)) break;
-        if (n === 100) throw new Error('Probe did not become ready: ' + owner.output());
-        await new Promise(resolve => setTimeout(resolve, 100));
+      const readControl = () => readFile(control, 'utf8').then(text => JSON.parse(text) as {port: number; nested: number; name: string});
+      let ready: Awaited<ReturnType<typeof readControl>> | undefined;
+      for (let attempt = 0; !ready && attempt < 100; attempt++) {
+        ready = await readControl().catch(() => undefined);
+        if (!ready) await delay(50);
       }
-      const competitor = start('success');
-      expect(await competitor.done, competitor.output()).toBe(false);
-      expect(competitor.output()).toContain('Verification already running');
-      const pid = Number(await readFile(path.join(root, 'ready'), 'utf8'));
-      await writeFile(path.join(root, 'cancel'), 'cancel');
-      expect(await owner.done, owner.output()).toBe(false);
-      await expect(access(lock)).rejects.toMatchObject({code: 'ENOENT'});
-      expect(() => process.kill(pid, 0)).toThrow();
-    } finally {await writeFile(path.join(root, 'cancel'), 'cancel'); await owner.done;}
-  } finally {await Promise.all(pending); await rm(root, {recursive: true, force: true});}
+      if (!ready) throw new Error('The nested verification listener did not start: ' + transcript.join(''));
+      listener = ready;
+      const endpoint = `http://127.0.0.1:${ready.port}`;
+      expect(await (await fetch(endpoint, {signal: AbortSignal.timeout(2000)})).text()).toBe('owned verification fixture');
+      if (mode === 'hold') {
+        expect(await launch('success')).toBe(1);
+        expect(await launch('success', ['recover', ready.name])).toBe(1);
+        await writeFile(path.join(root, 'cancel'), '');
+        expect(await active).toBe(130);
+      } else {
+        const pid = Number(await readFile(path.join(base, ready.name, 'child'), 'utf8'));
+        process.kill(pid, 'SIGKILL');
+        expect(await active).toBe(1);
+      }
+      await expect(fetch(endpoint, {signal: AbortSignal.timeout(2000)})).rejects.toThrow();
+      await expectClean();
+    } finally {
+      await writeFile(path.join(root, 'cancel'), '');
+      await active.catch(() => undefined);
+      await rm(path.join(root, 'cancel'));
+      if (listener) {
+        const response = await fetch(`http://127.0.0.1:${listener.port}`, {signal: AbortSignal.timeout(1000)}).catch(() => undefined);
+        if (response && await response.text() === 'owned verification fixture') process.kill(listener.nested, 'SIGKILL');
+      }
+    }
+  }
+
+  // @why Assemble a stopped owner's on-disk state without leaving a live orphan during the test.
+  const stale = 'run-Xy12ab';
+  const abandoned = path.join(base, stale);
+  const oldOwner = await runOwnedNode(['-e', 'console.log(process.pid)'], {cwd: root, timeoutMs: 5000});
+  await symlink(outside, abandoned, process.platform === 'win32' ? 'junction' : 'dir');
+  expect(await launch('success', ['recover', stale])).toBe(1);
+  await rm(abandoned);
+  await mkdir(abandoned);
+  await writeFile(path.join(abandoned, 'owner'), oldOwner.stdout.trim());
+  await writeFile(path.join(abandoned, 'child'), String(process.pid));
+  expect(await launch('success', ['recover', stale])).toBe(1);
+  await rm(path.join(abandoned, 'child'));
+  await rename(path.join(root, 'dist'), path.join(abandoned, 'previous-dist'));
+  expect(await launch('success', ['recover', stale])).toBe(1);
+  expect(await readFile(path.join(abandoned, 'previous-dist/assets/release.zip'), 'utf8')).toBe('release');
+  await writeFile(path.join(base, 'build-owner'), stale);
+  await mkdir(path.join(root, 'dist'));
+  await writeFile(path.join(root, 'dist/.verification-owner'), stale);
+  await writeFile(path.join(root, 'dist/owned.js'), '');
+  expect(await launch('success', ['recover', stale])).toBe(0);
+  await expectClean();
 }, 120_000);

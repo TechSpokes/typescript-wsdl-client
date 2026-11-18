@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {it} from "vitest";
 import {execFileSync} from "node:child_process";
 import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
@@ -12,8 +13,8 @@ const require = createRequire(import.meta.url);
 const fixture = resolve("examples/minimal/weather.wsdl");
 
 it("compiles and initializes buffered and streamed clients whose names match SOAP imports", async () => {
-  mkdirSync("tmp/test-generation", {recursive: true});
-  const root = mkdtempSync(resolve("tmp/test-generation/client-imports-"));
+  mkdirSync(verificationPath("tmp/test-generation"), {recursive: true});
+  const root = mkdtempSync(resolve(verificationPath("tmp/test-generation/client-imports-")));
   const names = ["Weather", "Client", "IOptions", "ISecurity", "createClientAsync"];
   const streamConfig = parseStreamConfig({operations: {GetWeatherInformation: {
     recordType: "WeatherDescription",

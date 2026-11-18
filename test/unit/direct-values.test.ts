@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -14,8 +15,8 @@ const fixture = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl
 const selector: DirectOperationSelector = {portType: {namespace: ns, local: 'ForecastPortType'}, binding: {namespace: ns, local: 'ForecastBinding'}, operation: 'GetForecast'};
 let scratch: string, original: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/direct-values', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/direct-values/suite-'));
+  await mkdir(verificationPath('tmp/conformance/direct-values'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/direct-values/suite-')));
   original = await readFile(fixture, 'utf8');
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});

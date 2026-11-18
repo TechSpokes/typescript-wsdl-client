@@ -22,7 +22,7 @@ Exploratory implementations and their dedicated consumers live under `research/`
 
 The product reference launcher retains its executed-method audit and baseline report. Local CI runs that lane once, excluding its files only from the subsequent broad Vitest invocation; plain `npm test` still collects all product tests. Separate product and research migration maps preserve all 53 historical methods without changing archived observations into current proof.
 
-Installed product and existing platform controls remain PR checks on Linux and Windows, with Node 24 and 26. Research validation is optional and available on research changes or manual dispatch; historical environment qualification remains separately dispatchable.
+Installed product and existing platform controls remain PR checks on Linux and Windows with Node 24 and 26. Full product verification runs on Linux Node 24. The other jobs run representative installed legacy and checked consumers, and the complete installed matrix is available by manual dispatch. Research validation and historical environment qualification use separate workflows.
 
 ## Product support and research status
 

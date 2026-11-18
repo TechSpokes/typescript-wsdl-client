@@ -5,6 +5,7 @@
  */
 import {spawn, execFile, type ChildProcess} from 'node:child_process';
 import {promisify} from 'node:util';
+import {setTimeout as delay} from 'node:timers/promises';
 import path from 'node:path';
 
 interface Options {
@@ -14,7 +15,75 @@ interface Options {
   readonly timeoutMs: number;
   readonly maxBuffer?: number;
   readonly childProcessesDenied?: boolean;
+  readonly onSpawn?: (pid: number) => void;
   readonly onOutput?: (text: string) => void;
+}
+
+interface PosixProcess {
+  pid: number;
+  parent: number;
+  group: number;
+  state: string;
+}
+
+function signalGroup(group: number, signal: NodeJS.Signals): void {
+  try {process.kill(-group, signal);}
+  catch (error) {if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;}
+}
+
+async function posixProcesses(): Promise<PosixProcess[]> {
+  const {stdout} = await promisify(execFile)('ps', ['-A', '-o', 'pid=,ppid=,pgid=,stat='],
+    {encoding: 'utf8', timeout: 5000});
+  return stdout.trim().split(/\r?\n/).filter(Boolean).map(line => {
+    const [pid, parent, group, state] = line.trim().split(/\s+/);
+    if (!/^\d+$/.test(pid ?? '') || !/^\d+$/.test(parent ?? '') || !/^\d+$/.test(group ?? '') || !state) {
+      throw new Error('Could not inspect owned process groups');
+    }
+    return {pid: Number(pid), parent: Number(parent), group: Number(group), state};
+  });
+}
+
+async function stopPosixTree(leader: number, requireTrace: boolean): Promise<void> {
+  const groups = new Set([leader]);
+  function stopGroup(group: number): void {
+    signalGroup(group, 'SIGSTOP');
+    groups.add(group);
+  }
+  try {
+    stopGroup(leader);
+    // @why Nested qualification commands may have created their own detached process groups.
+    // Freeze each newly found group before looking for more descendants.
+    for (let pass = 0; ; pass++) {
+      if (pass === 32) throw new Error('Owned process tree did not settle during cancellation');
+      const table = await posixProcesses();
+      const owned = new Set(table.filter(entry => groups.has(entry.group)).map(entry => entry.pid));
+      if (pass === 0 && requireTrace && owned.size === 0) {
+        throw new Error('Terminated command left no group members from which to trace detached descendants');
+      }
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const entry of table) {
+          if (!owned.has(entry.pid) && owned.has(entry.parent)) {
+            owned.add(entry.pid);
+            changed = true;
+          }
+        }
+      }
+      const nested = new Set(table.filter(entry => owned.has(entry.pid) && !groups.has(entry.group) && entry.group > 0)
+        .map(entry => entry.group));
+      if (!nested.size) break;
+      for (const group of nested) stopGroup(group);
+    }
+  } finally {
+    for (const group of groups) signalGroup(group, 'SIGKILL');
+  }
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const running = (await posixProcesses()).some(entry => groups.has(entry.group) && !/^[ZX]/.test(entry.state));
+    if (!running) return;
+    await delay(100);
+  }
+  throw new Error('Owned process groups remained active after cancellation');
 }
 
 async function stopTree(child: ChildProcess): Promise<void> {
@@ -25,10 +94,7 @@ async function stopTree(child: ChildProcess): Promise<void> {
     }
     await promisify(execFile)(path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32/taskkill.exe'),
       ['/PID', String(child.pid), '/T', '/F'], {windowsHide: true, timeout: 10_000});
-  } else {
-    try {process.kill(-child.pid, 'SIGKILL');}
-    catch (error) {if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;}
-  }
+  } else await stopPosixTree(child.pid, child.signalCode !== null);
 }
 
 /**
@@ -71,8 +137,9 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
   const abort = () => stop(error('Owned command cancelled: ' + String(options.signal?.reason), options.signal?.reason));
   let drainTimer: ReturnType<typeof setTimeout> | undefined;
   child.once('exit', (code, signal) => {
-    if (code !== 0) {
-      const reason = error(`Owned command exited ${code ?? signal}: ${stderr}`);
+    // @why taskkill needs a live Windows leader. A normal nonzero exit still drains its pipes.
+    if (code !== 0 && (process.platform !== 'win32' || signal !== null)) {
+      const reason = Object.assign(error(`Owned command exited ${code ?? signal}: ${stderr}`), {exitCode: code});
       if (!options.childProcessesDenied) stop(reason);
     }
     // @why An exited leader can leave inherited pipes open; never wait indefinitely for close.
@@ -95,13 +162,20 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
   options.signal?.addEventListener('abort', abort, {once: true});
   if (options.signal?.aborted) abort();
   try {
+    if (child.pid !== undefined) options.onSpawn?.(child.pid);
+  } catch (cause) {
+    stop(error('Could not record owned command', cause));
+  }
+  try {
     const result = await closed;
     await stopping;
     if (cleanupError) throw Object.assign(new AggregateError([failure, cleanupError],
       'Owned command tree cleanup failed'), {stdout, stderr});
     if (failure) throw failure;
     options.signal?.throwIfAborted();
-    if (result.code !== 0) throw error(`Owned command exited ${result.code ?? result.signal}: ${stderr}`);
+    if (result.code !== 0) {
+      throw Object.assign(error(`Owned command exited ${result.code ?? result.signal}: ${stderr}`), {exitCode: result.code});
+    }
     return {stdout, stderr};
   } finally {
     clearTimeout(timer);

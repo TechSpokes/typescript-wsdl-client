@@ -13,6 +13,7 @@ import {SaxesParser} from 'saxes';
 
 const root = process.cwd();
 await assert.rejects(readFile(process.argv[2]!), {code: 'ERR_ACCESS_DENIED'});
+await assert.rejects(readFile(process.argv[3]!), {code: 'ERR_ACCESS_DENIED'});
 const cert = await readFile('test-cert.pem'), key = await readFile('test-key.pem');
 let calls = 0;
 const requests: {action: string | undefined; names: string[]; texts: string[]}[] = [], sockets = new Set<Socket>();

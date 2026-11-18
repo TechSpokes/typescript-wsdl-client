@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import path from "node:path";
 import {cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync} from "node:fs";
 import {execFileSync} from "node:child_process";
@@ -15,7 +16,7 @@ import {applyShapeCatalogs} from "../../src/compiler/shapeResolver.js";
 
 const fixtures = path.resolve("test/conformance/fixtures");
 const temps: string[] = [];
-const temp = () => {mkdirSync("tmp/conformance/catalogs", {recursive: true}); const dir = mkdtempSync(path.resolve("tmp/conformance/catalogs/input-")); temps.push(dir); return dir;};
+const temp = () => {mkdirSync(verificationPath("tmp/conformance/catalogs"), {recursive: true}); const dir = mkdtempSync(path.resolve(verificationPath("tmp/conformance/catalogs/input-"))); temps.push(dir); return dir;};
 afterEach(() => {for (const dir of temps.splice(0)) rmSync(dir, {recursive: true, force: true});});
 const build = async (source = path.join(fixtures, "xsd/graph/shared-recursive.xsd")) => buildCanonicalGraph(await loadSchemaInput(source, {policy: {fileRoots: [fixtures]}}));
 const catalog = async () => createSemanticCatalog(await build());

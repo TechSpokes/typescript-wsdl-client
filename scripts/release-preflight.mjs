@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   APP_GENERATOR,
   PACKAGE_JSON,
+  PACKAGE_LOCK_JSON,
   ROOT,
   directDependencyRanges,
   expectedRanges,
@@ -72,6 +73,7 @@ function trackedTreeSnapshot() {
 }
 
 const results = [];
+const hasFailures = () => results.some(result => result.status === "fail");
 
 function record(name, status, message, ms) {
   results.push({ name, status, message: message ?? "", ms });
@@ -134,7 +136,7 @@ function tagAvailability(tag) {
   const out = git(["tag", "-l", tag]);
   const found = out.split(/\r?\n/).map(s => s.trim()).includes(tag);
   if (found) {
-    return { status: "warn", message: `local tag ${tag} already exists` };
+    throw new Error(`local tag ${tag} already exists. Choose an unused release version.`);
   }
   return { message: `tag ${tag} not present locally` };
 }
@@ -142,10 +144,14 @@ function tagAvailability(tag) {
 function packageVersionMatches(tag) {
   const expected = tag.replace(/^v/, "");
   const pkg = readJson(PACKAGE_JSON);
+  const lock = readJson(PACKAGE_LOCK_JSON);
   if (pkg.version !== expected) {
     throw new Error(`package.json version is ${pkg.version}, expected ${expected}`);
   }
-  return { message: `package.json version is ${expected}` };
+  if (lock.version !== expected || lock.packages?.[""]?.version !== expected) {
+    throw new Error(`package-lock.json and its root package must both have version ${expected}`);
+  }
+  return { message: `package.json and package-lock.json match ${expected}` };
 }
 
 function changelogEntry(tag) {
@@ -319,9 +325,6 @@ function skillArtifact(tag) {
 function workingTreeStatus() {
   const dirty = git(["status", "--porcelain"]);
   const branch = git(["rev-parse", "--abbrev-ref", "HEAD"]);
-  if (branch !== "main") {
-    return { status: "warn", message: `current branch is ${branch}, not main` };
-  }
   return { message: dirty ? `uncommitted final candidate on ${branch}` : `clean on ${branch}` };
 }
 
@@ -336,15 +339,17 @@ function summarize(tag, hasUncommittedChanges) {
   }
   console.log("");
   console.log(`Totals: ${counts.pass} pass | ${counts.warn} warn | ${counts.fail} fail | ${counts.skip} skip`);
-  if (counts.fail === 0) {
+  if (counts.fail === 0 && counts.skip === 0) {
     console.log("");
     console.log("Next steps:");
     if (hasUncommittedChanges) {
       console.log("  Commit the exact validated release tree without changing tracked files.");
-      console.log(`  Tag that commit with ${tag}, then push the branch and tag without rerunning preflight.`);
-    } else {
-      console.log(`  Tag the validated commit with ${tag}, then push the branch and tag without rerunning preflight.`);
     }
+    console.log("  Push the release PR and wait for checks on its exact head and any required approvals.");
+    console.log("  Merge when authorized, then verify CI and the validated tree on main.");
+    console.log(`  Tag the verified merged main commit with ${tag}. See docs/releases/README.md.`);
+  } else if (counts.fail === 0) {
+    console.log("Diagnostic checks passed with skips. Run complete release preflight before delivery.");
   }
   return counts.fail === 0;
 }
@@ -363,6 +368,19 @@ async function main() {
   await step("changelog-entry", () => changelogEntry(tag));
   await step("release-notes", () => releaseNotes(tag));
 
+  await step("conformance-gate", conformanceGate);
+  await step("node-release-gate", nodeReleaseGate);
+  await step("publish-workflow-gate", publishWorkflowGate);
+  await step("release-abandonment-gate", releaseAbandonmentGate);
+  await step("skill-delivery-gate", skillDeliveryGate);
+
+  if (hasFailures()) {
+    console.log("Candidate checks failed. Dependency checks, example generation, CI and packaging were not started.");
+    summarize(tag, false);
+    process.exitCode = 1;
+    return;
+  }
+
   if (args.skipDeps) {
     record("dep-freshness", "skip", "--skip-deps");
   } else {
@@ -376,24 +394,24 @@ async function main() {
     await step("lockfile-sync", lockfileInSync);
   }
 
-  await step("conformance-gate", conformanceGate);
-  await step("node-release-gate", nodeReleaseGate);
-  await step("publish-workflow-gate", publishWorkflowGate);
-  await step("release-abandonment-gate", releaseAbandonmentGate);
-  await step("skill-delivery-gate", skillDeliveryGate);
-
-  if (args.skipExamples) {
+  if (hasFailures()) {
+    record("examples-fresh", "skip", "dependency checks failed");
+  } else if (args.skipExamples) {
     record("examples-fresh", "skip", "--skip-examples");
   } else {
     await step("examples-fresh", examplesFresh);
   }
 
-  if (args.skipCi) {
+  if (hasFailures()) {
+    record("npm-run-ci", "skip", "candidate checks failed");
+    record("skill-artifact", "skip", "candidate checks failed");
+  } else if (args.skipCi) {
     record("npm-run-ci", "skip", "--skip-ci");
     record("skill-artifact", "skip", "--skip-ci");
   } else {
     await step("npm-run-ci", fullCi);
-    await step("skill-artifact", () => skillArtifact(tag));
+    if (hasFailures()) record("skill-artifact", "skip", "CI failed");
+    else await step("skill-artifact", () => skillArtifact(tag));
   }
 
   await step("tracked-tree-stable", () => {

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {createHash} from "node:crypto";
 import {readFileSync, mkdtempSync, symlinkSync, rmSync, writeFileSync, mkdirSync} from "node:fs";
 import path from "node:path";
@@ -251,8 +252,8 @@ describe("contextual schema inputs", () => {
     expect(fetch).not.toHaveBeenCalled();
     await expect(loadSchemaInput(uri("root.xsd"), {policy: {allowedOrigins: [origin]}})).rejects.toMatchObject({category: "unsupported-capability", message: expect.not.stringContaining("hidden")});
     expect(fetch).toHaveBeenCalledTimes(1);
-    mkdirSync("tmp/conformance", {recursive: true});
-    const temp = mkdtempSync(path.resolve("tmp/conformance/resolution-policy-"));
+    mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+    const temp = mkdtempSync(path.resolve(verificationPath("tmp/conformance/resolution-policy-")));
     try {
       const allowed = path.join(temp, "allowed"); mkdirSync(allowed);
       writeFileSync(path.join(temp, "outside.xsd"), schema());
@@ -270,8 +271,8 @@ describe("contextual schema inputs", () => {
   });
 
   it.skipIf(process.platform === "win32")("rejects special files before opening a blocking read", async () => {
-    mkdirSync("tmp/conformance", {recursive: true});
-    const temp = mkdtempSync(path.resolve("tmp/conformance/resolution-fifo-"));
+    mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+    const temp = mkdtempSync(path.resolve(verificationPath("tmp/conformance/resolution-fifo-")));
     try {
       const fifo = path.join(temp, "schema.xsd");
       execFileSync("mkfifo", [fifo]);

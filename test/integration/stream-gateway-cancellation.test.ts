@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
@@ -16,8 +17,8 @@ it.each([
   ["ndjson", "before headers"], ["json-array", "before headers"],
   ["ndjson", "during records"], ["json-array", "during records"],
 ] as const)("cancels upstream %s when the gateway consumer disconnects %s", async (format, phase) => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/stream-gateway-cancel-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-gateway-cancel-")));
   const events = new EventEmitter();
   const server = createServer(async (request, response) => {
     for await (const _chunk of request) { /* Consume the owned SOAP request. */ }

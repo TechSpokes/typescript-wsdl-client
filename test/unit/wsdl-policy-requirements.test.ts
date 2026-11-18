@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -24,8 +25,8 @@ const policy = `<p:Policy xmlns:p="${p}" xmlns:s="${s}" xmlns:u="${u}" u:Id="Tra
 const attachment = `<p:PolicyReference xmlns:p="${p}" URI="#TransportPolicy"/>`;
 let directory: string, original: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/policy-requirements', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/policy-requirements/suite-'));
+  await mkdir(verificationPath('tmp/conformance/policy-requirements'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/policy-requirements/suite-')));
   original = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});

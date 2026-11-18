@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterEach, expect, it, vi} from 'vitest';
 import {mkdtemp, mkdir, writeFile, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -20,8 +21,8 @@ vi.mock('node:fs/promises', async importOriginal => {
 
 afterEach(() => {boundary.abort = undefined; boundary.streams = 0; boundary.closed = false;});
 it('closes a source file when cancellation arrives during its metadata check', async () => {
-  await mkdir('tmp/test-generation', {recursive: true});
-  const directory = await mkdtemp(path.resolve('tmp/test-generation/source-cancellation-'));
+  await mkdir(verificationPath('tmp/test-generation'), {recursive: true});
+  const directory = await mkdtemp(path.resolve(verificationPath('tmp/test-generation/source-cancellation-')));
   try {
     const source = path.join(directory, 'source.xsd');
     await writeFile(source, '<schema/>');

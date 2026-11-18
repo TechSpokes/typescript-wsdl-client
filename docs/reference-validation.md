@@ -6,7 +6,7 @@ Internal evidence contracts for the Node tooling migration. See the root [README
 
 The product reference launcher runs independent source, schema, scalar, codec and transport observations and verifies its 16 historical method obligations. The separate [research map](../research/reference/migration-map.json) retains 37 experimental obligations; its optional auditor checks the complete 53-method union against unchanged historical source blocks.
 
-Run `npm run test:reference` for the product report and `npm run research:reference` for the exploratory lane. Plain `npm test` includes all product reference tests; local CI invokes the report launcher once and excludes reference files only from its later broad Vitest invocation.
+Run `npm run test:reference` for the audited product reference checks. Use `npm run test:reference:full` to retain a full product report, or `npm run research:reference` for the exploratory lane. Plain `npm test` includes all product reference tests. Full delivery invokes the reference launcher once and excludes that subtree only from the later broad Vitest invocation.
 
 Installed product, process/cancellation and source controls remain covered on Windows and Linux with Node 24 and 26. Historical isolated environment qualification is now manually dispatched through the research-platform workflow; the strict toolchain guard remains in product CI. [ADR-004](decisions/004-product-research-boundary.md) records this separation without changing native acceptance or historical observations.
 
@@ -231,7 +231,7 @@ New qualification records must capture source/input hashes at execution and reje
 
 All four platform/version lanes require normal `npm ci` and execution under verified interpreter absence or denial.
 Enforcement must cover named and absolute interpreter paths with negative controls; removing `setup-python` or masking PATH alone is insufficient.
-The [qualification workflow](../.github/workflows/node-reference.yml) runs the four lanes on the exact PR head. It pins npm 11.9.0 so normal install hooks execute, verifies controls before/after installation and checks, and uploads actual reports. The external delivery ledger records successful and unrun lanes without inferring results.
+The manually dispatched [research qualification workflow](../.github/workflows/research-platform.yml) runs the historical environment controls and preserves their reports. Ordinary [product CI](../.github/workflows/ci.yml) runs the current Linux and Windows delivery or compatibility checks on Node 24 and 26.
 
 ## Reproduction of relevance investigation
 

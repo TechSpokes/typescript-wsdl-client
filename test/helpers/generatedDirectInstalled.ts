@@ -1,3 +1,4 @@
+import {verificationPath} from "./verificationPath.js";
 import {expect} from 'vitest';
 import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, symlink} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -7,6 +8,7 @@ import {selectDirectOperation, selectComponentOperations} from '../../src/compil
 import {createDirectSourceCapsule, reconstructDirectSourceCapsule, createComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateDirectClient, generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
 import {runOwnedNode} from './ownedNodeProcess.js';
+import {candidateTarball, lockedDependencies} from '../../scripts/lib/candidate-package.js';
 import {prepareBufferedInstalled} from './bufferedInstalled.js';
 
 const COMMAND_TIMEOUT_MS = 180_000;
@@ -23,7 +25,7 @@ export const GENERATED_INSTALLED_WORKFLOW_TIMEOUT_MS = 5 * COMMAND_TIMEOUT_MS + 
  */
 export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'component', signal?: AbortSignal): Promise<void> {
   signal?.throwIfAborted();
-  const root = process.cwd(), evidence = path.join(root, 'tmp/conformance/' + (binding === 'component' ? 'component-transferred' : binding === 'root' ? 'p38-evidence' : 'p37-evidence'));
+  const root = process.cwd(), evidence = path.join(root, verificationPath('tmp/conformance/') + (binding === 'component' ? 'component-transferred' : binding === 'root' ? 'p38-evidence' : 'p37-evidence'));
   const consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'wsdl-generated-')));
   const fixture = path.join(root, 'test/conformance/fixtures/assessment/forecast.wsdl');
   const variants = await Promise.all([
@@ -103,11 +105,10 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
       writeDirectClient(path.join(evidence, v.name + '.ts'), generated);
     }
     if (binding === 'component') await prepareBufferedInstalled(root, consumer, signal);
-    const packed = await run([npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', evidence], root);
-    const filename = (JSON.parse(packed.stdout) as {filename: string}[])[0]!.filename;
-    expect(path.basename(filename)).toBe(filename);
+    const tarball = await candidateTarball(evidence, async () =>
+      (await run([npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', evidence], root)).stdout);
     await writeFile(path.join(consumer, 'package.json'), JSON.stringify({private: true, type: 'module'}));
-    await run([npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', path.join(evidence, filename), 'typescript@6.0.3']);
+    await run([npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', tarball, ...lockedDependencies(['typescript'])]);
     await copyFile(path.join(root, binding === 'component' ? 'test/helpers/checkedComponentInstalledProcess.ts' : binding === 'root' ? 'test/helpers/checkedDirectInstalledProcess.ts' : 'test/helpers/generatedDirectInstalledProcess.ts'), path.join(consumer, 'process.ts'));
     await copyFile(path.join(root, 'test/helpers/generatedDirectConsumer.ts'), path.join(consumer, 'generatedDirectConsumer.ts'));
     if (binding === 'component') await copyFile(path.join(root, 'test/conformance/fixtures/compatibility/v1.2.0/component-runtime-contract.ts'), path.join(consumer, 'frozen-component-runtime.ts'));

@@ -18,11 +18,11 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Keep current consumer contracts in `docs/` and exploratory or historical handoff material in `research/docs/`.
 - Keep package contents explicit, retain generation resources, and review actual package-size changes by consumer value.
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
-- Keep repository-owned temporary outputs classified under `tmp/`: smoke in `tmp/smoke/`, npm cache in `tmp/cache/npm/`, preflight examples in `tmp/preflight/examples/`, conformance in `tmp/conformance/`, and generated-test spikes in `tmp/test-generation/`.
+- Keep routine verification scratch in its owned `tmp/verification/run-*` directory. Preserve the npm cache and release artifacts.
 - Keep consumer output paths explicit and use the git-ignored `.generated/` convention in public examples.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
-- Run `npm run test:conformance` for WSDL capability fixture, registry, runner, support-matrix, or generated artifact evidence changes.
+- Verify affected WSDL capabilities using a focused stage, standalone conformance, or the full delivery suite.
 - Commit messages must follow: `Version: <release-target-version> <type>(scope): <imperative summary>`.
 - Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
@@ -34,12 +34,12 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Repository-owned new implementation, tests, research and automation use strict TypeScript; run `npm run check:toolchain`.
 - Python and other language toolchains require an explicit scope decision; #239 removed its legacy allowance.
 - GitHub CI must test Node 24 as the supported floor and Node 26 as the current line.
-- GitHub push and PR CI is a fast hosted signal; run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree before committing and tagging.
+- GitHub runs delivery and compatibility checks. Run release preflight once on the final release tree before committing and tagging.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
 - Update the version before preflight; preflight verifies versions and must not update tracked files.
 - Release preflight already runs full CI and packages the agent skill artifact; do not run those final gates separately.
-- After preflight passes, commit the exact validated tree and tag it without rerunning preflight.
+- Commit the validated tree after preflight. Tag the merged main commit only after its tree and CI are verified.
 - If another command changes tracked release files after preflight, rerun preflight on the new final candidate before committing.
 - A rejected tagged candidate is permanently consumed; never move, delete for reuse, or force-update its release tag.
 - Use the `Abandon Release Candidate` workflow to create `abandoned/vX.Y.Z` on the same commit and preserve the rejected draft.
@@ -55,13 +55,15 @@ Run `npm test` for all Vitest tests, including unit, snapshot, integration, and 
 
 Choose the smallest meaningful check by behavior and cost: unit-folder tests can compile or load large inputs, and snapshots are an assertion technique. Vitest runs `fast` before bounded `workflows`; installed and independent reference checks qualify boundaries mocks do not. See [Test Architecture](docs/testing.md#test-architecture) for configuration and [Running Tests](docs/testing.md#running-tests) for focused/debug commands.
 
-Prefer guarded public commands over internal `:run` targets. The guard shares a live owner across worktrees and retains per-attempt evidence; direct Vitest, watch, stage and reference commands are not all guarded. Inspect processes before stale-lock recovery, await owned cleanup and preserve failed evidence; follow the detailed guide rather than bypassing ownership protection.
+Use `npm test -- <path>` for targeted work and `npm run ci` for delivery. The delivery runner owns the checkout's `dist/` until it restores the previous build. Follow the [testing guide](docs/testing.md#temporary-output-and-recovery) to recover a named run after owned processes have stopped.
 
-Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. `npm test` and `npm run ci` must keep broad Vitest discovery so conformance remains covered. GitHub push and PR CI intentionally stays faster and does not replace local release preflight.
+Keep broad Vitest discovery in `npm test` and `npm run ci`. GitHub runs `npm run ci` on Linux with Node 24 and `npm run ci:platform` for representative compatibility. Use `npm run ci:platform:full` when the complete installed matrix is needed on a given platform.
 
-Assign one owner to final verification. Inspect script coverage before launching overlapping gates; run required standalone conformance and full CI sequentially, and do not overlap an installed qualification already included in CI. Separate worktrees isolate files but still share machine capacity. Follow [verification orchestration](docs/testing.md#verification-orchestration) for evidence ownership, deadlines and failure classification.
+Assign one owner to final verification. Inspect script coverage before launching overlapping gates. Use full CI as capability evidence when it already runs the affected suite. Run explicitly required separate checks in sequence. Follow [verification orchestration](docs/testing.md#verification-orchestration) for evidence ownership, deadlines and failure classification.
 
-Full conformance generates and validates consumer-style client, OpenAPI, gateway, generated-test, and app projects and can stay quiet during nested processes. Allow at least six minutes with measured headroom for current load, inspect progress before diagnosing a stall, and use the narrowest `test:conformance:<stage>` script during development. Consumer-project agents should use [consumer testing guidance](docs/testing.md#for-consumer-projects), not repository commands or locks.
+Follow the [pre-push sequence](docs/testing.md#before-opening-or-updating-a-pull-request) before opening or updating a PR, including a draft.
+
+Allow at least six minutes for full conformance on Windows. Use the narrowest capability stage while developing. Follow the [Windows setup](docs/testing.md#windows-and-certificates) for scoped elevation on affected controls and verified certificate trust. Consumer-project agents should use the [consumer testing guidance](docs/testing.md#for-consumer-projects).
 
 ## Must-read documents
 

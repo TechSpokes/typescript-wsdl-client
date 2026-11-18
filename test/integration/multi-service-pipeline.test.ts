@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from "vitest";
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {createServer} from "node:http";
@@ -12,7 +13,7 @@ import {runOwnedNode} from "../helpers/ownedNodeProcess.js";
 import {parseStreamConfig} from "../../src/util/streamConfig.js";
 
 const fixtures = resolve("test/conformance/fixtures/wsdl/composition");
-const parent = resolve("tmp/conformance");
+const parent = resolve(verificationPath("tmp/conformance"));
 mkdirSync(parent, {recursive: true});
 const root = mkdtempSync(join(parent, "multi-service-"));
 const generated = join(root, "generated");

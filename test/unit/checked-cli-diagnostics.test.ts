@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {spawnSync} from 'node:child_process';
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync} from 'node:fs';
 import path from 'node:path';
@@ -50,8 +51,8 @@ describe('checked CLI refusals', () => {
   });
 
   it('keeps structured reports and nonzero exits while requiring DEBUG for the raw error', async () => {
-    mkdirSync('tmp/conformance/checked-cli', {recursive: true});
-    const directory = mkdtempSync(path.resolve('tmp/conformance/checked-cli/refusal-'));
+    mkdirSync(verificationPath('tmp/conformance/checked-cli'), {recursive: true});
+    const directory = mkdtempSync(path.resolve(verificationPath('tmp/conformance/checked-cli/refusal-')));
     try {
       const run = (debug: string, report: string) => spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'pipeline',
         '--model', 'checked-components-v1', '--wsdl-source', 'examples/minimal/weather.wsdl',

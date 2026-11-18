@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, it, expect, afterAll} from "vitest";
 import fs from "node:fs";
 import path from "node:path";
@@ -9,7 +10,7 @@ import {generateTypes} from "../../src/client/generateTypes.js";
 import {generateUtils} from "../../src/client/generateUtils.js";
 import {generateOperations} from "../../src/client/generateOperations.js";
 
-const base = path.resolve("tmp/test-generation/preamble-generation");
+const base = path.resolve(verificationPath("tmp/test-generation/preamble-generation"));
 fs.mkdirSync(base, {recursive: true});
 const root = fs.mkdtempSync(path.join(base, "coverage-"));
 afterAll(() => fs.rmSync(root, {recursive: true, force: true}));

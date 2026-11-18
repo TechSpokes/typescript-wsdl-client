@@ -1,6 +1,7 @@
 /** Independent byte/acquisition expectations for portable metadata encoding context.
  * @since 1.7.0
  */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rename, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -20,8 +21,8 @@ const namespace = 'urn:conformance:import-relative-types';
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 let directory: string, wsdl: string, schema: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/metadata-authority', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/metadata-authority/suite-'));
+  await mkdir(verificationPath('tmp/conformance/metadata-authority'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/metadata-authority/suite-')));
   [wsdl, schema] = await Promise.all(['import-relative-types.wsdl', 'import-relative-types-types.xsd']
     .map(file => readFile(path.resolve('test/conformance/fixtures/xsd/imports', file), 'utf8')));
 });

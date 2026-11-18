@@ -1,3 +1,4 @@
+import {verificationPath} from "../../helpers/verificationPath.js";
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
@@ -11,7 +12,7 @@ describe('execution-time qualification provenance', () => {
     });
     for (const kind of ['source', 'input', 'artifact'] as const) {
         it('rejects stale ' + kind + ' bytes instead of recording current hashes', () => {
-            const root = mkdtempSync('tmp/conformance/provenance-');
+            const root = mkdtempSync(verificationPath('tmp/conformance/provenance-'));
             try {
                 const paths = ['source', 'input', 'artifact'].map(name => resolve(root, name));
                 for (const path of paths) writeFileSync(path, 'before');

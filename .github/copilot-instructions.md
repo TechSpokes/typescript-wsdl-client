@@ -88,7 +88,7 @@ Scratchpads: non-project notes may live under ad-hoc folders; treat them as scra
 
 ### Temporary workspace layout
 
-Repository-owned automation writes disposable output under classified `tmp/` subfolders. Keep smoke output under `tmp/smoke/`, npm cache under `tmp/cache/npm/`, release preflight regenerated examples under `tmp/preflight/examples/`, conformance mini-projects under `tmp/conformance/`, and generated-test integration spikes under `tmp/test-generation/`.
+Place ordinary verification scratch in the current `tmp/verification/run-*` workspace. Keep the npm cache under `tmp/cache/npm/` and release example regeneration under `tmp/preflight/examples/`. Preserve explicit reference reports and release assets.
 
 Do not add implicit public CLI defaults only to satisfy this internal layout. Public examples use explicit `.generated/...` paths, while repository automation alone uses `tmp/`.
 
@@ -124,20 +124,7 @@ Vitest runs `fast` before bounded `workflows`; consult [Test Architecture](../do
 
 ### Test commands
 
-Prefer guarded public commands over internal `:run` targets. The guard coordinates owners across worktrees and retains attempt evidence; direct Vitest, watch, stage, reference and hosted commands are not all protected. Use [Running Tests](../docs/testing.md#running-tests) for focused/debug examples and [verification orchestration](../docs/testing.md#verification-orchestration) for progress, cancellation, stale-lock recovery and evidence reuse.
-
-Inspect `"scripts"` in `package.json` for the full list. Key commands:
-- `npm test`: all product Vitest tests, including independent reference and conformance evidence.
-- `npm run research:ci`: optional research typechecks, documentation and tests under `research/`.
-- `npm run test:unit`: unit tests only.
-- `npm run test:snap`: snapshot tests only.
-- `npm run test:integration`: integration tests only.
-- `npm run test:conformance`: focused WSDL capability conformance tests.
-- `npm run test:conformance:<stage>`: one conformance evidence layer for contracts, compile, client, OpenAPI, gateway, generated tests, or app output.
-- `npm run test:watch`: watch mode for development.
-- `npm run ci`: full local and release gate with build, typecheck, package validation, docs validation, broad Vitest, and smoke pipeline.
-- `npm run ci:github`: GitHub push and PR quick gate for Node 24.
-- `npm run ci:github:node26`: GitHub current-line compatibility gate for Node 26.
+Use `npm test -- <path> -t <name>` or a capability stage for targeted changes. Run `npm run ci` on the final candidate. Use [Running Tests](../docs/testing.md#running-tests) for prerequisites, command scope, Windows and recovery. Treat `:run` targets as internal.
 
 ### Mock client pattern
 
@@ -159,7 +146,7 @@ Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and o
 
 When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
 
-Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. GitHub push and PR CI intentionally uses `npm run ci:github`; release preflight owns the single final full local gate.
+Verify affected WSDL capabilities using the relevant stage, standalone conformance, or full delivery. Keep broad Vitest discovery in `npm test` and `npm run ci`. Release preflight owns the final local release gate.
 
 Follow `docs/decisions/004-product-research-boundary.md` when classifying validation or package contents. Product checks must not import experimental implementations or audit research manifests; research may import product internals and shared fixtures. Preserve shipped-behavior regressions and independent XML/HTTP evidence regardless of historical filenames, and run the optional `research:ci` lane when changing research.
 
@@ -169,27 +156,13 @@ Full conformance generates consumer-style projects and launches nested TypeScrip
 
 ### Verification orchestration
 
-Before starting final gates, inspect their current `package.json` scripts and assign one owner to the candidate, command sequence and evidence paths. `ci` already includes broad Vitest discovery of conformance and installed tests; `test:installed` and `test:corpus` also overlap those tests.
+The Linux Node 24 job runs `npm run ci`. The compatibility jobs run audited reference, platform controls and representative installed consumers. Use `npm run ci:platform:full` or manual CI dispatch for exhaustive platform qualification. Each job builds once and reuses one packed candidate for its installed checks.
 
-Run required standalone conformance and final CI sequentially, preserving both requirements, and do not add a concurrent installed run for evidence already covered by CI. Release preflight retains its existing ownership of the final release gate.
+Follow the [pre-push sequence](../docs/testing.md#before-opening-or-updating-a-pull-request) before opening a PR or pushing a new head, including on drafts.
 
-Parallelize checks only when their outputs, process ownership and machine capacity are independent. Separate worktrees protect files, not CPU or memory; fixed progress/report paths still have one writer per checkout. Await owned children and cleanup before reusing outputs or starting a replacement run.
+Give each checkout one delivery build owner and allow its child commands to close before cleanup. Follow [temporary output and recovery](../docs/testing.md#temporary-output-and-recovery) for cancellation or a stopped owner. Use the [Windows setup](../docs/testing.md#windows-and-certificates) for scoped permissions and certificate trust.
 
-Independent reviewers should reuse candidate evidence and coordinate additional expensive checks with its verification owner; review independence does not require simultaneous duplicate execution.
-
-A fresh reviewer reads the coherent diff and relevant results, then approves or returns actionable findings. No copied source snapshots, review-report files or repeated unchanged reviews are required.
-
-Distinguish an outer command allowance, a test or batch watchdog, a child-stage deadline, cancellation/cleanup and product resource limits. A watchdog expiry is a failed verification attempt even if recorded product assertions passed; retain that evidence and inspect active work, contention and deadline composition before classifying a product regression.
-
-Do not compensate with automatic retries, weaker assertions, larger global timeouts or altered product budgets. After a concrete correction, rerun affected checks and any unfinished required gates, reuse unchanged evidence and state whether the full gate passed uninterrupted. See [the testing guide](../docs/testing.md#verification-orchestration) for operational details.
-
-Report concrete events and their consequences in plain language. Explain what was checked, what happened compared with the expected behavior, how that affects delivery and what action is needed; include only details that help the user understand a change or decision.
-
-For example: "The test loaded 64 MiB and rejected one extra byte. Both checks passed, but together took about 32 seconds, so the test runner's 30-second limit marked the test failed. Full CI has not passed; finish the overlapping runs, then repeat the affected checks."
-
-Do not replace this context with unexplained labels such as "resource-limit assertions versus wall-clock watchdog". If you cannot explain the result plainly, investigate until you understand it, then explain the necessary facts and what they mean for the user's task.
-
-Avoid redundant status messages without withholding an explanation the user needs; use technical terms only when they clarify the result, defining unfamiliar terms where needed. This is guidance, not a mandatory report template.
+Have a fresh reviewer examine the coherent diff, boundary tests and verification results. Correct the cause of any failed or interrupted run and repeat the affected check. Report incomplete gates explicitly.
 
 ## Key Conventions
 
@@ -210,19 +183,7 @@ Avoid redundant status messages without withholding an explanation the user need
 
 ### Scripts
 
-Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `build`, `typecheck`, `ci`, smoke scripts, and others. Infer behavior from script names and values instead of maintaining a separate canonical list.
-
-- `build`: compile TypeScript to `dist/`.
-- `typecheck`: run `tsc --noEmit`.
-- `clean*`: remove `dist`/`tmp` or other temporary artifacts.
-- `dev` / `watch`: run the CLI in dev/watch mode via `tsx`.
-- `smoke:*`: end-to-end CLI checks (compile, client, openapi, gateway, pipeline) using `examples/minimal/weather.wsdl`.
-- `skill:validate`: validate the standalone agent skill release artifact.
-- `package:validate`: validate the exact npm package dry-run contents.
-- `release:publish-check`: targeted post-release package validation.
-- `ci`: combine build, typecheck, agent skill validation, npm package validation, docs validation, broad Vitest tests including conformance, and smoke pipeline.
-- `ci:github`: quick GitHub Node 24 gate for push and PR feedback.
-- `ci:github:node26`: lightweight GitHub Node 26 compatibility gate.
+Inspect `"scripts"` in `package.json` for command definitions. The [Testing Guide](../docs/testing.md#running-tests) describes which command to use and what each command proves.
 
 The `release:publish-check` script intentionally does not rerun the full conformance, broad Vitest, or smoke gates because `release:preflight` owns those checks before the tag is pushed.
 

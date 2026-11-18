@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, describe, expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from "node:fs";
 import path from "node:path";
@@ -9,7 +10,7 @@ import type {SchemaInput} from "../../src/loader/schemaInput.js";
 import {XSD_NAMESPACE} from "../../src/loader/orderedSyntax.js";
 
 const fixtures = path.resolve("test/conformance/fixtures");
-const temporaryParent = path.resolve('tmp/conformance');
+const temporaryParent = path.resolve(verificationPath('tmp/conformance'));
 mkdirSync(temporaryParent, {recursive: true});
 const temporaryRoot = mkdtempSync(path.join(temporaryParent, "wsdl-source-corrections-"));
 afterAll(() => rmSync(temporaryRoot, {recursive: true, force: true}));

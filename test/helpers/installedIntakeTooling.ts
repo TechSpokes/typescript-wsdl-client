@@ -1,8 +1,10 @@
+import {verificationPath} from "./verificationPath.js";
 import {mkdtemp, mkdir, readFile, writeFile, rm, realpath, stat} from 'node:fs/promises';
 import path from 'node:path';
 import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
 import {runOwnedNode} from './ownedNodeProcess.js';
+import {candidateTarball} from '../../scripts/lib/candidate-package.js';
 
 export interface InstalledIntakeTooling {
   readonly root: string; readonly tooling: string; readonly cli: string; readonly tarball: string;
@@ -29,7 +31,7 @@ export async function recordIntakeInstallation(evidence: string, project: string
   })) as Record<string, unknown>;
   context[path.basename(project)] = {
     node: process.version, platform: process.platform, arch: process.arch, npm: env.npm_config_user_agent,
-    cache: env.npm_config_cache, cachePresentBefore, restoredCache: env.NPM_CACHE_RESTORED ?? 'not-reported', lockReused,
+    cache: env.npm_config_cache, cachePresentBefore, lockReused,
     concurrency: {workerId: env.VITEST_WORKER_ID, poolId: env.VITEST_POOL_ID, nestedMaxWorkers: env.VITEST_MAX_WORKERS ?? 'default'},
     manifest: JSON.parse(await readFile(path.join(project, 'package.json'), 'utf8')) as unknown,
     lockSha256: createHash('sha256').update(lockText).digest('hex'),
@@ -72,6 +74,30 @@ export async function installIntakeProject(shared: InstalledIntakeTooling, proje
   await recordIntakeInstallation(evidence, project, env, cachePresentBefore, lockReused);
 }
 
+/** Install dependencies for generated variants whose wire oracle owns the whole consumer directory.
+ * @param shared The packed candidate and prior dependency resolution.
+ * @param consumer Isolated parent containing the generated apps.
+ * @param variants App directory names directly under the consumer.
+ * @param evidence Directory for npm diagnostics.
+ * @param env The npm environment, including the cache path.
+ * @param run An owned, bounded npm command.
+ * @returns Resolves after the required dependency trees are installed.
+ * @throws For an unreadable manifest, an existing parent manifest, or a failed install.
+ * @constraints Sharing is limited to byte-identical manifests and uses ordinary ancestor resolution.
+ */
+export async function installIntakeVariants(shared: InstalledIntakeTooling, consumer: string, variants: readonly [string, ...string[]],
+  evidence: string, env: NodeJS.ProcessEnv, run: (label: string, args: string[], cwd: string) => Promise<unknown>): Promise<void> {
+  const manifests = await Promise.all(variants.map(variant => readFile(path.join(consumer, variant, 'package.json'), 'utf8')));
+  if (manifests.every(manifest => manifest === manifests[0])) {
+    await writeFile(path.join(consumer, 'package.json'), manifests[0]!, {flag: 'wx'});
+    await installIntakeProject(shared, consumer, evidence, env, run, 'install-variant-dependencies');
+    return;
+  }
+  for (const variant of variants) {
+    await installIntakeProject(shared, path.join(consumer, variant), evidence, env, run, variant + '-install');
+  }
+}
+
 /** Observe content-cache presence without interpreting it as a successful cache hit.
  * @param env The exact npm command environment containing its absolute cache directory.
  * @returns Whether npm's content-addressed cache directory exists before the command.
@@ -93,7 +119,7 @@ export async function intakeCachePresent(env: NodeJS.ProcessEnv): Promise<boolea
 export async function installIntakeTooling(): Promise<InstalledIntakeTooling> {
   const npm = process.env.npm_execpath; if (!npm) throw new Error('Run installed qualification through npm');
   const root = await realpath(await mkdtemp(path.join(tmpdir(), 'checked-intake-'))), tooling = path.join(root, 'tooling');
-  const evidence = path.resolve('tmp/conformance/checked-intake-tooling'); await mkdir(evidence, {recursive: true});
+  const evidence = path.resolve(verificationPath('tmp/conformance/checked-intake-tooling')); await mkdir(evidence, {recursive: true});
   const logs = await mkdtemp(path.join(evidence, 'run-'));
   const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.resolve('tmp/cache/npm')};
   delete env.NODE_PATH;
@@ -106,10 +132,8 @@ export async function installIntakeTooling(): Promise<InstalledIntakeTooling> {
     } finally {timings.push({stage, elapsedMs: Math.round(performance.now() - start)});}
   };
   try {
-    const packed = await run('pack', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', logs], process.cwd());
-    const filename = (JSON.parse(packed.stdout) as {filename: string}[])[0]!.filename;
-    if (path.basename(filename) !== filename) throw new Error('Unexpected packed filename');
-    const tarball = path.join(logs, filename);
+    const tarball = await candidateTarball(logs, async () =>
+      (await run('pack', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', logs], process.cwd())).stdout);
     await mkdir(tooling); await writeFile(path.join(tooling, 'package.json'), '{"private":true,"type":"module"}');
     const cachePresentBefore = await intakeCachePresent(env);
     await run('install-tooling', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--prefer-offline', tarball], tooling);

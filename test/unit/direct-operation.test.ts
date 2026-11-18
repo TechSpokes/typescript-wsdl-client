@@ -1,4 +1,5 @@
 /** Independent WSDL/XSD expectations; no fixture endpoint is contacted or codec implied. */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdtemp, mkdir, readFile, readdir, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -19,7 +20,7 @@ const namespace = 'urn:checked:forecast';
 const selector: DirectOperationSelector = {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'};
 let scratch: string, sourceText: string;
 beforeAll(async () => {
-  const parent = path.resolve('tmp/conformance/direct-operation');
+  const parent = path.resolve(verificationPath('tmp/conformance/direct-operation'));
   await mkdir(parent, {recursive: true});
   scratch = await mkdtemp(path.join(parent, 'suite-'));
   sourceText = await readFile(forecast, 'utf8');

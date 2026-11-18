@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from "vitest";
 import {mkdtempSync, mkdirSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
@@ -29,8 +30,8 @@ interface GeneratedClient {
 }
 
 it("maps configured numeric and bigint policies including object-form simple content", async () => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/stream-scalar-policy-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-scalar-policy-")));
   try {
     const {StreamMapping} = await generate(directory, {decimalAs: "number", int64As: "bigint"});
     const client = new StreamMapping({source: fixture});
@@ -41,8 +42,8 @@ it("maps configured numeric and bigint policies including object-form simple con
 
 it.each([ ["ndjson", true], ["ndjson", false], ["json-array", true], ["json-array", false] ] as const)(
   "maps generated %s records incrementally with flattenArrayWrappers=%s and honors client endpoint/security", async (format, flatten) => {
-    mkdirSync("tmp/conformance", {recursive: true});
-    const directory = mkdtempSync(resolve("tmp/conformance/stream-mapped-"));
+    mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+    const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-mapped-")));
     let finishResponse = () => {};
     const finished = new Promise<void>(resolve => { finishResponse = resolve; });
     let upstreamEnded = false;

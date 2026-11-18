@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe,expect,it,vi} from 'vitest';
 import {mkdir,mkdtemp,readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -19,8 +20,8 @@ import {composeCheckedDocumentation, validateCheckedDocumentation} from '../help
 vi.mock('@techspokes/typescript-wsdl-client',()=>import('../../src/index.js'));
 const source=path.resolve('test/conformance/fixtures/assessment/application-groups.wsdl');
 async function generate(applicationGroups: ApplicationGroupsOptions) {
-  await mkdir('tmp/conformance/application-groups',{recursive:true});
-  const project=await mkdtemp(path.resolve('tmp/conformance/application-groups/case-'));
+  await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+  const project=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/case-')));
   const result=await runGenerationPipeline({model:'checked-components-v1',wsdl:source,checkedComponents:{applicationGroups},
     clientOutDir:path.join(project,'client'),openapi:{outFile:path.join(project,'openapi.json')},
     gateway:{outDir:path.join(project,'gateway'),serviceSlug:'payment',versionSlug:'v1'},app:{appDir:project}});
@@ -125,8 +126,8 @@ describe('combined application-group generation',()=>{
     expect(validate({id:'wire',definitions:'business definitions',$id:[{A:1,B:'b'}]})).toBe(true);
   });
   it('keeps keyed/open helper definitions consistent when the option is enabled',async()=>{
-    await mkdir('tmp/conformance/application-groups',{recursive:true});
-    const project=await mkdtemp(path.resolve('tmp/conformance/application-groups/keyed-'));
+    await mkdir(verificationPath('tmp/conformance/application-groups'),{recursive:true});
+    const project=await mkdtemp(path.resolve(verificationPath('tmp/conformance/application-groups/keyed-')));
     await runGenerationPipeline({model:'checked-components-v1',wsdl:path.resolve('test/conformance/fixtures/assessment/keyed.wsdl'),checkedComponents:{applicationGroups:{}},
       clientOutDir:path.join(project,'client'),openapi:{outFile:path.join(project,'openapi.json')},gateway:{outDir:path.join(project,'gateway'),serviceSlug:'keyed',versionSlug:'v1'}});
     const source=await readFile(path.join(project,'client/operations/0/client.ts'),'utf8');

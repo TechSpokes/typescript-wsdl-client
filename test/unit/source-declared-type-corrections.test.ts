@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -19,8 +20,8 @@ const name = (local: string, ns = XSD_NAMESPACE) => ({namespace: ns, local});
 const temporary: string[] = [];
 afterAll(async () => {for (const directory of temporary) await rm(directory, {recursive: true, force: true});});
 async function directory() {
-  await mkdir('tmp/conformance/declared-types', {recursive: true});
-  const result = await mkdtemp(path.resolve('tmp/conformance/declared-types/case-'));
+  await mkdir(verificationPath('tmp/conformance/declared-types'), {recursive: true});
+  const result = await mkdtemp(path.resolve(verificationPath('tmp/conformance/declared-types/case-')));
   temporary.push(result); return result;
 }
 async function source(text?: string, filename = 'types.xsd') {

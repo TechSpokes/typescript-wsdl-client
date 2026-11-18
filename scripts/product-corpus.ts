@@ -51,7 +51,8 @@ if (args.includes('--test')) {
   execFileSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', ...tests], {stdio: 'inherit'});
   for (const command of [...new Set(rows.flatMap(row => row.evidence.commands))].sort()) {
     if (!process.env.npm_execpath) throw new Error('Run the corpus through npm run test:corpus');
-    execFileSync(process.execPath, [process.env.npm_execpath, 'run', command], {stdio: 'inherit'});
+    const script = command === 'package:smoke' && process.env.WSDL_TEST_RUN_DIR ? 'package:smoke:run' : command;
+    execFileSync(process.execPath, [process.env.npm_execpath, 'run', script], {stdio: 'inherit'});
   }
 } else if (args.includes('--check')) {
   if (readFileSync('docs/corpus.md', 'utf8').replaceAll('\r\n', '\n') !== markdown) throw new Error('Product corpus index is stale; run npm run docs:corpus');

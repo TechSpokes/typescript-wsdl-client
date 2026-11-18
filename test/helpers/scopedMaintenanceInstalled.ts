@@ -2,10 +2,10 @@
  * @since 1.5.0
  */
 import {expect} from 'vitest';
-import {copyFile, mkdir, mkdtemp, readFile, rename, rm, writeFile} from 'node:fs/promises';
+import {copyFile, mkdir, mkdtemp, rename, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {runOwnedNode} from './ownedNodeProcess.js';
-import {installIntakeProject, type InstalledIntakeTooling} from './installedIntakeTooling.js';
+import {installIntakeVariants, type InstalledIntakeTooling} from './installedIntakeTooling.js';
 
 /** Qualify installed authoring and relocated generated gateways with independent SOAP/HTTP expectations.
  * @param shared Independently packed candidate installed by this suite.
@@ -41,10 +41,10 @@ export async function qualifyScopedMaintenanceInstalled(shared: InstalledIntakeT
     const authored = await run('public-authoring-generation', ['--permission', '--allow-fs-read=' + consumer,
       '--allow-fs-read=' + shared.tooling, '--allow-fs-write=' + consumer, author], consumer);
     expect(JSON.parse(authored.stdout.trim().split('\n').at(-1)!)).toMatchObject({kind: 'scoped-maintenance-authored', trustedOriginalTargets: 2});
-    for (const mode of ['original', 'string', 'layout']) {
-      const project = path.join(consumer, mode);
-      await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      for (const command of ['typecheck', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
+    const variants = ['original', 'string', 'layout'] as const;
+    await installIntakeVariants(shared, consumer, variants, logs, env, run);
+    for (const variant of variants) {
+      await run(variant + '-build', [npm, 'run', 'build'], path.join(consumer, variant));
     }
     await rm(path.join(consumer, 'inputs'), {recursive: true});
     await rm(path.join(consumer, 'string.json')); await rm(path.join(consumer, 'layout.json'));

@@ -1,3 +1,4 @@
+import {verificationPath} from "../../../helpers/verificationPath.js";
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -32,8 +33,8 @@ function failedLookup(code = 'EACCES'): TargetOperations {
 
 describe('interpreter execution qualification controls', () => {
     it('persists inventory progress before an interrupted directory read without changing inventory results', () => {
-        mkdirSync('tmp/conformance', {recursive: true});
-        const root = resolve(mkdtempSync('tmp/conformance/interrupted-inventory-'));
+        mkdirSync(verificationPath('tmp/conformance'), {recursive: true});
+        const root = resolve(mkdtempSync(verificationPath('tmp/conformance/interrupted-inventory-')));
         const report = join(root, 'enforcement.json'), script = join(root, 'interrupt.ts');
         try {
             const entry = pathToFileURL(resolve('test/conformance/reference/qualification/environment.ts')).href;
@@ -90,8 +91,8 @@ describe('interpreter execution qualification controls', () => {
             expect(isInterpreterName(name), name).toBe(true);
         for (const name of ['python.py', 'python.ts', 'python-usage.md', 'libpython3.13.so'])
             expect(isInterpreterName(name), name).toBe(false);
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/platform-inventory-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/platform-inventory-'));
         try {
             mkdirSync(join(root, 'nested'));
             writeFileSync(join(root, 'nested', 'python.exe'), 'non-executable fixture');
@@ -109,8 +110,8 @@ describe('interpreter execution qualification controls', () => {
             'python.cmd', 'python.bat', 'pip.ps1', 'py.js', 'custom-launcher.exe', 'python.ts', 'library.so'])
             expect(isWindowsLogicalWrapperPath('C:\\qualification-control\\' + name), name).toBe(false);
         expect(isWindowsLogicalWrapperPath('python3.14')).toBe(false); // Named PATH controls remain native spawn probes.
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/versioned-wrapper-controls-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/versioned-wrapper-controls-'));
         try {
             for (const name of ['python3.14', 'pip3.13', 'custom-launcher']) {
                 const candidate = fixtureFile(root, name);
@@ -124,8 +125,8 @@ describe('interpreter execution qualification controls', () => {
     });
     it('follows Linux directory aliases once and retains interpreter aliases', () => {
         if (process.platform === 'win32') return; // Windows alias creation requires privileges; hosted removal controls are separate.
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/platform-links-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/platform-links-'));
         try {
             mkdirSync(join(root, 'nested'));
             writeFileSync(join(root, 'nested', 'python3'), 'non-executable fixture');
@@ -140,8 +141,8 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('finds hosted embedded interpreters, package managers, user installs, Store aliases and registered nonstandard roots', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/windows-installations-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/windows-installations-'));
         try {
             const layouts = [
                 'Miniconda/pkgs/python-version/python.exe',
@@ -189,8 +190,8 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('records the protected OS-data boundary without claiming unreadable installation roots are blocked interpreters', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/windows-scope-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/windows-scope-'));
         try {
             const outside = fixtureFile(root, 'Windows/System32/config/unrelated-data/python.exe');
             const protectedData = fixtureFile(root, 'Program Files/Windows Defender Advanced Threat Protection/Configuration/python.exe');
@@ -209,8 +210,8 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('rejects an explicitly selected excluded root while preserving the exclusion during ordinary recursion', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/selected-exclusion-controls-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/selected-exclusion-controls-'));
         try {
             const excluded = resolve(root, 'protected-data');
             fixtureFile(root, 'protected-data/python.exe');
@@ -225,8 +226,8 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('rejects registered and PATH selections inside excluded data, including canonical directory aliases', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/registered-exclusion-controls-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/registered-exclusion-controls-'));
         try {
             const candidate = fixtureFile(root, 'Windows/System32/config/registered-install/python.exe');
             const excluded = resolve(root, 'Windows', 'System32', 'config');
@@ -252,8 +253,8 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('rejects an explicitly selected canonical alias to an excluded root itself', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/canonical-exclusion-controls-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/canonical-exclusion-controls-'));
         try {
             const target = resolve(fixtureFile(root, 'excluded/python.exe'), '..');
             const alias = resolve(root, 'alias');
@@ -266,8 +267,8 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('enumerates canonical directory aliases and keeps an unsuccessful read eligible for retry while retaining the failure', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/windows-junctions-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/windows-junctions-'));
         try {
             const candidate = fixtureFile(root, 'physical/python.exe');
             const target = resolve(root, 'physical');
@@ -290,8 +291,8 @@ describe('interpreter execution qualification controls', () => {
     });
     it('retains interpreter file aliases without statting unrelated Windows executable aliases', () => {
         if (process.platform === 'win32') return; // File symlinks need Windows privilege; hosted AppExecLinks provide the actual control.
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/windows-file-aliases-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/windows-file-aliases-'));
         try {
             symlinkSync(resolve(root, 'absent-target'), resolve(root, 'ActionsMcpHost.exe'));
             symlinkSync(resolve(root, 'absent-interpreter-target'), resolve(root, 'python.exe'));
@@ -401,8 +402,8 @@ describe('interpreter execution qualification controls', () => {
         }
     });
     it('proves a copied Node control starts before removal and is actually unavailable afterward', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/removal-node-control-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/removal-node-control-'));
         const candidate = resolve(root, 'python.exe');
         try {
             copyFileSync(process.execPath, candidate);
@@ -452,8 +453,8 @@ describe('interpreter execution qualification controls', () => {
             }))).toThrow('unavailable controls');
     });
     it('cleans only task-owned control state idempotently without restoring interpreters or changing a failed result', () => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/removal-cleanup-control-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/removal-cleanup-control-'));
         const report = resolve(root, 'platform-enforcement.json');
         const stateDirectory = resolve(root, 'platform-enforcement-state');
         mkdirSync(stateDirectory);
@@ -486,8 +487,8 @@ describe('interpreter execution qualification controls', () => {
             installPaths: ['C:\\custom-install\\'], executablePaths: ['C:\\custom-install\\python.exe', 'C:\\custom-install\\pythonw.exe'], errors: [],
         });
         expect(parseRegistryInstallPaths(output, {}).errors).toHaveLength(1);
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = mkdtempSync('tmp/conformance/windows-registry-');
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = mkdtempSync(verificationPath('tmp/conformance/windows-registry-'));
         try {
             const plan = windowsInstallationPlan({ ...fixtureContext(root), registry: [{ key: 'fixture-registry', view: '64', outcome: 'error',
                 installPaths: [], executablePaths: [], error: 'access denied' }] });

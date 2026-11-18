@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {createRequire} from "node:module";
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {dirname, join, resolve} from "node:path";
@@ -22,7 +23,7 @@ import {runOwnedNode} from "../helpers/ownedNodeProcess.js";
 const require = createRequire(import.meta.url);
 const conformanceDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(conformanceDir, "..", "..");
-const conformanceTempRoot = join(repoRoot, "tmp", "conformance");
+const conformanceTempRoot = join(repoRoot, verificationPath("tmp/conformance"));
 // @why #440: retain the former 30-second case budget per child; registrations compose command counts and cleanup headroom.
 export const CONFORMANCE_COMMAND_TIMEOUT_MS = 30_000;
 export const CONFORMANCE_CLEANUP_TIMEOUT_MS = 30_000;
@@ -166,6 +167,8 @@ export async function runGatewayCase(capability: CapabilityCase, signal?: AbortS
 
   try {
     const project = await generateGatewayProject(capability, outDir, signal);
+    writeGeneratedTsconfig(outDir, true);
+    await runTypeScript(outDir, join(outDir, "tsconfig.json"), signal);
 
     for (const expected of capability.gateway.sourceIncludes ?? []) {
       const source = readFileUnder(project.gatewayDir, expected.file);
@@ -432,9 +435,6 @@ async function generateGatewayProject(capability: CapabilityCase, outDir: string
     serviceSlug: "conformance",
     clientClassName: deriveClientName(compiled),
   });
-
-  writeGeneratedTsconfig(outDir, true);
-  await runTypeScript(outDir, join(outDir, "tsconfig.json"), signal);
 
   return {
     clientDir,

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {mkdirSync, mkdtempSync, readFileSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
 import {describe, expect, it} from "vitest";
@@ -47,8 +48,8 @@ describe("bounded semantic baseline: current behavior, not future support", () =
   for (const fixture of [...new Set(semanticBaseline.cases.map(entry => entry.fixture))]) {
     it(`characterizes catalog, scoped TypeScript and OpenAPI: ${fixture}`, async () => {
       const cases = semanticBaseline.cases.filter(entry => entry.fixture === fixture);
-      mkdirSync("tmp/conformance", {recursive: true});
-      const outDir = mkdtempSync(resolve("tmp/conformance/semantic-baseline-"));
+      mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+      const outDir = mkdtempSync(resolve(verificationPath("tmp/conformance/semantic-baseline-")));
       try {
         const wsdl = resolveUnder(fixturesRoot, fixture);
         const compiled = compileCatalog(await loadWsdl(wsdl), resolveCompilerOptions(cases[0]!.compilerOptions,

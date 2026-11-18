@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import path from "node:path";
 import {createHash} from "node:crypto";
 import {mkdtempSync, mkdirSync, rmSync, writeFileSync} from "node:fs";
@@ -191,7 +192,7 @@ describe("structural companion dispatch", () => {
   });
 
   it("uses file dispatch, skips unused companions and requires source regeneration for legacy artifacts", async () => {
-    mkdirSync("tmp/conformance", {recursive: true}); const dir = mkdtempSync(path.resolve("tmp/conformance/companion-"));
+    mkdirSync(verificationPath("tmp/conformance"), {recursive: true}); const dir = mkdtempSync(path.resolve(verificationPath("tmp/conformance/companion-")));
     try {
       const file = path.join(dir, "catalog.json"); writeFileSync(file, text(await load("xsd/references/resolved.xsd")).text);
       const result = semantic(await prepareResolvedCompilationInput(text(await primary()), {companions: [{input: {kind: "catalog-file", file}, roots: [id("Shared")]}, {input: {kind: "catalog-file", file: path.join(dir, "absent")}, roots: []}]}));

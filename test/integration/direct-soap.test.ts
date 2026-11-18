@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {createServer, type IncomingHttpHeaders} from 'node:http';
 import {once} from 'node:events';
@@ -23,8 +24,8 @@ beforeAll(async () => {
     readFile(path.join(path.dirname(fixture), 'forecast-messages/fault.xml')),
     readFile(fixture, 'utf8'),
   ]);
-  await mkdir('tmp/conformance/direct-soap', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/direct-soap/suite-'));
+  await mkdir(verificationPath('tmp/conformance/direct-soap'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/direct-soap/suite-')));
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});
 async function selected(text?: string, maxWork?: number, maxNodes?: number) {

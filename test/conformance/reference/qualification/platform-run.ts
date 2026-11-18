@@ -34,7 +34,7 @@ function inside(): void {
         run('npm', ['install', '--global', 'npm@11.9.0']);
         run('npm', ['ci']);
         for (const name of ['check:toolchain', 'typecheck:tooling', 'research:typecheck', 'typecheck:reference', 'typecheck:integration']) run('npm', ['run', name]);
-        if (process.platform === 'linux') run('npm', ['run', process.versions.node.startsWith('24.') ? 'ci' : 'ci:github:node26']);
+        if (process.platform === 'linux') run('npm', ['run', process.versions.node.startsWith('24.') ? 'ci' : 'ci:platform']);
         run('npm', ['run', 'test:reference:full']);
         run('npm', ['run', 'research:test']);
         run('npm', ['run', 'research:re01:measure']);

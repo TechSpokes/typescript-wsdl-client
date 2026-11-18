@@ -123,7 +123,7 @@ Checked composition remains [deferred](docs/roadmap/multi-service-gateway.md#def
 
 Keep consumer guides concise, package contents explicit and validation responsibilities visible. Measure package growth and lane duration before setting budgets or moving coverage between PR and release checks.
 
-Maintain the CI tooling that retains timing records and diagnostic bundles for these qualification runs. Uploader upgrades preserve existing archive formats, source paths, retention and permissions. Required [product qualification](.github/workflows/node-reference.yml) stays separate from manually dispatched [research platform qualification](.github/workflows/research-platform.yml); shared tooling maintenance does not make research a product release gate.
+Keep product qualification and its diagnostics in the [CI workflow](.github/workflows/ci.yml). The manually dispatched [research platform qualification](.github/workflows/research-platform.yml) retains its own evidence and retention policy.
 
 ## Major-release readiness
 

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -51,8 +52,8 @@ beforeAll(async () => {
   const generated = await generateComponentClient(reconstructed);
   if (generated.kind !== 'generated-component-client') throw new Error(generated.rule);
   clientSource = generated.source;
-  await mkdir('tmp/test-generation', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/test-generation/checked-response-branches-'));
+  await mkdir(verificationPath('tmp/test-generation'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/test-generation/checked-response-branches-')));
   await mkdir(path.join(directory, 'client'));
   writeDirectClient(path.join(directory, 'client/client.ts'), generated);
   const result = await generateComponentGateway(reconstructed, {clientDir: path.join(directory, 'client'), gatewayDir: path.join(directory, 'gateway'),
@@ -122,7 +123,7 @@ describe('generated independently sourced application-error contract', () => {
   it('routes mixed service options to each owning runtime without widening retained runtime controls', async () => {
     const fixtures = path.resolve('test/conformance/fixtures/soap/response-branches');
     // @constraints Keep this project outside the consumer host's package scope so the test runtime mock resolves consistently.
-    const project = await mkdtemp(path.resolve('tmp/test-generation/checked-mixed-response-branches-'));
+    const project = await mkdtemp(path.resolve(verificationPath('tmp/test-generation/checked-mixed-response-branches-')));
     mixedDirectories.push(project);
     const resources = await Promise.all(['error.wsdl', 'payload.xsd'].map(async file => ({uri: pathToFileURL(path.join(fixtures, file)).href,
       digest: createHash('sha256').update(await readFile(path.join(fixtures, file))).digest('hex')})));

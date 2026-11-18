@@ -2,16 +2,15 @@
  * Checks the actual consumer payload rather than the repository's directory sizes.
  * @since Unreleased
  */
-import {spawn} from 'node:child_process';
 import {readFileSync} from 'node:fs';
+import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
-import {parsePackOutput} from './lib/npm-pack-output.mjs';
+import {readPackReport} from './lib/npm-pack-output.mjs';
+import {candidateFilename} from './lib/candidate-package.js';
+import {runOwnedNode} from '../test/helpers/ownedNodeProcess.js';
 import {validatePreambleDirectory} from './lib/preamble-validation.mjs';
 import {extractMarkdownLinks} from './validate-docs.mjs';
-
-interface PackedFile {path: string; size: number}
-interface PackReport {size: number; unpackedSize: number; files: PackedFile[]}
 
 const requiredFiles = [
   'dist/cli.js', 'dist/index.js', 'dist/index.d.ts', 'dist/checkedPipeline.js',
@@ -72,32 +71,21 @@ export function findMissingPackageLinks(files: readonly string[], readText: (fil
   return errors;
 }
 
-function runNpmPackDryRun(root: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const command = process.platform === 'win32' ? process.env.ComSpec ?? 'cmd.exe' : 'npm';
-    const args = process.platform === 'win32'
-      ? ['/d', '/s', '/c', 'npm pack --dry-run --json --ignore-scripts --cache tmp/cache/npm']
-      : ['pack', '--dry-run', '--json', '--ignore-scripts', '--cache', 'tmp/cache/npm'];
-    const child = spawn(command, args, {cwd: root, env: {...process.env, npm_config_loglevel: 'silent'}, stdio: ['ignore', 'pipe', 'pipe']});
-    let stdout = '', stderr = '';
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
-    child.stdout.on('data', (chunk: string) => {stdout += chunk;});
-    child.stderr.on('data', (chunk: string) => {stderr += chunk;});
-    child.on('error', reject);
-    child.on('close', code => code === 0 ? resolve(stdout) : reject(new Error(`npm pack failed (${code}): ${stderr}`)));
-  });
-}
-
 async function main(): Promise<void> {
   const root = fileURLToPath(new URL('../', import.meta.url));
+  const npm = process.env.npm_execpath;
+  if (!npm) throw new Error('Run this check using npm run package:validate');
+  const workspace = process.env.WSDL_TEST_RUN_DIR;
+  const destination = process.argv.includes('--pack') && workspace ? path.join(workspace, 'package') : undefined;
+  if (process.argv.includes('--pack') && !destination) throw new Error('--pack requires the delivery workspace');
+  if (destination) await mkdir(destination);
   validatePreambleDirectory(path.join(root, 'src/generation/preambles'));
-  const output = await runNpmPackDryRun(root);
-  const files = parsePackOutput(output);
+  const result = await runOwnedNode([npm, 'pack', '--json', '--ignore-scripts',
+    ...(destination ? ['--pack-destination', destination] : ['--dry-run'])], {cwd: root, timeoutMs: 120_000});
+  const report = readPackReport(result.stdout);
+  const files = report.files.map(file => file.path);
   validatePackageFiles(files, file => readFileSync(path.join(root, file), 'utf8'));
-  const parsed: unknown = JSON.parse(output);
-  const results: unknown[] = Array.isArray(parsed) ? parsed : Object.values(parsed as Record<string, unknown>);
-  const report = results[0] as PackReport;
+  if (destination) await writeFile(path.join(destination, 'candidate'), candidateFilename(report.filename));
   const categories = new Map<string, {files: number; bytes: number}>();
   for (const file of report.files) {
     const category = file.path.startsWith('dist/') ? 'compiled code and declarations'
