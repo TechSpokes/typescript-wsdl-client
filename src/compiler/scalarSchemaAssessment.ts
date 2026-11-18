@@ -19,6 +19,7 @@ import {XSD_NAMESPACE} from "../loader/orderedSyntax.js";
 import type {ExpandedName, SyntaxSource} from '../loader/orderedSyntax.js';
 import type {SemanticContext} from './semanticContext.js';
 import {resolveSemanticType} from './schemaTypeIdentity.js';
+import {hasOriginalSimpleContent} from './complexTypeContent.js';
 import {originalGeneratedShape, resolveOriginalScalarIdentity} from './schemaGeneratedScalarShape.js';
 import type {RawSimpleTypeProperties} from './schemaSimpleTypeProperties.js';
 import {projectFacetAnnotation, compareFacetAnnotation} from './schemaFacetAnnotation.js';
@@ -222,7 +223,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   const normalizeReference=(reference:Reference,owner:GraphNode):Reference=>{
     if(readingOriginalRecipe||reference.kind==='builtin'||reference.kind==='original-generated')return reference;
     const id=c.target(reference,owner)!,node=c.get(id);
-    if(node.kind!=='complexType'||node.derivation?.contentKind!=='simple'||c.context.rawTypeProperties(id)||!c.context.sourceNode(id))return reference;
+    if(node.kind!=='complexType'||c.context.rawTypeProperties(id)||!hasOriginalSimpleContent(c.context,id))return reference;
     const cached=normalizedReferences.get(id);if(cached)return cached;
     const mapped=resolveOriginalScalarIdentity(c.context,reference);
     if(mapped.kind==='resource-limit'){c.step(owner);throw new Error('Unreachable exhausted scalar budget');}
@@ -2546,10 +2547,11 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     if (node.kind !== 'complexType') return c.fail(owner, 'src-simple-type', 'Reference requires a scalar type');
     const raw = c.context.rawTypeProperties(node.id);
     if (!raw && !c.context.sourceNode(node.id)) return c.unresolved(node,"missing-type-component-properties","Abstract helper types require explicit component properties");
-    if (explicitOperand && (raw ? raw.content.kind !== 'simple' : node.derivation?.contentKind !== 'simple'))
+    const simple = raw ? raw.content.kind === 'simple' : hasOriginalSimpleContent(c.context, node.id);
+    if (explicitOperand && !simple)
       return c.fail(owner, 'src-simple-type', 'Typed facet operand requires scalar content');
     if (raw && raw.content.kind !== 'simple') return c.unresolved(node, 'simple-content-variety', 'Abstract complex type has no scalar content property');
-    if (!raw && node.derivation?.contentKind !== 'simple')
+    if (!raw && !simple)
       return c.unresolved(owner, 'simple-content-variety', 'Complex scalar content requires a checked simple-content construction');
     return node;
   };
@@ -2604,7 +2606,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     if (node.kind === "complexType") {
       const derivation = node.derivation!;
       const base = derivation.base.kind === "builtin" ? undefined : c.get(c.target(derivation.base, node)!);
-      if (base?.kind === "complexType" && base.derivation?.contentKind !== "simple") {
+      if (base?.kind === "complexType" && !hasOriginalSimpleContent(c.context, base.id)) {
         if (derivation.kind !== "restriction" || !base.mixed || !derivation.inlineType) return c.fail(node, "simple-content-base", "A mixed complex base requires an explicit inline simple restriction type");
         return [{reference: derivation.inlineType, owner: node}];
       }

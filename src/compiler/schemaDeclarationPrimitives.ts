@@ -13,6 +13,7 @@ import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {readElementIdentityConstraints} from './schemaIdentityConstraints.js';
 import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
+import {hasOriginalSimpleContent} from './complexTypeContent.js';
 
 export type DeclarationReceipt = Readonly<{kind: 'checked'; component: NodeId; contextId: string;
   authority: 'XSD10-declaration-properties-v1'; constraint?: AssessedSchemaOperand;
@@ -66,8 +67,9 @@ export function checkDeclarationValueProperty(context: SemanticContext, id: Node
     const node = found.node, declared = declaredType(context, node), type = resolveSemanticType(context, declared);
     if (type.kind !== 'component' || type.node.kind !== 'complexType') return checkDeclaration(context, id);
     const raw = context.rawTypeProperties(type.node.id), source = context.sourceNode(type.node.id);
-    const sourceSimple = !raw && source?.kind === 'complexType' && source.derivation?.contentKind === 'simple'
-      && (context.originalComplexContentSource(type.node.id) !== undefined || context.originalComplexPropertySource(type.node.id) !== undefined);
+    const sourceSimple = !raw
+      && (context.originalComplexContentSource(type.node.id) !== undefined || context.originalComplexPropertySource(type.node.id) !== undefined)
+      && hasOriginalSimpleContent(context, type.node.id);
     const rawSimple = raw?.content.kind === 'simple' ? raw.content : undefined;
     if (rawSimple) {
       const selected = resolveSemanticType(context, rawSimple.type);
@@ -79,7 +81,7 @@ export function checkDeclarationValueProperty(context: SemanticContext, id: Node
         return context.budget.freeze(context.budget.snapshot({kind: 'invalid-schema' as const, rule: 'raw-type-content-role', component: type.node.id,
           message: 'Simple content requires an actual simple datatype', source: type.node.context.source}));
     }
-    const mixed = raw ? raw.content.kind === 'mixed' : source?.kind === 'complexType' && source.mixed && source.derivation?.contentKind !== 'simple';
+    const mixed = raw ? raw.content.kind === 'mixed' : source?.kind === 'complexType' && source.mixed && !sourceSimple;
     if (!sourceSimple && !rawSimple && !mixed) return checkDeclaration(context, id);
     const value = constraintValue(context, node, rawSimple?.type ?? (sourceSimple ? declared : {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}}));
     if (value.kind !== 'checked') return value;
@@ -163,7 +165,7 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
       else if (selected.kind === 'component' && selected.node.kind === 'complexType') {
         const raw = context.rawTypeProperties(selected.node.id);
         if (!raw && !context.sourceNode(selected.node.id)) return fail('missing-type-component-properties', 'Abstract helper type requires explicit component properties', 'unresolved');
-        const simple = raw ? raw.content.kind === 'simple' : selected.node.derivation?.contentKind === 'simple';
+        const simple = raw ? raw.content.kind === 'simple' : hasOriginalSimpleContent(context, selected.node.id);
         if (!simple) {
         if (!(raw ? raw.content.kind === 'mixed' : selected.node.mixed)) return fail('e-props-correct.2', 'Element value constraints require simple or mixed content');
         obligations.push('element-default-mixed-emptiable:' + selected.node.id);

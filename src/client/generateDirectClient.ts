@@ -16,6 +16,8 @@ import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js
 import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
 import {COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_BRANCH_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 import {componentServiceHeaderRouting} from '../generation/componentServiceHeaders.js';
+import {documentationComment, sourceDocumentation} from '../generation/sourceDocumentation.js';
+import {WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 
 const MAX_SOURCE_BYTES = 512 * 1024;
 const generatedArtifacts = new WeakMap<object, SemanticBudget>();
@@ -148,12 +150,13 @@ export interface GeneratedComponentClient {
  */
 export async function generateComponentClient(expected: ReconstructedComponentSource, signal?: AbortSignal): Promise<GeneratedComponentClient | DirectCapsuleFailure> {
   inspectReconstructedComponentSource(expected);
-  const {budget} = inspectDirectOperation(expected.contract).context;
+  const {context: {budget}, operationSyntax} = inspectDirectOperation(expected.contract);
   const failure = (kind: DirectCapsuleFailure['kind'], rule: string): DirectCapsuleFailure => ({kind, rule,
     repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({...budget.usage()})});
   const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Error('cancelled');};
   try {
     check(); const capsule = {bytes: componentSourceCapsuleBytes(expected, signal)};
+    const operationDoc = sourceDocumentation([operationSyntax], WSDL_NAMESPACE, amount => {check(); budget.chargeWork(amount);});
     const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const mappings = expected.mappings;
     const input = mappings.find(mapping => mapping.direction.kind === 'input')!;
@@ -236,6 +239,7 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       `export const selection = ${literal(JSON.stringify({selector: expected.contract.selector, ...expected.selection}))};`,
       'export function createClient(runtime: Runtime) {',
       '  return Object.freeze({',
+      ...(operationDoc ? ['    ' + documentationComment(operationDoc)] : []),
       `    [${literal(expected.contract.selector.operation)}]: async (input: Request, options: Options): Promise<Result> => {`,
       `      if (runtime.version !== ${literal(runtimeVersion)}) return {kind: "incompatible-artifact", rule: "generated-runtime-version", repair: ${literal(COMPONENT_CLIENT_RUNTIME_REPAIR)}, usage: {nodes: 0, work: 0}};`,
       `      return await runtime.execute(expectedCapsuleBase64, input, options, ${literal(runtimeVersion)}) as Result;`,

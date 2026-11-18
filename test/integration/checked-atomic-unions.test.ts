@@ -112,6 +112,36 @@ describe.each(['11', '12'] as const)('checked SOAP %s atomic unions', version =>
     });
   });
 
+  it('preserves lexical float, temporal, binary and list-valued union members with typed fixed checks', async () => {
+    const {contract, mapping} = await source(version);
+    const words = {floating: '1.00', timestamp: '2001-10-26T16:32:52-05:00', binary: 'ab01', tuple: ' 01\t+2 ', floatCollection: ['-INF', 'AUTO']};
+    const wire = '<t:floating>1.00</t:floating><t:timestamp>2001-10-26T16:32:52-05:00</t:timestamp>'
+      + '<t:binary>ab01</t:binary><t:tuple> 01\t+2 </t:tuple><t:floatCollection>-INF AUTO</t:floatCollection>';
+    await owned(version, async server => {
+      const options = {...selection(version), endpoint: server.endpoint};
+      for (const invalid of [{floating: 'NaN'}, {timestamp: '2001-10-26T21:32:52'}, {binary: 'AB02'},
+        {tuple: '1 3'}, {tuple: [1, 2]}, {floatCollection: ['-inf']}]) {
+        const refused = await exchangeComponentSoap(contract, mapping, {...input, ...words, ...invalid}, options);
+        expect(['value-invalid', 'scalar-invalid']).toContain(refused.kind);
+      }
+      expect(server.requests).toHaveLength(0);
+      server.reply(envelope(version, responseBody.replace('</t:ExchangeResponse>', wire + '</t:ExchangeResponse>')));
+      const result = await exchangeComponentSoap(contract, mapping, {...input, ...words}, options);
+      expect(result).toMatchObject({kind: 'soap-response', decoded: {validated: {value: {...output, ...words}}}});
+      const parsed: Record<string, string> = {};
+      let local = '';
+      const parser = new SaxesParser({xmlns: true});
+      parser.on('opentag', tag => {local = tag.local;});
+      parser.on('text', text => {parsed[local] = text;});
+      parser.write(server.requests[0]!.xml).close();
+      expect(parsed).toMatchObject({...words, floatCollection: '-INF AUTO'});
+      server.reply(envelope(version, responseBody.replace('</t:ExchangeResponse>', '<t:tuple>1 bad</t:tuple></t:ExchangeResponse>')));
+      const invalid = await exchangeComponentSoap(contract, mapping, {...input, ...words}, options);
+      expect(invalid).toMatchObject({kind: 'scalar-invalid', phase: 'response'});
+      expect(invalid).not.toHaveProperty('decoded');
+    });
+  });
+
   it('reconstructs actual string-only generated artifacts and executes their HTTP request/success/fault schemas', async () => {
     const {root, file, loading, contract} = await source(version);
     const capsule = await createComponentSourceCapsule(contract, selection(version));
@@ -189,7 +219,7 @@ it.each([
   ['missing member', '<x:union memberTypes="x:decimal t:Automatic"/>', '<x:union memberTypes="x:decimal t:Missing"/>', 'invalid-schema'],
   ['bad facet', '<x:restriction base="x:integer">', '<x:restriction base="x:integer"><x:minInclusive value="bad"/>', 'invalid-schema'],
   ['unrelated invalid declaration', '</x:schema>', '<x:simpleType name="Unrelated"><x:restriction base="x:Missing"/></x:simpleType></x:schema>', 'invalid-schema'],
-  ['excluded float member', '<x:union memberTypes="x:decimal t:Automatic"/>', '<x:union memberTypes="x:float t:Automatic"/>', 'inconclusive'],
+  ['excluded contextual member', '<x:union memberTypes="x:decimal t:Automatic"/>', '<x:union memberTypes="x:IDREF t:Automatic"/>', 'inconclusive'],
 ])('establishes whole-source %s before operation generation', async (_title, before, after, kind) => {
   const root = await mkdtemp(path.join(directory, 'invalid-')), file = path.join(root, 'atomic-unions.wsdl');
   await writeFile(file, original.replace(before, after));

@@ -9,12 +9,14 @@ import type {ResourceLimitFailure, ResolverUsage} from './semanticBudget.js';
 import {assertSimpleExtensionConstruction} from './finiteRe01Verification.js';
 import {scalarSchemaAssessment} from './scalarSchemaAssessment.js';
 import {schemaScalarContext} from './schemaScalarContext.js';
+import {componentUnionRepresentation} from './projectionScalar.js';
 
 export const COMPONENT_CORRESPONDENCE = 'dated-XSD-2004-components-v1' as const;
 export interface ComponentCorrespondence {
   readonly kind: 'component-correspondence'; readonly basis: typeof COMPONENT_CORRESPONDENCE;
   readonly scope: 'ordinary-source-components';
   readonly interpretations: number; readonly constructedContexts: number; readonly usage: ResolverUsage;
+  readonly scopedQName?: true;
 }
 export type ComponentCorrespondenceResult = ComponentCorrespondence | ResourceLimitFailure |
   Readonly<{kind: 'inconclusive-correspondence'; rule: string; path?: string; usage: ResolverUsage}>;
@@ -30,11 +32,11 @@ const forms = new Set(['schema', 'import', 'include', 'annotation', 'complexType
   'extension', 'restriction', 'enumeration', 'list', 'union', 'length', 'minLength', 'maxLength', 'whiteSpace', 'pattern',
   'minInclusive', 'maxInclusive', 'minExclusive', 'maxExclusive', 'totalDigits', 'fractionDigits',
   'element', 'attribute', 'attributeGroup', 'sequence', 'choice', 'all', 'group', 'any', 'anyAttribute']);
-const contextual = new Set(['QName', 'NOTATION', 'ID', 'IDREF', 'IDREFS', 'ENTITY', 'ENTITIES', 'anyType', 'anySimpleType']);
+const contextual = new Set(['NOTATION', 'ID', 'IDREF', 'IDREFS', 'ENTITY', 'ENTITIES', 'anyType', 'anySimpleType']);
 
 /** Audit a closed representation fragment after whole native construction; this is not a second schema checker.
  * @remarks Source syntax/values and component legality remain the native S4S, construction and aggregate owners.
- *   This sufficient route excludes redefine/chameleon, identity/substitution, unions outside string/decimal/boolean and wider faceted families,
+ *   This sufficient route excludes redefine/chameleon, identity/substitution and wider faceted families,
  *   source complex restrictions, contextual/explicit ur-type references, foreign attributes and endpoint-shadowing witnesses.
  *   Endpoint-shadowing witnesses remain inconclusive until component-valued TYPE/SCOPE interpretation is established.
  * @returns An authenticated correspondence or an inconclusive scope/resource result; never a schema-invalid judgment.
@@ -86,17 +88,18 @@ export function checkComponentCorrespondence(input: SchemaInput, supplied: Nativ
     // @why #422 audits all actual named/inline/inherited scalar components after whole native formation.
     //   Native plans own flattened member order, QName resolution, facets and obligations; syntax alone grants no receipt.
     const scalar = scalarSchemaAssessment(schemaScalarContext(actual));
+    let scopedQName = false;
     for (const id of actual.members) {
       check(); const found = actual.lookup(id);
       if (found.kind !== 'found' || found.node.kind !== 'simpleType') continue;
       const owner = found.node, plan = scalar.ensure({kind: 'local', target: id}, owner);
       if (plan.obligations?.length) return outside('scalar-source-obligations');
       if (plan.variety === 'union') {
-        for (const reference of plan.members ?? []) {
-          check(); const member = scalar.ensure(reference, owner);
-          if (member.variety !== 'atomic' || !['string', 'decimal', 'boolean'].includes(member.primitive ?? '') || member.obligations?.length)
-            return outside('scalar-union-correspondence-scope');
-        }
+        const representation = componentUnionRepresentation(plan, reference => {
+          check(); return scalar.ensure(reference, owner);
+        }, true);
+        if (!representation) return outside('scalar-union-correspondence-scope');
+        if (representation === 'scoped') scopedQName = true;
       }
       if (plan.variety === 'atomic' && plan.layers.some(layer => layer.facets.some(facet => !['enumeration', 'whiteSpace'].includes(facet.name)))
         && plan.primitive !== 'string' && plan.primitive !== 'decimal')
@@ -124,6 +127,7 @@ export function checkComponentCorrespondence(input: SchemaInput, supplied: Nativ
     check(); budget.chargeWork(256);
     const receipt: ComponentCorrespondence = Object.freeze({kind: 'component-correspondence', basis: COMPONENT_CORRESPONDENCE,
       scope: 'ordinary-source-components', interpretations: input.schemas.length, constructedContexts,
+      ...(scopedQName ? {scopedQName: true as const} : {}),
       usage: Object.freeze({...budget.usage()})});
     issued.set(receipt, construction);
     return receipt;

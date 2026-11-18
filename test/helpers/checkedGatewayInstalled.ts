@@ -124,6 +124,8 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     await copyFile(path.join(root, 'test/helpers/checkedGatewayInstalledProcess.ts'), path.join(project, 'qualification.ts'));
     await copyFile(path.join(root, 'test/helpers/noaaRpcOracle.ts'), path.join(project, 'noaaRpcOracle.ts'));
     await writeFile(path.join(project, 'noaaRpcOracle.js'), stripTypeScriptTypes(await readFile(path.join(root, 'test/helpers/noaaRpcOracle.ts'), 'utf8')));
+    await copyFile(path.join(root, 'test/helpers/qnameWireOracle.ts'), path.join(project, 'qnameWireOracle.ts'));
+    await writeFile(path.join(project, 'qnameWireOracle.js'), stripTypeScriptTypes(await readFile(path.join(root, 'test/helpers/qnameWireOracle.ts'), 'utf8')));
     await copyFile(path.join(root, 'test/fixtures/wsdl/real-services/noaa-ndfd/live-zip-evidence.json'), path.join(project, 'live-zip-evidence.json'));
     await copyFile(path.join(root, 'test/helpers/ownedParentGuard.ts'), path.join(project, 'parent-guard.ts'));
     const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
@@ -169,10 +171,17 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     }
     await writeFile(config, JSON.stringify(checkedComponents));
     const original = await readFile(source, 'utf8');
-    for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets', 'groups-default', 'groups-configured', 'atomic-unions'] as const) {
+    for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets', 'groups-default', 'groups-configured', 'scalar-base-extension', 'qnames', 'atomic-unions'] as const) {
       const grouped = mode.startsWith('groups-');
       const atomic = mode === 'atomic-unions';
+      const extension = mode === 'scalar-base-extension';
+      const qnames = mode === 'qnames';
+      const exchange = atomic || extension || qnames;
+      const exchangeNamespace = qnames ? 'urn:owned:qnames' : extension ? 'urn:review' : 'urn:checked:atomic-unions';
+      const exchangeService = qnames ? 'QName' : extension ? 'Extension' : 'Atomic';
       const variant = atomic ? await readFile(path.join(root, 'test/conformance/fixtures/assessment/atomic-unions.wsdl'), 'utf8')
+        : extension ? await readFile(path.join(root, 'test/conformance/fixtures/xsd/simple-content/scalar-base-extension.wsdl'), 'utf8')
+        : qnames ? await readFile(path.join(root, 'test/conformance/fixtures/assessment/qnames.wsdl'), 'utf8')
         : grouped ? (await readFile(path.join(root,'test/conformance/fixtures/assessment/application-groups.wsdl'),'utf8'))
         .replaceAll('urn:checked:groups','urn:checked:forecast').replaceAll('PaymentPortType','ForecastPortType').replaceAll('PaymentBinding','ForecastBinding')
         .replaceAll('PaymentService','ForecastService').replaceAll('PaymentPort','ForecastPort').replaceAll('PaymentFault','ForecastFault').replaceAll('PaymentError','ForecastError')
@@ -184,16 +193,16 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
           .replace('type="t:ForecastResponse"', 'type="xs:int"').replace('name="ForecastFault" type="t:ForecastFault"', 'name="ForecastFault" type="xs:string"');
       const variantSource = path.join(consumer, mode + '.wsdl');
       await writeFile(variantSource, variant);
-      const modeComponents = atomic ? {...checkedComponents,
-        selectors: [{portType: {namespace: 'urn:checked:atomic-unions', local: 'AtomicPortType'},
-          binding: {namespace: 'urn:checked:atomic-unions', local: 'Soap11'}, operation: 'Exchange'}],
-        service: {namespace: 'urn:checked:atomic-unions', local: 'AtomicService'}, port: 'Port11'} : checkedComponents;
+      const modeComponents = exchange ? {...checkedComponents,
+        selectors: [{portType: {namespace: exchangeNamespace, local: exchangeService + 'PortType'},
+          binding: {namespace: exchangeNamespace, local: 'Soap11'}, operation: 'Exchange'}],
+        service: {namespace: exchangeNamespace, local: exchangeService + 'Service'}, port: 'Port11'} : checkedComponents;
       let groupOptions: {names?: {target:string;propertyName?:string;typeName?:string}[]} | undefined = grouped ? {} : undefined;
       const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents:{...modeComponents,...(grouped?{applicationGroups:groupOptions}:{})},
         clientOutDir: path.join(project, 'client'), openapi: {outFile: path.join(project, 'openapi.json')},
-        gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: atomic ? 'atomic-unions' : mode === 'scalar' ? 'forecast-scalar' : 'forecast'},
+        gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: exchange ? mode : mode === 'scalar' ? 'forecast-scalar' : 'forecast'},
         app: {appDir: project}, test: {testDir: path.join(project, 'test')}};
-      if (atomic) {
+      if (exchange) {
         // @why This mode changes operation names; refresh disposable operation-bound scaffolds while retaining installed package pins.
         await rm(path.join(project, 'server.ts'));
         await rm(path.join(project, 'test'), {recursive: true, force: true});
@@ -201,7 +210,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
         await writeFile(config, JSON.stringify(modeComponents));
         const args = [...installedGenerate];
         args[args.indexOf('--wsdl-source') + 1] = variantSource;
-        args[args.indexOf('--gateway-service-name') + 1] = 'atomic-unions';
+        args[args.indexOf('--gateway-service-name') + 1] = mode;
         await run(mode + ' installed CLI generation', args, tooling);
         await writeFile(config, JSON.stringify(checkedComponents));
       }
@@ -238,6 +247,14 @@ const collection: Request = {...request, collection: [1]};
 const witness: Request = {...request, collectionWitness: ['+01.00', 'AUTO']};
 void [request, response, numeric, boolean, tagged, collection, witness];
 `);
+      if (qnames) await writeFile(path.join(project, 'qname-contract.ts'), `import type {Request, Response} from './client/operations/0/client.js';
+import {qnameInput, qnameOutput} from './qnameWireOracle.js';
+const request: Request = qnameInput;
+const response: Response = qnameOutput;
+// @ts-expect-error A lexical prefix alone supplies no namespace identity.
+const lexical: Request = {...request, fixedName: 'd:Entry'};
+void [response, lexical];
+`);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);
       if (mode === 'scalar') {
         const composition = await run('compose independent installed checked services', ['--permission', '--allow-fs-read=' + project,
@@ -263,6 +280,11 @@ void [request, response, numeric, boolean, tagged, collection, witness];
         '--allow-fs-read=' + project, '--allow-fs-write=' + project,
         path.join(project, 'qualification.ts'), fixture, mode], project);
       expect(JSON.parse(checked.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: mode});
+      if (extension) expect(JSON.parse(checked.stdout)).toMatchObject({originalCheckoutReadable: false, calls: 6, refusals: 4, upstreamRequests: 3});
+      if (qnames) {
+        expect(JSON.parse(checked.stdout)).toMatchObject({originalCheckoutReadable: false, calls: 7, refusals: 4, upstreamRequests: 4});
+        await rm(path.join(project, 'qname-contract.ts'));
+      }
       if (atomic) expect(JSON.parse(checked.stdout)).toMatchObject({productionOnly: true, artifactRefusals: 2});
       await writeFile(path.join(evidence, mode + '-wire.log'), checked.stdout + checked.stderr);
       if (atomic) await run(mode + ' restore consumer development dependencies',

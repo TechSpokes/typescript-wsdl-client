@@ -15,6 +15,8 @@ import {inspectComponentValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 import {inspectComponentResponseBranches} from '../compiler/componentResponseBranches.js';
 import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from '../compiler/httpResponseHeaders.js';
+import {documentationComment, sourceDocumentation} from '../generation/sourceDocumentation.js';
+import {WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 
 interface CheckedGatewayOptions {
   readonly httpResponseHeaders?: readonly string[];
@@ -61,10 +63,12 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   const input = expected.mappings.find(mapping => mapping.direction.kind === 'input');
   const output = expected.mappings.find(mapping => mapping.direction.kind === 'output');
   if (!input || !oneWay && !output) throw new TypeError('Issued input and output mappings required');
-  const {budget} = inspectDirectOperation(expected.contract).context;
+  const {context: {budget}, operationSyntax} = inspectDirectOperation(expected.contract);
   const check = () => {
     checkSemanticBudget(budget); if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   };
+  const description = sourceDocumentation([operationSyntax], WSDL_NAMESPACE, amount => {check(); budget.chargeWork(amount);});
+  const summary = description?.match(/^(.+?[.!?])(?:\s|$)/)?.[1] ?? description;
   const schema = (mapping: typeof input, role: string): Schema => lowerComponentShape(expected.contract, mapping, role, check).schema;
   const components: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
   const documented = (value: Schema, mapping: typeof input, role: string): Schema => lowerCheckedDocumentation(value,
@@ -150,6 +154,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       supplementalValidation: ['native-source-compatibility', 'native-xml-scalar-and-particle'], admitted: false,
       selection: {selector: expected.contract.selector, ...expected.selection}},
     paths: {[options.routePath]: {post: {operationId: expected.contract.selector.operation,
+      ...(description ? {summary, description} : {}),
       ...(expected.responseProjection
         ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
       ...(expected.responseBranches ? {'x-response-branches': {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
@@ -199,7 +204,7 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
   const validateFault = ajv.compile(schemas.fault);
 ${branched ? '  const validateApplicationError = ajv.compile(schemas.applicationError);\n' : ''}  const base = dataCopy(options.clientOptions);
   const soap = dataCopy(base.soap);
-  fastify.post(${literal(options.routePath)}, {
+  ${description ? documentationComment(description) + '\n  ' : ''}fastify.post(${literal(options.routePath)}, {
     schema: {body: schemas.request},
     validatorCompiler: () => validateRequest,
     // @constraints Serialization preserves every validated member and never establishes validity.

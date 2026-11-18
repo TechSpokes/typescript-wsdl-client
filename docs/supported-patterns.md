@@ -8,15 +8,33 @@ The qualified checked domain includes [keyed mixed, namespace-collision and sour
 
 ## Checked atomic unions
 
-Checked document/literal values support effective atomic string, decimal/integer and boolean union members as lexical strings, preserving native declaration order, member whitespace and typed fixed/default equality. The complete dual SOAP 1.1/1.2 `assessment/atomic-unions.wsdl` fixture and independent generated/installed checks cover requests, success, faults and shared literal-header scalars. See the [lexical union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions) for exact representation and validation duties.
+Checked document/literal unions represent qualified atomic values and list-valued members as complete lexical strings. Unions with a QName member carry the namespace bindings alongside that string. Native validation preserves member order, whitespace and typed fixed/default equality. The dual SOAP 1.1/1.2 `assessment/atomic-unions.wsdl` fixture and independent generated and installed tests cover requests, success and faults. Literal headers use the same scalar rules. See the [lexical union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).
 
-Union list members and heterogeneous RPC parts, contextual/document-wide obligations and other primitive families remain excluded. Legacy union aliases and primitive-string union lists retain their existing contracts; this checked row does not replace the legacy `xs-union-simple-type` promise.
+For migration from the legacy `xs-union-simple-type` row, supply the XML lexical string for each union. Use `"42"` for a numeric member and `"1 2"` for a list-valued member. A union containing a list member is one value with its own native member selection.
 
 ## Checked atomic union lists
 
-Checked document/literal lists compose the effective atomic string, decimal/integer and boolean union subset. Ordinary values are dense ordered arrays of lexical strings; existing list-level pattern witnesses remain single strings. Native XML-list tokenization, member order, constraints and sequence typed equality govern every fresh inverse, including source defaults and fixed values.
+Checked document/literal lists compose qualified non-contextual atomic union members. Ordinary values are dense ordered arrays of lexical strings. Existing list-level pattern witnesses remain single strings. Native XML-list tokenization, member order, constraints and sequence typed equality govern defaults, fixed values and every fresh inverse.
 
-The synthetic dual-binding `assessment/atomic-union-lists.wsdl` family covers requests, success, declared faults, generated HTTP values and shared literal headers. The existing installed atomic-union mode adds representative collections and whole-list witnesses with production-only dependencies and no checkout access. Nested lists, list-valued union members, RPC lists and wider primitive/contextual families remain excluded; no authentic provider need is claimed.
+The synthetic dual-binding `assessment/atomic-union-lists.wsdl` family covers requests, success, declared faults, generated HTTP values and shared literal headers. The installed atomic-union mode adds representative collections and whole-list witnesses with production-only dependencies and no checkout access. A list item has to be atomic or select an atomic union member. RPC lists and contextual values remain outside the profile.
+
+## Checked scalar-base extensions
+
+Checked document/literal generation accepts a complex-content extension of a qualified scalar-content complex base when the derived type has empty effective local content. Both absent content and an empty sequence inherit the exact scalar datatype, including its value constraints. Generated clients and gateways expose text under `$value` and validate the inherited attributes.
+
+The `xsd/simple-content/scalar-base-extension.wsdl` fixture exercises both source forms over SOAP 1.1/1.2. A nonempty particle, effective `mixed="true"` on that extension, or a prohibition on extension prevents checked generation. See the [checked gateway contract](checked-gateway.md#scalar-base-complex-content-extension).
+
+## Checked QNames
+
+Checked document/literal generation represents a QName as `{"namespace":"urn:example","local":"Item"}` and lists of QNames as ordered arrays of those objects. Use an empty namespace string for an unqualified QName. Unions containing QName values and lists of those unions use a lexical string with explicit namespace bindings. Native validation uses the instance bindings and resolves source defaults and fixed values in the declaration scope. See the [QName migration and validation contract](checked-gateway.md#expanded-qname-values).
+
+## Checked migration from legacy generated shapes
+
+Checked generation requires a service and port selection when compatible bindings are ambiguous. Select the same SOAP port as the legacy integration before comparing artifacts. The selected binding controls the SOAP version and action.
+
+Checked JSON represents `ArrayOf*` wrappers using their declared record or ordered content shape. Read the generated schema before switching clients that consume flattened legacy REST arrays. Checked choice, nil and wildcard shapes use the [mapping contract](mapping-contract.md), including ordered content where the schema needs it.
+
+Selected operation documentation and XSD record and field annotations appear in generated TypeScript and OpenAPI. Operation comments also appear in the generated route. The [Part A checkpoint](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-part-a-coverage.md) links the paired artifact and wire evidence.
 
 ## Checked SOAP envelope receiver
 
@@ -69,8 +87,10 @@ Candidate interpretations and test-only prototypes do not certify production ass
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
-| `checked-atomic-union-lists` | partial | Checked document/literal lists of effective string, decimal/integer and boolean atomic unions use ordered lexical string arrays or existing whole-list pattern witnesses. |
-| `checked-atomic-unions` | partial | Checked document/literal atomic unions with effective string, decimal or boolean members use lexical strings in requests, responses, declared faults and literal headers. |
+| `checked-atomic-union-lists` | partial | Checked document/literal lists of qualified non-contextual atomic unions use ordered lexical string arrays or existing whole-list pattern witnesses. |
+| `checked-atomic-unions` | partial | Checked document/literal unions of qualified non-contextual atomic members or lists of atomic values use complete lexical strings. |
+| `checked-qnames` | partial | Checked document/literal QName scalars expose expanded names and QName-bearing unions carry lexical strings with namespace bindings. |
+| `checked-scalar-base-extension` | partial | Checked document/literal extensions of qualified scalar-content complex types preserve the base scalar when local content is absent or an empty sequence. |
 | `checked-buffered-soap` | partial | Checked buffered SOAP reuses runtime credentials and declared literal headers, bounded HTTP entities and independently pinned metadata context. |
 | `checked-soap-envelope-receiver` | partial | Checked SOAP 1.1/1.2 document/literal responses admit qualified wrapper extensions and enforce default-receiver targeting with bounded URI/base support. |
 | `checked-one-way-document-literal` | partial | Checked document/literal input-only operations use V6/V7 bindings and empty 202 transport acknowledgements; legacy defaults remain unchanged. |

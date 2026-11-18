@@ -7,6 +7,7 @@ import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import type {OriginalGeneratedScalarReference, SemanticTypeIdentity, SemanticTypeReference} from './semanticTypeReference.js';
+import {hasOriginalSimpleContent} from './complexTypeContent.js';
 
 export type OriginalScalarShapeFailure = Readonly<{kind: 'unresolved'; rule: string; message: string; contextId: string; component?: NodeId}>;
 export type OriginalScalarShapeResult<T> = Readonly<{kind: 'checked'; value: T; contextId: string;
@@ -75,8 +76,10 @@ function sourceShape(context: SemanticContext, input: SemanticTypeReference): Sh
         : node!.variety.kind === 'list' ? [node!.variety.item] : node!.variety.members;
       else {
         const source = node as ComplexTypeNode;
-        if (source.derivation?.contentKind !== 'simple') throw new ShapeProblem('original-scalar-role', 'Original complex type has no simple-content shape', source.id);
-        frame.dependencies = [source.derivation.kind === 'restriction' && source.derivation.inlineType ? source.derivation.inlineType : source.derivation.base];
+        const derivation = source.derivation;
+        if (!derivation || !hasOriginalSimpleContent(context, source.id))
+          throw new ShapeProblem('original-scalar-role', 'Original complex type has no simple-content shape', source.id);
+        frame.dependencies = [derivation.kind === 'restriction' && derivation.inlineType ? derivation.inlineType : derivation.base];
       }
       b.chargeWork(frame.dependencies.length * 4 + 1);
       for (let index = frame.dependencies.length - 1; index >= 0; index--) {

@@ -3,7 +3,7 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
 import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand, inspectProjectionConstraintNamespaces} from './directStructurePlan.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
@@ -195,15 +195,17 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
       budget.chargeWork(64);
       const occurrences: DirectScalarDuty[] = [];
       const operand = (node: SyntaxElement, declaration: ElementNode | AttributeNode, builtin: ExpandedName, lexical: string, path: string,
-        constraint?: DirectProjectionValue['constraint'], retainLexical?: true, list?: ProjectionScalarList) => {
+        constraint?: DirectProjectionValue['constraint'], retainLexical?: true, list?: ProjectionScalarList, sourceValue = false) => {
         budget.chargeWork(256 + lexical.length * 4 + path.length * 4);
         // Project only typed retained facts. Generic snapshots deliberately preserve
         // unknown values; caller extension fields must not become receipt authority.
         const namespaces: Record<string, string> = Object.create(null) as Record<string, string>;
-        for (const key in node.namespaces) {
-          if (!Object.hasOwn(node.namespaces, key)) continue;
-          check(); budget.chargeWork(96 + key.length * 4 + node.namespaces[key]!.length * 4);
-          namespaces[key] = node.namespaces[key]!;
+        const effectiveScope = sourceValue && builtin.local === 'QName' && constraint
+          ? inspectProjectionConstraintNamespaces(context, constraint) : node.namespaces;
+        for (const key in effectiveScope) {
+          if (!Object.hasOwn(effectiveScope, key)) continue;
+          check(); budget.chargeWork(96 + key.length * 4 + effectiveScope[key]!.length * 4);
+          namespaces[key] = effectiveScope[key]!;
         }
         const s = node.source;
         const payloadSource = budget.snapshot({uri: s.uri, digest: s.digest, path: s.path,
@@ -229,7 +231,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
       const elementOperand = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, shape: DirectProjectionValue, retainLexical?: true, list?: ProjectionScalarList) => {
         const lexical = text(node, declaration, path);
         operand(node, declaration, builtin, lexical === '' && shape.constraint ? shape.constraint.lexical : lexical,
-          path, shape.constraint, retainLexical, list);
+          path, shape.constraint, retainLexical, list, lexical === '');
       };
       const leaf = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, shape: DirectProjectionValue, retainLexical?: true, list?: ProjectionScalarList) => {
         attributes(node, declaration, path);
@@ -347,7 +349,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
                 ...attributeChannel(expected),
                 origin: expected.constraint.kind === 'fixed' ? 'schema-fixed' : 'schema-default'});
               operand(node, expected.declaration, expected.builtin, expected.constraint.lexical, path,
-                expected.constraint, expected.retainLexical, expected.list);
+                expected.constraint, expected.retainLexical, expected.list, true);
             }
           }
         }
