@@ -226,15 +226,19 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
         await run('configured group CLI inventory-copy regeneration',args,tooling);
       }
       if (atomic) await writeFile(path.join(project, 'atomic-union-contract.ts'), `import type {Request, Response} from './client/operations/0/client.js';
-const request: Request = {amount: '+01.00', flag: ' 1 ', exact: '+9007199254740993', inline: 'AUTO'};
-const response: Response = {amount: '-000.1250', flag: '0', exact: '9007199254740994', inline: '+007'};
+const request: Request = {amount: '+01.00', flag: ' 1 ', exact: '+9007199254740993', inline: 'AUTO', collection: ['+007', 'AUTO'], collectionWitness: '+01.00 AUTO'};
+const response: Response = {amount: '-000.1250', flag: '0', exact: '9007199254740994', inline: '+007', collection: ['-00.50'], collectionWitness: '+01.00 AUTO'};
 // @ts-expect-error Atomic union values remain lexical strings even when the selected member is decimal.
 const numeric: Request = {...request, amount: 1};
 // @ts-expect-error Atomic union values remain lexical strings even when the selected member is boolean.
 const boolean: Response = {...response, flag: true};
 // @ts-expect-error Callers cannot select an atomic union member through a tagged object.
 const tagged: Request = {...request, amount: {member: 'decimal', value: '+01.00'}};
-void [request, response, numeric, boolean, tagged];
+// @ts-expect-error Union list items are lexical strings.
+const collection: Request = {...request, collection: [1]};
+// @ts-expect-error Whole-list pattern witnesses retain the string representation.
+const witness: Request = {...request, collectionWitness: ['+01.00', 'AUTO']};
+void [request, response, numeric, boolean, tagged, collection, witness];
 `);
       await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);

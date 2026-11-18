@@ -6,6 +6,12 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.7.0 to 1.8.0
+
+To adopt checked atomic unions or lists of those unions, update the generator and runtime together and regenerate matching clients, capsules, OpenAPI documents and gateways from your WSDL. Review the generated types and run your consumer build and tests before deployment.
+
+Pass a union value as a lexical string such as `"+01.00"`. For an ordinary list, pass an ordered array of string tokens with one nonempty token per item and no XML whitespace within a token. Where a list-level pattern requires a whole-list witness, pass one string. OpenAPI describes these shapes and native validation enforces declared member order, typed equality and source constraints. See the [checked value contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).
+
 ## From 1.6.5 to 1.7.0
 
 Update the runtime dependency for the completed bounded buffered SOAP path. Legacy generation remains the default, frozen direct clients keep their original restrictions, and the existing checked runtime bindings remain in use. Regenerate matched client/gateway/source artifacts when adopting declared SOAP headers or retained metadata Content-Type context; older artifacts without those additions retain their compatibility contract.

@@ -9,9 +9,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- test: schedule source CLI checks with bounded consumer workflows to reduce compiler contention.
+## [1.8.0] - 2026-11-18
+
+- feat(checked): compose lexical atomic union lists with native typed equality and retained whole-list witnesses.
 - feat(checked): support lexical string/decimal/boolean atomic unions with native member selection and typed fixed/default semantics.
+- docs: document the implemented checked union and union-list contracts.
+- docs: record atomic-union review and prepare lexical union-list support.
 - docs: reconcile buffered delivery, record Escapia acceptance and prepare checked lexical atomic unions.
+- test: schedule source CLI checks with bounded consumer workflows to reduce compiler contention.
+- chore(deps): refresh the Vitest baseline to 5.1.1 and verify generated app dependency pins.
 
 ## [1.7.0] - 2026-11-17
 

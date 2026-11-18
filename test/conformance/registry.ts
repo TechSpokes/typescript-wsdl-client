@@ -47,6 +47,23 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
   {
+    id: "checked-atomic-union-lists",
+    title: "Checked lists of lexical atomic unions",
+    status: "partial",
+    featureTags: ["xsd", "simple-type", "union", "list", "checked"],
+    fixture: "assessment/atomic-union-lists.wsdl",
+    docsAnchor: "checked-atomic-union-lists",
+    publicContract: "Checked document/literal lists of effective string, decimal/integer and boolean atomic unions use ordered lexical string arrays or existing whole-list pattern witnesses.",
+    decision: "partial-support",
+    decisionReason: "Native tokenization, member selection, facets and sequence typed equality remain authoritative; list-valued members, RPC lists, contextual and wider atomic families remain excluded.",
+    authority: "XSD 1.0 Datatypes list tokens, ordered union membership and typed equality; WSDL 1.1 SOAP binding",
+    provenance: "Repository-authored SOAP 1.1/1.2 source, handwritten lexical arrays and independent request/success/fault bytes; no provider demand claimed.",
+    license: "MIT",
+    fixtureKind: "interop-profile",
+    profile: "checked-components-v1",
+    evidence: {native: "integration/checked-union-lists.test.ts", installed: ["integration/checked-gateway-installed.test.ts"]},
+  },
+  {
     id: "checked-atomic-unions",
     title: "Checked lexical string, decimal and boolean atomic unions",
     status: "partial",
@@ -55,7 +72,7 @@ export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
     docsAnchor: "checked-atomic-unions",
     publicContract: "Checked document/literal atomic unions with effective string, decimal or boolean members use lexical strings in requests, responses, declared faults and literal headers.",
     decision: "partial-support",
-    decisionReason: "Native member ordering, whitespace and typed equality govern the bounded subset; list-valued members, heterogeneous list items, heterogeneous RPC parts and contextual or other primitive families remain excluded.",
+    decisionReason: "Native member ordering, whitespace and typed equality govern the bounded subset; list-valued members, heterogeneous RPC parts and contextual or other primitive families remain excluded.",
     authority: "XSD 1.0 Datatypes union order, member whitespace and primitive equality; WSDL 1.1 SOAP binding",
     provenance: "Repository-authored dual-binding source, independent lexical JSON and handwritten SOAP request/success/fault expectations.",
     license: "MIT",

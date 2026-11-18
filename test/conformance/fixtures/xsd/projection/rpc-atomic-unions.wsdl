@@ -5,15 +5,19 @@
     <x:simpleType name="StringUnion"><x:union memberTypes="t:Code x:token"/></x:simpleType>
     <x:simpleType name="AtomicUnion"><x:union memberTypes="t:Code x:decimal x:boolean"/></x:simpleType>
     <x:simpleType name="AtomicAlias"><x:restriction base="t:AtomicUnion"/></x:simpleType>
+    <x:simpleType name="AtomicList"><x:list itemType="t:AtomicAlias"/></x:simpleType>
   </x:schema></types>
   <message name="StringRequest"><part name="value" type="t:StringUnion"/></message>
   <message name="AtomicRequest"><part name="value" type="t:AtomicAlias"/></message>
+  <message name="ListRequest"><part name="value" type="t:AtomicList"/></message>
   <message name="Response"><part name="value" type="x:string"/></message>
   <portType name="UnionPortType">
     <operation name="StringEcho"><input message="t:StringRequest"/><output message="t:Response"/></operation>
     <operation name="AtomicEcho"><input message="t:AtomicRequest"/><output message="t:Response"/></operation>
+    <operation name="ListEcho"><input message="t:ListRequest"/><output message="t:Response"/></operation>
   </portType>
   <binding name="UnionBinding" type="t:UnionPortType"><s:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="ListEcho"><s:operation soapAction="urn:rpc:atomic-unions#ListEcho"/><input><s:body use="encoded" namespace="urn:rpc:atomic-unions:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input><output><s:body use="encoded" namespace="urn:rpc:atomic-unions:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output></operation>
     <operation name="StringEcho"><s:operation soapAction="urn:rpc:atomic-unions#StringEcho"/><input><s:body use="encoded" namespace="urn:rpc:atomic-unions:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input><output><s:body use="encoded" namespace="urn:rpc:atomic-unions:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output></operation>
     <operation name="AtomicEcho"><s:operation soapAction="urn:rpc:atomic-unions#AtomicEcho"/><input><s:body use="encoded" namespace="urn:rpc:atomic-unions:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input><output><s:body use="encoded" namespace="urn:rpc:atomic-unions:body" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output></operation>
   </binding>

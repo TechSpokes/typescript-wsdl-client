@@ -7,11 +7,15 @@
     <x:simpleType name="NestedInteger"><x:union memberTypes="t:IntegerOrAutomatic"/></x:simpleType>
     <x:simpleType name="Amount"><x:union memberTypes="x:decimal t:Automatic"/></x:simpleType>
     <x:simpleType name="Flag"><x:union memberTypes="x:boolean t:Automatic"/></x:simpleType>
+    <x:simpleType name="Collection"><x:list itemType="t:Amount"/></x:simpleType>
+    <x:simpleType name="CollectionWitness"><x:restriction base="t:Collection"><x:pattern value="\+01\.00 AUTO"/></x:restriction></x:simpleType>
     <x:complexType name="UnionRecord"><x:sequence>
       <x:element name="amount" type="t:Amount"/>
       <x:element name="flag" type="t:Flag"/>
       <x:element name="exact" type="t:NestedInteger"/>
       <x:element name="inline" minOccurs="0"><x:simpleType><x:union><x:simpleType><x:restriction base="x:decimal"/></x:simpleType><x:simpleType><x:restriction base="t:Automatic"/></x:simpleType></x:union></x:simpleType></x:element>
+      <x:element name="collection" type="t:Collection" minOccurs="0"/>
+      <x:element name="collectionWitness" type="t:CollectionWitness" minOccurs="0"/>
     </x:sequence></x:complexType>
     <x:element name="Exchange" type="t:UnionRecord"/>
     <x:element name="ExchangeResponse" type="t:UnionRecord"/>

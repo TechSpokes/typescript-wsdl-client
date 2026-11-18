@@ -10,7 +10,13 @@ The qualified checked domain includes [keyed mixed, namespace-collision and sour
 
 Checked document/literal values support effective atomic string, decimal/integer and boolean union members as lexical strings, preserving native declaration order, member whitespace and typed fixed/default equality. The complete dual SOAP 1.1/1.2 `assessment/atomic-unions.wsdl` fixture and independent generated/installed checks cover requests, success, faults and shared literal-header scalars. See the [lexical union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions) for exact representation and validation duties.
 
-Union list members, heterogeneous union list items and RPC parts, contextual/document-wide obligations and other primitive families remain excluded. Legacy union aliases and primitive-string union lists retain their existing contracts; this checked row does not replace the legacy `xs-union-simple-type` promise.
+Union list members and heterogeneous RPC parts, contextual/document-wide obligations and other primitive families remain excluded. Legacy union aliases and primitive-string union lists retain their existing contracts; this checked row does not replace the legacy `xs-union-simple-type` promise.
+
+## Checked atomic union lists
+
+Checked document/literal lists compose the effective atomic string, decimal/integer and boolean union subset. Ordinary values are dense ordered arrays of lexical strings; existing list-level pattern witnesses remain single strings. Native XML-list tokenization, member order, constraints and sequence typed equality govern every fresh inverse, including source defaults and fixed values.
+
+The synthetic dual-binding `assessment/atomic-union-lists.wsdl` family covers requests, success, declared faults, generated HTTP values and shared literal headers. The existing installed atomic-union mode adds representative collections and whole-list witnesses with production-only dependencies and no checkout access. Nested lists, list-valued union members, RPC lists and wider primitive/contextual families remain excluded; no authentic provider need is claimed.
 
 ## Checked SOAP envelope receiver
 
@@ -63,6 +69,7 @@ Candidate interpretations and test-only prototypes do not certify production ass
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `checked-atomic-union-lists` | partial | Checked document/literal lists of effective string, decimal/integer and boolean atomic unions use ordered lexical string arrays or existing whole-list pattern witnesses. |
 | `checked-atomic-unions` | partial | Checked document/literal atomic unions with effective string, decimal or boolean members use lexical strings in requests, responses, declared faults and literal headers. |
 | `checked-buffered-soap` | partial | Checked buffered SOAP reuses runtime credentials and declared literal headers, bounded HTTP entities and independently pinned metadata context. |
 | `checked-soap-envelope-receiver` | partial | Checked SOAP 1.1/1.2 document/literal responses admit qualified wrapper extensions and enforce default-receiver targeting with bounded URI/base support. |

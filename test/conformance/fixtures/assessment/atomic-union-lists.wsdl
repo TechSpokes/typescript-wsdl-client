@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:union-lists" targetNamespace="urn:checked:union-lists">
+  <w:types><x:schema targetNamespace="urn:checked:union-lists" elementFormDefault="qualified">
+    <x:simpleType name="Automatic"><x:restriction base="x:string"><x:enumeration value="AUTO"/></x:restriction></x:simpleType>
+    <x:simpleType name="Atomic"><x:union memberTypes="x:decimal x:boolean t:Automatic"/></x:simpleType>
+    <x:simpleType name="Alias"><x:restriction base="t:Atomic"/></x:simpleType>
+    <x:simpleType name="Nested"><x:union memberTypes="t:Alias"/></x:simpleType>
+    <x:simpleType name="Words"><x:list itemType="t:Nested"/></x:simpleType>
+    <x:simpleType name="Bounded"><x:restriction base="t:Words"><x:minLength value="1"/><x:maxLength value="4"/></x:restriction></x:simpleType>
+    <x:simpleType name="Witness"><x:restriction base="t:Words"><x:pattern value="\+01\.00 true"/></x:restriction></x:simpleType>
+    <x:complexType name="Record"><x:sequence>
+      <x:element name="words" type="t:Bounded"/>
+      <x:element name="witness" type="t:Witness"/>
+      <x:element name="inline" minOccurs="0"><x:simpleType><x:list><x:simpleType><x:union memberTypes="x:integer t:Automatic"/></x:simpleType></x:list></x:simpleType></x:element>
+    </x:sequence></x:complexType>
+    <x:element name="Exchange" type="t:Record"/>
+    <x:element name="ExchangeResponse" type="t:Record"/>
+    <x:element name="ListFault" type="t:Record"/>
+  </x:schema></w:types>
+  <w:message name="Input"><w:part name="body" element="t:Exchange"/></w:message>
+  <w:message name="Output"><w:part name="body" element="t:ExchangeResponse"/></w:message>
+  <w:message name="Error"><w:part name="detail" element="t:ListFault"/></w:message>
+  <w:portType name="ListPortType"><w:operation name="Exchange"><w:input message="t:Input"/><w:output message="t:Output"/><w:fault name="ListError" message="t:Error"/></w:operation></w:portType>
+  <w:binding name="Soap11" type="t:ListPortType"><s:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Exchange"><s:operation soapAction="urn:checked:lists:Exchange"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output><w:fault name="ListError"><s:fault name="ListError" use="literal"/></w:fault></w:operation></w:binding>
+  <w:binding name="Soap12" type="t:ListPortType"><s12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Exchange"><s12:operation soapAction="urn:checked:lists:Exchange"/><w:input><s12:body use="literal"/></w:input><w:output><s12:body use="literal"/></w:output><w:fault name="ListError"><s12:fault name="ListError" use="literal"/></w:fault></w:operation></w:binding>
+  <w:service name="ListService"><w:port name="Port11" binding="t:Soap11"><s:address location="http://127.0.0.1:1/soap11"/></w:port><w:port name="Port12" binding="t:Soap12"><s12:address location="http://127.0.0.1:1/soap12"/></w:port></w:service>
+</w:definitions>

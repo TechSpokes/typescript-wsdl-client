@@ -29,6 +29,8 @@ Unambiguous sources select their service and operations automatically; ambiguous
 
 Generated source snapshots support offline runtime use, and calls use the selected WSDL address or an explicit endpoint override with optional restrictions. Existing [direct-runtime clients](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remain compatible; the [product corpus](docs/corpus.md) records representative evidence without claiming universal WSDL/XSD or live-provider support.
 
+Checked document/literal services support qualified unions of atomic string, decimal, integer and boolean members. A union value is a lexical string such as `"+01.00"`. An ordinary list of those unions is an ordered array of string tokens, and a list-level pattern can require a single string for the whole list. The native validator selects the first matching member and checks fixed values by type. See the [checked value contract](docs/checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).
+
 Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
 
 Checked clients can observe selected upstream HTTP response headers through `soap.httpResponseHeaders`. Publishing them from a generated gateway separately requires `httpResponseHeaders` in `--checked-config` or `checkedComponents`; existing JSON bodies and REST status codes stay unchanged. See [bounded HTTP observation and publication](docs/checked-gateway.md#selected-upstream-http-response-headers).
@@ -301,6 +303,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.8.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.8.0.md) | Exact lexical values for checked SOAP unions and lists |
 | [v1.7.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.7.0.md) | Checked buffered credentials, declared headers and source fidelity |
 | [v1.6.5 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.5.md) | Strict ASCII and explicitly labelled UTF-16 checked SOAP responses |
 | [v1.6.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.1.md) | Accurate empty-extension assessment and typed syntax refusals |
@@ -312,7 +315,8 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
 | [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Completed v1.7.0 adapter checklist, verification and continuing scope exclusions |
 | [Published-Package Consumer Acceptance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) | Accepted Escapia npm upgrade, exact evidence and unexecuted alternative boundaries |
-| [Checked Lexical Atomic Unions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-checked-atomic-unions.md) | Next source/value slice: bounded atomic members, lexical strings and typed fixed equality |
+| [Checked Lexical Atomic Unions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-checked-atomic-unions.md) | Reviewed implementation candidate, bounded contract and typed fixed equality |
+| [Checked Lists of Atomic Unions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-checked-atomic-union-lists.md) | Implemented lexical token arrays, whole-list witnesses and typed sequence equality |
 | [Streamable Responses (ADR-002)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
 | [Product and Research Boundary](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/004-product-research-boundary.md) | Package, validation and delivery responsibilities |
 | [Research Program](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/README.md) | Optional experiments, commands and historical investigation records |

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:atomic-union-lists" targetNamespace="urn:atomic-union-lists" elementFormDefault="qualified">
+  <x:simpleType name="One"><x:restriction base="x:string"><x:enumeration value="1"/></x:restriction></x:simpleType>
+  <x:simpleType name="True"><x:restriction base="x:string"><x:enumeration value="true"/></x:restriction></x:simpleType>
+  <x:simpleType name="StringDecimal"><x:union memberTypes="t:One x:decimal"/></x:simpleType>
+  <x:simpleType name="DecimalString"><x:union memberTypes="x:decimal t:One"/></x:simpleType>
+  <x:simpleType name="StringBoolean"><x:union memberTypes="t:True x:boolean"/></x:simpleType>
+  <x:simpleType name="BooleanDecimal"><x:union memberTypes="x:boolean x:decimal"/></x:simpleType>
+  <x:simpleType name="DecimalBoolean"><x:union memberTypes="x:decimal x:boolean"/></x:simpleType>
+  <x:simpleType name="OnlyOne"><x:restriction base="t:StringDecimal"><x:enumeration value="1"/></x:restriction></x:simpleType>
+  <x:simpleType name="Alias"><x:restriction base="t:StringDecimal"/></x:simpleType>
+  <x:simpleType name="Nested"><x:union memberTypes="t:Alias"><x:simpleType><x:restriction base="x:boolean"/></x:simpleType></x:union></x:simpleType>
+  <x:simpleType name="Strings"><x:union memberTypes="x:string x:decimal"/></x:simpleType>
+  <x:simpleType name="IntegerDecimal"><x:union memberTypes="x:integer x:decimal"/></x:simpleType>
+  <x:simpleType name="Words"><x:list itemType="t:StringDecimal"/></x:simpleType>
+  <x:simpleType name="Decimals"><x:list itemType="t:IntegerDecimal"/></x:simpleType>
+  <x:simpleType name="Booleans"><x:list itemType="t:StringBoolean"/></x:simpleType>
+  <x:simpleType name="Ordered"><x:restriction base="t:Words"><x:enumeration value="1 +2"/></x:restriction></x:simpleType>
+  <x:simpleType name="Bounded"><x:restriction base="t:Words"><x:minLength value="1"/><x:maxLength value="3"/></x:restriction></x:simpleType>
+  <x:simpleType name="Witness"><x:restriction base="t:Words"><x:pattern value="\+01\.00 1"/></x:restriction></x:simpleType>
+  <x:complexType name="Base"><x:attribute name="fixed" type="t:Words" fixed="1 +1"/><x:attribute name="default" type="t:Words" default="+1 1"/></x:complexType>
+  <x:complexType name="Derived"><x:complexContent><x:extension base="t:Base"><x:sequence><x:element name="optional" type="t:Words" default="+1 1" minOccurs="0"/></x:sequence></x:extension></x:complexContent></x:complexType>
+  <x:complexType name="Simple"><x:simpleContent><x:extension base="t:Words"><x:attribute name="fixed" type="t:Words" fixed="1 +1"/></x:extension></x:simpleContent></x:complexType>
+  <x:element name="Words" type="t:Words"/>
+  <x:element name="Decimals" type="t:Decimals"/>
+  <x:element name="DecimalString"><x:simpleType><x:list itemType="t:DecimalString"/></x:simpleType></x:element>
+  <x:element name="Booleans" type="t:Booleans"/>
+  <x:element name="BooleanDecimal"><x:simpleType><x:list itemType="t:BooleanDecimal"/></x:simpleType></x:element>
+  <x:element name="DecimalBoolean"><x:simpleType><x:list itemType="t:DecimalBoolean"/></x:simpleType></x:element>
+  <x:element name="Nested"><x:simpleType><x:list itemType="t:Nested"/></x:simpleType></x:element>
+  <x:element name="Inline"><x:simpleType><x:list><x:simpleType><x:union memberTypes="x:decimal x:boolean"/></x:simpleType></x:list></x:simpleType></x:element>
+  <x:element name="Strings"><x:simpleType><x:list itemType="t:Strings"/></x:simpleType></x:element>
+  <x:element name="Terminal"><x:simpleType><x:list itemType="t:OnlyOne"/></x:simpleType></x:element>
+  <x:element name="Bounded" type="t:Bounded"/>
+  <x:element name="Ordered" type="t:Ordered"/>
+  <x:element name="Witness" type="t:Witness"/>
+  <x:element name="FixedString" type="t:Words" fixed="1 +1" nillable="true"/>
+  <x:element name="FixedDecimal" type="t:Decimals" fixed="+1 2"/>
+  <x:element name="FixedBoolean" type="t:Booleans" fixed="true 1"/>
+  <x:element name="Default" type="t:Words" default="+1 1"/>
+  <x:element name="Record" type="t:Derived" nillable="true"/>
+  <x:element name="Simple" type="t:Simple" fixed="1 +1"/>
+  <x:element name="NilSimple" type="t:Simple" nillable="true"/>
+</x:schema>

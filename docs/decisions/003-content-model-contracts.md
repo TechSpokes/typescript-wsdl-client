@@ -136,7 +136,9 @@ Supported pattern planning admits the existing native-supported XSD regex fragme
 
 Fixed values compare native typed values, so a string-selected `"1"` differs from a decimal-selected `"+1"`, while equal decimal/integer aliases remain equal. Source defaults/fixed values retain their original lexical witnesses and native augmentation rules. Transient constraint evidence stays private; reconstructed source artifacts recover it without a new serialized format.
 
-Lists of primitive-string unions retain lexical item strings under the existing list mapping and token rules; list-level patterns can retain one whole-list string. Lists of heterogeneous unions, unions containing lists and heterogeneous RPC parts remain excluded. Wider atomic families and general tagged-union design remain with #184/#183. Any future tags must describe the native selection rather than unrecoverable caller history. New scalar families cannot be marked verified from a profile label or a serializer test alone.
+The #492 specialization composes lists of the same qualified atomic unions as ordered lexical string arrays under existing XML-token rules; list-level patterns retain their existing whole-list string witnesses. Every item is reassessed through native member order and facets, with ordered typed sequence equality for fixed/enumeration constraints. Empty or XML-whitespace-containing application items refuse without trimming or splitting; permitted non-XML whitespace remains part of a token. No correspondence widening is needed: whole-source native construction precedes the existing effective-member audit.
+
+Unions containing lists, nested lists, RPC lists and heterogeneous RPC union parts remain excluded. Wider atomic families and general tagged-union design remain with #184/#183. Any future tags must describe the native selection rather than unrecoverable caller history. New scalar families cannot be marked verified from a profile label or a serializer test alone.
 
 ### Scalar pipeline
 
