@@ -74,6 +74,30 @@ export async function installIntakeProject(shared: InstalledIntakeTooling, proje
   await recordIntakeInstallation(evidence, project, env, cachePresentBefore, lockReused);
 }
 
+/** Install dependencies for generated variants whose wire oracle owns the whole consumer directory.
+ * @param shared The packed candidate and prior dependency resolution.
+ * @param consumer Isolated parent containing the generated apps.
+ * @param variants App directory names directly under the consumer.
+ * @param evidence Directory for npm diagnostics.
+ * @param env The npm environment, including the cache path.
+ * @param run An owned, bounded npm command.
+ * @returns Resolves after the required dependency trees are installed.
+ * @throws For an unreadable manifest, an existing parent manifest, or a failed install.
+ * @constraints Sharing is limited to byte-identical manifests and uses ordinary ancestor resolution.
+ */
+export async function installIntakeVariants(shared: InstalledIntakeTooling, consumer: string, variants: readonly [string, ...string[]],
+  evidence: string, env: NodeJS.ProcessEnv, run: (label: string, args: string[], cwd: string) => Promise<unknown>): Promise<void> {
+  const manifests = await Promise.all(variants.map(variant => readFile(path.join(consumer, variant, 'package.json'), 'utf8')));
+  if (manifests.every(manifest => manifest === manifests[0])) {
+    await writeFile(path.join(consumer, 'package.json'), manifests[0]!, {flag: 'wx'});
+    await installIntakeProject(shared, consumer, evidence, env, run, 'install-variant-dependencies');
+    return;
+  }
+  for (const variant of variants) {
+    await installIntakeProject(shared, path.join(consumer, variant), evidence, env, run, variant + '-install');
+  }
+}
+
 /** Observe content-cache presence without interpreting it as a successful cache hit.
  * @param env The exact npm command environment containing its absolute cache directory.
  * @returns Whether npm's content-addressed cache directory exists before the command.

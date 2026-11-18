@@ -5,7 +5,7 @@ import {expect} from 'vitest';
 import {appendFile, cp, copyFile, mkdir, mkdtemp, rename, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {runOwnedNode} from './ownedNodeProcess.js';
-import {installIntakeProject, type InstalledIntakeTooling} from './installedIntakeTooling.js';
+import {installIntakeVariants, type InstalledIntakeTooling} from './installedIntakeTooling.js';
 
 /** Qualify matched installed artifacts after removing authoring sources and relocating consumers.
  * @param shared Freshly packed candidate installed by the intake suite.
@@ -42,10 +42,10 @@ export async function qualifyResponseBranchesInstalled(shared: InstalledIntakeTo
     const authored = await run('public-authoring-generation', ['--permission', '--allow-fs-read=' + consumer,
       '--allow-fs-read=' + shared.tooling, '--allow-fs-write=' + consumer, author], consumer);
     expect(JSON.parse(authored.stdout.trim().split('\n').at(-1)!)).toMatchObject({kind: 'response-branches-authored', originalBytesPreserved: true});
-    for (const mode of ['soap11', 'soap12', 'mixed']) {
-      const project = path.join(consumer, mode);
-      await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      await run(mode + '-build', [npm, 'run', 'build'], project);
+    const variants = ['soap11', 'soap12', 'mixed'] as const;
+    await installIntakeVariants(shared, consumer, variants, logs, env, run);
+    for (const variant of variants) {
+      await run(variant + '-build', [npm, 'run', 'build'], path.join(consumer, variant));
     }
     await rm(path.join(consumer, 'inputs'), {recursive: true});
     await copyFile('test/helpers/responseBranchesInstalledProcess.ts', path.join(consumer, 'wire.ts'));

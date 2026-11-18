@@ -31,7 +31,8 @@ Run `npm ci` in a clone on Node 24 or newer. Choose a focused command while edit
 | `npm run test:conformance` | All capability stages and reference tests |
 | `npm run smoke:pipeline` | Source CLI generation and TypeScript compilation of the Weather app |
 | `npm run ci` | Full delivery gate |
-| `npm run ci:platform` | Compatibility subset for Windows and Node 26 |
+| `npm run ci:platform` | Platform controls, audited reference and representative installed legacy and checked consumers |
+| `npm run ci:platform:full` | Complete installed compatibility suite on the current OS and Node version |
 | `npm run test:reference:full` | Explicit independent reference evidence, retained under `tmp/conformance/reference/` |
 
 Plain `npm test` collects every product test. Run `npm run build` first when selecting installed or built-runtime tests outside the delivery gate. Research commands are separate. Use the command list in `package.json` for additional focused tasks.
@@ -40,9 +41,13 @@ Plain `npm test` collects every product test. Run `npm run build` first when sel
 
 `npm run ci` builds the package once, validates one tarball, and runs the audited Node/WASM reference lane, broad Vitest discovery, docs and skill checks, and source and installed smoke checks. The broad Vitest run skips the already audited reference subtree. Installed tests reuse the tarball and perform isolated consumer installs for their distinct legacy, checked and relocated runtime paths.
 
-GitHub uses the same gate on Linux with Node 24. The compatibility jobs run audited reference, unit, selected platform, and installed checks on Linux with Node 26 and on Windows with Node 24 and 26. Release preflight runs full delivery before packaging the release skill asset.
+GitHub runs the full delivery gate on Linux with Node 24. Ordinary pushes and PRs run the shorter compatibility command on Linux with Node 26 and on Windows with Node 24 and 26. Those jobs retain the audited reference and platform controls, install and run the packed legacy generator, and execute a relocated checked gateway over TLS.
 
-Run required standalone conformance and full delivery sequentially. A checkout has one owner for `dist/` during delivery, platform qualification, or corpus verification. Wait for that run before starting a manual build or any focused check that reads `dist/`. Use another checkout when both genuinely need to run at once.
+Use the complete compatibility command or manually dispatch the CI workflow at the candidate branch when an OS or Node change needs the deeper installed matrix. Manually dispatched jobs run the full compatibility variants. Release preflight runs full delivery before packaging the release skill asset.
+
+Run an affected capability stage while iterating. Full delivery already runs the capability suite. Use standalone conformance when you need just that evidence, or when the task explicitly requires a separate run.
+
+A checkout has one owner for `dist/` during delivery, platform qualification, or corpus verification. Wait for that run before starting a manual build or any focused check that reads `dist/`. Use another checkout when both genuinely need to run at once.
 
 ### Temporary output and recovery
 

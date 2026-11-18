@@ -15,6 +15,7 @@ const heavy = [
 export default defineConfig({
   test: {
     globals: false,
+    tags: [{name: "installed-compatibility"}],
     projects: [
       {extends: true, test: {name: "fast", include: ["test/**/*.test.ts"], exclude: heavy,
         testTimeout: 30_000, maxWorkers: "50%", sequence: {groupOrder: 0}}},

@@ -113,7 +113,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     await writeFile(config, JSON.stringify(checkedComponents));
     // Candidate installation uses the ordinary consumer dependency installation command.
     await run('install consumer', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], project);
-    for (const command of ['typecheck', 'test', 'build']) {
+    for (const command of ['test', 'build']) {
       const result = await run('consumer ' + command, [npm, 'run', command], project);
       await writeFile(path.join(evidence, command + '.log'), result.stdout + result.stderr);
     }

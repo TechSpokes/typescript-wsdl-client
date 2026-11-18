@@ -22,7 +22,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Keep consumer output paths explicit and use the git-ignored `.generated/` convention in public examples.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
-- Run `npm run test:conformance` for WSDL capability fixture, registry, runner, support-matrix, or generated artifact evidence changes.
+- Verify affected WSDL capabilities using a focused stage, standalone conformance, or the full delivery suite.
 - Commit messages must follow: `Version: <release-target-version> <type>(scope): <imperative summary>`.
 - Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
@@ -57,9 +57,9 @@ Choose the smallest meaningful check by behavior and cost: unit-folder tests can
 
 Use `npm test -- <path>` for targeted work and `npm run ci` for delivery. The delivery runner owns the checkout's `dist/` until it restores the previous build. Follow the [testing guide](docs/testing.md#temporary-output-and-recovery) to recover a named run after owned processes have stopped.
 
-Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. Keep broad Vitest discovery in `npm test` and `npm run ci`. GitHub runs `npm run ci` on Linux with Node 24 and `npm run ci:platform` for compatibility.
+Keep broad Vitest discovery in `npm test` and `npm run ci`. GitHub runs `npm run ci` on Linux with Node 24 and `npm run ci:platform` for representative compatibility. Use `npm run ci:platform:full` when the complete installed matrix is needed on a given platform.
 
-Assign one owner to final verification. Inspect script coverage before launching overlapping gates; run required standalone conformance and full CI sequentially, and do not overlap an installed qualification already included in CI. Separate worktrees isolate files but still share machine capacity. Follow [verification orchestration](docs/testing.md#verification-orchestration) for evidence ownership, deadlines and failure classification.
+Assign one owner to final verification. Inspect script coverage before launching overlapping gates. Use full CI as capability evidence when it already runs the affected suite. Run explicitly required separate checks in sequence. Follow [verification orchestration](docs/testing.md#verification-orchestration) for evidence ownership, deadlines and failure classification.
 
 Allow at least six minutes for full conformance on Windows. Use the narrowest capability stage while developing. Follow the [Windows setup](docs/testing.md#windows-and-certificates) for scoped elevation on affected controls and verified certificate trust. Consumer-project agents should use the [consumer testing guidance](docs/testing.md#for-consumer-projects).
 

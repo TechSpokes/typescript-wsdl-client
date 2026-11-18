@@ -135,7 +135,7 @@ Large generated source blocks should live in packaged runtime templates, not in 
 
 Use `npm test -- <path> -t <name>` for targeted work. Use `npm run test:conformance:<stage>` for one capability stage, and `npm run smoke:pipeline` for source CLI generation and app compilation.
 
-Run `npm run ci` on the final candidate. It covers the independent reference suite, broad product tests, a single build and packed candidate, isolated npm consumers, docs and the release skill. GitHub runs the same gate on Linux with Node 24 and a compatibility subset on Windows and the current Node line.
+Run `npm run ci` for full verification. It covers the independent reference suite, broad product tests, a single build and packed candidate, isolated npm consumers, docs and the release skill. GitHub runs that gate on Linux with Node 24 and runs platform controls and representative installed consumers on the other compatibility jobs.
 
 See the [Testing Guide](docs/testing.md#running-tests) for prerequisites, the Windows sandbox and certificate setup, output ownership, and recovery. The ordinary delivery gate restores any build present before it started and cleans its own scratch after success or failure. Release preflight owns the final release gate and preserves its release artifacts.
 

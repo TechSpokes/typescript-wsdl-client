@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -14,7 +19,8 @@ env:
 
 jobs:
   delivery:
-    name: Full delivery (Linux Node 24)
+    name: Full delivery (Linux Node 24)${{ github.event_name == 'workflow_dispatch' && ' (manual dispatch)' || '' }}
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -27,7 +33,7 @@ jobs:
       - run: npm run ci
 
   compatibility:
-    name: Installed product (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    name: Installed product (${{ matrix.os }}, Node ${{ matrix.node-version }})${{ github.event_name == 'workflow_dispatch' && ' (full)' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
@@ -48,3 +54,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run ci:platform
+        if: github.event_name != 'workflow_dispatch'
+      - run: npm run ci:platform:full
+        if: github.event_name == 'workflow_dispatch'

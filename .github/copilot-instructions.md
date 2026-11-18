@@ -146,7 +146,7 @@ Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and o
 
 When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
 
-Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated behavior for capability rows. Keep broad Vitest discovery in `npm test` and `npm run ci`. Release preflight owns the final local release gate.
+Verify affected WSDL capabilities using the relevant stage, standalone conformance, or full delivery. Keep broad Vitest discovery in `npm test` and `npm run ci`. Release preflight owns the final local release gate.
 
 Follow `docs/decisions/004-product-research-boundary.md` when classifying validation or package contents. Product checks must not import experimental implementations or audit research manifests; research may import product internals and shared fixtures. Preserve shipped-behavior regressions and independent XML/HTTP evidence regardless of historical filenames, and run the optional `research:ci` lane when changing research.
 
@@ -156,7 +156,7 @@ Full conformance generates consumer-style projects and launches nested TypeScrip
 
 ### Verification orchestration
 
-Run required standalone conformance and final delivery sequentially. The Linux Node 24 job runs `npm run ci`; the compatibility jobs use `npm run ci:platform` to exercise Node 26 and Windows. Each run builds once and reuses one packed candidate for its installed checks.
+The Linux Node 24 job runs `npm run ci`. The compatibility jobs run audited reference, platform controls and representative installed consumers. Use `npm run ci:platform:full` or manual CI dispatch for exhaustive platform qualification. Each job builds once and reuses one packed candidate for its installed checks.
 
 Give each checkout one delivery build owner and allow its child commands to close before cleanup. Follow [temporary output and recovery](../docs/testing.md#temporary-output-and-recovery) for cancellation or a stopped owner. Use the [Windows setup](../docs/testing.md#windows-and-certificates) for scoped permissions and certificate trust.
 

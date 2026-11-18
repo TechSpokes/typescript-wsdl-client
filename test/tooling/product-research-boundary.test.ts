@@ -46,10 +46,18 @@ describe('product and research boundary', () => {
       const command = scripts[name];
       expect(command, name).toBeDefined();
       expect(command, name).not.toMatch(/(?:test\/research|research\/|vitest\.research)/);
-      if (command === `tsx scripts/run-verification.ts ${name}:run`) inspect(`${name}:run`, visited);
+      const target = /^tsx scripts\/run-verification\.ts ([\w:-]+)(?:\s|$)/.exec(command!);
+      if (target?.[1]) inspect(target[1], visited);
       for (const match of command!.matchAll(/npm run ([\w:-]+)/g)) inspect(match[1]!, visited);
     }
-    for (const name of ['ci', 'ci:platform', 'release:publish-check']) inspect(name);
+    for (const name of ['ci', 'ci:platform', 'ci:platform:full', 'release:publish-check']) inspect(name);
+  });
+
+  it('selects an installed checked gateway for the platform compatibility run', () => {
+    const result = JSON.parse(execFileSync(process.execPath,
+      ['node_modules/vitest/vitest.mjs', 'list', 'installed.test.ts', '--tags-filter', 'installed-compatibility', '--json'],
+      {encoding: 'utf8'})) as {file: string}[];
+    expect(result.some(row => path.basename(row.file) === 'checked-intake-installed.test.ts')).toBe(true);
   });
 
 });
