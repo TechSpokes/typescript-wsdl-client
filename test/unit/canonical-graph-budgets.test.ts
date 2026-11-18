@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {createHash} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {expect, it} from "vitest";
@@ -20,6 +21,6 @@ it("measures the provisional 100,000-node inclusive graph boundary", async () =>
     }
     measurements.push({nodes: count, outcome, elapsedMs: performance.now() - start});
   }
-  mkdirSync("tmp/conformance/schema-graph", {recursive: true});
-  writeFileSync("tmp/conformance/schema-graph/measurements.json", JSON.stringify(measurements, null, 2) + "\n");
+  mkdirSync(verificationPath("tmp/conformance/schema-graph"), {recursive: true});
+  writeFileSync(verificationPath("tmp/conformance/schema-graph/measurements.json"), JSON.stringify(measurements, null, 2) + "\n");
 }, 60_000);

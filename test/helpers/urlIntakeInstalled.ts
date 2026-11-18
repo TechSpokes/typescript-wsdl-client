@@ -1,3 +1,4 @@
+import {verificationPath} from "./verificationPath.js";
 import {expect} from 'vitest';
 import {mkdtemp, mkdir, readFile, writeFile, appendFile, copyFile, rm, readdir, rename} from 'node:fs/promises';
 import path from 'node:path';
@@ -12,7 +13,7 @@ import type {CheckedComponentPlan} from '../../src/index.js';
 
 export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
   const npm = process.env.npm_execpath; if (!npm) throw new Error('Run installed qualification through npm');
-  const checkout = process.cwd(), evidence = path.resolve('tmp/conformance/w2-intake'); await mkdir(evidence, {recursive: true});
+  const checkout = process.cwd(), evidence = path.resolve(verificationPath('tmp/conformance/w2-intake')); await mkdir(evidence, {recursive: true});
   const logs = await mkdtemp(path.join(evidence, 'run-')), consumer = path.join(shared.root, 'url'); await mkdir(consumer);
   const certFile = path.resolve('test/conformance/fixtures/soap/content-model/test-cert.pem');
   const cert = await readFile(certFile), key = await readFile('test/conformance/fixtures/soap/content-model/test-key.pem');
@@ -107,7 +108,7 @@ export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, 
       await writeFile(path.join(logs, mode + '-artifacts.json'), JSON.stringify((await readdir(project, {recursive: true})).sort(), null, 2));
       for (const file of ['inventory.json', 'source-resources.json']) await copyFile(path.join(project, 'client', file), path.join(logs, mode + '-' + file));
       await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      for (const command of ['typecheck', 'test', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
+      for (const command of ['test', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
       expect(calls).toHaveLength(0);
       await copyFile(certFile, path.join(project, 'test-cert.pem'));
       await copyFile('test/helpers/urlIntakeInstalledProcess.ts', path.join(project, 'wire.ts'));

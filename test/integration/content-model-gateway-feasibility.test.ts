@@ -1,7 +1,8 @@
 import {mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync} from "node:fs";
-import {join} from "node:path";
+import {join, resolve} from "node:path";
 import {fileURLToPath, pathToFileURL} from "node:url";
 import {afterAll, describe, expect, it, vi} from "vitest";
+import {verificationPath} from "../helpers/verificationPath.js";
 import {emitModelSchemas, emitOperationSchemas, emitRouteFiles} from "../../src/gateway/generators.js";
 import {flattenAllOf, getJsonSchemaRefName, isNumericStatus, measureSchemaRefComplexity, type OpenAPIDocument} from "../../src/gateway/helpers.js";
 import {
@@ -14,7 +15,7 @@ const branches = readGatewaySchemas("branch-schemas");
 const compositions = readGatewaySchemas("composition-schemas");
 const scalars = readGatewaySchemas("scalar-schemas");
 const evidence: Record<string, GatewayTrace[]> = {};
-const outputRoot = fileURLToPath(new URL("../../tmp/conformance/content-model-gateway/", import.meta.url));
+const outputRoot = resolve(verificationPath("tmp/conformance/content-model-gateway"));
 
 function tracesFor(name: string): GatewayTrace[] {
   return evidence[name] = [];

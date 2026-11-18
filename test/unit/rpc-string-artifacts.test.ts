@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {createHash} from 'node:crypto';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
@@ -11,8 +12,8 @@ const selector = {portType: {namespace: 'urn:rpc:strings', local: 'StringsPortTy
 const selection = {service: {namespace: 'urn:rpc:strings', local: 'Strings'}, port: 'StringsPort'};
 let scratch: string, original: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/rpc-artifacts', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/rpc-artifacts/suite-'));
+  await mkdir(verificationPath('tmp/conformance/rpc-artifacts'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/rpc-artifacts/suite-')));
   original = await readFile(fixture, 'utf8');
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});

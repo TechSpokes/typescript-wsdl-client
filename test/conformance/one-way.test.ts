@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -26,8 +27,8 @@ const service = {namespace: ns, local: 'NoticeService'};
 
 describe('one-way native exchange and generated routes', () => {
   it.each([['11', false], ['12', false], ['11', true], ['12', true]] as const)('completes SOAP %s exchanges (TLS=%s) without manufacturing application output', async (version, tls) => {
-    await mkdir('tmp/conformance/one-way', {recursive: true});
-    const root = await mkdtemp(path.resolve('tmp/conformance/one-way/case-'));
+    await mkdir(verificationPath('tmp/conformance/one-way'), {recursive: true});
+    const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/one-way/case-')));
     const soap = version === '11' ? 'http://schemas.xmlsoap.org/soap/envelope/' : 'http://www.w3.org/2003/05/soap-envelope';
     let status = 202, body: string | Buffer = '', media: string | undefined, encoding: string | undefined, calls = 0;
     let hang = false, incomplete = false, arrived: (() => void) | undefined;
@@ -194,8 +195,8 @@ describe('one-way native exchange and generated routes', () => {
     }
   });
   it('uses pattern-specific input names and refuses contradictory message patterns', async () => {
-    await mkdir('tmp/conformance/one-way', {recursive: true});
-    const root = await mkdtemp(path.resolve('tmp/conformance/one-way/source-'));
+    await mkdir(verificationPath('tmp/conformance/one-way'), {recursive: true});
+    const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/one-way/source-')));
     try {
       const original = await readFile(fixture, 'utf8');
       for (const version of ['11', '12'] as const) {

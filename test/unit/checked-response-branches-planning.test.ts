@@ -1,6 +1,7 @@
 /** Public planning and offline inspection qualification for independently pinned error grammars.
  * @since 1.6.0
  */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {createHash} from 'node:crypto';
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
@@ -40,8 +41,8 @@ describe('public response branch planning and offline inspection', () => {
     const invalid = {...config, recordProjections: [{...config.recordProjections[0]!, selector: notify}],
       responseBranches: [{...config.responseBranches[0]!, selector: notify}]};
     expect((await planCheckedComponents(mixed, invalid)).ready).toBe(false);
-    mkdirSync('tmp/test-generation', {recursive: true});
-    const root = mkdtempSync(path.resolve('tmp/test-generation/one-way-refusal-'));
+    mkdirSync(verificationPath('tmp/test-generation'), {recursive: true});
+    const root = mkdtempSync(path.resolve(verificationPath('tmp/test-generation/one-way-refusal-')));
     try {
       await expect(runGenerationPipeline({model: 'checked-components-v1', wsdl: mixed, checkedComponents: invalid,
         clientOutDir: path.join(root, 'client'), openapi: {outFile: path.join(root, 'openapi.json')},
@@ -157,8 +158,8 @@ describe('public response branch planning and offline inspection', () => {
     if (available?.kind !== 'available') throw new Error('Expected original declared-type target from the selected error grammar');
     expect(available.target.uri).toBe(pin('payload.xsd').uri);
     expect(available.target.digest).toBe(pin('payload.xsd').digest);
-    mkdirSync('tmp/test-generation', {recursive: true});
-    const temporary = mkdtempSync(path.resolve('tmp/test-generation/response-branch-correction-'));
+    mkdirSync(verificationPath('tmp/test-generation'), {recursive: true});
+    const temporary = mkdtempSync(path.resolve(verificationPath('tmp/test-generation/response-branch-correction-')));
     const recipe = path.join(temporary, 'recipe.json'), before = readFileSync(path.join(directory, 'payload.xsd'));
     try {
       writeFileSync(recipe, JSON.stringify({version: 1, resources: ['outer.wsdl', 'companion.wsdl', 'error.wsdl', 'payload.xsd'].map(pin),

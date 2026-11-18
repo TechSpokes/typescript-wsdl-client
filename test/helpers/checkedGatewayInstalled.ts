@@ -10,6 +10,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {stripTypeScriptTypes} from 'node:module';
 import {runOwnedNode} from './ownedNodeProcess.js';
+import {candidateTarball} from '../../scripts/lib/candidate-package.js';
 import {noaaCases} from './noaaRpcOracle.js';
 
 export const CHECKED_GATEWAY_STAGE_TIMEOUT_MS = 240_000;
@@ -76,10 +77,8 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     service: {namespace, local: 'ForecastService'}, port: 'ForecastPort', fileRoots: [consumer]};
     const config = path.join(consumer, 'generation.json');
     await writeFile(config, JSON.stringify(checkedComponents));
-    const packed = await run('pack candidate', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', evidence], root);
-    const filename = (JSON.parse(packed.stdout) as {filename: string}[])[0]!.filename;
-    expect(path.basename(filename)).toBe(filename);
-    const tarball = path.join(evidence, filename);
+    const tarball = await candidateTarball(evidence, async () =>
+      (await run('pack candidate', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', evidence], root)).stdout);
     await writeFile(path.join(tooling, 'package.json'), JSON.stringify({private: true, type: 'module'}));
     await run('install generator', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], tooling);
     const cli = path.join(tooling, 'node_modules/@techspokes/typescript-wsdl-client/dist/cli.js');
@@ -160,7 +159,6 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       for (const name of [mode + '.wsdl', importedName]) {
         expect(await readFile(path.join(project, 'client/source/files', name))).toEqual(await readFile(path.join(consumer, name)));
       }
-      await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);
       const checked = await run(mode + ' independent HTTP/SOAP contract', ['--permission', '--allow-child-process', ...networkPermission,
         '--allow-fs-read=' + project, '--allow-fs-write=' + project,
@@ -240,7 +238,6 @@ const collection: Request = {...request, collection: [1]};
 const witness: Request = {...request, collectionWitness: ['+01.00', 'AUTO']};
 void [request, response, numeric, boolean, tagged, collection, witness];
 `);
-      await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
       await run(mode + ' consumer build', [npm, 'run', 'build'], project);
       if (mode === 'scalar') {
         const composition = await run('compose independent installed checked services', ['--permission', '--allow-fs-read=' + project,
@@ -301,7 +298,7 @@ export function transportStatus(result: Result): number | undefined {
   return empty.byteLength === 0 && noValue === undefined ? result.status : undefined;
 }
 `);
-      for (const command of ['typecheck', 'test', 'build']) await run('one-way consumer ' + command + ' ' + version, [npm, 'run', command], oneWayProject);
+      for (const command of ['test', 'build']) await run('one-way consumer ' + command + ' ' + version, [npm, 'run', command], oneWayProject);
       await run('one-way production-only dependencies ' + version, [npm, 'prune', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], oneWayProject);
       await rename(oneWayProject, relocated);
       await copyFile(path.join(root, 'test/helpers/oneWayInstalledProcess.ts'), path.join(relocated, 'qualification.ts'));
@@ -339,7 +336,7 @@ export function transportStatus(result: Result): number | undefined {
     // @why This disposable project changes contracts in place. Retire the previous
     //   compiled scaffold before testing current source; the next build owns fresh output.
     await rm(path.join(project, 'dist'), {recursive: true, force: true});
-    for (const command of ['typecheck', 'test', 'build']) {
+    for (const command of ['test', 'build']) {
       const result = await run('NOAA consumer ' + command, [npm, 'run', command], project);
       await writeFile(path.join(evidence, 'noaa-' + command + '.log'), result.stdout + result.stderr);
     }

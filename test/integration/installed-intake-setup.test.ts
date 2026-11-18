@@ -1,11 +1,12 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {it, expect} from 'vitest';
 import {mkdtemp, mkdir, readFile, writeFile, rm} from 'node:fs/promises';
 import path from 'node:path';
 import {installIntakeProject, type InstalledIntakeTooling} from '../helpers/installedIntakeTooling.js';
 
 it('reuses only identical manifests and candidate locations while preserving independent consumer requirements', async () => {
-  await mkdir(path.resolve('tmp/conformance'), {recursive: true});
-  const root = await mkdtemp(path.resolve('tmp/conformance/intake-lock-control-'));
+  await mkdir(path.resolve(verificationPath('tmp/conformance')), {recursive: true});
+  const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/intake-lock-control-')));
   const evidence = path.join(root, 'evidence'); await mkdir(evidence);
   const shared: InstalledIntakeTooling = {root, tooling: '', cli: '', tarball: path.join(root, 'candidate.tgz')};
   const manifest = {name: 'independent-consumer', private: true, engines: {node: '>=24.0.0'},

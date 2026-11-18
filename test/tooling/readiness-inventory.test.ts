@@ -1,4 +1,5 @@
 /** Independent corpus identity and direct grammar eligibility expectations. */
+import {verificationPath} from '../helpers/verificationPath.js';
 import {readFileSync, mkdtempSync, mkdirSync, rmSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
@@ -23,7 +24,7 @@ describe('readiness inventory', () => {
     }
   });
   it('executes one production assessment per input and keeps schema eligibility separate from runtime', () => {
-    const parent = path.resolve('tmp/conformance/readiness'); mkdirSync(parent, {recursive: true});
+    const parent = path.resolve(verificationPath('tmp/conformance/readiness')); mkdirSync(parent, {recursive: true});
     const directory = mkdtempSync(path.join(parent, 'test-'));
     const output = path.join(directory, 'inventory.json');
     try {

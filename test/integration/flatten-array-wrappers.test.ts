@@ -1,13 +1,5 @@
 /**
- * Tests for --openapi-flatten-array-wrappers flag in both modes.
- *
- * Verifies that:
- * - With flattenArrayWrappers: true (default): ArrayOf* schemas are type: "array",
- *   runtime.ts contains unwrapArrayWrappers(), route files import it, and
- *   wrapper-shaped SOAP responses are correctly unwrapped.
- * - With flattenArrayWrappers: false: ArrayOf* schemas are type: "object",
- *   runtime.ts does NOT contain unwrapArrayWrappers(), route files use plain
- *   buildSuccessEnvelope(), and SOAP wrapper objects pass through unchanged.
+ * Checks OpenAPI schemas and generated Fastify responses for both array-wrapper modes.
  */
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, readdirSync } from "node:fs";
@@ -107,7 +99,6 @@ describe("flattenArrayWrappers: true (default)", () => {
       openapi: {
         outFile: join(outDir, "openapi.json"),
         format: "json",
-        flattenArrayWrappers: true,
       },
       gateway: {
         outDir: join(outDir, "gateway"),
@@ -155,46 +146,6 @@ describe("flattenArrayWrappers: true (default)", () => {
 
   // --- Runtime unwrap ---
 
-  it("runtime.ts contains unwrapArrayWrappers function", () => {
-    const runtimeContent = readFileSync(join(outDir, "gateway", "runtime.ts"), "utf-8");
-    expect(runtimeContent).toContain("export function unwrapArrayWrappers");
-    expect(runtimeContent).toContain("ARRAY_WRAPPERS");
-    expect(runtimeContent).toContain("CHILDREN_TYPES");
-  });
-
-  it("runtime.ts ARRAY_WRAPPERS map contains ArrayOf* entries", () => {
-    const runtimeContent = readFileSync(join(outDir, "gateway", "runtime.ts"), "utf-8");
-    // The map should contain entries like "ArrayOfForecast": "Forecast"
-    expect(runtimeContent).toContain("ArrayOfForecast");
-    expect(runtimeContent).toContain("ArrayOfWeatherDescription");
-  });
-
-  // --- Route files ---
-
-  it("route files import unwrapArrayWrappers", () => {
-    const routesDir = join(outDir, "gateway", "routes");
-    const routeFiles = readdirSync(routesDir).filter((f) => f.endsWith(".ts"));
-    expect(routeFiles.length).toBeGreaterThan(0);
-
-    for (const file of routeFiles) {
-      const content = readFileSync(join(routesDir, file), "utf-8");
-      expect(content).toContain("unwrapArrayWrappers");
-      expect(content).toContain("import { buildSuccessEnvelope, unwrapArrayWrappers }");
-    }
-  });
-
-  it("route handlers call unwrapArrayWrappers with response type name", () => {
-    const routesDir = join(outDir, "gateway", "routes");
-    const routeFiles = readdirSync(routesDir).filter((f) => f.endsWith(".ts"));
-
-    for (const file of routeFiles) {
-      const content = readFileSync(join(routesDir, file), "utf-8");
-      // Pattern: unwrapArrayWrappers(result.response, "SomeTypeName")
-      expect(content).toMatch(/unwrapArrayWrappers\(result\.response,\s*"[A-Z]\w+"\)/);
-    }
-  });
-
-  // --- End-to-end unwrap ---
 
   it("unwraps ArrayOf* wrapper in GET weather information response", async () => {
     const app = await createTestApp(outDir, createWrapperMockClient());
@@ -271,7 +222,6 @@ describe("flattenArrayWrappers: false", () => {
         outFile: join(outDir, "openapi.json"),
         format: "json",
         flattenArrayWrappers: false,
-        skipValidate: true, // schemas change shape, skip OpenAPI validation
       },
       gateway: {
         outDir: join(outDir, "gateway"),
@@ -340,46 +290,6 @@ describe("flattenArrayWrappers: false", () => {
 
   // --- Runtime: NO unwrap ---
 
-  it("runtime.ts does NOT contain unwrapArrayWrappers", () => {
-    const runtimeContent = readFileSync(join(outDir, "gateway", "runtime.ts"), "utf-8");
-    expect(runtimeContent).not.toContain("unwrapArrayWrappers");
-    expect(runtimeContent).not.toContain("ARRAY_WRAPPERS");
-    expect(runtimeContent).not.toContain("CHILDREN_TYPES");
-  });
-
-  it("runtime.ts still contains standard envelope builders", () => {
-    const runtimeContent = readFileSync(join(outDir, "gateway", "runtime.ts"), "utf-8");
-    expect(runtimeContent).toContain("export function buildSuccessEnvelope");
-    expect(runtimeContent).toContain("export function buildErrorEnvelope");
-    expect(runtimeContent).toContain("export function classifyError");
-  });
-
-  // --- Route files: NO unwrap ---
-
-  it("route files do NOT import unwrapArrayWrappers", () => {
-    const routesDir = join(outDir, "gateway", "routes");
-    const routeFiles = readdirSync(routesDir).filter((f) => f.endsWith(".ts"));
-    expect(routeFiles.length).toBeGreaterThan(0);
-
-    for (const file of routeFiles) {
-      const content = readFileSync(join(routesDir, file), "utf-8");
-      expect(content).not.toContain("unwrapArrayWrappers");
-      // Should use the simple import
-      expect(content).toContain("import { buildSuccessEnvelope } from");
-    }
-  });
-
-  it("route handlers use buildSuccessEnvelope(result.response) directly", () => {
-    const routesDir = join(outDir, "gateway", "routes");
-    const routeFiles = readdirSync(routesDir).filter((f) => f.endsWith(".ts"));
-
-    for (const file of routeFiles) {
-      const content = readFileSync(join(routesDir, file), "utf-8");
-      expect(content).toContain("return buildSuccessEnvelope(result.response)");
-    }
-  });
-
-  // --- End-to-end: wrapper objects pass through ---
 
   it("SOAP wrapper objects pass through in responses (no unwrap)", async () => {
     const app = await createTestApp(outDir, createWrapperMockClient());

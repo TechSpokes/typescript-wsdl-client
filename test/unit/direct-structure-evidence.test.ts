@@ -2,6 +2,7 @@
  * Expected languages below never inspect the subject's plan or native particles.
  * This is structural evidence, not scalar, SOAP envelope or codec validation.
  */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -20,7 +21,7 @@ const selector: DirectOperationSelector = {
 };
 let scratch: string, sourceText: string;
 beforeAll(async () => {
-  const parent = path.resolve('tmp/conformance/direct-structure-evidence');
+  const parent = path.resolve(verificationPath('tmp/conformance/direct-structure-evidence'));
   await mkdir(parent, {recursive: true});
   scratch = await mkdtemp(path.join(parent, 'suite-'));
   sourceText = await readFile(fixture, 'utf8');

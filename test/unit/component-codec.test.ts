@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -14,8 +15,8 @@ const selector = {portType: {namespace: ns, local: 'LexicalPort'}, binding: {nam
 let original: string, directory: string;
 beforeAll(async () => {
   original = await readFile(file, 'utf8');
-  await mkdir('tmp/conformance/component-codec', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/component-codec/suite-'));
+  await mkdir(verificationPath('tmp/conformance/component-codec'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/component-codec/suite-')));
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});
 async function contract(text?: string, chosen: DirectOperationSelector = selector): Promise<DirectOperationContract> {

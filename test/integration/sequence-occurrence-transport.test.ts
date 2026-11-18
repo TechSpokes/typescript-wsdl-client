@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
@@ -9,8 +10,8 @@ import {verifyOccurrenceTransport} from "../helpers/occurrenceTransport.mjs";
 const fixture = resolve("test/conformance/fixtures/xsd/sequences/sequence-occurrence-wrappers.wsdl");
 
 it.each([true, false])("normalizes real SOAP responses with flattenArrayWrappers=%s", async flatten => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const outDir = mkdtempSync(resolve("tmp/conformance/occurrence-transport-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const outDir = mkdtempSync(resolve(verificationPath("tmp/conformance/occurrence-transport-")));
   try {
     await runGenerationPipeline({
       wsdl: fixture,

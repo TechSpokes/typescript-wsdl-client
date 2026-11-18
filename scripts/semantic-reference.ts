@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { engine, qualifyPrimary, validateFixture, type BaselineCase } from '../test/conformance/reference/adapter.js';
 import { captureProvenance, finishProvenance, fixtureInputs, referenceSources } from '../test/conformance/reference/qualification/provenance.js';
+import {verificationPath} from '../test/helpers/verificationPath.js';
 export function verifySetup(version = process.versions.node): void {
     if (Number(version.split('.')[0]) < 24) throw new Error('Required Node >=24 reference runtime; found ' + version);
     const path = resolve('node_modules/libxml2-wasm/package.json');
@@ -34,8 +35,9 @@ export async function runReference(options: {full?: boolean; manifest?: string; 
     const provenance = captureProvenance([...referenceSources(), 'scripts/semantic-reference.ts', 'test/helpers/contentModelSoapReference.ts'],
         [...fixtureInputs(), manifestPath, 'test/conformance/reference/migration-map.json', 'test/conformance/reference/continuation-contract.json', 'test/conformance/reference/legacy-source-snapshot.json'],
         ['package-lock.json', 'node_modules/libxml2-wasm/package.json', 'node_modules/libxml2-wasm/lib/index.mjs', 'node_modules/libxml2-wasm/lib/libxml2raw.mjs']);
-    mkdirSync('tmp/conformance/reference', {recursive: true});
-    const testReport = `tmp/conformance/reference/${options.full ? 'full' : 'required'}-tests.json`;
+    const directory = verificationPath('tmp/conformance/reference');
+    mkdirSync(directory, {recursive: true});
+    const testReport = `${directory}/${options.full ? 'full' : 'required'}-tests.json`;
     (options.execute ?? (paths => execFileSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', ...paths, '--reporter=default', '--reporter=json', '--outputFile=' + testReport], {stdio: 'inherit'})))(files);
     const execution = JSON.parse(readFileSync(testReport, 'utf8')) as {testResults: Array<{name: string; assertionResults: Array<{title: string; status: string}>}>};
     const map = JSON.parse(readFileSync('test/conformance/reference/migration-map.json', 'utf8')) as {obligations: Array<{id: string; method: string; target: string}>};
@@ -47,7 +49,7 @@ export async function runReference(options: {full?: boolean; manifest?: string; 
     });
     const report = await qualifyPrimary(manifest, options.full);
     const output = { ...report, lane: options.full ? 'full' : 'required-subset', evidenceContract: 'NT-CONT-01', testFiles: files, executedMethods, provenance: finishProvenance(provenance) };
-    writeFileSync(`tmp/conformance/reference/${options.full ? 'full' : 'required'}-report.json`, JSON.stringify(output, null, 2) + '\n');
+    writeFileSync(`${directory}/${options.full ? 'full' : 'required'}-report.json`, JSON.stringify(output, null, 2) + '\n');
     if (report.failures.length) throw new Error('Reference disagreement: ' + report.failures.join('; '));
     console.log(`Node reference ${output.lane} passed: ${files.length} test files, ${report.cases.length} schemas, ${report.cases.reduce((n, c) => n + c.instances.length, 0)} instances.`);
     return output;

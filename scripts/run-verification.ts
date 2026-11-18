@@ -1,46 +1,185 @@
-import {execFileSync} from 'node:child_process';
-import {mkdir, open, readFile, unlink, mkdtemp, writeFile, stat, copyFile} from 'node:fs/promises';
+import {lstat, mkdir, mkdtemp, readFile, realpath, rename, rm, unlink, writeFile} from 'node:fs/promises';
+import {writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {runOwnedNode} from '../test/helpers/ownedNodeProcess.js';
 
-const command = process.argv[2];
-if (!command || !['ci:run', 'test:run', 'test:integration:run', 'test:unit:run', 'test:corpus:run', 'test:conformance:run', 'test:installed:run'].includes(command)) throw new Error('Unknown verification command');
-const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], {encoding: 'utf8', timeout: 5000, windowsHide: true}).trim();
-const directory = path.join(path.dirname(common), 'tmp/conformance/verification');
-await mkdir(directory, {recursive: true});
-const lock = path.join(directory, 'active.json');
-// A live owner is authoritative, including owners in another worktree of this repository.
-try {
-  const owner = JSON.parse(await readFile(lock, 'utf8')) as {pid: number; command: string};
-  let alive = true;
-  try {process.kill(owner.pid, 0);} catch (error) {if ((error as NodeJS.ErrnoException).code === 'ESRCH') alive = false;}
-  if (alive) throw new Error(`Verification already running: ${owner.command} (PID ${owner.pid}). Wait for that run.`);
-  throw new Error(`Previous verification owner ${owner.pid} has stopped. Inspect and remove ${lock} before starting a replacement.`);
-} catch (error) {if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;}
-const handle = await open(lock, 'wx');
-await handle.writeFile(JSON.stringify({pid: process.pid, command, cwd: process.cwd()}));
-await handle.close();
-const controller = new AbortController();
-const cancel = () => controller.abort();
-process.once('SIGINT', cancel); process.once('SIGTERM', cancel);
-try {
-  const attempt = await mkdtemp(path.join(directory, 'attempt-'));
-  const started = new Date().toISOString();
-  await writeFile(path.join(attempt, 'context.json'), JSON.stringify({command, started, cwd: process.cwd()}));
-  console.info(`Verification evidence: ${attempt}`);
-  const result = await runOwnedNode([process.env.npm_execpath!, 'run', command, '--', ...process.argv.slice(3)], {
-    cwd: process.cwd(), signal: controller.signal, timeoutMs: 45 * 60_000, maxBuffer: 64 * 1024 * 1024,
-    env: {...process.env, WSDL_TEST_RUN_DIR: attempt}, onOutput: chunk => process.stdout.write(chunk),
-  }).then(result => ({...result, passed: true}), (error: Error & {stdout?: string; stderr?: string}) => ({stdout: error.stdout ?? '', stderr: (error.stderr ?? '') + '\n' + error.message, passed: false}));
-  await writeFile(path.join(attempt, 'command.log'), result.stdout + result.stderr);
-  if (command === 'ci:run') {
-    const report = path.resolve('tmp/conformance/product-tests.json');
-    const metadata = await stat(report).catch(() => undefined);
-    if (metadata && metadata.mtimeMs >= Date.parse(started)) await copyFile(report, path.join(attempt, 'product-tests.json'));
+const commands = new Set([
+  'ci:run', 'ci:platform:run', 'test:run', 'test:unit:run', 'test:integration:run', 'test:corpus:run',
+  'test:conformance:run', 'test:installed:run', 'test:reference:run', 'smoke:pipeline:run', 'package:smoke:run',
+]);
+const root = await realpath(process.cwd());
+const tmp = path.join(root, 'tmp');
+const base = path.join(tmp, 'verification');
+const buildOwner = path.join(base, 'build-owner');
+const dist = path.join(root, 'dist');
+const systemTemp = await realpath(tmpdir());
+
+async function inspect(file: string) {
+  return lstat(file).catch(error => {
+    if (error.code === 'ENOENT') return undefined;
+    throw error;
+  });
+}
+
+async function plainDirectory(directory: string, create = false): Promise<void> {
+  if (create) {
+    await mkdir(directory).catch(error => {
+      if (error.code !== 'EEXIST') throw error;
+    });
   }
-  await writeFile(path.join(attempt, 'result.json'), JSON.stringify({passed: result.passed, finished: new Date().toISOString()}));
-  if (!result.passed) process.exitCode = 1;
-} finally {
-  process.removeListener('SIGINT', cancel); process.removeListener('SIGTERM', cancel);
-  await unlink(lock);
+  if (!(await inspect(directory))?.isDirectory() || path.relative(directory, await realpath(directory)) !== '') {
+    throw new Error(`Expected an ordinary directory at ${directory}`);
+  }
+}
+
+async function readMarker(file: string): Promise<string | undefined> {
+  const entry = await inspect(file);
+  if (!entry) return undefined;
+  if (!entry.isFile() || entry.nlink !== 1) throw new Error(`Expected an ordinary file at ${file}`);
+  return readFile(file, 'utf8');
+}
+
+async function prepareExternal(run: string): Promise<string> {
+  const relative = path.relative(root, systemTemp);
+  if (relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative)) {
+    throw new Error('Configure the operating-system temporary directory outside this checkout');
+  }
+  const directory = await mkdtemp(path.join(systemTemp, 'wsdl-verify-'));
+  await writeFile(directory + '.owner', run, {flag: 'wx'});
+  await writeFile(path.join(run, 'external'), directory);
+  return directory;
+}
+
+async function cleanExternal(run: string): Promise<void> {
+  const directory = await readMarker(path.join(run, 'external'));
+  if (!directory) return;
+  if (path.relative(systemTemp, path.dirname(directory)) !== '' || !/^wsdl-verify-[a-zA-Z0-9]{6}$/.test(path.basename(directory))) {
+    throw new Error(`Unexpected external verification path: ${directory}`);
+  }
+  const owner = await readMarker(directory + '.owner');
+  const entry = await inspect(directory);
+  if (!owner && !entry) return;
+  if (owner !== run) throw new Error(`External workspace is not owned by ${run}: ${directory}`);
+  if (entry) {
+    await plainDirectory(directory);
+    await rm(directory, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  }
+  await unlink(directory + '.owner');
+}
+
+async function prepareBuild(run: string): Promise<void> {
+  const name = path.basename(run);
+  const staged = path.join(run, 'fresh-dist');
+  await mkdir(staged);
+  await writeFile(path.join(staged, '.verification-owner'), name);
+  await writeFile(buildOwner, name, {flag: 'wx'}).catch(error => {
+    if (error.code !== 'EEXIST') throw error;
+    throw new Error(`This checkout already has a delivery build owner. See ${buildOwner} and the testing guide.`);
+  });
+  if (await inspect(dist)) {
+    await plainDirectory(dist);
+    await rename(dist, path.join(run, 'previous-dist'));
+  }
+  await rename(staged, dist);
+}
+
+async function clean(run: string): Promise<void> {
+  await plainDirectory(tmp);
+  await plainDirectory(base);
+  await plainDirectory(run);
+  const name = path.basename(run);
+  const previous = path.join(run, 'previous-dist');
+  const backup = await inspect(previous);
+  const ownsBuild = await readMarker(buildOwner) === name;
+  if (backup && !ownsBuild) throw new Error(`Cannot restore ${previous} without a matching build owner`);
+  await cleanExternal(run);
+  if (ownsBuild) {
+    if (backup) await plainDirectory(previous);
+    const build = await inspect(dist);
+    if (build) {
+      if (build.isDirectory() && await readMarker(path.join(dist, '.verification-owner')) === name) {
+        await plainDirectory(dist);
+        await rename(dist, path.join(run, 'finished-dist'));
+      } else if (backup) {
+        throw new Error(`Cannot restore ${previous} over an unowned dist directory`);
+      }
+    }
+    if (backup) await rename(previous, dist);
+    await unlink(buildOwner);
+  }
+  await rm(run, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+}
+
+function requireStopped(record: string, value: string): void {
+  const pid = Number(value);
+  if (!Number.isSafeInteger(pid) || pid < 1) throw new Error(`Invalid verification ${record} PID`);
+  try {
+    process.kill(pid, 0);
+    throw new Error(`Verification ${record} PID ${pid} still exists. Wait for the run before recovery.`);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
+  }
+}
+
+async function recover(name: string | undefined): Promise<void> {
+  if (!name || !/^run-[a-zA-Z0-9]{6}$/.test(name)) throw new Error('Supply the interrupted run directory name');
+  const run = path.join(base, name);
+  await plainDirectory(run);
+  const owner = await readMarker(path.join(run, 'owner'));
+  if (!owner) throw new Error(`Missing owner record for ${name}`);
+  requireStopped('owner', owner);
+  const child = await readMarker(path.join(run, 'child'));
+  if (child !== undefined) requireStopped('child', child);
+  await clean(run);
+}
+
+const [command, ...args] = process.argv.slice(2);
+await plainDirectory(tmp, true);
+await plainDirectory(base, true);
+if (command === 'recover') {
+  await recover(args[0]);
+} else {
+  const npm = process.env.npm_execpath;
+  if (!command || !npm || !commands.has(command)) throw new Error('Unknown verification command or missing npm launcher');
+  // @why The frozen reference adapter creates and removes its own child under this parent.
+  if (['test:run', 'test:conformance:run', 'test:reference:run', 'ci:run', 'ci:platform:run'].includes(command)) {
+    await plainDirectory(path.join(tmp, 'conformance'), true);
+  }
+  const run = await mkdtemp(path.join(base, 'run-'));
+  await writeFile(path.join(run, 'owner'), String(process.pid));
+  console.info(`Verification workspace: ${run}`);
+  const controller = new AbortController();
+  const interrupt = () => controller.abort(130);
+  const terminate = () => controller.abort(143);
+  process.on('SIGINT', interrupt);
+  process.on('SIGTERM', terminate);
+  let treeStopped = true;
+  try {
+    const external = await prepareExternal(run);
+    if (command === 'ci:run' || command === 'ci:platform:run' || command === 'test:corpus:run') await prepareBuild(run);
+    await runOwnedNode([npm, 'run', command, '--', ...args], {
+      cwd: root, signal: controller.signal, timeoutMs: 45 * 60_000, maxBuffer: 64 * 1024 * 1024,
+      env: {...process.env, WSDL_TEST_RUN_DIR: run, TEMP: external, TMP: external, TMPDIR: external},
+      onOutput: chunk => process.stdout.write(chunk),
+      onSpawn: pid => writeFileSync(path.join(run, 'child'), String(pid), {flag: 'wx'}),
+    });
+  } catch (error) {
+    const failure = error as Error & {exitCode?: number};
+    treeStopped = !(error instanceof AggregateError);
+    console.error(treeStopped ? failure.message.split(/\r?\n/, 1)[0] : failure);
+    process.exitCode = controller.signal.aborted ? controller.signal.reason as number : failure.exitCode ?? 1;
+  } finally {
+    process.off('SIGINT', interrupt);
+    process.off('SIGTERM', terminate);
+    if (treeStopped) {
+      try {await clean(run);}
+      catch (error) {
+        console.error(`Workspace cleanup failed at ${run}`, error);
+        process.exitCode ||= 1;
+      }
+    } else {
+      console.error(`Workspace retained at ${run}. Verify child processes have stopped before recovery.`);
+    }
+  }
 }

@@ -11,7 +11,7 @@ let tooling: InstalledIntakeTooling;
 beforeAll(async () => {tooling = await installIntakeTooling();}, 480_000);
 afterAll(async () => {if (tooling) await rm(tooling.root, {recursive: true, force: true, maxRetries: 10, retryDelay: 200});});
 
-it('installs CLI/API local automatic generation and one-value recovery with independent gateways',
+it('generates through the installed CLI/API and executes the recovered gateway over TLS',
   context => qualifyLocalIntakeInstalled(tooling, context.signal), 1_200_000);
 it('acquires URL graphs and executes relocated separate gateways with metadata offline',
   context => qualifyUrlIntakeInstalled(tooling, context.signal), 1_200_000);

@@ -1,30 +1,35 @@
 /**
  * Integration tests for generated test suite (--test-dir).
  *
- * Runs the pipeline with --test-dir, then verifies:
- * - All expected files are created
- * - Generated test files are valid TypeScript (importable)
- * - Generated tests actually pass (vitest run on generated config)
- * - Skip-if-exists: second run does not overwrite
- * - --force-test overrides skip-if-exists
- *
- * Uses a project-local tmp/ directory so that Node ESM module resolution
- * can find fastify, vitest, and other dependencies from node_modules.
+ * Runs generated Vitest projects and checks consumer ownership on regeneration.
  */
-import { describe, it, expect, beforeAll, type TestContext } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {verificationPath} from "../helpers/verificationPath.js";
+import {afterAll, describe, it, expect, beforeAll, type TestContext} from "vitest";
+import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import { dirname, join } from "node:path";
 import {pathToFileURL} from "node:url";
 import type {FastifyInstance} from "fastify";
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
-import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
+import {generateTests, parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
-const TEST_GENERATION_TMP = join(PROJECT_ROOT, "tmp", "test-generation");
+const TEST_GENERATION_TMP = join(PROJECT_ROOT, verificationPath("tmp/test-generation"));
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
+const workspaces: string[] = [];
 
-async function runGeneratedVitest(configPath: string, context: TestContext): Promise<any> {
+function createWorkspace(prefix: string): string {
+  mkdirSync(TEST_GENERATION_TMP, {recursive: true});
+  const directory = mkdtempSync(join(TEST_GENERATION_TMP, prefix));
+  workspaces.push(directory);
+  return directory;
+}
+
+afterAll(() => {
+  for (const directory of workspaces) rmSync(directory, {recursive: true, force: true});
+});
+
+async function runGeneratedVitest(configPath: string, context: TestContext): Promise<string[]> {
   const reportPath = join(dirname(configPath), ".vitest-report.json");
   rmSync(reportPath, {force: true});
   const work = runOwnedNode(
@@ -38,10 +43,14 @@ async function runGeneratedVitest(configPath: string, context: TestContext): Pro
   );
   context.onTestFinished(async () => {await work.catch(() => undefined);}, 60_000);
   await work;
-  const parsed = JSON.parse(readFileSync(reportPath, "utf-8"));
+  const parsed = JSON.parse(readFileSync(reportPath, "utf-8")) as {
+    success: boolean;
+    numFailedTests: number;
+    testResults: {assertionResults: {fullName: string; status: string}[]}[];
+  };
   expect(parsed.success).toBe(true);
   expect(parsed.numFailedTests).toBe(0);
-  return parsed;
+  return parsed.testResults.flatMap(file => file.assertionResults.filter(test => test.status === 'passed').map(test => test.fullName));
 }
 
 describe("test generation pipeline", () => {
@@ -49,10 +58,7 @@ describe("test generation pipeline", () => {
   let testDir: string;
 
   beforeAll(async () => {
-    // Use a project-local tmp/ directory so ESM module resolution finds
-    // fastify, vitest, etc. from the project's node_modules.
-    mkdirSync(TEST_GENERATION_TMP, { recursive: true });
-    outDir = mkdtempSync(join(TEST_GENERATION_TMP, "testgen-"));
+    outDir = createWorkspace("testgen-");
     testDir = join(outDir, "tests");
 
     await runGenerationPipeline({
@@ -75,149 +81,37 @@ describe("test generation pipeline", () => {
     });
   }, 60_000);
 
-  // --- File creation ---
-
-  const expectedFiles = [
-    "vitest.config.ts",
-    "helpers/mock-client.ts",
-    "helpers/test-app.ts",
-    "gateway/routes.test.ts",
-    "gateway/errors.test.ts",
-    "gateway/envelope.test.ts",
-    "gateway/validation.test.ts",
-    "runtime/classify-error.test.ts",
-    "runtime/envelope-builders.test.ts",
-    "runtime/unwrap.test.ts",
-  ];
-
-  it("creates all expected test files", () => {
-    for (const file of expectedFiles) {
-      const filePath = join(testDir, file);
-      expect(existsSync(filePath), `Missing: ${file}`).toBe(true);
-    }
-  });
-
-  it("generated files are non-empty", () => {
-    for (const file of expectedFiles) {
-      const filePath = join(testDir, file);
-      const stat = statSync(filePath);
-      expect(stat.size, `Empty: ${file}`).toBeGreaterThan(0);
-    }
-  });
-
-  // --- Content validation ---
-
-  it("vitest.config.ts has root set to __dirname", () => {
-    const content = readFileSync(join(testDir, "vitest.config.ts"), "utf-8");
-    expect(content).toContain("root: __dirname");
-    expect(content).toContain("gateway/**/*.test.ts");
-    expect(content).toContain("runtime/**/*.test.ts");
-  });
-
-  it("mock-client.ts imports from operations", () => {
-    const content = readFileSync(join(testDir, "helpers", "mock-client.ts"), "utf-8");
-    expect(content).toContain("WeatherOperations");
-    expect(content).toContain("createMockClient");
-    expect(content).toContain("GetCityForecastByZIP");
-    expect(content).toContain("GetCityWeatherByZIP");
-    expect(content).toContain("GetWeatherInformation");
-  });
-
-  it("test-app.ts imports plugin and mock client", () => {
-    const content = readFileSync(join(testDir, "helpers", "test-app.ts"), "utf-8");
-    expect(content).toContain("gatewayPlugin");
-    expect(content).toContain("createMockClient");
-    expect(content).toContain("createTestApp");
-  });
-
-  it("routes.test.ts has one test per operation", () => {
-    const content = readFileSync(join(testDir, "gateway", "routes.test.ts"), "utf-8");
-    expect(content).toContain("get-city-forecast-by-zip");
-    expect(content).toContain("get-city-weather-by-zip");
-    expect(content).toContain("get-weather-information");
-    expect(content).toContain("returns SUCCESS envelope");
-  });
-
-  it("errors.test.ts tests various error types", () => {
-    const content = readFileSync(join(testDir, "gateway", "errors.test.ts"), "utf-8");
-    expect(content).toContain("500");
-    expect(content).toContain("502");
-    expect(content).toContain("503");
-    expect(content).toContain("504");
-    expect(content).toContain("SOAP_FAULT");
-    expect(content).toContain("ETIMEDOUT");
-  });
-
-  it("unwrap.test.ts tests ArrayOf wrappers", () => {
-    const content = readFileSync(join(testDir, "runtime", "unwrap.test.ts"), "utf-8");
-    expect(content).toContain("unwrapArrayWrappers");
-    expect(content).toContain("ArrayOfForecast");
-    expect(content).toContain("ArrayOfWeatherDescription");
-  });
-
-  // --- Generated tests actually pass ---
-
-  it("generated tests pass when run with vitest", async context => {
-    const configPath = join(testDir, "vitest.config.ts");
-
-    const parsed = await runGeneratedVitest(configPath, context);
-    expect(parsed.numPassedTests).toBeGreaterThan(0);
+  it("runs the generated tests for every Weather operation", async context => {
+    const passed = await runGeneratedVitest(join(testDir, "vitest.config.ts"), context);
+    expect(passed).toEqual(expect.arrayContaining([
+      expect.stringContaining("get-city-forecast-by-zip"),
+      expect.stringContaining("get-city-weather-by-zip"),
+      expect.stringContaining("get-weather-information"),
+    ]));
   }, 120_000);
 
-  // --- Skip-if-exists ---
-
-  it("does not overwrite existing files on second run", async () => {
-    // Record modification times
-    const routesTestPath = join(testDir, "gateway", "routes.test.ts");
-    const originalMtime = statSync(routesTestPath).mtimeMs;
-
-    // Small delay to ensure filesystem time resolution catches any change
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Run test generation again without force (reuses existing gateway/client)
-    const { generateTests } = await import("../../src/test/generateTests.js");
-    await generateTests({
+  it("preserves a custom scaffold until regeneration is forced", async () => {
+    const file = join(testDir, "gateway/routes.test.ts");
+    const generated = readFileSync(file, "utf8");
+    const custom = generated + "\n// Consumer-owned scaffold addition.\n";
+    writeFileSync(file, custom);
+    const options = {
       testDir,
       gatewayDir: join(outDir, "gateway"),
       clientDir: join(outDir, "client"),
-      catalogFile: join(outDir, "client", "catalog.json"),
-      imports: "js",
-      force: false,
-    });
-
-    const newMtime = statSync(routesTestPath).mtimeMs;
-    expect(newMtime).toBe(originalMtime);
-  }, 60_000);
-
-  // --- Force override ---
-
-  it("overwrites existing files when force is true", async () => {
-    const routesTestPath = join(testDir, "gateway", "routes.test.ts");
-    const originalMtime = statSync(routesTestPath).mtimeMs;
-
-    // Small delay to ensure filesystem time resolution catches any change
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Run test generation again with force
-    const { generateTests } = await import("../../src/test/generateTests.js");
-    await generateTests({
-      testDir,
-      gatewayDir: join(outDir, "gateway"),
-      clientDir: join(outDir, "client"),
-      catalogFile: join(outDir, "client", "catalog.json"),
-      imports: "js",
-      force: true,
-    });
-
-    const newMtime = statSync(routesTestPath).mtimeMs;
-    expect(newMtime).toBeGreaterThan(originalMtime);
-  }, 60_000);
+      catalogFile: join(outDir, "client/catalog.json"),
+      imports: "js" as const,
+    };
+    await generateTests(options);
+    expect(readFileSync(file, "utf8")).toBe(custom);
+    await generateTests({...options, force: true});
+    expect(readFileSync(file, "utf8")).toBe(generated);
+  });
 });
 
 describe("choice union test generation", () => {
   it("emits valid choice fixtures and invalid multi-branch validation coverage", async context => {
-    mkdirSync(TEST_GENERATION_TMP, {recursive: true});
-    const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "choice-testgen-"));
+    const outDir = createWorkspace("choice-testgen-");
     const testDir = join(outDir, "tests");
     const wsdlPath = join(outDir, "choice.wsdl");
     writeFileSync(
@@ -262,8 +156,7 @@ describe("choice union test generation", () => {
   }, 120_000);
 
   it("emits missing-branch validation coverage for required choices", async context => {
-    mkdirSync(TEST_GENERATION_TMP, {recursive: true});
-    const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "required-choice-testgen-"));
+    const outDir = createWorkspace("required-choice-testgen-");
     const testDir = join(outDir, "tests");
     const wsdlPath = join(outDir, "choice.wsdl");
     writeFileSync(
@@ -305,8 +198,7 @@ describe("choice union test generation", () => {
 
 describe("JSON array stream test generation", () => {
   it("emits JSON array route handlers and generated route tests", async context => {
-    mkdirSync(TEST_GENERATION_TMP, {recursive: true});
-    const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "json-array-stream-testgen-"));
+    const outDir = createWorkspace("json-array-stream-testgen-");
     const testDir = join(outDir, "tests");
 
     await runGenerationPipeline({

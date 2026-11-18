@@ -1,4 +1,5 @@
 /** Independent boundary controls; expectations do not consume emitted declarations. */
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -14,8 +15,8 @@ const selector = {portType: {namespace, local: 'ForecastPortType'}, binding: {na
 const selection = {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort'};
 let scratch: string, source: string, serial = 0;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/p37-independent', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/p37-independent/suite-'));
+  await mkdir(verificationPath('tmp/conformance/p37-independent'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/p37-independent/suite-')));
   source = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterEach, describe, expect, it} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +14,7 @@ afterEach(() => {
   for (const root of disposable.splice(0)) fs.rmSync(root, {recursive: true, force: true});
 });
 function fixture() {
-  const parent = path.resolve('tmp/test-generation');
+  const parent = path.resolve(verificationPath('tmp/test-generation'));
   fs.mkdirSync(parent, {recursive: true});
   const appDir = fs.mkdtempSync(path.join(parent, 'checked-scaffold-'));
   disposable.push(appDir);

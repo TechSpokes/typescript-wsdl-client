@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it, vi} from 'vitest';
 import {planCheckedComponents} from '../../src/checkedPlanning.js';
 import {runGenerationPipeline} from '../../src/pipeline.js';
@@ -57,21 +58,21 @@ it('rejects missing, overlapping and unsupported outputs before any metadata req
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const address = server.address(); if (!address || typeof address === 'string') throw new Error('Owned address required');
   const base = {model: 'checked-components-v1' as const, wsdl: `http://127.0.0.1:${address.port}/source.wsdl`,
-    clientOutDir: 'tmp/test-generation/invalid-output/client', openapi: {outFile: 'tmp/test-generation/invalid-output/openapi.json'},
-    gateway: {outDir: 'tmp/test-generation/invalid-output/gateway', versionSlug: 'v1', serviceSlug: 'forecast'}};
+    clientOutDir: verificationPath('tmp/test-generation/invalid-output/client'), openapi: {outFile: verificationPath('tmp/test-generation/invalid-output/openapi.json')},
+    gateway: {outDir: verificationPath('tmp/test-generation/invalid-output/gateway'), versionSlug: 'v1', serviceSlug: 'forecast'}};
   counts.metadata = 0;
   try {
     await expect(runGenerationPipeline({...base, clientOutDir: undefined})).rejects.toThrow('explicit');
     await expect(runGenerationPipeline({...base, openapi: {outFile: base.clientOutDir}})).rejects.toThrow('overlap');
     await expect(runGenerationPipeline({...base, compiler: {choice: 'union'}})).rejects.toThrow('legacy compiler');
-    await expect(runGenerationPipeline({...base, catalogOut: 'tmp/test-generation/forbidden-catalog.json'})).rejects.toThrow('legacy catalog');
+    await expect(runGenerationPipeline({...base, catalogOut: verificationPath('tmp/test-generation/forbidden-catalog.json')})).rejects.toThrow('legacy catalog');
     expect(requests).toBe(0); expect(counts.metadata).toBe(0);
   } finally {await new Promise<void>(resolve => server.close(() => resolve()));}
 });
 
 it('prepares each operation transport once and emits the prepared client and gateway lowerings once', async () => {
-  mkdirSync('tmp/test-generation', {recursive: true});
-  const root = mkdtempSync(path.resolve('tmp/test-generation/preparation-'));
+  mkdirSync(verificationPath('tmp/test-generation'), {recursive: true});
+  const root = mkdtempSync(path.resolve(verificationPath('tmp/test-generation/preparation-')));
   const wsdl = path.join(root, 'source.wsdl');
   writeFileSync(wsdl, readFileSync('docs/examples/checked-forecast.wsdl', 'utf8')
     .replace('</wsdl:portType>', '<wsdl:operation name="Other"><wsdl:input message="t:ForecastInput"/><wsdl:output message="t:ForecastOutput"/></wsdl:operation></wsdl:portType>')

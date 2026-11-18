@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -19,8 +20,8 @@ const ns = 'urn:conformance:soap12', ns11 = 'http://schemas.xmlsoap.org/soap/env
 
 describe('checked HTTP response metadata over owned verified TLS', () => {
   it.each(['11', '12'] as const)('preserves SOAP %s admission, denials and per-route publication', async version => {
-    await mkdir('tmp/conformance/http-response-metadata', {recursive: true});
-    const root = await mkdtemp(path.resolve('tmp/conformance/http-response-metadata/case-'));
+    await mkdir(verificationPath('tmp/conformance/http-response-metadata'), {recursive: true});
+    const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/http-response-metadata/case-')));
     const cert = await readFile('test/conformance/fixtures/soap/content-model/test-cert.pem', 'utf8');
     const key = await readFile('test/conformance/fixtures/soap/content-model/test-key.pem', 'utf8');
     const fixture = path.resolve('test/conformance/fixtures/soap/versions');

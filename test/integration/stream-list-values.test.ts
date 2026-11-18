@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
@@ -33,8 +34,8 @@ async function collect(records: AsyncIterable<unknown>): Promise<unknown[]> {
 }
 
 it("maps XML list aliases, inline lists and repeated list elements without changing the parser bag contract", async () => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/stream-list-values-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-list-values-")));
   const server = createServer(async (request, response) => {
     for await (const _chunk of request) { /* Consume the owned request. */ }
     response.setHeader("content-type", "text/xml");
@@ -73,8 +74,8 @@ it("maps XML list aliases, inline lists and repeated list elements without chang
 }, 30_000);
 
 it("maps an empty complex stream record to an object", async () => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/stream-empty-record-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-empty-record-")));
   const server = createServer((request, response) => {request.resume(); response.end("<ReadResponse><Record/></ReadResponse>");});
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
@@ -93,8 +94,8 @@ it("maps an empty complex stream record to an object", async () => {
 });
 
 it("preserves buffered empty-object DTOs while keeping explicitly nullable complex children null", async () => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/buffered-empty-object-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/buffered-empty-object-")));
   const server = createServer((request, response) => {
     request.resume();
     response.setHeader("content-type", "text/xml");

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterEach, describe, expect, it} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,8 +9,8 @@ const namespace = 'urn:checked:forecast';
 const roots: string[] = [];
 afterEach(() => {for (const root of roots.splice(0)) fs.rmSync(root, {recursive: true, force: true});});
 function options(): PipelineOptions {
-  fs.mkdirSync('tmp/test-generation', {recursive: true});
-  const root = fs.mkdtempSync(path.resolve('tmp/test-generation/checked-pipeline-'));
+  fs.mkdirSync(verificationPath('tmp/test-generation'), {recursive: true});
+  const root = fs.mkdtempSync(path.resolve(verificationPath('tmp/test-generation/checked-pipeline-')));
   roots.push(root);
   const wsdl = path.join(root, 'input.wsdl');
   fs.copyFileSync('test/conformance/fixtures/assessment/forecast.wsdl', wsdl);

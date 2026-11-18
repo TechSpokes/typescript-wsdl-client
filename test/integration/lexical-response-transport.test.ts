@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from 'vitest';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
@@ -8,8 +9,8 @@ import Fastify from 'fastify';
 import {runGenerationPipeline} from '../../src/pipeline.js';
 
 it('preserves text-only complex values and converts only valid XML boolean attributes through actual SOAP', async () => {
-  await mkdir('tmp/conformance', {recursive: true});
-  const output = await mkdtemp(path.resolve('tmp/conformance/lexical-response-'));
+  await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+  const output = await mkdtemp(path.resolve(verificationPath('tmp/conformance/lexical-response-')));
   const source = path.resolve('test/conformance/fixtures/xsd/simple-content/lexical-response.wsdl');
   let lexical = 'true';
   let withAttributes = false;

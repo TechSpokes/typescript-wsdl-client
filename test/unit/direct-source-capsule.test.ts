@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {beforeAll, afterAll, describe, expect, it} from 'vitest';
 import {mkdtemp, readFile, writeFile, mkdir, rm, symlink} from 'node:fs/promises';
 import path from 'node:path';
@@ -12,8 +13,8 @@ const selector: DirectOperationSelector = {portType: {namespace, local: 'Forecas
 const selection = {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort'};
 let scratch: string, original: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/direct-capsule', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/direct-capsule/case-'));
+  await mkdir(verificationPath('tmp/conformance/direct-capsule'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/direct-capsule/case-')));
   original = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});

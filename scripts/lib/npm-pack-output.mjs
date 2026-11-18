@@ -6,6 +6,10 @@
  * @why npm 11 emits an array while npm 12 emits an object keyed by package name.
  */
 export function parsePackOutput(output) {
+  return readPackReport(output).files.map((file) => file.path).sort();
+}
+
+export function readPackReport(output) {
   const parsed = JSON.parse(output);
   const results = Array.isArray(parsed)
     ? parsed
@@ -17,5 +21,5 @@ export function parsePackOutput(output) {
     throw new Error("Unexpected npm pack --dry-run --json output.");
   }
 
-  return results[0].files.map((file) => file.path).sort();
+  return results[0];
 }

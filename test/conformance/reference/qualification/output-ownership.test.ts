@@ -1,3 +1,4 @@
+import {verificationPath} from "../../../helpers/verificationPath.js";
 import { mkdirSync, mkdtempSync, lstatSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -15,8 +16,8 @@ describe('qualification evidence ownership boundary', () => {
     });
 
     it('hands off private copied files and link inodes without traversing targets or widening modes', () => {
-        mkdirSync('tmp/conformance', {recursive: true});
-        const root = resolve(mkdtempSync('tmp/conformance/output-ownership-'));
+        mkdirSync(verificationPath('tmp/conformance'), {recursive: true});
+        const root = resolve(mkdtempSync(verificationPath('tmp/conformance/output-ownership-')));
         try {
             const output = join(root, 'results'), nested = join(output, 'private'), outside = join(root, 'outside');
             mkdirSync(nested, {recursive: true, mode: 0o700}); mkdirSync(outside);

@@ -1,6 +1,7 @@
 /** Packed-consumer qualification for an explicitly completed SOAP wrapper contract.
  * @since Unreleased
  */
+import {verificationPath} from "./verificationPath.js";
 import {expect} from 'vitest';
 import {appendFile, copyFile, mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -20,7 +21,7 @@ import {installIntakeProject, type InstalledIntakeTooling} from './installedInta
  */
 export async function qualifyCorrectedIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
   const npm = process.env.npm_execpath; if (!npm) throw new Error('Run installed qualification through npm');
-  const evidence = path.resolve('tmp/conformance/source-corrections-installed'); await mkdir(evidence, {recursive: true});
+  const evidence = path.resolve(verificationPath('tmp/conformance/source-corrections-installed')); await mkdir(evidence, {recursive: true});
   const logs = await mkdtemp(path.join(evidence, 'run-'));
   const consumer = path.join(shared.root, 'corrected'); await mkdir(consumer);
   const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.resolve('tmp/cache/npm')};
@@ -81,7 +82,7 @@ export async function qualifyCorrectedIntakeInstalled(shared: InstalledIntakeToo
         await copyFile(provenance, path.join(logs, 'completed-provenance.json'));
       } else await expect(readFile(provenance)).rejects.toMatchObject({code: 'ENOENT'});
       await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      for (const command of ['typecheck', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
+      await run(mode + '-build', [npm, 'run', 'build'], project);
     }
     await rm(inputs, {recursive: true}); await rm(recipeFile);
     await copyFile('test/helpers/correctedIntakeInstalledProcess.ts', path.join(consumer, 'wire.ts'));

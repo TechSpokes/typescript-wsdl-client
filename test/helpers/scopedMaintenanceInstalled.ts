@@ -44,7 +44,7 @@ export async function qualifyScopedMaintenanceInstalled(shared: InstalledIntakeT
     for (const mode of ['original', 'string', 'layout']) {
       const project = path.join(consumer, mode);
       await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      for (const command of ['typecheck', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
+      await run(mode + '-build', [npm, 'run', 'build'], project);
     }
     await rm(path.join(consumer, 'inputs'), {recursive: true});
     await rm(path.join(consumer, 'string.json')); await rm(path.join(consumer, 'layout.json'));

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import fs from 'node:fs';
 import path from 'node:path';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -7,7 +8,7 @@ describe('bounded inspection input acquisition', () => {
   let directory: string, file: string;
 
   beforeEach(() => {
-    const parent = path.resolve('tmp/test-generation');
+    const parent = path.resolve(verificationPath('tmp/test-generation'));
     fs.mkdirSync(parent, {recursive: true});
     directory = fs.mkdtempSync(path.join(parent, 'bounded-file-'));
     file = path.join(directory, 'captured.bin');

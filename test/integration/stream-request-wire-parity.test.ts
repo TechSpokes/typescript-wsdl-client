@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
@@ -18,8 +19,8 @@ interface MethodDescriptor {soapAction: string; input: Record<string, unknown>}
 interface PortDescriptor {location: string; binding: {methods: Record<string, MethodDescriptor>}}
 
 it("matches buffered SOAP request QNames and honors envelopeKey throughout security post-processing", async () => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/stream-request-wire-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-request-wire-")));
   const requests: string[] = [];
   const keys: string[] = [];
   const server = createServer(async (request, response) => {
@@ -73,8 +74,8 @@ it("matches buffered SOAP request QNames and honors envelopeKey throughout secur
 }, 30_000);
 
 it("refuses missing or incompatible ambiguous operation bindings before sending a stream request", async () => {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/stream-request-binding-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/stream-request-binding-")));
   try {
     await runGenerationPipeline({wsdl: fixture, catalogOut: join(directory, "catalog.json"), clientOutDir: directory,
       compiler: {imports: "js"}, streamConfig: parseStreamConfig({operations: {Read: {recordType: "Record", recordPath: ["ReadResponse", "Record"]}}})});

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it, vi} from 'vitest';
 import path from 'node:path';
 import {gzipSync} from 'node:zlib';
@@ -59,8 +60,8 @@ describe('offline checked SOAP response inspection', () => {
     }
   });
   it('attributes a companion scalar failure to its independent same-QName universe with an existing recipe', async () => {
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/inspect-scoped-target-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/inspect-scoped-target-')));
     try {
       const companionFile = path.join(directory, 'records.wsdl');
       const load = (file: string) => loadSemanticSchemaInput(file, {policy: {fileRoots: [directory]}});
@@ -107,8 +108,8 @@ describe('offline checked SOAP response inspection', () => {
     expect(report).not.toHaveProperty('decoded');
   });
   it('selects either operation from an unchanged project while authenticating every corrected companion', async () => {
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/inspect-multiple-operations-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/inspect-multiple-operations-')));
     try {
       const wrapper = path.join(temporary, 'wrapper.wsdl');
       const secondCompanion = path.join(temporary, 'second-records.wsdl');
@@ -303,8 +304,8 @@ describe('offline checked SOAP response inspection', () => {
   });
 
   it('keeps corrected companion bytes for independent diagnostics when the outer projection refuses', async () => {
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/inspect-corrected-companion-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/inspect-corrected-companion-')));
     try {
       const wrapper = path.join(temporary, 'wrapper.wsdl');
       await writeFile(wrapper, (await readFile(source, 'utf8')).replace('<xs:any/>', '<xs:any namespace="##local"/>'));
@@ -330,8 +331,8 @@ describe('offline checked SOAP response inspection', () => {
   });
 
   it('never fetches an unsnapshotted remote import even when its origin is permitted and sourceResources is omitted', async () => {
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/inspect-closed-source-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/inspect-closed-source-')));
     const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:offline:external"/>'));
     try {
       const file = path.join(temporary, 'forecast.wsdl');

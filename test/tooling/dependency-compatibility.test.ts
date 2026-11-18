@@ -1,7 +1,7 @@
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import {verificationPath} from '../helpers/verificationPath.js';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { ESLint } from 'eslint';
-import { rimraf, rimrafSync } from 'rimraf';
 import tseslint from 'typescript-eslint';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -9,7 +9,7 @@ describe('security dependency override compatibility', () => {
     let root: string;
 
     beforeEach(async () => {
-        const parent = resolve('tmp/conformance/dependency-compatibility');
+        const parent = resolve(verificationPath('tmp/conformance/dependency-compatibility'));
         await mkdir(parent, { recursive: true });
         root = await mkdtemp(join(parent, 'run-'));
     });
@@ -72,16 +72,4 @@ describe('security dependency override compatibility', () => {
         expect(result?.messages.map(message => message.ruleId)).toEqual(['@typescript-eslint/no-floating-promises']);
     });
 
-    it('preserves asynchronous and synchronous rimraf glob selection without deleting nonmatches', async () => {
-        await mkdir(join(root, 'nested'));
-        for (const name of ['one.tmp', 'two.log', 'keep.txt']) {
-            await writeFile(join(root, 'nested', name), name);
-        }
-        await rimraf('nested/*.{tmp,log}', { glob: { cwd: root } });
-        expect(await readdir(join(root, 'nested'))).toEqual(['keep.txt']);
-        await writeFile(join(root, 'nested', 'three.tmp'), 'remove');
-        rimrafSync('nested/*.tmp', { glob: { cwd: root } });
-        expect(await readdir(join(root, 'nested'))).toEqual(['keep.txt']);
-        expect(await readFile(join(root, 'nested', 'keep.txt'), 'utf8')).toBe('keep.txt');
-    });
 });

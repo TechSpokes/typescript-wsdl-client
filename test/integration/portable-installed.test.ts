@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {it, expect} from 'vitest';
 import {mkdtemp, mkdir, copyFile, writeFile, rm, realpath} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -5,6 +6,7 @@ import path from 'node:path';
 import {selectDirectOperation} from '../../src/compiler/directOperation.js';
 import {createDirectSourceCapsule} from '../../src/compiler/directSourceCapsule.js';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
+import {candidateTarball, lockedDependencies} from '../../scripts/lib/candidate-package.js';
 
 const COMMAND_TIMEOUT_MS = 180_000;
 const CLEANUP_TIMEOUT_MS = 60_000;
@@ -16,7 +18,7 @@ async function qualifyPortableInstalled(signal: AbortSignal): Promise<void> {
   const root = process.cwd();
   const consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'wsdl-portable-')));
   try {
-    const artifact = path.join(root, 'tmp/conformance/p36-evidence');
+    const artifact = path.join(root, verificationPath('tmp/conformance/p36-evidence'));
     const fixture = path.join(root, 'test/conformance/fixtures/assessment/forecast.wsdl');
     const namespace = 'urn:checked:forecast';
     const selected = await selectDirectOperation(fixture, {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}, {loading: {policy: {fileRoots: [path.dirname(fixture)]}}});
@@ -32,13 +34,11 @@ async function qualifyPortableInstalled(signal: AbortSignal): Promise<void> {
     const run = (args: string[], cwd: string) => runOwnedNode(args, {cwd, env, signal,
       timeoutMs: COMMAND_TIMEOUT_MS, maxBuffer: 4 * 1024 * 1024, childProcessesDenied: args[0] === '--permission'});
     await mkdir(artifact, {recursive: true});
-    const packed = await run([npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', artifact], root);
-    const packs = JSON.parse(packed.stdout) as {filename: string}[];
-    const filename = packs[0]!.filename;
-    expect(path.basename(filename)).toBe(filename);
+    const tarball = await candidateTarball(artifact, async () =>
+      (await run([npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', artifact], root)).stdout);
     await writeFile(path.join(consumer, 'package.json'), JSON.stringify({private: true, type: 'module'}));
-    await run([npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', '--cache', path.join(root, 'tmp/cache/npm'),
-      path.join(artifact, filename), 'fastify@5.12.8', 'fastify-plugin@6.0.1', 'typescript@6.0.3', '@types/node@26.6.6'], consumer);
+    await run([npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', '--prefer-offline',
+      tarball, ...lockedDependencies(['fastify', 'fastify-plugin', 'typescript', '@types/node'])], consumer);
     await mkdir(path.join(consumer, 'authorized'));
     await copyFile(fixture, path.join(consumer, 'authorized/source.wsdl'));
     await copyFile(path.join(root, 'test/conformance/fixtures/xsd/types/scoped-identities/wire.wsdl'), path.join(consumer, 'authorized/scoped.wsdl'));

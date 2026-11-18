@@ -1,10 +1,11 @@
-import {mkdirSync, mkdtempSync, readFileSync, writeFileSync} from "node:fs";
+import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import os from "node:os";
 import {resolve} from "node:path";
 import {runOwnedNode} from "../helpers/ownedNodeProcess.js";
 import {createRequire} from "node:module";
 import {describe, expect, it} from "vitest";
 import {generateApp} from "../../src/app/generateApp.js";
+import {verificationPath} from "../helpers/verificationPath.js";
 
 const require = createRequire(import.meta.url);
 const projectRoot = resolve(import.meta.dirname, "..", "..");
@@ -56,8 +57,9 @@ function createAppFixture(root: string, clientSource: string): AppFixture {
 }
 
 describe("generateApp security scaffold", () => {
-  it("emits upstream SOAP security helper when security config has an upstream profile", async () => {
+  it("emits upstream SOAP security helper when security config has an upstream profile", async context => {
     const root = makeTempDir(`${os.tmpdir()}/wsdl-tsc-app-security-`);
+    context.onTestFinished(() => rmSync(root, {recursive: true, force: true}));
     const fixture = createAppFixture(root, "export class Weather {}\n");
     const securityConfigFile = `${root}/security.json`;
     writeFileSync(securityConfigFile, JSON.stringify({
@@ -88,9 +90,14 @@ describe("generateApp security scaffold", () => {
   });
 
   it("emits a tsconfig that type-checks sibling client and gateway artifacts", async context => {
-    const tmpBase = `${projectRoot}/tmp`;
+    const tmpBase = resolve(projectRoot, verificationPath('tmp/test-generation'));
     mkdirSync(tmpBase, {recursive: true});
     const root = makeTempDir(`${tmpBase}/app-tsconfig-`);
+    let compiler: ReturnType<typeof runOwnedNode> | undefined;
+    context.onTestFinished(async () => {
+      await compiler?.catch(() => undefined);
+      rmSync(root, {recursive: true, force: true});
+    }, 60_000);
     const fixture = createAppFixture(root, "export class Weather { constructor(_options: {source: string}) {} }\n");
     writeFileSync(`${fixture.gatewayDir}/_typecheck.ts`, "export const gatewayTypecheck = true;\n", "utf8");
 
@@ -103,9 +110,11 @@ describe("generateApp security scaffold", () => {
       force: true,
     });
 
-    const work = runOwnedNode([require.resolve("typescript/bin/tsc"), "-p", `${fixture.appDir}/tsconfig.json`, "--noEmit"],
+    compiler = runOwnedNode([require.resolve("typescript/bin/tsc"), "-p", `${fixture.appDir}/tsconfig.json`, "--noEmit", "--listFiles"],
       {cwd: root, timeoutMs: 60_000, signal: context.signal});
-    context.onTestFinished(async () => {await work.catch(() => undefined);}, 60_000);
-    await work;
+    const result = await compiler;
+    expect(result.stdout.replaceAll("\\", "/").split(/\r?\n/)).toContain(
+      `${fixture.gatewayDir.replaceAll("\\", "/")}/_typecheck.ts`,
+    );
   });
 });

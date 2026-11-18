@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {createHash} from 'node:crypto';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
@@ -13,8 +14,8 @@ const ns = 'urn:checked:forecast', fixture = path.resolve('test/conformance/fixt
 let original: string, scratch: string;
 beforeAll(async () => {
   original = await readFile(fixture, 'utf8');
-  await mkdir('tmp/conformance/direct-codec', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/conformance/direct-codec/suite-'));
+  await mkdir(verificationPath('tmp/conformance/direct-codec'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/conformance/direct-codec/suite-')));
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});
 async function contract(text?: string, namespace = ns, maxWork?: number, maxNodes?: number): Promise<DirectOperationContract> {

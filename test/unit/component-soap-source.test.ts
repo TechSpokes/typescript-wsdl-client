@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -18,8 +19,8 @@ const selector = {portType: {namespace, local: 'ImportPortType'}, binding: {name
 const selection = {service: {namespace, local: 'ImportService'}, port: 'ImportPort'};
 let directory: string, root: string, schema: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/component-soap-source', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/component-soap-source/suite-'));
+  await mkdir(verificationPath('tmp/conformance/component-soap-source'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/component-soap-source/suite-')));
   root = await readFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl', 'utf8');
   schema = await readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', 'utf8');
 });

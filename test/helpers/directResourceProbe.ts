@@ -1,4 +1,5 @@
 /** Reproducible diagnostic probe; run each installed build in its own process. */
+import {verificationPath} from "./verificationPath.js";
 import {mkdtemp, readFile, writeFile, rm, mkdir} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
@@ -21,8 +22,8 @@ const namespace = 'urn:checked:forecast';
 const selection = {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort'};
 const original = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
 const text = original.replace('<wsdl:types>', '<!--' + 'padding '.repeat(1024) + '--><wsdl:types>');
-await mkdir('tmp/conformance/resource-policy', {recursive: true});
-const directory = await mkdtemp(path.resolve('tmp/conformance/resource-policy/probe-'));
+await mkdir(verificationPath('tmp/conformance/resource-policy'), {recursive: true});
+const directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/resource-policy/probe-')));
 let requests = 0;
 const server = createServer((request, response) => {
   request.resume(); request.on('end', () => {

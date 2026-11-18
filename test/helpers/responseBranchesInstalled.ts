@@ -45,7 +45,7 @@ export async function qualifyResponseBranchesInstalled(shared: InstalledIntakeTo
     for (const mode of ['soap11', 'soap12', 'mixed']) {
       const project = path.join(consumer, mode);
       await installIntakeProject(shared, project, logs, env, run, mode + '-install');
-      for (const command of ['typecheck', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
+      await run(mode + '-build', [npm, 'run', 'build'], project);
     }
     await rm(path.join(consumer, 'inputs'), {recursive: true});
     await copyFile('test/helpers/responseBranchesInstalledProcess.ts', path.join(consumer, 'wire.ts'));

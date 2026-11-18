@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {expect, it, vi} from "vitest";
 import {mkdirSync, mkdtempSync, readFileSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
@@ -26,8 +27,8 @@ async function generate(directory: string): Promise<StreamConstructor> {
   return (await import(pathToFileURL(join(directory, "client.ts")).href) as {StreamMapping: StreamConstructor}).StreamMapping;
 }
 function temporary(): string {
-  mkdirSync("tmp/conformance", {recursive: true});
-  return mkdtempSync(resolve("tmp/conformance/stream-lifecycle-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  return mkdtempSync(resolve(verificationPath("tmp/conformance/stream-lifecycle-")));
 }
 
 it("rejects an already aborted stream call before initializing its SOAP metadata client", async () => {

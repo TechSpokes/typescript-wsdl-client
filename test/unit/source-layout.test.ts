@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it} from 'vitest';
 import path from 'node:path';
 import {mkdir, mkdtemp, readFile, rm, writeFile, symlink} from 'node:fs/promises';
@@ -16,8 +17,8 @@ describe('bounded copied source layouts', () => {
   });
 
   it('retains authenticated HTTP aliases for offline copying and refuses forged source reports', async () => {
-    await mkdir('tmp/conformance/source-layout', {recursive: true});
-    const root = await mkdtemp(path.resolve('tmp/conformance/source-layout/case-'));
+    await mkdir(verificationPath('tmp/conformance/source-layout'), {recursive: true});
+    const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/source-layout/case-')));
     const schema = await readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd');
     const server = createServer((request, response) => {
       if (request.url === '/alias.xsd') {response.writeHead(302, {location: '/actual.xsd'}); response.end();}
@@ -41,8 +42,8 @@ describe('bounded copied source layouts', () => {
   });
 
   it.skipIf(process.platform !== 'win32')('refuses a real Windows junction import before copied-source generation', async () => {
-    await mkdir('tmp/conformance/source-layout', {recursive: true});
-    const root = await mkdtemp(path.resolve('tmp/conformance/source-layout/junction-'));
+    await mkdir(verificationPath('tmp/conformance/source-layout'), {recursive: true});
+    const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/source-layout/junction-')));
     try {
       const actual = path.join(root, 'actual'); await mkdir(actual);
       await writeFile(path.join(actual, 'types.xsd'), await readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd'));

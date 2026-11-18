@@ -4,7 +4,7 @@ Guide to running and writing tests for wsdl-tsc development and for testing gene
 
 See [README](../README.md) for quick start and [CONTRIBUTING](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) for development setup.
 
-Consumer projects should start at [For Consumer Projects](#for-consumer-projects), then choose the legacy [Generated Test Suite](#generated-test-suite) or checked scaffold workflow. The repository-maintenance sections below require a clone and its development dependencies; installing the npm package does not install repository scripts, Vitest projects or the shared verification lock.
+Consumer projects should start at [For Consumer Projects](#for-consumer-projects), then choose the legacy [Generated Test Suite](#generated-test-suite) or checked scaffold workflow. The following repository commands require a clone and its development dependencies.
 
 For checked one-way operations, independently assert completion of the owned HTTP exchange and empty downstream 202 without JSON Content-Type or a body schema. Treat acknowledgement as transport acceptance only; separately qualify business outcomes and never retry uncertain operations automatically. Generated scaffold tests remain offline by default. Include matching V6/V7 regeneration, native refusal/cancellation controls and actual upstream status/selected metadata names in consumer checks; see the [one-way contract](checked-gateway.md#one-way-operations).
 
@@ -22,83 +22,60 @@ These are safety cutoffs, not performance acceptance criteria. Report slow tests
 
 ## Running Tests
 
-```bash
-npm test              # All Vitest tests
-npm run test:unit     # Unit tests only
-npm run test:snap     # Snapshot tests only
-npm run test:integration  # Integration tests only
-npm run test:conformance  # WSDL capability conformance tests only
-npm run test:installed    # Installed consumer qualification
-npm run test:watch    # Watch mode for development
-```
+Run `npm ci` in a clone on Node 24 or newer. Choose a focused command while editing and run the delivery command on the final candidate.
 
-For the full CI pipeline including smoke tests:
+| Command | Evidence |
+| --- | --- |
+| `npm test -- test/unit/tools.test.ts -t pascal` | One behavior with ordinary Vitest discovery |
+| `npm run test:conformance:gateway` | One capability stage |
+| `npm run test:conformance` | All capability stages and reference tests |
+| `npm run smoke:pipeline` | Source CLI generation and TypeScript compilation of the Weather app |
+| `npm run ci` | Full delivery gate |
+| `npm run ci:platform` | Compatibility subset for Windows and Node 26 |
+| `npm run test:reference:full` | Explicit independent reference evidence, retained under `tmp/conformance/reference/` |
 
-```bash
-npm run ci
-```
-
-Use a file and test-name filter for a focused check, or select a delivered project:
-
-```bash
-npm test -- test/unit/tools.test.ts -t pascal
-npm test -- --project fast
-npm run test:conformance:gateway
-```
-
-For interactive debugging, disabling the individual test timeout does not disable hook deadlines or the guarded wrapper's 45-minute outer deadline:
-
-```bash
-npm test -- test/unit/tools.test.ts --test-timeout=0 --no-file-parallelism
-```
-
-Prefer the guarded public commands: `npm test`, `npm run ci`, `npm run test:unit`, `npm run test:integration`, `npm run test:corpus`, `npm run test:installed` and `npm run test:conformance`. Their corresponding `:run` targets are internal, unguarded implementation commands. Direct Vitest, `test:snap`, watch, capability-stage, reference, platform and hosted CI commands are not all wrapped; the guard is not a machine-wide scheduler.
+Plain `npm test` collects every product test. Run `npm run build` first when selecting installed or built-runtime tests outside the delivery gate. Research commands are separate. Use the command list in `package.json` for additional focused tasks.
 
 ### Verification orchestration
 
-Inspect the current scripts before choosing commands. `ci` runs the reference launcher, build/typechecks, package/docs validation, broad Vitest including conformance and installed tests, smoke generation and installed package smoke. `test:installed`, `test:corpus` and standalone conformance overlap parts of that coverage; hosted quick and compatibility jobs are narrower signals.
+`npm run ci` builds the package once, validates one tarball, and runs the audited Node/WASM reference lane, broad Vitest discovery, docs and skill checks, and source and installed smoke checks. The broad Vitest run skips the already audited reference subtree. Installed tests reuse the tarball and perform isolated consumer installs for their distinct legacy, checked and relocated runtime paths.
 
-Use focused tests during development, then give one owner responsibility for final candidate verification and its evidence. When standalone conformance is required, finish it and its cleanup before starting final CI, or run the two in the opposite order. Preserve both required commands; an overlapping standalone installed run adds contention rather than independent evidence for work already running inside CI.
+GitHub uses the same gate on Linux with Node 24. The compatibility jobs run audited reference, unit, selected platform, and installed checks on Linux with Node 26 and on Windows with Node 24 and 26. Release preflight runs full delivery before packaging the release skill asset.
 
-Read-only inspection and genuinely independent bounded checks may run in parallel when capacity permits. Coordinate expensive builds, package installs and qualification across agents and worktrees because they share CPU and memory. A worktree isolates its files but does not reserve machine resources.
+Run required standalone conformance and full delivery sequentially. A checkout has one owner for `dist/` during delivery, platform qualification, or corpus verification. Wait for that run before starting a manual build or any focused check that reads `dist/`. Use another checkout when both genuinely need to run at once.
 
-The [verification wrapper](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/scripts/run-verification.ts) shares an owner across worktrees through `tmp/conformance/verification/active.json` beneath the common Git directory's parent. A live owner causes refusal; wait for it or ask its coordinator to cancel and await owned-child cleanup. Quiet output or an expired tool wait does not authorize replacing a run.
+### Temporary output and recovery
 
-Each guarded attempt prints its unique `attempt-*` directory and records `context.json`, `command.log` and `result.json`. Gateway qualification writes `checked-gateway-installed/progress.ndjson` there; schema loading writes `schema-loading/measurements.json` there. CI also copies a newly written `tmp/conformance/product-tests.json` into the attempt directory; interrupted runs may leave incomplete evidence.
+Ordinary verification prints its unique directory under `tmp/verification/`. Conformance, generated-test, smoke and package scratch stay in that workspace. The runner allocates and records a separate operating-system temporary directory for installs so Node cannot resolve checkout dependencies through their ancestors.
 
-Other writers and unguarded invocations can still use fixed paths, including gateway/schema-loading fallback paths under `tmp/conformance/` and the hosted `installed-tests.json` report. Do not assume all evidence is immutable. Preserve failed evidence before paths are reused, wait for termination and cleanup, and remove only task-owned outputs after delivery.
+The runner waits for its command to finish, removes its workspace after success or ordinary failure, and restores the pre-existing `dist/` after a delivery build. npm and CI cache `tmp/cache/npm/` across runs. Release examples, explicit reference reports, consumer `.generated/` output, and existing evidence have their own lifecycles.
 
-For a stale lock, read the specific `active.json` owner's PID, command and working directory, then inspect actual process state, including possible PID reuse and surviving owned children. Only after confirming the owner has stopped and cleanup is complete, remove that specific lock and start a deliberate replacement. There is no automatic stale-lock reclamation; never remove a live owner's lock, kill unrelated work or broadly clean `tmp/` to recover.
+Use Ctrl+C for ordinary cancellation and wait for cleanup. If the runner is forcibly stopped, find the exact printed `run-*` directory, check its recorded `owner` and `child` PIDs, and confirm that their descendants have stopped. Recover from the same checkout with the same temporary-directory environment.
 
-Record the candidate, command, environment and evidence limits when reusing matching results. A fresh independent reviewer reads the coherent diff and relevant results, then approves or returns actionable findings; coordinate additional expensive checks through the verification owner. Copied source snapshots, review-report files and repeated unchanged reviews are unnecessary.
+```bash
+npm run clean:verification -- run-ABC123
+```
 
-#### Deadlines and failures
+Recovery reports a live PID or unexpected path and leaves the workspace available for inspection. It only cleans the named run and restores the build it owned. Keep manual builds, unrelated files, and links outside that cleanup. Use console output for the failing check, timing, and relevant diagnostics. CI retains the job log.
 
-Keep the outer tool allowance long enough for the command and cleanup; polling a quiet command is not a new test attempt. The enclosing test or batch watchdog must account for its sequential work, while each child-stage deadline bounds that child. Cancellation must reach owned work and await cleanup; product byte, node, work and transport budgets enforce separate runtime contracts.
+### Windows and certificates
 
-A test runner can mark a test failed even when the behavior it checked was correct. For example, loading 64 MiB successfully and rejecting one extra byte can both pass but take about 32 seconds together, exceeding a test runner's 30-second allowance. The verification attempt still failed; retain the command, candidate, competing work and measurements before deciding whether product behavior, test composition or orchestration needs correction.
+Use Node system trust for ordinary HTTPS. Set `NODE_USE_SYSTEM_CA=1` (PowerShell below) when registry traffic passes through Windows certificate inspection such as Avast. Tests with owned TLS endpoints use their fixture CA and keep verification enabled. The tests use committed WSDL/XSD and owned endpoints. npm can contact its configured registry for dependencies when the cache is cold.
 
-Inspect active processes and progress before diagnosing a quiet run as stalled; incomplete execution establishes no passing gate. Explain failures using the concrete checks, expected and observed outcomes, delivery impact and next necessary action. If the explanation is unclear, investigate until you understand the result, then explain the facts and their meaning for the user's task; avoid redundant status messages while providing every necessary explanation.
+```powershell
+$env:NODE_USE_SYSTEM_CA = '1'
+npm run ci
+```
 
-Review how expensive tests group work, not just their subprocesses. Independent acceptance and refusal checks should have separate test cases when combining them makes one ordinary allowance cover two complete workloads. Preserve both checks, their expected outcomes and the product limits; a passing isolated run alone does not establish that every similar test has been audited or that shared-machine contention has been resolved.
+In a Windows Codex sandbox that restricts owned loopback TCP/TLS or test junction creation, request scoped elevated execution before running the affected checks. A sandbox denial in one of those controls is an execution restriction. Run the same check with the needed access and retain certificate verification.
 
-Correct the identified cause before a deliberate rerun. Keep the failed attempt visible, rerun affected checks and any unfinished required gates after cleanup, and reuse unchanged evidence without claiming an uninterrupted full-gate pass. Avoid automatic retries, global timeout increases, assertion weakening or product-budget changes to obtain a pass. An independent reviewer assesses the candidate and its evidence; coordinate any additional expensive reproduction with the verification owner rather than duplicating a running gate.
+### Test deadlines
+
+Allow at least six minutes for full conformance on Windows and allow more time for the delivery gate and cleanup. A quiet subprocess can be compiling or running generated tests. Check the running stage or owned process before starting a replacement and rerun the affected gate after correcting a failure.
 
 ## Node Support Policy
 
-The package supports Node.js >= 24.0.0. Hosted CI runs quick checks on Node 24 and a narrower compatibility smoke on Node 26. Separate installed-product jobs cover Linux and Windows on both lines, with platform checks, Windows reference/feasibility checks and standalone Linux Node 24 conformance; these signals complement broad local CI and do not replace release preflight.
-
-## Temporary Workspaces
-
-Repository test and release automation keeps disposable output classified under `tmp/`:
-
-- `tmp/smoke/`: smoke-script client, OpenAPI, gateway, app, and catalog output
-- `tmp/cache/npm/`: local npm cache used by package and dependency checks
-- `tmp/preflight/examples/`: regenerated examples used by release preflight
-- `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
-- `tmp/test-generation/`: generated-test integration spikes
-
-Keep new repository-owned temporary writers under the closest existing subfolder. Public CLI examples use the git-ignored `.generated/` convention instead of repository `tmp/` paths.
+The package supports Node.js >= 24.0.0. GitHub tests Node 24 and 26 on Linux and Windows. Release workflows run on Node 24.
 
 ## Unit Tests
 
@@ -127,31 +104,15 @@ describe("pascal", () => {
 
 ## Snapshot Tests
 
-Snapshot tests capture the complete output of the pipeline as baselines. When a generator change intentionally alters output, the snapshot diff shows exactly what changed.
-
-### How It Works
-
-1. The pipeline runs against `examples/minimal/weather.wsdl` into a temp directory
-2. Each generated file is read and compared against the stored snapshot
-3. A file inventory snapshot detects added or removed files
+The retained snapshots cover checked nil-content and keyed component artifacts. A separate integration test generates the legacy Weather pipeline twice from clean output and compares the bytes. Conformance and runtime tests assert the generated interfaces and their behavior.
 
 ### Updating Snapshots
 
 ```bash
-npx vitest run test/snapshot -u
+npm run test:snap -- -u
 ```
 
 Always review the diff before committing updated snapshots.
-
-### What's Covered
-
-- Client output: `client.ts`, `types.ts`, `utils.ts`, `operations.ts`, `catalog.json`
-- OpenAPI: `openapi.json`
-- Gateway core: `plugin.ts`, `routes.ts`, `schemas.ts`, `runtime.ts`, `_typecheck.ts`
-- Gateway routes: one handler per WSDL operation
-- Gateway route comments: propagated summary and description metadata
-- Gateway schemas: all model and operation JSON schema files
-- File inventory: complete listing of generated files
 
 ## Integration Tests
 

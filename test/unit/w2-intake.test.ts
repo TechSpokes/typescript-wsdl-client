@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterEach, expect, it, vi} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,7 +30,7 @@ it('preserves final bases, shared and query-distinct resources and remote redire
     [origin + '/model/types?xsd=0']: schema.replace('<xs:complexType', '<xs:include schemaLocation="leaf?xsd=1"/><xs:include schemaLocation="leaf?xsd=2"/><xs:include schemaLocation="leaf?xsd=1"/><xs:complexType'),
     [origin + '/model/leaf?xsd=1']: '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"/>',
     [origin + '/model/leaf?xsd=2']: '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"/>'});
-  const parent = path.resolve('tmp/conformance/w2-unit'); fs.mkdirSync(parent, {recursive: true});
+  const parent = path.resolve(verificationPath('tmp/conformance/w2-unit')); fs.mkdirSync(parent, {recursive: true});
   const app = fs.mkdtempSync(path.join(parent, 'case-')); temporary.push(app);
   const options = {model: 'checked-components-v1' as const, wsdl: origin + '/start', clientOutDir: path.join(app, 'client'), openapi: {outFile: path.join(app, 'openapi.json')},
     gateway: {outDir: path.join(app, 'gateway'), serviceSlug: 'import', versionSlug: 'v1'}, app: {appDir: app}};
@@ -69,7 +70,7 @@ it('retains cycle identity through ready planning and original-byte generation',
   expect(loaded.resources).toHaveLength(2); expect(loaded.edges.some(edge => edge.cycle)).toBe(true);
   expect(loaded.documents).toHaveLength(2); expect(loaded.resourceAliases.get(origin + '/types')).toBe(origin + '/types');
   const report = await planCheckedComponents(origin + '/root'); expect(report.ready).toBe(true); expect(report.blockers).toEqual([]);
-  const parent = path.resolve('tmp/conformance/w2-unit'); fs.mkdirSync(parent, {recursive: true});
+  const parent = path.resolve(verificationPath('tmp/conformance/w2-unit')); fs.mkdirSync(parent, {recursive: true});
   const directory = fs.mkdtempSync(path.join(parent, 'cycle-')); temporary.push(directory);
   const generated = await runGenerationPipeline({model: 'checked-components-v1', wsdl: origin + '/root', clientOutDir: path.join(directory, 'client'),
     openapi: {outFile: path.join(directory, 'openapi.json')}, gateway: {outDir: path.join(directory, 'gateway'), serviceSlug: 'cycle', versionSlug: 'v1'}});
@@ -87,7 +88,7 @@ it.each([401, 403, 404])('keeps HTTP %s retrieval failure distinct from invalid 
   expect(report.blockers[0]?.category).toBe('missing-dependency'); expect(report.dimensions.sourceLegality).toBe('unassessed');
 });
 it('refuses remote xml:base=file before reading an otherwise authorized local dependency', async () => {
-  const parent = path.resolve('tmp/conformance/w2-unit'); fs.mkdirSync(parent, {recursive: true});
+  const parent = path.resolve(verificationPath('tmp/conformance/w2-unit')); fs.mkdirSync(parent, {recursive: true});
   const directory = fs.mkdtempSync(path.join(parent, 'base-')); temporary.push(directory);
   const file = path.join(directory, 'types.xsd'); fs.writeFileSync(file, schema);
   const calls = transport({[origin + '/root']: fixture.replace('<xs:import ', `<xs:import xml:base="${pathToFileURL(directory + path.sep).href}" `)

@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile, symlink} from 'node:fs/promises';
 import path from 'node:path';
@@ -19,8 +20,8 @@ vi.mock('@techspokes/typescript-wsdl-client', () => import('../../src/index.js')
 const ns = 'urn:conformance:import-relative-types', soap = 'http://schemas.xmlsoap.org/soap/envelope/';
 let directory: string, fixture: string, schema: string;
 beforeAll(async () => {
-  await mkdir('tmp/conformance/component-pipeline', {recursive: true});
-  directory = await mkdtemp(path.resolve('tmp/conformance/component-pipeline/suite-'));
+  await mkdir(verificationPath('tmp/conformance/component-pipeline'), {recursive: true});
+  directory = await mkdtemp(path.resolve(verificationPath('tmp/conformance/component-pipeline/suite-')));
   [fixture, schema] = await Promise.all([readFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl', 'utf8'),
     readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', 'utf8')]);
 });

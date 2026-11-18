@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it, vi} from 'vitest';
 import path from 'node:path';
 import {mkdir, mkdtemp, readFile, writeFile, rm} from 'node:fs/promises';
@@ -24,8 +25,8 @@ describe('scoped native payload diagnostics', () => {
   it('marks occurrence overflow and bounded ancestor truncation explicitly', async () => {
     expect(diagnosticName({namespace, local: 'Embed'}, 100_001)).toBe(`{${namespace}}Embed[>100000]`);
     expect(diagnosticName({namespace, local: 'Embed'}, 100_000)).toBe(`{${namespace}}Embed[100000]`);
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/diagnostic-depth-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/diagnostic-depth-')));
     try {
       const levels = Array.from({length: 36}, (_, index) => 'Level' + index + '_'.repeat(56));
       const file = path.join(temporary, 'deep.wsdl');
@@ -127,8 +128,8 @@ describe('scoped native payload diagnostics', () => {
   });
 
   it('recovers original declaration pins after a prior type correction and separates independent universes', async () => {
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/private-path-marker-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/private-path-marker-')));
     try {
       const original = await readFile(source);
       const independent = path.join(temporary, 'independent.wsdl');
@@ -156,8 +157,8 @@ describe('scoped native payload diagnostics', () => {
   });
 
   it('retains one-based repeated occurrence indexes and refuses capacities and cancellation before sources', async () => {
-    await mkdir('tmp/conformance', {recursive: true});
-    const temporary = await mkdtemp(path.resolve('tmp/conformance/diagnostic-repeat-'));
+    await mkdir(verificationPath('tmp/conformance'), {recursive: true});
+    const temporary = await mkdtemp(path.resolve(verificationPath('tmp/conformance/diagnostic-repeat-')));
     try {
       const file = path.join(temporary, 'repeat.wsdl');
       await writeFile(file, (await readFile(source, 'utf8')).replace('name="Embed" type="xs:anyURI"', 'name="Embed" type="xs:anyURI" maxOccurs="2"'));

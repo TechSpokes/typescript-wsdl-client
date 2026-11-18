@@ -1,3 +1,4 @@
+import {verificationPath} from "../../../helpers/verificationPath.js";
 import { execFileSync, spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { delimiter, join, resolve } from 'node:path';
@@ -5,8 +6,8 @@ import { describe, expect, it } from 'vitest';
 
 describe.skipIf(process.platform === 'win32')('qualification bootstrap logging', () => {
     it.each([0, 7, 'startup-failure'] as const)('keeps environment-derived arguments out of logs with Docker outcome %s', status => {
-        mkdirSync('tmp/conformance', { recursive: true });
-        const root = resolve(mkdtempSync('tmp/conformance/platform-log-control-'));
+        mkdirSync(verificationPath('tmp/conformance'), { recursive: true });
+        const root = resolve(mkdtempSync(verificationPath('tmp/conformance/platform-log-control-')));
         const checkout = join(root, 'candidate'), bin = join(root, 'bin'), received = join(root, 'received.json');
         const certificate = join(root, 'private-certificate-sentinel.pem');
         try {

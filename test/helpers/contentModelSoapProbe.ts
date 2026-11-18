@@ -1,3 +1,4 @@
+import {verificationPath} from "./verificationPath.js";
 import {createServer, type IncomingHttpHeaders, type ServerResponse} from "node:http";
 import {createServer as createTlsServer} from "node:https";
 import {readFileSync, mkdirSync, mkdtempSync, writeFileSync, rmSync} from "node:fs";
@@ -114,8 +115,8 @@ export function pinBufferedPort(dependency: Client, port: "First11" | "Second11"
  * @sideEffects Writes a disposable project under tmp/conformance.
  */
 export async function generateProbe(url: string, bindings: "mixed" | "single-soap11" = "mixed") {
-  mkdirSync("tmp/conformance", {recursive: true});
-  const directory = mkdtempSync(resolve("tmp/conformance/soap-feasibility-"));
+  mkdirSync(verificationPath("tmp/conformance"), {recursive: true});
+  const directory = mkdtempSync(resolve(verificationPath("tmp/conformance/soap-feasibility-")));
   const wsdl = join(directory, "probe.wsdl");
   let source = readFileSync(join(fixtureDir, "probe.wsdl"), "utf8").replaceAll("http://127.0.0.1:1", url);
   // @constraints Positive transport checks isolate one binding; the original mixed fixture remains independent library-limit evidence.

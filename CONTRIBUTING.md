@@ -15,16 +15,13 @@ The offline reference lane uses the pinned test-only Node/WASM dependency instal
 ```bash
 git clone https://github.com/techspokes/typescript-wsdl-client.git
 cd typescript-wsdl-client
-npm install
+npm ci
 ```
 
 ### Verify Setup
 
 ```bash
-npm run reference:setup
-npm run build
-npm run test:unit
-npm run smoke:pipeline
+npm test -- test/unit/tools.test.ts
 ```
 
 ### Development Commands
@@ -136,95 +133,33 @@ Large generated source blocks should live in packaged runtime templates, not in 
 
 ## Testing Strategy
 
-Tests verify observable contracts and regressions, diagnose failures and support confident changes. Choose the smallest meaningful check by behavior and resource cost; unit-folder tests can compile or load large inputs, and snapshots are an assertion technique. Mock integration, independent XML/SOAP reference evidence and installed-consumer qualification cover different boundaries.
+Use `npm test -- <path> -t <name>` for targeted work. Use `npm run test:conformance:<stage>` for one capability stage, and `npm run smoke:pipeline` for source CLI generation and app compilation.
 
-Vitest runs `fast` before the bounded `workflows` project. Use the detailed [Testing Guide](docs/testing.md#test-architecture) for worker/test/hook defaults, explicit longer overrides and focused/debug examples; those repository settings do not apply to [consumer projects](docs/testing.md#for-consumer-projects).
+Run `npm run ci` on the final candidate. It covers the independent reference suite, broad product tests, a single build and packed candidate, isolated npm consumers, docs and the release skill. GitHub runs the same gate on Linux with Node 24 and a compatibility subset on Windows and the current Node line.
 
-### Test Commands
-
-- `npm test`: run all product Vitest tests, including independent reference and conformance tests
-- `npm run test:unit`: unit-folder checks, including compilation and resource workflows
-- `npm run test:snap`: snapshot tests for generated code
-- `npm run test:integration`: integration workflows, including installed qualification
-- `npm run test:conformance`: complete WSDL capability conformance tests
-- `npm run test:conformance:<stage>`: one contracts, compile, client, OpenAPI, gateway, generated-test, or app evidence layer
-- `npm run test:watch`: watch mode during development
-- `npm run smoke:pipeline`: full CLI smoke test
-- `npm run test:corpus`: selected public corpus evidence and installed-package checks
-- `npm run research:ci`: optional research typechecks, documentation and tests
-
-Run `npm run ci` for complete product validation before delivery when required by the change. It runs the reference launcher once, then excludes those files only from its subsequent broad Vitest command; `npm test` remains complete for the product suite. Documentation-only work can use focused docs/skill validation and matching implementation evidence; required automatic hosted checks and merge protections still apply.
-
-Use the [verification orchestration guide](docs/testing.md#verification-orchestration) to assign final-gate and evidence ownership. Full CI already discovers conformance and installed tests; run separately required conformance sequentially with CI, and coordinate expensive checks across agents and worktrees before adding another overlapping run.
-
-Research lives under `research/` and is separate from product checks and release gates. Use the [research guide](research/README.md) for commands and unresolved work; preserve product regression and independent XML/HTTP evidence when changing shared fixtures or compiler internals.
-
-Full conformance generates and validates several consumer-style projects. Allow at least six minutes with measured headroom for current load, inspect progress before treating quiet nested work as stalled, and use the narrowest stage command while developing.
-
-### Qualification timeouts and progress
-
-Test watchdogs are safeguards, not performance assertions unless a test explicitly checks latency. Slow-test reporting and product byte/I/O/SOAP limits remain separate; a batch allowance must cover sequential work and cleanup under current load.
-
-Guarded attempts print their evidence directory with context, log and outcome, plus relocated gateway progress and schema-loading measurements. Other writers and unguarded runs can retain fixed paths; follow [verification orchestration](docs/testing.md#verification-orchestration) for exact locations, progress inspection, preserved failures and safe stale-lock recovery.
-
-### Shared workstations
-
-Prefer guarded public commands over internal `:run` targets. A shared live owner prevents overlapping guarded runs across worktrees; direct Vitest, watch, stage, reference and hosted commands are not all guarded. Neither the wrapper nor Vitest worker bounds reserve machine capacity, so coordinate expensive work with one owner and await cancellation/cleanup before replacement.
-
-Reuse matching results with candidate, command, environment and limits. A fresh independent reviewer reads the coherent diff and results and approves or returns actionable findings; coordinate any expensive reproduction with the verification owner.
+See the [Testing Guide](docs/testing.md#running-tests) for prerequisites, the Windows sandbox and certificate setup, output ownership, and recovery. The ordinary delivery gate restores any build present before it started and cleans its own scratch after success or failure. Release preflight owns the final release gate and preserves its release artifacts.
 
 ### Test Structure
 
 ```text
 test/
-  unit/                  Utility, compiler, filesystem and resource checks
-  snapshot/              Generated output baselines
-  integration/           Gateway, streaming, and generated-test integration tests
-  conformance/           Fixture-backed WSDL capability evidence
-  tooling/               Repository automation contracts
-  helpers/               Shared test utilities
+  unit/          Utility, compiler, filesystem and resource checks
+  snapshot/      Focused generated output baselines
+  integration/   Runtime, consumer and generated-test integration
+  conformance/   Fixture-backed capability and independent reference checks
+  tooling/       Repository automation contracts
+  helpers/       Shared test utilities
 ```
 
 ### Updating Snapshots
 
-When a generator change intentionally alters output:
+When a generator change intentionally alters a retained snapshot:
 
 ```bash
-npx vitest run test/snapshot -u
+npm run test:snap -- -u
 ```
 
-Review the snapshot diff before committing. The snapshot suite also checks the generated file inventory.
-
-### Smoke Tests
-
-Smoke tests generate output to `tmp/smoke/` from `examples/minimal/weather.wsdl`, then typecheck with `tsc -p tsconfig.smoke.json`.
-
-- `npm run smoke:compile`: WSDL parsing and catalog generation
-- `npm run smoke:client`: TypeScript client generation and typecheck
-- `npm run smoke:openapi`: OpenAPI 3.1 generation and typecheck
-- `npm run smoke:gateway`: client, OpenAPI, and gateway generation
-- `npm run smoke:pipeline`: full pipeline with app scaffold and typecheck
-- `npm run smoke:app`: standalone app generation and typecheck
-
-The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tmp/smoke/**/*.ts`. It maps `soap` to local type stubs so generated client code compiles without a live SOAP runtime.
-
-### Temporary Workspace Layout
-
-Repository automation keeps disposable output classified under `tmp/` so smoke artifacts, caches, release checks, and generated-test spikes do not collide.
-
-- `tmp/smoke/`: smoke-script client, OpenAPI, gateway, app, and catalog output
-- `tmp/cache/npm/`: local npm cache used by package and dependency checks
-- `tmp/preflight/examples/`: regenerated examples used by release preflight
-- `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
-- `tmp/test-generation/`: generated-test integration spikes
-
-Consumer-facing examples use `.generated/`, which is git-ignored and separate from repository automation. `npm run smoke:reset` removes only `tmp/smoke/`; inspect ownership and preserve failed evidence before cleanup, and remove only task-owned outputs. Never use broad `tmp/` cleanup to recover a verification lock.
-
-### CI Pipeline
-
-`npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, documentation validation, Vitest, and the smoke pipeline.
-
-This verifies compilation, broad tests including conformance and installed workflows, CLI smoke, package contents and extracted skill validity. Documentation checks validate selected structure and links; they do not semantically typecheck fenced examples or establish that shell commands are runnable. Review snippets against actual scripts, emitted files and prerequisites.
+Review the diff alongside the source change.
 
 ## Repository Health Checks
 
@@ -251,8 +186,7 @@ When an IDE inspection tool is available, run it on touched Markdown files and g
 ## Adding Test Fixtures
 
 1. Add the `.wsdl` file to `examples/`.
-2. Add a corresponding smoke test script to `package.json` if needed.
-3. Include the generated output path in `tsconfig.smoke.json` if needed.
+2. Register the fixture with the capability suite or exercise its distinct behavior in a focused test.
 
 See [Testing Guide](docs/testing.md) for integration test architecture and mock client examples.
 

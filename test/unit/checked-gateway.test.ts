@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -20,8 +21,8 @@ const selection = {service: {namespace, local: 'ForecastService'}, port: 'Foreca
 let scratch: string, expected: ReconstructedComponentSource;
 let plugin: FastifyPluginAsync<{clientOptions: unknown}>;
 beforeAll(async () => {
-  await mkdir('tmp/test-generation', {recursive: true});
-  scratch = await mkdtemp(path.resolve('tmp/test-generation/checked-gateway-'));
+  await mkdir(verificationPath('tmp/test-generation'), {recursive: true});
+  scratch = await mkdtemp(path.resolve(verificationPath('tmp/test-generation/checked-gateway-')));
   const file = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl');
   const selected = await selectComponentOperation(file, {
     portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast',

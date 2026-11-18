@@ -52,7 +52,7 @@ npx tsc -p test/conformance/tsconfig.json
 
 `reference:setup` checks the installed package version and executes a schema-construction control. Normal `npm ci` installs the prebuilt artifact; no interpreter environment or activation is needed.
 
-The engine remains a development dependency outside generated consumer artifacts. Reports stay under `tmp/conformance/reference`; ordinary pipeline resets remove only `tmp/smoke`.
+The engine remains a development dependency outside generated consumer artifacts. Use `npm run test:reference:full` to retain reference reports under `tmp/conformance/reference/`.
 
 ### Required and full lanes
 

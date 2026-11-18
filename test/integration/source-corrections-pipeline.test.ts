@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {afterAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, symlink, writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -21,8 +22,8 @@ const namespace = 'urn:conformance:import-relative-types';
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 
 async function setup() {
-  await mkdir('tmp/conformance/source-corrections', {recursive: true});
-  const root = await mkdtemp(path.resolve('tmp/conformance/source-corrections/case-')); temporary.push(root);
+  await mkdir(verificationPath('tmp/conformance/source-corrections'), {recursive: true});
+  const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/source-corrections/case-'))); temporary.push(root);
   const inputs = path.join(root, 'inputs'), project = path.join(root, 'project'); await mkdir(inputs);
   const source = path.join(inputs, 'source.wsdl'), schema = path.join(inputs, 'import-relative-types-types.xsd');
   await writeFile(source, await readFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl'));

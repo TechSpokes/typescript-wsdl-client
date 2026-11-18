@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {existsSync, readdirSync} from 'node:fs';
 import {describe, expect, it} from 'vitest';
 import {capabilities} from '../conformance/registry.js';
@@ -7,8 +8,8 @@ describe('conformance caller cancellation', () => {
   it('rejects every stage before allocating output for an already cancelled caller', async () => {
     const capability = {...capabilities.find(row => row.client && row.gateway && row.generatedTests && row.app)!,
       id: 'cancelled-conformance-control'};
-    const outputs = () => existsSync('tmp/conformance')
-      ? readdirSync('tmp/conformance').filter(name => name.startsWith(capability.id + '-')).sort() : [];
+    const outputs = () => existsSync(verificationPath('tmp/conformance'))
+      ? readdirSync(verificationPath('tmp/conformance')).filter(name => name.startsWith(capability.id + '-')).sort() : [];
     const before = outputs();
     const reason = new Error('cancelled conformance qualification');
     for (const run of [runCompileCase, runClientCase, runOpenApiCase, runGatewayCase, runGeneratedTestsCase, runAppCase]) {

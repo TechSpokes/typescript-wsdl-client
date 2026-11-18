@@ -1,3 +1,4 @@
+import {verificationPath} from "../helpers/verificationPath.js";
 import {describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, writeFile, rm} from 'node:fs/promises';
 import path from 'node:path';
@@ -18,8 +19,8 @@ const receiptId = JSON.stringify(['output', namespace, 'Output', 'receipt', null
 
 describe.each(['11', '12'] as const)('service SOAP %s header capabilities', version => {
 it('routes headers only to their selected operation', async context => {
-  await mkdir('tmp/conformance/component-service-headers', {recursive: true});
-  const root = await mkdtemp(path.resolve('tmp/conformance/component-service-headers/case-'));
+  await mkdir(verificationPath('tmp/conformance/component-service-headers'), {recursive: true});
+  const root = await mkdtemp(path.resolve(verificationPath('tmp/conformance/component-service-headers/case-')));
   const source = path.join(root, 'source.wsdl'), project = path.join(root, 'project');
   const original = await readFile('test/conformance/fixtures/soap/headers/declared-literal.wsdl', 'utf8');
   const messages = '<w:message name="PlainInput"><w:part name="body" element="t:Request"/></w:message><w:message name="PlainOutput"><w:part name="body" element="t:Response"/></w:message>';
