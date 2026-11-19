@@ -114,7 +114,7 @@ TLS verification stays enabled. The optional `caFile` supplies a trusted CA; it 
 
 ## Standalone checked client
 
-Use a build that includes standalone checked generation to emit only the client and its source-backed contracts. Install `@techspokes/typescript-wsdl-client` as a runtime dependency in the consumer and run the [client command](cli-reference.md#checked-client) from the original WSDL.
+Standalone checked generation is available in version 1.10.0 and later. Install `@techspokes/typescript-wsdl-client` as a runtime dependency in the consumer and run the [client command](cli-reference.md#checked-client) from the original WSDL.
 
 ```bash
 npx wsdl-tsc client --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast-client

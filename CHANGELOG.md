@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-11-19
+
 - feat(checked): generate standalone checked SOAP clients from original WSDL through the CLI and package-root API.
 
 ## [1.9.0] - 2026-11-18
