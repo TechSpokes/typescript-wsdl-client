@@ -6,13 +6,13 @@ import {
   directDependencyRanges,
   appGeneratorPinRegex,
   directDependencyNames,
-  expectedRanges,
   failIfErrors,
   readJson,
   runNpm,
   verifyRootManifestAndLock,
   writeJson,
 } from "./lib/deps.mjs";
+import { expectedRanges } from "./lib/dependency-freshness.ts";
 
 function updateRootPackage(pkg, ranges) {
   let changed = false;
@@ -54,11 +54,11 @@ function updateAppGenerator(ranges) {
   return changed;
 }
 
-function main() {
+async function main() {
   const pkg = readJson(PACKAGE_JSON);
   const rootPackages = directDependencyNames(pkg);
   const appPackages = Object.values(APP_DEPENDENCIES).flat();
-  const ranges = expectedRanges([...new Set([...rootPackages, ...appPackages])].sort(), directDependencyRanges(pkg));
+  const ranges = await expectedRanges([...new Set([...rootPackages, ...appPackages])].sort(), directDependencyRanges(pkg));
 
   const rootChanged = updateRootPackage(pkg, ranges);
   const appChanged = updateAppGenerator(ranges);
@@ -82,7 +82,7 @@ function main() {
 }
 
 try {
-  main();
+  await main();
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);

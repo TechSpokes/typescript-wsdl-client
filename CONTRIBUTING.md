@@ -8,6 +8,8 @@ Thank you for contributing to `typescript-wsdl-client`. This guide covers local 
 
 Node.js >= 24 and npm are required.
 
+The release archive tests and read-only handoff rehearsal use `tar` to inspect the packed contents.
+
 The offline reference lane uses the pinned test-only Node/WASM dependency installed by npm. Run `npm run reference:setup` to check it; see [Reference Validation](docs/reference-validation.md) for the accepted evidence contract, limits and platform qualification.
 
 ### Clone and Install
@@ -172,6 +174,8 @@ For a minor release, verify the target version is the next minor after the lates
 Run `npm run maint:deps` when preparing a release so root dependency minimums and generated app pins stay aligned.
 
 Every release commit must include `docs/releases/vX.Y.Z.md`. Run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree and confirm the release ZIP exists under `dist/assets/`.
+
+Changes approved to ship immediately can carry their release metadata in the same PR. Use a separate PR when qualification, review or release sequencing needs a separate candidate. Both paths require independent review and release verification.
 
 Include release notes, versions, changelog, and the root documentation link before pushing the release PR. After merging, verify that main's tree matches the preflight-validated tree before tagging the merged commit. Follow the [release delivery procedure](docs/releases/README.md#candidate-publication).
 

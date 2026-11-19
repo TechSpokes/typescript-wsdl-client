@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Record checked-out verification inputs
+        shell: bash
+        run: git show --no-patch --format=raw HEAD | sed -n -e '/^commit /p' -e '/^tree /p' -e '/^parent /p'
       - run: npm ci
       - run: npm run ci
 
@@ -52,6 +55,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+      - name: Record checked-out verification inputs
+        shell: bash
+        run: git show --no-patch --format=raw HEAD | sed -n -e '/^commit /p' -e '/^tree /p' -e '/^parent /p'
       - run: npm ci
       - run: npm run ci:platform
         if: github.event_name != 'workflow_dispatch'

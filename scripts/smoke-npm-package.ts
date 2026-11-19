@@ -6,6 +6,13 @@ import {candidateTarball, lockedDependencies} from './lib/candidate-package.js';
 import {runOwnedNode} from '../test/helpers/ownedNodeProcess.js';
 
 const root = process.cwd();
+const started = performance.now();
+let phaseStart = started;
+const phase = (label: string) => {
+  const now = performance.now();
+  console.info(`[legacy smoke] ${label}: ${Math.round(now - phaseStart)}ms`);
+  phaseStart = now;
+};
 const workspace = process.env.WSDL_TEST_RUN_DIR;
 const npmCli = process.env.npm_execpath;
 if (!workspace || !npmCli) throw new Error('Run this check using npm run package:smoke');
@@ -27,7 +34,9 @@ try {
   const tarball = await candidateTarball(workspace, async () =>
     (await npm(['pack', '--json', '--pack-destination', workspace], root)).stdout);
   await write('package.json', JSON.stringify({name: 'legacy-package-consumer', private: true, type: 'module'}));
+  phase('consumer and tarball setup');
   await npm(['install', '--prefer-offline', '--omit=dev', tarball]);
+  phase('production-only install');
   await copyFile('examples/minimal/weather.wsdl', path.join(consumer, 'weather.wsdl'));
   await run(['--input-type=module', '-e', `
     import {createRequire} from 'node:module';
@@ -44,6 +53,7 @@ try {
     await compileWsdlToProject({wsdl: 'weather.wsdl', outDir: 'api-client', options: {imports: 'js'}});
   `);
   await run(['api.mjs']);
+  phase('production CLI and API generation');
 
   const app = JSON.parse(await readFile(path.join(consumer, '.generated/app/package.json'), 'utf8')) as {
     dependencies: Record<string, string>;
@@ -51,11 +61,14 @@ try {
   await npm(['install', '--prefer-offline', ...lockedDependencies([
     ...Object.keys(app.dependencies), 'typescript', '@types/node', 'vitest',
   ])]);
+  phase('developer tooling install');
   await copyFile('test/helpers/installedDeclarationNavigation.ts', path.join(consumer, 'declaration-navigation.ts'));
   await run(['declaration-navigation.ts']);
+  phase('declaration navigation');
   await run(['node_modules/typescript/bin/tsc', '--noEmit', '-p', '.generated/app/tsconfig.json']);
   await run([path.join(consumer, 'node_modules/vitest/vitest.mjs'), 'run', '--config', 'vitest.config.ts'],
     path.join(consumer, '.generated/tests'), true);
+  phase('generated app compile and tests');
   for (const directory of ['.generated/client', '.generated/gateway', '.generated/app', '.generated/tests', 'api-client']) {
     const files = (await readdir(path.join(consumer, directory), {recursive: true, withFileTypes: true}))
       .filter(entry => entry.isFile() && entry.name.endsWith('.ts'));
@@ -69,10 +82,14 @@ try {
   await rename(preamble, preamble + '.removed');
   await assert.rejects(cli(['client', '--wsdl-source', 'weather.wsdl', '--client-dir', 'broken-client']), /preamble/i);
   await assert.rejects(readFile(path.join(consumer, 'broken-client/client.ts')), {code: 'ENOENT'});
+  phase('generated files and missing-resource refusal');
   console.log(`Installed package ${manifest.version} passed: npm CLI, package-root API and declarations, generated app and tests, missing-resource refusal.`);
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
 } finally {
+  phaseStart = performance.now();
   await rm(consumer, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  phase('cleanup');
+  console.info(`[legacy smoke] total: ${Math.round(performance.now() - started)}ms`);
 }

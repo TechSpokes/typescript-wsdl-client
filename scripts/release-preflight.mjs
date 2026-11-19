@@ -9,13 +9,13 @@ import {
   PACKAGE_LOCK_JSON,
   ROOT,
   directDependencyRanges,
-  expectedRanges,
   failIfErrors,
   readJson,
   runNpm,
   verifyGeneratedAppSource,
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
+import { expectedRanges } from "./lib/dependency-freshness.ts";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
 import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate, verifyReleaseAbandonmentGate, verifySkillDeliveryGate, verifyTrackedTreeStable } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
@@ -195,13 +195,13 @@ function releaseNotes(tag) {
 
 let cachedRanges = null;
 
-function depFreshness() {
+async function depFreshness() {
   const pkg = readJson(PACKAGE_JSON);
   const names = [
     ...Object.keys(pkg.dependencies ?? {}),
     ...Object.keys(pkg.devDependencies ?? {}),
   ].sort();
-  const ranges = expectedRanges(names, directDependencyRanges(pkg));
+  const ranges = await expectedRanges(names, directDependencyRanges(pkg));
   const errors = verifyRootManifestAndLock(ranges);
   failIfErrors(errors);
   cachedRanges = ranges;

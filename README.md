@@ -305,6 +305,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.11.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.11.0.md) | Release verification, dependency freshness and package handoff controls |
 | [v1.10.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.10.0.md) | Standalone checked SOAP clients through the CLI and package-root API |
 | [v1.9.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.9.0.md) | Checked scalar extensions, wider unions, expanded QNames and source annotations |
 | [v1.8.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.8.1.md) | Faster verification and a reviewed release delivery sequence |

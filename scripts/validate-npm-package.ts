@@ -11,6 +11,7 @@ import {candidateFilename} from './lib/candidate-package.js';
 import {runOwnedNode} from '../test/helpers/ownedNodeProcess.js';
 import {validatePreambleDirectory} from './lib/preamble-validation.mjs';
 import {extractMarkdownLinks} from './validate-docs.mjs';
+import {validatePackedTarball} from './lib/release-tarball.ts';
 
 const requiredFiles = [
   'dist/cli.js', 'dist/index.js', 'dist/index.d.ts', 'dist/checkedPipeline.js',
@@ -76,7 +77,9 @@ async function main(): Promise<void> {
   const npm = process.env.npm_execpath;
   if (!npm) throw new Error('Run this check using npm run package:validate');
   const workspace = process.env.WSDL_TEST_RUN_DIR;
-  const destination = process.argv.includes('--pack') && workspace ? path.join(workspace, 'package') : undefined;
+  const releaseDestination = process.argv.includes('--release-tarball') ? process.env.RELEASE_TARBALL_DIR : undefined;
+  if (process.argv.includes('--release-tarball') && !releaseDestination) throw new Error('--release-tarball requires RELEASE_TARBALL_DIR');
+  const destination = releaseDestination ?? (process.argv.includes('--pack') && workspace ? path.join(workspace, 'package') : undefined);
   if (process.argv.includes('--pack') && !destination) throw new Error('--pack requires the delivery workspace');
   if (destination) await mkdir(destination);
   validatePreambleDirectory(path.join(root, 'src/generation/preambles'));
@@ -84,8 +87,15 @@ async function main(): Promise<void> {
     ...(destination ? ['--pack-destination', destination] : ['--dry-run'])], {cwd: root, timeoutMs: 120_000});
   const report = readPackReport(result.stdout);
   const files = report.files.map(file => file.path);
-  validatePackageFiles(files, file => readFileSync(path.join(root, file), 'utf8'));
-  if (destination) await writeFile(path.join(destination, 'candidate'), candidateFilename(report.filename));
+  if (releaseDestination) {
+    const filename = candidateFilename(report.filename);
+    const archive = path.join(releaseDestination, filename);
+    const sha256 = await validatePackedTarball(archive, report.integrity, files, validatePackageFiles);
+    await writeFile(path.join(releaseDestination, 'candidate'), JSON.stringify({filename, sha256}), {flag: 'wx'});
+  } else {
+    validatePackageFiles(files, file => readFileSync(path.join(root, file), 'utf8'));
+    if (destination) await writeFile(path.join(destination, 'candidate'), candidateFilename(report.filename));
+  }
   const categories = new Map<string, {files: number; bytes: number}>();
   for (const file of report.files) {
     const category = file.path.startsWith('dist/') ? 'compiled code and declarations'
