@@ -9,6 +9,13 @@
     <x:simpleType name="Flag"><x:union memberTypes="x:boolean t:Automatic"/></x:simpleType>
     <x:simpleType name="Collection"><x:list itemType="t:Amount"/></x:simpleType>
     <x:simpleType name="CollectionWitness"><x:restriction base="t:Collection"><x:pattern value="\+01\.00 AUTO"/></x:restriction></x:simpleType>
+    <x:simpleType name="FloatOrAutomatic"><x:union memberTypes="x:float t:Automatic"/></x:simpleType>
+    <x:simpleType name="DateOrAutomatic"><x:union memberTypes="x:dateTime t:Automatic"/></x:simpleType>
+    <x:simpleType name="BinaryOrAutomatic"><x:union memberTypes="x:hexBinary t:Automatic"/></x:simpleType>
+    <x:simpleType name="IntegerWord"><x:union memberTypes="x:int t:Automatic"/></x:simpleType>
+    <x:simpleType name="IntegerWords"><x:list itemType="t:IntegerWord"/></x:simpleType>
+    <x:simpleType name="TupleOrAutomatic"><x:union memberTypes="t:IntegerWords t:Automatic"/></x:simpleType>
+    <x:simpleType name="FloatCollection"><x:list itemType="t:FloatOrAutomatic"/></x:simpleType>
     <x:complexType name="UnionRecord"><x:sequence>
       <x:element name="amount" type="t:Amount"/>
       <x:element name="flag" type="t:Flag"/>
@@ -16,6 +23,11 @@
       <x:element name="inline" minOccurs="0"><x:simpleType><x:union><x:simpleType><x:restriction base="x:decimal"/></x:simpleType><x:simpleType><x:restriction base="t:Automatic"/></x:simpleType></x:union></x:simpleType></x:element>
       <x:element name="collection" type="t:Collection" minOccurs="0"/>
       <x:element name="collectionWitness" type="t:CollectionWitness" minOccurs="0"/>
+      <x:element name="floating" type="t:FloatOrAutomatic" minOccurs="0" fixed="1E0"/>
+      <x:element name="timestamp" type="t:DateOrAutomatic" minOccurs="0" fixed="2001-10-26T21:32:52Z"/>
+      <x:element name="binary" type="t:BinaryOrAutomatic" minOccurs="0" fixed="AB01"/>
+      <x:element name="tuple" type="t:TupleOrAutomatic" minOccurs="0" fixed="1 02"/>
+      <x:element name="floatCollection" type="t:FloatCollection" minOccurs="0"/>
     </x:sequence></x:complexType>
     <x:element name="Exchange" type="t:UnionRecord"/>
     <x:element name="ExchangeResponse" type="t:UnionRecord"/>

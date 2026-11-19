@@ -5,6 +5,9 @@ import {inspectComponentValueMapping} from '../compiler/directValues.js';
 import {projectionScalarRepresentation, inspectOrderedProjectionWildcards, inspectUnassessedProjectionWildcards} from '../compiler/directStructurePlan.js';
 import type {DirectProjectionValue, DirectProjectionAttribute} from '../compiler/directStructurePlan.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
+import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import type {AttributeNode, ElementNode, GraphNode} from '../compiler/canonicalGraph.js';
+import {documentationComment, sourceDocumentation} from './sourceDocumentation.js';
 import {createHash} from 'node:crypto';
 import {isComponentRecordProjection, inspectComponentRecordProjection} from '../compiler/componentRecordProjection.js';
 import type {GroupNode} from '../compiler/applicationGroups.js';
@@ -27,6 +30,9 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     return lowerComponentShape(owned.companion, owned.mapping, role, check);
   }
   const {mapping, projection, applicationGroups, rpcParts} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
+  const valueDocumentation = (node: GraphNode): string | undefined => node.annotations.length
+    ? sourceDocumentation(node.annotations, XSD_NAMESPACE, amount => {check(); context.budget.chargeWork(amount);}) : undefined;
+  const described = (schema: Schema, text?: string): Schema => text ? {...schema, description: text} : schema;
   if ('parts' in mapping.root) {
     const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
     const required: string[] = [], members: string[] = [];
@@ -53,11 +59,18 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     ? applicationRecordName(record.type.id) : `${role}_Record_${index}`]));
   const definitions: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
   const declarations: string[] = [];
+  const expandedName = {type: 'object', additionalProperties: false, required: ['namespace', 'local'],
+    properties: {namespace: {type: 'string'}, local: {type: 'string', minLength: 1}}};
+  const expandedNameType = '{readonly namespace: string; readonly local: string}';
+  const scopedWord = {type: 'object', additionalProperties: false, required: ['$value', '$namespaces'],
+    properties: {$value: {type: 'string'}, $namespaces: {type: 'object', additionalProperties: {type: 'string'}}}};
+  const scopedWordType = '{readonly "$value": string; readonly "$namespaces": Readonly<Record<string, string>>}';
   const lexicalAttribute = {type: 'object', minProperties: 1, maxProperties: 1, additionalProperties: {anyOf: [
-    {type: 'string'}, {type: 'number'}, {type: 'boolean'}, {type: 'array', items: {anyOf: [{type: 'string'}, {type: 'number'}, {type: 'boolean'}]}},
+    {type: 'string'}, {type: 'number'}, {type: 'boolean'}, expandedName, scopedWord,
+    {type: 'array', items: {anyOf: [{type: 'string'}, {type: 'number'}, {type: 'boolean'}, expandedName]}},
     {type: 'object', additionalProperties: false, required: ['$namespace', '$value'], properties: {
       $namespace: {type: 'string', minLength: 1}, $value: {}}}]}};
-  const lexicalAttributeType = 'Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[] | {readonly "$namespace": string; readonly "$value": unknown}>>';
+  const lexicalAttributeType = `Readonly<Record<string, string | number | boolean | ${expandedNameType} | ${scopedWordType} | readonly (string | number | boolean | ${expandedNameType})[] | {readonly "$namespace": string; readonly "$value": unknown}>>`;
   const openName = applicationGroups ? 'ApplicationOpenValue' : `${role}_OpenValue`;
   let openDeclared = false;
   const openShape = () => {
@@ -83,16 +96,37 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     check();
     // @why A list-level pattern retains one lexical witness; its HTTP value is a string rather than an item array.
     const item = value.retainLexical ? value : value.list ?? value;
-    const type = item.retainLexical ? 'string' : projectionScalarRepresentation(item.builtin);
-    if (!type) throw new TypeError('Unsupported native scalar representation');
-    const schema: Schema = type === 'number' ? {type: 'integer', minimum: -2147483648, maximum: 2147483647}
-      : type === 'string' ? {type, pattern: '^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$'} : {type};
+    if (item.builtin.local === 'QName' && item.retainLexical) return {type: scopedWordType, schema: scopedWord};
+    const representation = item.retainLexical ? 'string' : projectionScalarRepresentation(item.builtin);
+    if (!representation) throw new TypeError('Unsupported native scalar representation');
+    const type = representation === 'qname' ? expandedNameType : representation;
+    const schema: Schema = representation === 'qname' ? expandedName
+      : representation === 'number' ? {type: 'integer', minimum: -2147483648, maximum: 2147483647}
+        : representation === 'string' ? {type, pattern: '^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$'} : {type};
     return value.list && !value.retainLexical ? {type: `readonly ${type}[]`, schema: {type: 'array', items: schema}} : {type, schema};
   };
-  const shape = (value: DirectProjectionValue): {type: string; schema: Schema} => {
+  const annotatedScalars = new Map<string, string>();
+  const scalarDeclaration = (value: {type: string; schema: Schema}, declaration?: ElementNode | AttributeNode) => {
+    if (!declaration) return value;
+    check();
+    const resolved = context.resolve(declaration.type);
+    if (resolved.kind !== 'found' || resolved.node.kind !== 'simpleType') return value;
+    const {node} = resolved, doc = valueDocumentation(node);
+    if (!doc) return value;
+    let name = annotatedScalars.get(node.id);
+    if (!name) {
+      name = applicationGroups ? 'ApplicationScalar_' + createHash('sha256').update(node.id).digest('hex')
+        : `${role}_Scalar_${annotatedScalars.size}`;
+      annotatedScalars.set(node.id, name);
+      definitions[name] = described(value.schema, doc);
+      declarations.push(`${documentationComment(doc)}\nexport type ${name} = ${value.type};`);
+    }
+    return {type: name, schema: {$ref: '#/definitions/' + name}};
+  };
+  const shape = (value: DirectProjectionValue, declaration?: ElementNode): {type: string; schema: Schema} => {
     check();
     const ordinary = (() => {
-      if (value.kind === 'scalar') return scalar(value);
+      if (value.kind === 'scalar') return scalarDeclaration(scalar(value), declaration);
       const name = names.get(value.type); if (!name) throw new TypeError('Missing native projection record');
       return {type: name, schema: {$ref: '#/definitions/' + name}};
     })();
@@ -104,8 +138,8 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     const required = ['$nil'], members = ['readonly "$nil": true'];
     for (const attribute of attributes) {
       if (attribute.bag) continue;
-      check(); const key = attribute.declaration.name.local, description = scalar(attribute);
-      properties[key] = description.schema;
+      check(); const key = attribute.declaration.name.local, description = scalarDeclaration(scalar(attribute), attribute.declaration);
+      properties[key] = described(description.schema, valueDocumentation(attribute.declaration));
       if (attribute.required) required.push(key);
       members.push(`readonly ${literal(key)}${attribute.required ? '' : '?'}: ${description.type}`);
     }
@@ -118,7 +152,7 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
   };
   const attributeBag = (attributes: readonly DirectProjectionAttribute[], open = false) => {
     const entries: {type: string; schema: Schema}[] = attributes.filter(attribute => attribute.bag).map(attribute => {
-      const key = attribute.declaration.name.local, description = scalar(attribute);
+      const key = attribute.declaration.name.local, description = scalarDeclaration(scalar(attribute), attribute.declaration);
       const ambiguous = !!attribute.declaration.name.namespace && (open || attributes.some(other => other !== attribute && other.declaration.name.local === key));
       const value = ambiguous ? {type: `{readonly "$namespace": ${literal(attribute.declaration.name.namespace)}; readonly "$value": ${description.type}}`,
         schema: {type: 'object', additionalProperties: false, required: ['$namespace', '$value'], properties: {
@@ -138,7 +172,7 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
       if (!node.slot && !node.target) {for (const child of node.children) visit(child); return;}
       const key = node.slot?.element.name.local ?? node.target!.resolved.propertyName!;
       let description: {type: string; schema: Schema};
-      if (node.slot) description = shape(node.slot.value);
+      if (node.slot) description = shape(node.slot.value, node.slot.element);
       else {
         const name = node.target!.resolved.typeName;
         if (node.alternatives) {
@@ -159,8 +193,9 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
       const repeated = node.particle.occurs.max !== '1', mandatory = node.particle.occurs.min !== '0';
       if (repeated) description = {type:`readonly (${description.type})[]`,schema:{type:'array',items:description.schema,
         minItems:Number(node.particle.occurs.min), ...(node.particle.occurs.max === 'unbounded' ? {} : {maxItems:Number(node.particle.occurs.max)})}};
-      properties[key] = description.schema; if (mandatory) required.push(key);
-      members.push(`readonly ${literal(key)}${mandatory?'':'?'}: ${description.type}`);
+      const doc = node.slot && valueDocumentation(node.slot.element);
+      properties[key] = described(description.schema, doc); if (mandatory) required.push(key);
+      members.push(`${doc ? documentationComment(doc) + ' ' : ''}readonly ${literal(key)}${mandatory?'':'?'}: ${description.type}`);
     };
     for (const node of nodes) visit(node);
     return {type:`{${members.join('; ')}}`,schema:{type:'object',properties,required,additionalProperties:false}};
@@ -169,11 +204,14 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     check(); const name = names.get(record.type.id)!;
     const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
     const required: string[] = [], members: string[] = [];
-    const member = (key: string, value: {type: string; schema: Schema}, mandatory: boolean) => {
-      check(); properties[key] = value.schema; if (mandatory) required.push(key);
+    const member = (key: string, value: {type: string; schema: Schema}, mandatory: boolean, doc?: string) => {
+      check(); properties[key] = described(value.schema, doc); if (mandatory) required.push(key);
+      if (doc) members.push('  ' + documentationComment(doc));
       members.push(`  readonly ${literal(key)}${mandatory ? '' : '?'}: ${value.type};`);
     };
-    for (const attribute of record.attributes) if (!attribute.bag) member(attribute.declaration.name.local, scalar(attribute), attribute.required);
+    for (const attribute of record.attributes) if (!attribute.bag) member(attribute.declaration.name.local,
+      scalarDeclaration(scalar(attribute), attribute.declaration), attribute.required,
+      valueDocumentation(attribute.declaration));
     const bag = attributeBag(record.attributes, !!record.attributeWildcard);
     if (bag) member('$attributes', bag, bag.required);
     if (record.contextual) member('$namespaces', {type: 'Readonly<Record<string, string>>', schema: {type: 'object', additionalProperties: {type: 'string'}}}, false);
@@ -187,10 +225,12 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     } else if (record.ordered) {
       const variants = new Map<string, {type: string; schema: Schema}>();
       for (const slot of record.slots) {
-        check(); const value = shape(slot.value), expanded = slot.element.name, key = literal(expanded);
+        check(); const value = shape(slot.value, slot.element), expanded = slot.element.name, key = literal(expanded);
+        const doc = valueDocumentation(slot.element);
+        const comment = doc ? documentationComment(doc) + ' ' : '';
         if (record.keyed) {
           const ambiguous = !record.fixedOrder && record.slots.some(other => other !== slot && other.element.name.local === expanded.local);
-          const scalarValue = slot.value.kind === 'scalar' ? scalar(slot.value) : value;
+          const scalarValue = slot.value.kind === 'scalar' ? scalarDeclaration(scalar(slot.value), slot.element) : value;
           const holder = ambiguous ? {type: slot.value.kind === 'scalar'
             ? `{readonly "$namespace": ${literal(expanded.namespace)}; readonly "$value": ${scalarValue.type}}`
             : `(${value.type} & {readonly "$namespace": ${literal(expanded.namespace)}})`,
@@ -203,13 +243,13 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
             holder.schema = {anyOf: [holder.schema, {type: 'object', additionalProperties: false, required: ['$namespace', '$nil'], properties: {
               $namespace: {const: expanded.namespace}, $nil: {const: true}}}]};
           }
-          variants.set(key, {type: `{readonly ${literal(expanded.local)}: ${holder.type}}`, schema: {
-            type: 'object', additionalProperties: false, required: [expanded.local], properties: {[expanded.local]: holder.schema}}});
+          variants.set(key, {type: `{${comment}readonly ${literal(expanded.local)}: ${holder.type}}`, schema: {
+            type: 'object', additionalProperties: false, required: [expanded.local], properties: {[expanded.local]: described(holder.schema, doc)}}});
           continue;
         }
-        variants.set(key, {type: `{readonly name: {readonly namespace: ${literal(expanded.namespace)}; readonly local: ${literal(expanded.local)}}; readonly value: ${value.type}}`,
+        variants.set(key, {type: `{readonly name: {readonly namespace: ${literal(expanded.namespace)}; readonly local: ${literal(expanded.local)}}; ${comment}readonly value: ${value.type}}`,
           schema: {type: 'object', additionalProperties: false, required: ['name', 'value'], properties: {
-            name: {type: 'object', additionalProperties: false, required: ['namespace', 'local'], properties: {namespace: {const: expanded.namespace}, local: {const: expanded.local}}}, value: value.schema}}});
+            name: {type: 'object', additionalProperties: false, required: ['namespace', 'local'], properties: {namespace: {const: expanded.namespace}, local: {const: expanded.local}}}, value: described(value.schema, doc)}}});
       }
       if (record.content === 'mixed') variants.set('$value', {type: '{readonly "$value": string}', schema: {
         type: 'object', additionalProperties: false, required: ['$value'], properties: {$value: {type: 'string'}}}});
@@ -228,17 +268,19 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
       member('$content', {type: `readonly (${entries.map(entry => entry.type).join(' | ') || 'never'})[]`,
         schema: {type: 'array', items: entries.length ? {anyOf: entries.map(entry => entry.schema)} : {not: {}}}}, true);
     } else for (const slot of record.slots) {
-      check(); const value = shape(slot.value), repeated = slot.particle.occurs.max !== '1';
+      check(); const value = shape(slot.value, slot.element), repeated = slot.particle.occurs.max !== '1';
       member(slot.element.name.local, repeated ? {type: slot.particle.occurs.min === '1'
         ? `readonly [${value.type}, ...(${value.type})[]]` : `readonly (${value.type})[]`, schema: {type: 'array', items: value.schema,
-        minItems: Number(slot.particle.occurs.min)}} : value, repeated || slot.particle.occurs.min === '1');
+        minItems: Number(slot.particle.occurs.min)}} : value, repeated || slot.particle.occurs.min === '1', valueDocumentation(slot.element));
     }
-    declarations.push(`export type ${name} = ${members.length ? '{\n' + members.join('\n') + '\n}' : 'Readonly<Record<string, never>>'};`);
-    definitions[name] = {type: 'object', properties, required, additionalProperties: false};
+    const doc = valueDocumentation(record.type);
+    declarations.push(`${doc ? documentationComment(doc) + '\n' : ''}export type ${name} = ${members.length ? '{\n' + members.join('\n') + '\n}' : 'Readonly<Record<string, never>>'};`);
+    definitions[name] = described({type: 'object', properties, required, additionalProperties: false}, doc);
   }
-  const root = shape(projection.root);
+  const root = shape(projection.root, mapping.root.element);
   const id = 'urn:checked-component:shape:' + createHash('sha256').update(JSON.stringify({selector: contract.selector, role})).digest('hex');
   // @why Nested identified fault schemas must not expose a root-only $ref that recurses during Ajv resource resolution.
   const rootSchema = root.schema.$ref ? {allOf: [root.schema]} : root.schema;
-  return {type: root.type, declarations, schema: {$id: id, ...rootSchema, definitions}};
+  const rootDoc = valueDocumentation(mapping.root.element);
+  return {type: root.type, declarations, schema: {$id: id, ...described(rootSchema, rootDoc), definitions}};
 }

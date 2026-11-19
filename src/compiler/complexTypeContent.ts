@@ -198,8 +198,10 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
           else {
             const base = frame.base ? mapped.get(frame.base.id)! : builtin(node, node.derivation.base);
             if (base.kind === 'resource-limit') return base;
-            if (base.kind === 'simple' || base.kind === 'opaque-builtin') return fail(node.id, 'Complex-content extension cannot extend scalar or unresolved builtin content');
+            if (base.kind === 'opaque-builtin') return fail(node.id, 'Complex-content extension requires resolved builtin content');
+            // @why XSD 1.0 §3.4.2 clause 3.2.1 inherits the exact base content type, including a simple type.
             if (declared.kind === 'empty') content = base;
+            else if (base.kind === 'simple') return fail(node.id, 'Complex-content extension cannot add a particle to scalar content');
             else if (base.kind === 'empty') content = declared;
             else if ('particle' in declared) content = particleContent(node, sequence(node, [base.particle, declared.particle]));
             else return fail(node.id, 'Complex content unexpectedly mapped to scalar content');
@@ -214,6 +216,22 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
       return Object.freeze({kind: 'checked', view});
     } catch (error: unknown) {if (error instanceof MappingFailure) return error.result; throw error;}
   });
+}
+
+/** Identify source simple content for scalar and declaration property readers.
+ * @param context Authenticated context that owns or retains the original type.
+ * @param type Original complex type identity.
+ * @returns Whether the source uses simpleContent or authentic mapped scalar inheritance.
+ * @throws A sticky budget abort if actual content mapping exhausts the shared request.
+ */
+export function hasOriginalSimpleContent(context: SemanticContext, type: NodeId): boolean {
+  const source = context.sourceNode(type);
+  if (source?.kind !== 'complexType' || !source.derivation) return false;
+  if (source.derivation.contentKind === 'simple') return true;
+  if (source.derivation.kind !== 'extension') return false;
+  const mapped = deriveActualComplexContent(context.originalContext(), type);
+  if (mapped.kind === 'resource-limit') context.budget.chargeWork(0);
+  return mapped.kind === 'checked' && mapped.view.content.kind === 'simple';
 }
 
 export type OriginalParticleResult = Readonly<{kind: 'checked'; content: Extract<RawComplexContent, {particle: NodeId}>}>

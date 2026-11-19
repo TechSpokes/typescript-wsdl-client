@@ -5,14 +5,14 @@
 import {types} from 'node:util';
 import {inspectDirectOperation} from './directOperation.js';
 import type {ComponentSoapHeaderDeclaration, DirectOperationContract} from './directOperation.js';
-import {createComponentDirectionalMapping, inspectComponentValueMapping} from './directValues.js';
-import type {ComponentValueMapping} from './directValues.js';
+import {createComponentDirectionalMapping, inspectComponentValueMapping, sameScopedQNameWords} from './directValues.js';
+import type {ComponentValueMapping, DirectAssessedScalar} from './directValues.js';
 import {encodeComponentXml, assessParsedComponentHeaderPayload} from './directCodec.js';
 import type {DirectCodecFailure, DirectXmlLimits} from './directCodec.js';
 import {directDataOwnership} from './directExecutionPolicy.js';
 import {assessComponentSoapHeader} from './soapHeaders.js';
 import {collapseXmlWhitespace, resolveReceiverRole} from './soapReceiverUri.js';
-import {syntaxAttribute} from '../loader/orderedSyntax.js';
+import {syntaxAttribute, syntaxElements} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
 import type {ResolverUsage} from './semanticBudget.js';
 
@@ -31,6 +31,8 @@ export type ComponentHeaderProcessor = (value: unknown, context: ComponentHeader
 export type ComponentHeaderProcessors = Readonly<Record<string, ComponentHeaderProcessor>>;
 type HeaderFailure = Readonly<{kind: 'protocol' | 'unsupported' | 'value-invalid' | 'cancelled'; rule: string; usage: ResolverUsage}>;
 type HeaderOptions = Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits}>;
+type EncodedHeaderBlock = Readonly<{id: string; xml: string}>;
+const scopedHeaderOperands = new WeakMap<EncodedHeaderBlock, Readonly<{mapping: ComponentValueMapping; operands: readonly DirectAssessedScalar[]}>>();
 
 function ownRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || types.isProxy(value) || ![null, Object.prototype].includes(Object.getPrototypeOf(value) as object | null))
@@ -61,7 +63,7 @@ export function snapshotComponentHeaderProcessors(value: unknown): ComponentHead
  * @returns Native UTF-8 blocks or a terminal source/value refusal before transport dispatch.
  */
 export function encodeDeclaredComponentHeaders(contract: DirectOperationContract, inputMapping: ComponentValueMapping, supplied: unknown,
-  options: HeaderOptions = {}): Readonly<{kind: 'encoded-component-headers'; blocks: readonly Readonly<{id: string; xml: string}>[]; usage: ResolverUsage}> | DirectCodecFailure | HeaderFailure {
+  options: HeaderOptions = {}): Readonly<{kind: 'encoded-component-headers'; blocks: readonly EncodedHeaderBlock[]; usage: ResolverUsage}> | DirectCodecFailure | HeaderFailure {
   const {context: {budget}} = inspectDirectOperation(contract);
   inspectComponentValueMapping(inputMapping, contract);
   const fail = (kind: HeaderFailure['kind'], rule: string): HeaderFailure => ({kind, rule, usage: budget.usage()});
@@ -70,7 +72,7 @@ export function encodeDeclaredComponentHeaders(contract: DirectOperationContract
   catch {return fail('unsupported', 'data-only SOAP header values required');}
   const selected = contract.headers?.filter(header => header.direction === 'input' && header.kind === 'header') ?? [];
   if (Object.keys(values).some(id => !selected.some(header => header.id === id))) return fail('unsupported', 'unknown outgoing SOAP header declaration');
-  const blocks: {id: string; xml: string}[] = [];
+  const blocks: EncodedHeaderBlock[] = [];
   for (const header of selected) {
     budget.chargeWork(128 + header.id.length * 4);
     if (options.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
@@ -79,9 +81,49 @@ export function encodeDeclaredComponentHeaders(contract: DirectOperationContract
     if (mapping.kind !== 'component-mapping') return mapping;
     const encoded = encodeComponentXml(contract, mapping, values[header.id], options);
     if (encoded.kind !== 'component-encoded') return encoded;
-    blocks.push({id: header.id, xml: Buffer.from(encoded.bytes).toString('utf8')});
+    const block = {id: header.id, xml: Buffer.from(encoded.bytes).toString('utf8')};
+    if ('operands' in encoded.expanded.validated
+      && encoded.expanded.validated.operands.some(operand => operand.builtin.local === 'QName' && operand.retainLexical))
+      scopedHeaderOperands.set(block, {mapping, operands: encoded.expanded.validated.operands});
+    blocks.push(block);
   }
   return Object.freeze({kind: 'encoded-component-headers', blocks: directDataOwnership(budget).freeze(blocks), usage: budget.usage()});
+}
+
+/** Reassess scoped QName words in declared headers after SOAP adds inherited namespace declarations.
+ * @param contract Authenticated operation owning the encoded blocks.
+ * @param root Codec-owned assembled SOAP envelope.
+ * @param blocks Exact encoded declaration blocks in writer order.
+ * @param options Request cancellation and limits.
+ * @returns Whether each scoped header matches its original native operands.
+ */
+export function outgoingQNameHeaderScopesAgree(contract: DirectOperationContract, root: SyntaxElement,
+  blocks: readonly EncodedHeaderBlock[], options: HeaderOptions): boolean {
+  if (!blocks.some(block => scopedHeaderOperands.has(block))) return true;
+  const {context: {budget}} = inspectDirectOperation(contract);
+  const charge = (amount: number) => {options.signal?.throwIfAborted(); budget.chargeWork(amount);};
+  const header = syntaxElements(root, root.name.namespace, 'Header')[0];
+  if (!header) return false;
+  const observed = syntaxElements(header);
+  const used = new Set<SyntaxElement>();
+  for (const block of blocks) {
+    charge(16);
+    const declaration = contract.headers?.find(candidate => candidate.id === block.id);
+    if (!declaration) return false;
+    const expectedName = declaration.root.element.name;
+    const node = observed.find(candidate => {
+      charge(8);
+      return !used.has(candidate) && candidate.name.namespace === expectedName.namespace && candidate.name.local === expectedName.local;
+    });
+    if (!node) return false;
+    used.add(node);
+    const scoped = scopedHeaderOperands.get(block);
+    if (!scoped) continue;
+    const parsed = assessParsedComponentHeaderPayload(contract, scoped.mapping, root, node, options);
+    if (parsed.kind !== 'component-decoded' || !('operands' in parsed.validated)
+      || !sameScopedQNameWords(scoped.operands, parsed.validated.operands, charge)) return false;
+  }
+  return true;
 }
 
 /** Validate and explicitly process selected incoming blocks before publishing any body value.

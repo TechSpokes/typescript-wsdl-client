@@ -89,6 +89,7 @@ export interface DirectOperationInspection {
   readonly context: SemanticContext;
   readonly source: SchemaInput;
   readonly evidence: Extract<DirectSourceQualification, {kind: 'qualified-source'}> | ComponentSourceQualification;
+  readonly operationSyntax: SyntaxElement;
   readonly policyOwner?: WsdlPolicyRequirements;
 }
 const issued = new WeakMap<DirectOperationContract, DirectOperationInspection>();
@@ -487,7 +488,8 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
           ...(policyOwner?.forBinding(binding.syntax).kind === 'https-transport' ? ['policy-enforcement'] : [])], admitted: false};
       budget.freeze(contract); check(); budget.chargeWork(256);
       const selected = Object.freeze({kind: 'selected' as const, contract, usage: Object.freeze({...budget.usage()})});
-      issued.set(contract, Object.freeze({contract, context, source: input, evidence: qualified, ...(policyOwner ? {policyOwner} : {})}));
+      issued.set(contract, Object.freeze({contract, context, source: input, evidence: qualified, operationSyntax: abstract,
+        ...(policyOwner ? {policyOwner} : {})}));
       return selected;
     });
     return result.kind === 'resource-limit' ? failure('resource-limit', 'request-budget') : result;

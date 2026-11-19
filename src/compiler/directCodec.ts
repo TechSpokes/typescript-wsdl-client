@@ -8,7 +8,7 @@ import {xmlByteLength, snapshotXmlBytes} from '../util/xmlBytes.js';
 import {inspectDirectOperation, isRpcMessageRoot} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
 import {inspectDirectValueMapping, expandDirectValue, assessDirectScalars, inspectComponentValueMapping,
-  expandProjectionValue, assessProjectionScalars} from './directValues.js';
+  expandProjectionValue, assessProjectionScalars, sameScopedQNameWords} from './directValues.js';
 import type {DirectValueMapping, DirectValueReceipt, DirectValueFailure, DirectExpandedValue,
   ComponentValueMapping, ProjectionExpandedValue, ProjectionValueReceipt} from './directValues.js';
 import {matchDirectOperation, matchDirectProjection} from './directStructure.js';
@@ -161,10 +161,15 @@ function runComponent<T extends {readonly usage: ResolverUsage}>(contract: Direc
 }
 
 /** Serialize only native inverse output; source names and values have already passed their native owners. */
-function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Session): Uint8Array {
+function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Session, reserved?: ReadonlySet<string>): Uint8Array {
     const pieces: string[] = [];
     let byteLength = 0, nodes = 0, textUnits = 0, nextPrefix = 0;
     const prefixes = new Map<string, string>();
+    const next = () => {
+      let prefix: string;
+      do {check(); prefix = `n${nextPrefix++}`;} while (reserved?.has(prefix));
+      return prefix;
+    };
     const append = (text: string) => {
      check();
       const size = Buffer.byteLength(text, 'utf8');
@@ -182,7 +187,7 @@ function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Sessio
       if (namespace === 'http://www.w3.org/2000/xmlns/') throw new Stop('unsupported', 'namespace-declaration-as-data');
       let prefix = namespace === XML_NAMESPACE ? 'xml' : prefixes.get(namespace);
       if (namespace && prefix === undefined) {
-        prefix = `n${nextPrefix++}`; prefixes.set(namespace, prefix);
+        prefix = next(); prefixes.set(namespace, prefix);
       }
       return prefix!;
     };
@@ -226,7 +231,7 @@ function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Sessio
         }
         const prefix = prefixFor(namespace);
         let selected = prefix;
-        while (scope[selected] !== undefined && scope[selected] !== namespace) selected = `n${nextPrefix++}`;
+        while (scope[selected] !== undefined && scope[selected] !== namespace) selected = next();
         if (selected && selected !== 'xml') {declarations.set(selected, namespace); scope[selected] = namespace;}
         return selected ? `${selected}:${local}` : local;
       };
@@ -287,7 +292,17 @@ export function encodeComponentXml(contract: DirectOperationContract, mapping: u
     const expanded = expandProjectionValue(context, owned.root.element, application, {...options,
       maxText: limits.maxBytes, maxItems: limits.maxBytes}, owned);
     if (expanded.kind !== 'projection-expanded') return expanded;
-    const bytes = emitObservedXml(expanded.payload, session);
+    const bytes = emitObservedXml(expanded.payload, session, expanded.reservedQNamePrefixes ? new Set(expanded.reservedQNamePrefixes) : undefined);
+    const {operands} = expanded.validated;
+    if (operands.some(operand => operand.builtin.local === 'QName' && operand.retainLexical)) {
+      const parsed = parseObservedXml(bytes, session);
+      const structural = matchDirectProjection(context, owned.root.element, parsed, options);
+      if (structural.kind !== 'projection-match') return structural;
+      const validated = assessProjectionScalars(context, structural, options, owned);
+      if (validated.kind !== 'projection-value') return validated;
+      if (!sameScopedQNameWords(operands, validated.operands, amount => {session.check(); budget.chargeWork(amount);}))
+        throw new Stop('value-invalid', 'qname-namespace-scope-changed');
+    }
     return Object.freeze({kind: 'component-encoded' as const, admitted: false as const, encoding: 'utf-8' as const,
       bytes, expanded, mapping: owned, usage: Object.freeze({...budget.usage()})});
   });

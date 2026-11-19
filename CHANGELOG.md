@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-18
+
+- feat(checked): inherit scalar content in qualified empty complex-content extensions.
+- feat(checked): validate lexical unions with additional atomic families and list-valued members.
+- feat(checked): round-trip QName elements, attributes and lists as expanded names.
+- feat(checked): preserve selected source annotations in generated clients, routes and OpenAPI.
+- docs(coverage): record checked Part A migration behavior and link the paired evidence.
+
 ## [1.8.1] - 2026-11-18
 
 - test(tooling): shorten routine CI while preserving installed consumer and platform verification.

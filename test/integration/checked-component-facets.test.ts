@@ -20,9 +20,7 @@ describe('checked native facet production path', () => {
   it.each([
     ['contradictory inherited length', '<xs:maxLength value="4"/>', '<xs:maxLength value="1"/>', 'native-construction-unestablished'],
     ['invalid bound formation', '9007199254740993.99', '9007199254740993.00', 'native-construction-unestablished'],
-    ['excluded float member', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:float"', 'scalar-union-correspondence-scope'],
-    ['list member in union', '</xs:schema>', '<xs:simpleType name="Outside"><xs:union memberTypes="t:Codes t:Word"/></xs:simpleType></xs:schema>', 'scalar-union-correspondence-scope'],
-    ['contextual second member', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:QName"', 'scalar-correspondence-scope'],
+    ['document-wide second member', 'memberTypes="b:Nested b:Word"', 'memberTypes="b:Nested xs:IDREF"', 'scalar-correspondence-scope'],
     ['wider patterned family', 'base="xs:int"><xs:pattern value="[+]00[0-9]"', 'base="xs:float"><xs:pattern value="[+]00[0-9]"', 'scalar-facet-correspondence-scope'],
   ])('keeps %s distinct from payload invalidity', async (_label, from, to, rule) => {
     const directory = path.resolve(verificationPath('tmp/conformance/checked-facets')); await mkdir(directory, {recursive: true});

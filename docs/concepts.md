@@ -212,7 +212,7 @@ The generated OpenAPI schema uses the same component name with a scalar enum sch
 }
 ```
 
-Checked generation has a separate [lexical atomic union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions): effective atomic string/decimal/boolean members use one lexical string rather than a TypeScript member union. Native declaration order selects the member; fixed values compare typed families and defaults preserve source lexical witnesses. This does not change legacy alias generation.
+The [checked union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions) uses a complete lexical string for members without namespace context. QName-bearing unions carry the lexical string with its namespace bindings. Native declaration order selects the member, fixed values compare typed values and defaults preserve source lexical witnesses.
 
 ### Same-Name Global Elements
 

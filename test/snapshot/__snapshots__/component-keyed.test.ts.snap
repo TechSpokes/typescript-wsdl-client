@@ -14,7 +14,7 @@ exports[`generates source-selected keyed mixed/open shapes alongside accepted or
   readonly "$content": readonly ({readonly "code": ({readonly "$namespace": "urn:checked:forecast"; readonly "$value": string} | {readonly "$namespace": "urn:checked:forecast"; readonly "$nil": true})} | {readonly "code": {readonly "$namespace": "urn:keyed-known"; readonly "$value": string}})[];
 };",
     "export type KeyedInput_Record_3 = {
-  readonly "$attributes"?: readonly (Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[] | {readonly "$namespace": string; readonly "$value": unknown}>>)[];
+  readonly "$attributes"?: readonly (Readonly<Record<string, string | number | boolean | {readonly namespace: string; readonly local: string} | {readonly "$value": string; readonly "$namespaces": Readonly<Record<string, string>>} | readonly (string | number | boolean | {readonly namespace: string; readonly local: string})[] | {readonly "$namespace": string; readonly "$value": unknown}>>)[];
   readonly "$namespaces"?: Readonly<Record<string, string>>;
   readonly "$content": readonly ({readonly "count": number} | Readonly<Record<string, Readonly<{"$namespace": string; [key: string]: unknown}>>>)[];
 };",
@@ -326,6 +326,42 @@ exports[`generates source-selected keyed mixed/open shapes alongside accepted or
                         "type": "boolean",
                       },
                       {
+                        "additionalProperties": false,
+                        "properties": {
+                          "local": {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          "namespace": {
+                            "type": "string",
+                          },
+                        },
+                        "required": [
+                          "namespace",
+                          "local",
+                        ],
+                        "type": "object",
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "$namespaces": {
+                            "additionalProperties": {
+                              "type": "string",
+                            },
+                            "type": "object",
+                          },
+                          "$value": {
+                            "type": "string",
+                          },
+                        },
+                        "required": [
+                          "$value",
+                          "$namespaces",
+                        ],
+                        "type": "object",
+                      },
+                      {
                         "items": {
                           "anyOf": [
                             {
@@ -336,6 +372,23 @@ exports[`generates source-selected keyed mixed/open shapes alongside accepted or
                             },
                             {
                               "type": "boolean",
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "local": {
+                                  "minLength": 1,
+                                  "type": "string",
+                                },
+                                "namespace": {
+                                  "type": "string",
+                                },
+                              },
+                              "required": [
+                                "namespace",
+                                "local",
+                              ],
+                              "type": "object",
                             },
                           ],
                         },
@@ -401,6 +454,42 @@ exports[`generates source-selected keyed mixed/open shapes alongside accepted or
                                 "type": "boolean",
                               },
                               {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "local": {
+                                    "minLength": 1,
+                                    "type": "string",
+                                  },
+                                  "namespace": {
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "namespace",
+                                  "local",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "$namespaces": {
+                                    "additionalProperties": {
+                                      "type": "string",
+                                    },
+                                    "type": "object",
+                                  },
+                                  "$value": {
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "$value",
+                                  "$namespaces",
+                                ],
+                                "type": "object",
+                              },
+                              {
                                 "items": {
                                   "anyOf": [
                                     {
@@ -411,6 +500,23 @@ exports[`generates source-selected keyed mixed/open shapes alongside accepted or
                                     },
                                     {
                                       "type": "boolean",
+                                    },
+                                    {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "local": {
+                                          "minLength": 1,
+                                          "type": "string",
+                                        },
+                                        "namespace": {
+                                          "type": "string",
+                                        },
+                                      },
+                                      "required": [
+                                        "namespace",
+                                        "local",
+                                      ],
+                                      "type": "object",
                                     },
                                   ],
                                 },

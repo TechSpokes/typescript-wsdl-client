@@ -39,6 +39,8 @@ import {parseApplicationGroups} from './compiler/applicationGroups.js';
 import type {ApplicationGroupsOptions, ApplicationGroupTarget, ApplicationGroupRecord} from './compiler/applicationGroups.js';
 import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from './compiler/httpResponseHeaders.js';
 import {inspectComponentValueMapping} from './compiler/directValues.js';
+import {wsdlSourceDocumentation} from './generation/sourceDocumentation.js';
+import type {CheckedWsdlDocumentation} from './generation/sourceDocumentation.js';
 
 function publicationChoices(data: Record<string, unknown>): Pick<CheckedComponentOptions, 'httpResponseHeaderNames' | 'httpResponseStatusHeaderName'> {
   const names = normalizeHttpResponseHeaderNames(normalizeHttpResponseHeaders(data.httpResponseHeaders), data.httpResponseHeaderNames, data.httpResponseStatusHeaderName);
@@ -93,6 +95,7 @@ type CheckedComponentRecordProjection = Readonly<{selector: DirectOperationSelec
  */
 export interface CheckedInventory {
   readonly applicationGroups?: {readonly targets: readonly ApplicationGroupTarget[]; readonly records: readonly ApplicationGroupRecord[]};
+  readonly wsdlDocumentation?: CheckedWsdlDocumentation;
   readonly model: string;
   readonly assurance: string;
   readonly admitted: false;
@@ -551,6 +554,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
 
 function prepareComponentLayout(expected: readonly ReconstructedComponentSource[], projections: ReadonlyMap<string, ComponentRecordProjection>, tick: () => void) {
   const inspection = inspectDirectOperation(expected[0]!.contract), input = inspection.source;
+  const wsdlDocumentation = wsdlSourceDocumentation(input.documents, amount => {tick(); inspection.context.budget.chargeWork(amount);});
   const inputs = new Set<SchemaInput>([input]);
   for (const projection of projections.values()) inputs.add(inspectDirectOperation(inspectComponentRecordProjection(projection).companion).source);
   for (const operation of expected) if (operation.responseBranches) for (const branch of inspectComponentResponseBranches(operation.responseBranches, operation.contract).errors)
@@ -569,7 +573,7 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
   const allResources = [...resources.values()].map(entry => entry.resource).sort((a, b) => a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0);
   const files = allResources.filter(resource => new URL(resource.uri).protocol === 'file:');
   const common = files.length ? commonSourceDirectory(fileURLToPath(files[0]!.uri), files.map(resource => fileURLToPath(resource.uri)), tick) : '';
-  return {inspection, input, resources, allResources, common};
+  return {inspection, input, resources, allResources, common, wsdlDocumentation};
 }
 
 async function runComponentStages(opts: PipelineOptions, config: CheckedComponentOptions, outputs: {
@@ -579,7 +583,7 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
   const {clientDir, gatewayDir, openapiFile, basePath} = outputs;
   if (!native.layout) throw new TypeError('Prepared source layout required');
-  const {inspection, input, resources, allResources, common} = native.layout;
+  const {inspection, input, resources, allResources, common, wsdlDocumentation} = native.layout;
   const copied = new Map<string, string>();
   const destinations = new Set<string>();
   for (const resource of allResources) {
@@ -625,6 +629,7 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
   const inventory: CheckedInventory = {model: 'checked-components-v1', assurance: 'native-component-source-and-mapping', admitted: false,
     ...(native.applicationGroups ? {applicationGroups: native.applicationGroups} : {}),
+    ...(Object.keys(wsdlDocumentation).length ? {wsdlDocumentation} : {}),
     selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
   fs.writeFileSync(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
   // @why This generator-owned manifest must describe the current generation, including removal of corrections.

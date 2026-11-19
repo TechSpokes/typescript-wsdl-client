@@ -29,7 +29,7 @@ Unambiguous sources select their service and operations automatically; ambiguous
 
 Generated source snapshots support offline runtime use, and calls use the selected WSDL address or an explicit endpoint override with optional restrictions. Existing [direct-runtime clients](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remain compatible; the [product corpus](docs/corpus.md) records representative evidence without claiming universal WSDL/XSD or live-provider support.
 
-Checked document/literal services support qualified unions of atomic string, decimal, integer and boolean members. A union value is a lexical string such as `"+01.00"`. An ordinary list of those unions is an ordered array of string tokens, and a list-level pattern can require a single string for the whole list. The native validator selects the first matching member and checks fixed values by type. See the [checked value contract](docs/checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).
+Checked document/literal unions use complete XML lexical strings such as `"+01.00"` or `"1 02"` for a list-valued member. Ordinary lists of atomic unions use ordered arrays of string tokens. The native validator selects the first matching member and checks fixed values by type. See the [checked value contract](docs/checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).
 
 Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
 
@@ -303,6 +303,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.9.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.9.0.md) | Checked scalar extensions, wider unions, expanded QNames and source annotations |
 | [v1.8.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.8.1.md) | Faster verification and a reviewed release delivery sequence |
 | [v1.8.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.8.0.md) | Exact lexical values for checked SOAP unions and lists |
 | [v1.7.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.7.0.md) | Checked buffered credentials, declared headers and source fidelity |
@@ -313,6 +314,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [v1.6.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.0.md) | Independently validated application-error branches and upgrade guidance |
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
 | [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
+| [Checked Part A Coverage](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-part-a-coverage.md) | Paired legacy and checked contracts, verification and open scope decisions |
 | [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
 | [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Completed v1.7.0 adapter checklist, verification and continuing scope exclusions |
 | [Published-Package Consumer Acceptance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) | Accepted Escapia npm upgrade, exact evidence and unexecuted alternative boundaries |

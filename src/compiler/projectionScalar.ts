@@ -4,6 +4,7 @@ import type {SemanticContext} from './semanticContext.js';
 import type {AttributeNode, ElementNode, GraphNode, LexicalValue, Reference} from './canonicalGraph.js';
 import {schemaScalarContext, SchemaAssessmentError, SchemaOperandContextError} from './schemaScalarContext.js';
 import {scalarSchemaAssessment} from './scalarSchemaAssessment.js';
+import type {ScalarSupportPlan} from './scalarSchemaAssessment.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -23,6 +24,35 @@ export type ProjectionScalarDescription = Readonly<{kind: 'projection-scalar-typ
 type DescriptionResult = ProjectionScalarDescription | ProjectionScalarFailure | ResourceLimitFailure;
 type OperandResult = Readonly<{kind: 'projection-scalar-operand'; operand: DatatypeOperand}> | ProjectionScalarFailure | ResourceLimitFailure;
 const kernels = new WeakMap<SemanticContext, ReturnType<typeof kernel>>();
+const unionPrimitives = new Set(['string', 'decimal', 'boolean', 'float', 'double', 'duration', 'dateTime', 'time',
+  'date', 'gYearMonth', 'gYear', 'gMonthDay', 'gDay', 'gMonth', 'hexBinary', 'base64Binary', 'anyURI', 'QName']);
+type UnionRepresentation = 'lexical' | 'scoped';
+
+/** Qualify the effective member shapes of a checked lexical union.
+ * @param union Native union plan after XSD 1.0 flattening.
+ * @param resolve Resolve a native member or list item in the same semantic context.
+ * @param allowLists Whether the union is itself a complete value rather than a list item.
+ * @returns The lexical representation, including scope when QName selection requires it.
+ */
+export function componentUnionRepresentation(union: ScalarSupportPlan, resolve: (ref: SemanticTypeReference) => ScalarSupportPlan,
+  allowLists: boolean): UnionRepresentation | undefined {
+  const atomic = (plan: ScalarSupportPlan): UnionRepresentation | undefined =>
+    plan.variety === 'atomic' && !plan.obligations?.length && unionPrimitives.has(plan.primitive ?? '')
+      ? plan.primitive === 'QName' ? 'scoped' : 'lexical' : undefined;
+  if (union.variety !== 'union' || !union.members?.length || union.obligations?.length) return undefined;
+  let representation: UnionRepresentation = 'lexical';
+  for (const reference of union.members) {
+    const member = resolve(reference);
+    let itemRepresentation = atomic(member);
+    if (!itemRepresentation && allowLists && member.variety === 'list' && member.item && !member.obligations?.length) {
+      const item = resolve(member.item);
+      itemRepresentation = atomic(item) ?? componentUnionRepresentation(item, resolve, false);
+    }
+    if (!itemRepresentation) return undefined;
+    if (itemRepresentation === 'scoped') representation = 'scoped';
+  }
+  return representation;
+}
 
 function kernel(context: SemanticContext) {
   const base = schemaScalarContext(context);
@@ -64,38 +94,38 @@ function kernel(context: SemanticContext) {
       reference = content.view.content.type;
     }
     const plan = core.ensure(reference, declaration);
-    const atomicUnion = (candidate: typeof plan, primitives: readonly string[]): boolean => {
-      if (candidate.variety !== 'union' || !candidate.members?.length || candidate.obligations?.length) return false;
-      for (const reference of candidate.members) {
-        check(); c.step(declaration);
-        const member = core.ensure(reference, declaration);
-        if (member.variety !== 'atomic' || !primitives.includes(member.primitive ?? '') || member.obligations?.length) return false;
-      }
-      return true;
+    const resolve = (reference: SemanticTypeReference) => {
+      check(); c.step(declaration);
+      return core.ensure(reference, declaration);
     };
     const union = plan.variety === 'union';
-    if (union && !atomicUnion(plan, ['string', 'decimal', 'boolean'])) return Object.freeze({kind: 'unavailable', rule: 'declared-scalar-union'});
+    const unionRepresentation = union ? componentUnionRepresentation(plan, resolve, true) : undefined;
+    if (union && !unionRepresentation) return Object.freeze({kind: 'unavailable', rule: 'declared-scalar-union'});
     if (plan.obligations?.length) return Object.freeze({kind: 'unavailable', rule: 'scalar-source-obligations'});
     let item: ProjectionScalarList | undefined;
+    let scoped = unionRepresentation === 'scoped';
     if (plan.variety === 'list') {
       if (!plan.item) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item'});
       const member = core.ensure(plan.item, declaration);
       // @why #492 composes the qualified atomic union subset without changing native token or equality ownership.
-      const unionItem = atomicUnion(member, ['string', 'decimal', 'boolean']);
+      const unionItem = componentUnionRepresentation(member, resolve, false);
       if (member.variety !== 'atomic' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-' + member.variety});
       if (member.obligations?.length || member.whitespace === 'member' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-source-obligations'});
       const local = unionItem ? 'string' : member.builtin ?? member.primitive;
       if (!local) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-representation'});
+      scoped = unionItem === 'scoped';
       context.budget.chargeWork(64);
       item = Object.freeze({builtin: Object.freeze({namespace: XSD_NAMESPACE, local}), whitespace: unionItem ? 'preserve' : member.whitespace as ProjectionScalarList['whitespace'],
         ...(unionItem || member.layers.some(layer => layer.patterns.length > 0) ? {retainLexical: true as const} : {})});
     }
-    const local = union ? 'string' : item?.builtin.local ?? plan.builtin ?? plan.primitive;
+    const local = scoped ? 'QName' : union ? 'string' : item?.builtin.local ?? plan.builtin ?? plan.primitive;
     if (!local) return Object.freeze({kind: 'unavailable', rule: 'scalar-representation'});
     context.budget.chargeWork(64 + declaration.id.length);
-    const retainLexical = union || plan.layers.some(layer => layer.patterns.length > 0);
+    const retainLexical = scoped || union || plan.layers.some(layer => layer.patterns.length > 0);
+    if (local === 'QName' && !scoped && (retainLexical || item?.retainLexical))
+      return Object.freeze({kind: 'unavailable', rule: 'qname-lexical-facet-representation'});
     const result: ProjectionScalarDescription = Object.freeze({kind: 'projection-scalar-type', builtin: Object.freeze({namespace: XSD_NAMESPACE, local}),
-      ...(retainLexical ? {retainLexical: true as const} : {}), ...(item ? {list: item} : {})});
+      ...(retainLexical ? {retainLexical: true as const} : {}), ...(item && !scoped ? {list: item} : {})});
     descriptions.set(key, result);
     references.set(key, reference);
     return result;

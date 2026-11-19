@@ -33,6 +33,8 @@ Version 1.7.0 was published on [GitHub](https://github.com/TechSpokes/typescript
 | Published in 1.6.4 | Strict consumer compilation of HTTP publication pairs |
 | Published on GitHub in 1.6.5 | Strict ASCII and explicitly labelled UTF-16 checked responses |
 | Published on GitHub in 1.7.0 | Buffered transport, credentials, typed literal headers and metadata/source fidelity |
+| Published in 1.8.0 | Lexical string, decimal and Boolean unions and lists of those unions |
+| Published in 1.8.1 | Reviewed release and compatibility verification sequence |
 | Deferred | Checked composition, checked incremental decoding and broader protocol/security coverage |
 
 Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values when crossing 1.2.0. The [migration guide](docs/migration.md) retains those impacts and describes the separately adopted SOAP 1.2 runtime in 1.3.0.
@@ -51,7 +53,7 @@ The maintainer-selected [Escapia consumer upgrade](docs/roadmap/v1.0-published-c
 
 [Checked lexical atomic unions](docs/roadmap/v1.0-checked-atomic-unions.md) and [lists of those unions](docs/roadmap/v1.0-checked-atomic-union-lists.md) are implemented in PRs [#491](https://github.com/TechSpokes/typescript-wsdl-client/pull/491) and [#493](https://github.com/TechSpokes/typescript-wsdl-client/pull/493). Ordinary union lists use ordered lexical tokens and retain existing whole-list pattern witnesses. Native validation owns member order, XML tokenization and typed sequence equality.
 
-Both implementations passed independent review. The combined candidate has owned SOAP 1.1/1.2 and isolated installed gateway evidence. RPC lists, list-valued union members and wider or contextual atomic families remain outside the selected profile. #478 remains assessment-first, and streaming and incoming cryptographic security retain separate owners.
+Both implementations passed independent review and shipped in 1.8.0 with owned SOAP 1.1/1.2 and isolated installed gateway evidence. The [Part A checkpoint](docs/roadmap/checked-part-a-coverage.md) records subsequent coverage and the remaining source and value decisions.
 
 ### Earlier routing context
 
@@ -63,10 +65,10 @@ The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/
 
 | Order | Outcome | Existing owners |
 |---|---|---|
-| 1 | Reuse delivered buffered and accepted Escapia consumer evidence | #401/#397/#207; completed #488/#424/#426/#489 |
-| 2 | Deliver the verified atomic-union and union-list candidates together | #490/#491 and #492/#493 |
-| 3 | Carry remaining existing capabilities through checked execution | #192-#194/#201-#203/#164; richer policy #429 |
-| 4 | Retire duplicate semantics with installed migration evidence | #204/#205/#207/#208 |
+| Published baseline | Reuse bounded transport, accepted Escapia and lexical union evidence | #488/#489/#491/#493 |
+| Part A | Close supported source, value, artifact and buffered SOAP coverage through the existing pipeline | [#495](https://github.com/TechSpokes/typescript-wsdl-client/issues/495), #397/#207/#401 |
+| Part B | Carry standalone workflows, composition and streaming through checked execution | #192-#194/#201-#203/#164 |
+| Retirement | Prove migration and decide activation separately | #204/#205/#207/#208 |
 
 Use [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [#207](https://github.com/TechSpokes/typescript-wsdl-client/issues/207) for a paired legacy/checked capability register. Each row identifies its source/profile, legacy promise, checked behavior, independently expected wire/HTTP result, remaining gap and owner. Distinguish working execution, valid unsupported input, unresolved qualification, invalid input and deliberate policy denial; refusal coverage does not prove replacement parity.
 
@@ -115,7 +117,7 @@ Assign one verification owner, inspect script coverage and reuse unchanged evide
 | MIME attachments and MTOM/XOP binary ownership | [#428](https://github.com/TechSpokes/typescript-wsdl-client/issues/428) |
 | WSDL 2.0, XSD 1.1, other bindings and additional protocol adapters | [#429](https://github.com/TechSpokes/typescript-wsdl-client/issues/429) |
 | Additional charset investigation and exact alias/platform policy | [#462](https://github.com/TechSpokes/typescript-wsdl-client/issues/462) |
-| Scalar-base complex-content extension assessment | [#478](https://github.com/TechSpokes/typescript-wsdl-client/issues/478) |
+| Additional schema derivation combinations | [#179](https://github.com/TechSpokes/typescript-wsdl-client/issues/179) |
 | Contextual/dynamic values and wider source/value combinations | [#179](https://github.com/TechSpokes/typescript-wsdl-client/issues/179), [#184](https://github.com/TechSpokes/typescript-wsdl-client/issues/184) |
 | Checked incremental encoding/decoding, completion and parity | [#192](https://github.com/TechSpokes/typescript-wsdl-client/issues/192), [#193](https://github.com/TechSpokes/typescript-wsdl-client/issues/193), [#194](https://github.com/TechSpokes/typescript-wsdl-client/issues/194) |
 

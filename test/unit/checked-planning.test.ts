@@ -94,13 +94,17 @@ it('retains known inventory when dependency loading fails and preserves report o
 });
 it('does not treat correspondence-inconclusive source as invalid vendor schema', async () => {
   const {wsdl} = setup('test/conformance/fixtures/assessment/forecast.wsdl');
-  fs.writeFileSync(wsdl, fs.readFileSync(wsdl, 'utf8').replace('</xs:schema>', '<xs:simpleType name="Union"><xs:union memberTypes="xs:string xs:float"/></xs:simpleType></xs:schema>'));
+  const restricted = '<xs:simpleType name="RestrictedName"><xs:restriction base="xs:QName">'
+    + '<xs:pattern value="p:[A-Za-z]+"/></xs:restriction></xs:simpleType>';
+  fs.writeFileSync(wsdl, fs.readFileSync(wsdl, 'utf8').replace('</xs:schema>', restricted + '</xs:schema>'));
   const report = await planCheckedComponents(wsdl);
-  expect(report.ready).toBe(false); expect(report.blockers.every(b => b.category === 'inconclusive')).toBe(true);
+  expect(report).toMatchObject({ready: false, blockers: [{category: 'inconclusive',
+    reason: 'whole-source-qualification:scalar-facet-correspondence-scope'}]});
 });
-it('qualifies an unrelated valid selected-family union through whole-source correspondence', async () => {
+it.each(['int', 'float'])('qualifies an unrelated string and %s union through whole-source correspondence', async member => {
   const {wsdl} = setup('test/conformance/fixtures/assessment/forecast.wsdl');
-  fs.writeFileSync(wsdl, fs.readFileSync(wsdl, 'utf8').replace('</xs:schema>', '<xs:simpleType name="Union"><xs:union memberTypes="xs:string xs:int"/></xs:simpleType></xs:schema>'));
+  const union = `<xs:simpleType name="Union"><xs:union memberTypes="xs:string xs:${member}"/></xs:simpleType>`;
+  fs.writeFileSync(wsdl, fs.readFileSync(wsdl, 'utf8').replace('</xs:schema>', union + '</xs:schema>'));
   expect(await planCheckedComponents(wsdl)).toMatchObject({ready: true, blockers: []});
 });
 it('collects independent requested binding blockers without emitting a partial project', async () => {

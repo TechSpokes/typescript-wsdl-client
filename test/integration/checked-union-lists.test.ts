@@ -164,8 +164,7 @@ it.each([
   ['nested list', 'itemType="t:Nested"', 'itemType="t:Words"', 'invalid-schema'],
   ['bad bound', '<x:minLength value="1"/>', '<x:minLength value="5"/>', 'invalid-schema'],
   ['unrelated declaration', '</x:schema>', '<x:simpleType name="Unrelated"><x:restriction base="x:Missing"/></x:simpleType></x:schema>', 'invalid-schema'],
-  ['excluded float', 'memberTypes="x:decimal x:boolean t:Automatic"', 'memberTypes="x:float x:boolean t:Automatic"', 'inconclusive'],
-  ['excluded QName', 'memberTypes="x:decimal x:boolean t:Automatic"', 'memberTypes="x:QName x:boolean t:Automatic"', 'inconclusive'],
+  ['excluded contextual member', 'memberTypes="x:decimal x:boolean t:Automatic"', 'memberTypes="x:IDREF x:boolean t:Automatic"', 'inconclusive'],
 ])('qualifies the complete source before selecting a list operation: %s', async (_name, before, after, kind) => {
   const root = await mkdtemp(path.join(directory, 'invalid-')), file = path.join(root, 'lists.wsdl');
   await writeFile(file, original.replace(before, after));

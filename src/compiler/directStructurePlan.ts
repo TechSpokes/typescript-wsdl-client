@@ -2,7 +2,7 @@
 import type {DirectMessageRoot} from './directOperation.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
-import type {AttributeNode, ComplexTypeNode, ElementNode, GraphNode, NodeId, ParticleNode, Reference} from './canonicalGraph.js';
+import type {AttributeNode, ComplexTypeNode, ElementNode, GraphNode, LexicalValue, NodeId, ParticleNode, Reference} from './canonicalGraph.js';
 import {assessSourceAttributeUses} from './schemaAttributeUses.js';
 import {deriveActualComplexContent, particleContentNode} from './complexTypeContent.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
@@ -23,11 +23,11 @@ export interface DirectSlot {readonly element: ElementNode; readonly particle: P
 export interface DirectRootPlan {readonly rootBuiltin?: ExpandedName; readonly slots: readonly DirectSlot[]}
 type ProjectionConstraint = Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
 // @why #490 native typed evidence is transient; portable artifacts reconstruct it from source.
-const constraintOperands = new WeakMap<ProjectionConstraint, Readonly<{context: SemanticContext; operand: DatatypeOperand}>>();
-function projectionConstraint(context: SemanticContext, kind: 'fixed' | 'default', lexical: string, operand: DatatypeOperand): ProjectionConstraint {
+const constraintOperands = new WeakMap<ProjectionConstraint, Readonly<{context: SemanticContext; operand: DatatypeOperand; namespaces: Readonly<Record<string, string>>}>>();
+function projectionConstraint(context: SemanticContext, kind: 'fixed' | 'default', lexical: LexicalValue, operand: DatatypeOperand): ProjectionConstraint {
   context.budget.chargeWork(64);
-  const constraint = Object.freeze({kind, lexical, canonical: operand.canonical});
-  constraintOperands.set(constraint, {context, operand: context.budget.freeze(operand)});
+  const constraint = Object.freeze({kind, lexical: lexical.value, canonical: operand.canonical});
+  constraintOperands.set(constraint, {context, operand: context.budget.freeze(operand), namespaces: lexical.context.namespaces});
   return constraint;
 }
 /** Read private native constraint evidence only for its exact source context.
@@ -41,6 +41,18 @@ export function inspectProjectionConstraintOperand(context: SemanticContext, con
   const evidence = constraintOperands.get(constraint);
   if (!evidence || evidence.context !== context) throw new TypeError('Authenticated projection constraint required');
   return evidence.operand;
+}
+/** Read the authentic source scope of an inserted QName default or fixed value.
+ * @param context Native source context.
+ * @param constraint Exact source-derived constraint.
+ * @returns The namespace bindings at the original constraint declaration.
+ * @throws TypeError For copied or foreign constraints.
+ */
+export function inspectProjectionConstraintNamespaces(context: SemanticContext, constraint: ProjectionConstraint): Readonly<Record<string, string>> {
+  assertSemanticContext(context);
+  const evidence = constraintOperands.get(constraint);
+  if (!evidence || evidence.context !== context) throw new TypeError('Authenticated projection constraint required');
+  return evidence.namespaces;
 }
 export type DirectProjectionValue = Readonly<({kind: 'scalar'; builtin: ExpandedName; declared?: true; retainLexical?: true; list?: ProjectionScalarList} | {kind: 'record'; type: NodeId}) & {
   nillable?: true; constraint?: Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
@@ -206,10 +218,11 @@ const lexicalBuiltins = new Set(['string', 'normalizedString', 'token', 'languag
   'unsignedLong', 'unsignedInt', 'unsignedShort', 'unsignedByte', 'positiveInteger', 'float', 'double',
   'dateTime', 'date', 'time', 'duration', 'gYearMonth', 'gYear', 'gMonthDay', 'gDay', 'gMonth', 'hexBinary', 'base64Binary']);
 /** JSON representation policy only; native datatype calculations decide lexical/value validity. */
-export function projectionScalarRepresentation(name: ExpandedName): 'string' | 'number' | 'boolean' | undefined {
+export function projectionScalarRepresentation(name: ExpandedName): 'string' | 'number' | 'boolean' | 'qname' | undefined {
   if (name.namespace !== XSD_NAMESPACE) return undefined;
   if (name.local === 'int') return 'number';
   if (name.local === 'boolean') return 'boolean';
+  if (name.local === 'QName') return 'qname';
   return lexicalBuiltins.has(name.local) ? 'string' : undefined;
 }
 /** Test projected XML 1.0 character data without interpreting lexical application strings. */
@@ -248,14 +261,15 @@ export function selectProjectionAttribute(context: SemanticContext, record: Dire
   return {attribute: Object.freeze({declaration, required: false, bag: true, builtin: scalar.builtin,
     ...(scalar.retainLexical ? {retainLexical: true as const} : {}), ...(scalar.list ? {list: scalar.list} : {}),
     ...(declaration.value && constraint?.kind === 'projection-scalar-operand' ? {constraint: projectionConstraint(context, declaration.value.kind,
-      declaration.value.lexical.value, constraint.operand)} : {})})};
+      declaration.value.lexical, constraint.operand)} : {})})};
 }
 
 /**
  * Derive record structure using native component identity, including anonymous scopes and recursion.
  * @remarks This is a projection plan, not source validity, correspondence or runtime admission.
  *   Effective sequences and known attributes of explicitly represented builtin scalars are supported.
- *   Exact numeric families and temporal/binary values use strings; QName and document-wide ID/ENTITY duties are outside this plan.
+ *   Exact numeric families and temporal/binary values use strings. Atomic QName values carry expanded names.
+ *   ID/ENTITY and other document-wide duties are outside this plan.
  *   Inheritance is read from native content and attribute owners; only unit sequence groups flatten into peer properties.
  *   Other represented particles retain ordered children in $content; disjoint element/wildcard alphabets are required.
  *   Source-selected keyed content and attribute fallback preserve mixed text and local-name collisions.
@@ -307,7 +321,7 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
       if (!element.value) return {};
       const assessed = assessProjectionScalarOperand(context, element, element.value.lexical, check);
       if (assessed.kind !== 'projection-scalar-operand') return unavailable(element, 'element-value-constraint');
-      return {constraint: projectionConstraint(context, element.value.kind, element.value.lexical.value, assessed.operand)};
+      return {constraint: projectionConstraint(context, element.value.kind, element.value.lexical, assessed.operand)};
     })()};
     return typeValue(element, element.type, facts);
   };
@@ -375,7 +389,7 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
         attributes.push(Object.freeze({declaration: use.declaration, required: presence.required, builtin,
           ...(retainLexical ? {retainLexical} : {}),
           ...(list ? {list} : {}),
-          ...(effective ? {constraint: projectionConstraint(context, effective.kind, effective.value.lexical.value, effective.value.operand)} : {})}));
+          ...(effective ? {constraint: projectionConstraint(context, effective.kind, effective.value.lexical, effective.value.operand)} : {})}));
       }
     }
     const content = deriveActualComplexContent(context, type.id);

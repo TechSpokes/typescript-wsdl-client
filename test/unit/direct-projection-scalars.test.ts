@@ -69,7 +69,18 @@ describe('native projection builtin scalar families', () => {
     expect(matchDirectProjection(context, root, xml('<t:Decimal xmlns:t="urn:scalar-records">1.25</t:Decimal>'), {flatOnly: true})).toMatchObject({kind: 'unsupported'});
   });
 
-  it.each(['QName', 'ID', 'IDREF', 'ENTITY'])('does not erase missing context semantics for %s', async name => {
+  it('requires an expanded QName and resolves observed XML against its own bindings', async () => {
+    const {context, root} = await source('QName');
+    const value = {namespace: 'urn:synthetic:name', local: 'synthetic'};
+    expect(expandProjectionValue(context, root, 'synthetic')).toMatchObject({kind: 'value-invalid', rule: 'expanded-qname-required'});
+    expect(expandProjectionValue(context, root, value)).toMatchObject({kind: 'projection-expanded', validated: {value}});
+    const matched = matchDirectProjection(context, root,
+      xml('<t:QName xmlns:t="urn:scalar-records" xmlns:n="urn:synthetic:name">n:synthetic</t:QName>'));
+    if (matched.kind !== 'projection-match') throw new Error(matched.rule);
+    expect(assessProjectionScalars(context, matched)).toMatchObject({kind: 'projection-value', value});
+  });
+
+  it.each(['ID', 'IDREF', 'ENTITY'])('does not erase missing context semantics for %s', async name => {
     const {context, root} = await source(name);
     expect(expandProjectionValue(context, root, 'synthetic')).toMatchObject({kind: 'unsupported', rule: 'native-direct-shape'});
   });

@@ -2,6 +2,7 @@ import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 import {createPayloadDiagnostic, diagnosticName} from './payloadDiagnostics.js';
 import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
 import {types} from 'node:util';
+import {receiverUriLexical} from '../util/receiverUriReference.js';
 /** Internal direct value chain. No XML encoding, transport or runtime admission. */
 import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
@@ -9,7 +10,7 @@ import {inspectDirectOperation, isRpcMessageRoot} from './directOperation.js';
 import type {DirectOperationContract, DirectMessageRoot, RpcMessageRoot} from './directOperation.js';
 import {inspectDirectStructuralMatch, matchDirectOperation, inspectDirectFixedOperand} from './directStructure.js';
 import type {DirectDirection, DirectScalarDuty, DirectStructuralMatch} from './directStructure.js';
-import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintNamespaces, inspectProjectionConstraintOperand} from './directStructurePlan.js';
 import type {DirectRootPlan, DirectProjectionPlan, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
@@ -54,7 +55,48 @@ export interface RpcComponentValueMapping {
 }
 export type ComponentValueMapping = DocumentComponentValueMapping | RpcComponentValueMapping;
 export interface DirectAssessedScalar extends DirectScalarDuty {
-  readonly normalized: string; readonly canonical: string; readonly value: DirectPrimitive | readonly DirectPrimitive[];
+  readonly normalized: string; readonly canonical: string; readonly value: DirectApplicationValue;
+}
+type ScopedQNameWord = Readonly<{$value: string; $namespaces: Readonly<Record<string, string>>}>;
+type QNameBindingWriter = {spell(name: ExpandedName): string; bind(word: string, scope: Readonly<Record<string, string>>): void};
+
+function qnameWordPrefixes(word: string, charge: (amount: number) => void): ReadonlySet<string> {
+  charge(32 + word.length * 4);
+  const prefixes = new Set<string>();
+  for (const token of word.split(/[\t\r\n ]+/)) {
+    charge(4 + token.length);
+    const colon = token.indexOf(':');
+    if (colon < 0) {if (isXmlNCName(token)) prefixes.add('');}
+    else if (isXmlNCName(token.slice(0, colon)) && isXmlNCName(token.slice(colon + 1))) {
+      const prefix = token.slice(0, colon);
+      if (prefix !== 'xml') prefixes.add(prefix);
+    }
+  }
+  return prefixes;
+}
+
+/** Check QName-bearing lexical words after the serializer adds the enclosing XML context.
+ * @param expected Earlier independent native inverse operands.
+ * @param observed Native operands reassessed from the actual XML.
+ * @param charge Shared cancellation and request accounting.
+ * @returns Whether each scoped lexical value has exactly the same relevant namespace context.
+ */
+export function sameScopedQNameWords(expected: readonly DirectAssessedScalar[], observed: readonly DirectAssessedScalar[],
+  charge: (amount: number) => void): boolean {
+  const scoped = (operand: DirectAssessedScalar) => operand.builtin.local === 'QName' && operand.retainLexical;
+  for (const [index, operand] of expected.entries()) {
+    charge(1);
+    if (!scoped(operand)) continue;
+    const actual = observed[index];
+    if (!actual || !scoped(actual)) return false;
+    const left = operand.value as ScopedQNameWord, right = actual.value as ScopedQNameWord;
+    charge(16 + left.$value.length + right.$value.length);
+    if (left.$value !== right.$value) return false;
+    for (const prefix of qnameWordPrefixes(left.$value, charge)) {
+      if (left.$namespaces[prefix] !== right.$namespaces[prefix]) return false;
+    }
+  }
+  return true;
 }
 export interface DirectValueReceipt {
   readonly kind: 'direct-value'; readonly scope: 'direct-structure-and-scalars'; readonly admitted: false;
@@ -73,6 +115,7 @@ export interface ProjectionValueReceipt {
 export interface ProjectionExpandedValue {
   readonly kind: 'projection-expanded'; readonly provenance: 'generated-direct-value'; readonly admitted: false;
   readonly payload: SyntaxElement; readonly validated: ProjectionValueReceipt; readonly usage: ResolverUsage;
+  readonly reservedQNamePrefixes?: readonly string[];
 }
 export interface DirectValueFailure {
   readonly kind: 'scalar-invalid' | 'value-invalid' | 'unsupported' | 'cancelled' | 'resource-limit';
@@ -273,8 +316,14 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
     throw new Stop('scalar-invalid', duty.declaration.kind === 'attribute' ? 'fixed-attribute-value' : 'fixed-element-value', duty.schemaPath, duty.payloadPath, diagnostic());
 
   const normalized = result.normalized ?? normalizeWhitespace(duty.lexical, whitespaceFor(duty.builtin.local));
-  const present = (operand: DatatypeOperand, builtin: ExpandedName, lexical: string, retainLexical?: true): DirectPrimitive => {
+  const present = (operand: DatatypeOperand, builtin: ExpandedName, lexical: string, retainLexical?: true): DirectPrimitive | ExpandedName => {
     check();
+    if (builtin.local === 'QName') {
+      budget.chargeWork(32 + operand.canonical.length * 4);
+      const [namespace, local] = JSON.parse(operand.canonical) as [string, string];
+      if (namespace && receiverUriLexical(namespace)) return fail(duty, 'qname-namespace-uri-reference');
+      return {namespace, local};
+    }
     if (retainLexical) return lexical;
     if (builtin.local === 'int') return Number(operand.canonical);
     if (builtin.local === 'boolean') return operand.canonical === 'true';
@@ -289,10 +338,21 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
     // @why Neutral temporal/IEEE comparison keys are not XML lexicals.
     return operand.calendar || operand.duration || operand.family === 'float' || operand.family === 'double' ? lexical : operand.canonical;
   };
-  let value: DirectPrimitive | readonly DirectPrimitive[];
-  if (duty.list && !duty.retainLexical) {
+  let value: DirectApplicationValue;
+  if (duty.builtin.local === 'QName' && duty.retainLexical) {
+    const bindings = Object.create(null) as Record<string, string>;
+    for (const prefix of qnameWordPrefixes(duty.lexical, amount => {check(); budget.chargeWork(amount);})) {
+      const namespace = duty.namespaces[prefix];
+      if (namespace) {
+        budget.chargeWork(16 + namespace.length);
+        if (!isXmlNamespaceBinding(prefix, namespace) || receiverUriLexical(namespace)) return fail(duty, 'qname-namespace-uri-reference');
+        bindings[prefix] = namespace;
+      }
+    }
+    value = {$value: duty.lexical, $namespaces: bindings};
+  } else if (duty.list && !duty.retainLexical) {
     if (!result.items) throw new TypeError('Missing native list item operands');
-    const items: DirectPrimitive[] = [];
+    const items: DirectApplicationValue[] = [];
     for (const item of result.items) {
       check(); budget.chargeWork(64);
       if (item.normalized === undefined) throw new TypeError('Missing native list item lexical');
@@ -480,7 +540,8 @@ export function assessDirectScalars(contract: DirectOperationContract, match: un
  *   Repeated members each count; pending descendants reserve their item count before allocation.
  *   Native structural and scalar owners must validate the result before any successful expansion is issued.
  */
-function buildProjectionPayload(context: SemanticContext, root: ElementNode, plan: DirectProjectionPlan, application: unknown, options: Options, s: Session): SyntaxElement {
+function buildProjectionPayload(context: SemanticContext, root: ElementNode, plan: DirectProjectionPlan, application: unknown, options: Options, s: Session,
+  qnamePrefixes?: ReadonlySet<string>, collectQNamePrefixes?: Set<string>): SyntaxElement {
     const {budget, check} = s;
     const invalid = (rule: string, path = '/value', element = root): never => {throw new Stop('value-invalid', rule, element.context.source.path, path);};
     let textUnits = 0, items = 0;
@@ -501,7 +562,8 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       if (result.length > maximum) return invalid('unknown-key', path, element);
       return result;
     };
-    const spelling = (value: unknown, builtin: ExpandedName, path: string, element: ElementNode, retainLexical?: true, list?: ProjectionScalarList): string => {
+    const spelling = (value: unknown, builtin: ExpandedName, path: string, element: ElementNode, retainLexical?: true,
+      list?: ProjectionScalarList, qualifiedNames?: QNameBindingWriter): string => {
      check();
       if (list && !retainLexical) {
         if (types.isProxy(value) || !Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype) return invalid('dense-list-array-required', path, element);
@@ -513,7 +575,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         const parts: string[] = []; let units = 0;
         for (let index = 0; index < length; index++) {
           check(); const memberPath = `${path}/${index}`;
-          const raw = spelling(data(value, String(index), memberPath, element), list.builtin, memberPath, element, list.retainLexical);
+          const raw = spelling(data(value, String(index), memberPath, element), list.builtin, memberPath, element, list.retainLexical, undefined, qualifiedNames);
           budget.chargeWork(64 + raw.length * 4);
           const normalized = normalizeWhitespace(raw, list.whitespace);
           if (!normalized || /[\t\r\n ]/.test(normalized)) return invalid('list-item-token-required', memberPath, element);
@@ -522,7 +584,27 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         budget.chargeWork(64 + units * 2 + length * 2);
         return parts.join(' ');
       }
-      if (retainLexical || projectionScalarRepresentation(builtin) === 'string') {
+      const representation = projectionScalarRepresentation(builtin);
+      if (representation === 'qname') {
+        if (!qualifiedNames) throw new TypeError('QName inverse requires a namespace owner');
+        if (!value || typeof value !== 'object' || types.isProxy(value) || Array.isArray(value)
+          || ![null, Object.prototype].includes(Object.getPrototypeOf(value))) return invalid('expanded-qname-required', path, element);
+        if (keys(value, 2, path, element).length !== 2) return invalid('expanded-qname-required', path, element);
+        if (retainLexical) {
+          const word = lexical(data(value, '$value', path, element), path, element);
+          qualifiedNames.bind(word, scopeFor(value, undefined, true, path, element));
+          return word;
+        }
+        const namespace = data(value, 'namespace', path, element), local = data(value, 'local', path, element);
+        if (typeof namespace !== 'string' || typeof local !== 'string') return invalid('expanded-qname-required', path, element);
+        if (namespace.length + local.length > maxText - textUnits) throw new Stop('resource-limit', 'application text limit');
+        textUnits += namespace.length + local.length;
+        budget.chargeWork(64 + (namespace.length + local.length) * 4);
+        if (!isXmlNCName(local) || namespace && (receiverUriLexical(namespace) || !isXmlNamespaceBinding(namespace === XML_NAMESPACE ? 'xml' : 'q', namespace)))
+          return invalid('expanded-qname-required', path, element);
+        return qualifiedNames.spell({namespace, local});
+      }
+      if (retainLexical || representation === 'string') {
         if (typeof value !== 'string') return invalid('string-required', path, element);
         if (value.length > maxText - textUnits) throw new Stop('resource-limit', 'application text limit');
         textUnits += value.length;
@@ -546,9 +628,9 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       return {uri: 'urn:typescript-wsdl-client:generated-direct-value', digest: '', path,
         start: {offset: 0, line: 0, column: 0}, end: {offset: 0, line: 0, column: 0}};
     };
-    const leaf = (name: ExpandedName, lexical: string, path: string): SyntaxElement => {
+    const leaf = (name: ExpandedName, lexical: string, path: string, namespaces?: Readonly<Record<string, string>>): SyntaxElement => {
      check();
-      return {kind: 'element', name, lexicalName: name.local, namespaces: Object.create(null) as Record<string, string>,
+      return {kind: 'element', name, lexicalName: name.local, namespaces: namespaces ?? Object.create(null) as Record<string, string>,
         baseUri: 'urn:typescript-wsdl-client:generated-direct-value', attributes: [], source: source(path),
         children: [{kind: 'text', value: lexical, source: source(path + '/text')}]};
     };
@@ -578,6 +660,107 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         budget.chargeWork(64 + key.length * 4 + namespace.length * 4); result[key] = namespace;
       }
       return result;
+    };
+    const qualifiedNames = (inherited: Readonly<Record<string, string>> | undefined, element: ElementNode, path: string, protectedScope = false) => {
+      let bindings: Record<string, string> | undefined, nextPrefix = 0;
+      const prefixes = new Map<string, string>();
+      const lexicalBindings = new Map<string, string | undefined>();
+      const initialize = (): Record<string, string> => {
+        if (bindings) return bindings;
+        const source = inherited ?? {xml: XML_NAMESPACE, '': ''};
+        bindings = Object.create(null) as Record<string, string>;
+        for (const key of budget.sorted(Object.keys(source), budget.compareText)) {
+          check(); const namespace = source[key]!;
+          budget.chargeWork(32 + key.length + namespace.length);
+          bindings[key] = namespace;
+          if (key && !prefixes.has(namespace)) prefixes.set(namespace, key);
+        }
+        if (!element.name.namespace && bindings[''] && !protectedScope) bindings[''] = '';
+        return bindings;
+      };
+      const requireBinding = (key: string, namespace: string | undefined) => {
+        const scope = initialize();
+        if (lexicalBindings.has(key) && lexicalBindings.get(key) !== namespace
+          || protectedScope && scope[key] !== namespace || namespace === undefined && Object.hasOwn(scope, key))
+          return invalid('qname-namespace-scope-conflict', path, element);
+        lexicalBindings.set(key, namespace);
+        if (namespace !== undefined) scope[key] = namespace;
+      };
+      const prefix = (namespace: string): string => {
+        check(); budget.chargeWork(8 + namespace.length);
+        const existing = prefixes.get(namespace);
+        if (existing && bindings![existing] === namespace) return existing;
+        if (protectedScope) return invalid('qname-namespace-prefix-required', path, element);
+        let key: string;
+        do {check(); key = 'q' + nextPrefix++;} while (Object.hasOwn(bindings!, key) || lexicalBindings.has(key) || qnamePrefixes?.has(key));
+        budget.chargeWork(32 + namespace.length + key.length);
+        bindings![key] = namespace;
+        prefixes.set(namespace, key);
+        return key;
+      };
+      return {
+        spell(name: ExpandedName): string {
+          if (collectQNamePrefixes) return name.local;
+          const scope = initialize();
+          if (name.namespace && (!protectedScope || scope[''] !== name.namespace)) {
+            const key = prefix(name.namespace);
+            requireBinding(key, name.namespace);
+            return key + ':' + name.local;
+          }
+          requireBinding('', name.namespace);
+          return name.local;
+        },
+        bind(word: string, scope: Readonly<Record<string, string>>): void {
+          for (const key of qnameWordPrefixes(word, amount => {check(); budget.chargeWork(amount);})) {
+            const namespace = scope[key];
+            if (namespace) {
+              budget.chargeWork(16 + namespace.length);
+              if (receiverUriLexical(namespace)) return invalid('qname-namespace-uri-reference', path, element);
+            }
+            if (collectQNamePrefixes) collectQNamePrefixes.add(key);
+            else requireBinding(key, namespace);
+          }
+        },
+        scope(attributes: readonly SyntaxAttribute[] = []): Readonly<Record<string, string>> | undefined {
+          if (!bindings) return inherited;
+          if (!protectedScope) {
+            if (element.name.namespace) prefix(element.name.namespace);
+            for (const attribute of attributes) {
+              check();
+              if (attribute.name.namespace) prefix(attribute.name.namespace);
+            }
+          }
+          return bindings;
+        },
+      };
+    };
+    const matchesSourceQName = (member: unknown, descriptor: {retainLexical?: true; list?: ProjectionScalarList},
+      constraint: NonNullable<DirectProjectionValue['constraint']>, at: string, element: ElementNode): boolean => {
+      if (!member || typeof member !== 'object' || types.isProxy(member)) return false;
+      if (descriptor.retainLexical) {
+        if (![null, Object.prototype].includes(Object.getPrototypeOf(member)) || !Object.hasOwn(member, '$value')
+          || !Object.hasOwn(member, '$namespaces') || keys(member, 2, at, element).length !== 2
+          || data(member, '$value', at, element) !== constraint.lexical) return false;
+        const supplied = scopeFor(member, undefined, true, at, element);
+        const original = inspectProjectionConstraintNamespaces(context, constraint);
+        const prefixes = qnameWordPrefixes(constraint.lexical, amount => {check(); budget.chargeWork(amount);});
+        return [...prefixes].every(key => (supplied[key] ?? '') === (original[key] ?? ''));
+      }
+      const matchesName = (value: unknown, expected: DatatypeOperand): boolean => {
+        if (expected.family !== 'QName' || !value || typeof value !== 'object' || types.isProxy(value)
+          || ![null, Object.prototype].includes(Object.getPrototypeOf(value))) return false;
+        const own = keys(value, 2, at, element);
+        if (own.length !== 2 || !own.includes('namespace') || !own.includes('local')) return false;
+        check(); budget.chargeWork(expected.canonical.length * 4 + 32);
+        const [namespace, local] = JSON.parse(expected.canonical) as [string, string];
+        return data(value, 'namespace', at, element) === namespace && data(value, 'local', at, element) === local;
+      };
+      const expected = inspectProjectionConstraintOperand(context, constraint);
+      if (!descriptor.list) return matchesName(member, expected);
+      return !!expected.items && Array.isArray(member) && Object.getPrototypeOf(member) === Array.prototype
+        && data(member, 'length', at, element) === expected.items.length
+        && keys(member, expected.items.length + 1, at, element).length === expected.items.length + 1
+        && expected.items.every((item, index) => matchesName(data(member, String(index), at, element), item));
     };
     type Frame = {kind: 'node'; element: ElementNode; shape: DirectProjectionValue; value: unknown; xmlPath: string; valuePath: string; into: SyntaxNode[]}
       & {scope?: Readonly<Record<string, string>>; identity?: string}
@@ -663,7 +846,11 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       const nil = !!value && typeof value === 'object' && !types.isProxy(value) && Object.hasOwn(value, '$nil');
       if (nil && (!shape.nillable || shape.constraint?.kind === 'fixed')) return invalid('nil-not-permitted', valuePath, element);
       if (shape.kind === 'scalar' && !nil) {
-        into.push(leaf(element.name, spelling(value, shape.builtin, valuePath, element, shape.retainLexical, shape.list), xmlPath));
+        if (shape.builtin.local === 'QName') {
+          const names = qualifiedNames(frame.scope, element, valuePath);
+          const word = spelling(value, shape.builtin, valuePath, element, shape.retainLexical, shape.list, names);
+          into.push(leaf(element.name, word, xmlPath, names.scope()));
+        } else into.push(leaf(element.name, spelling(value, shape.builtin, valuePath, element, shape.retainLexical, shape.list), xmlPath));
         continue;
       }
       if (!value || typeof value !== 'object') return invalid('record-required', valuePath, element);
@@ -698,13 +885,39 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         data(value, key, valuePath, element);
       }
 
+      const inherited = record.contextual ? scopeFor(value, frame.scope, true, valuePath, element) : frame.scope;
+      let names: ReturnType<typeof qualifiedNames> | undefined;
+      const nameWriter = () => names ??= qualifiedNames(inherited, element, valuePath, record.contextual);
+      const writer: QNameBindingWriter = {spell: name => nameWriter().spell(name), bind: (word, scopes) => nameWriter().bind(word, scopes)};
+      const pendingNames: (() => void)[] = [];
+      const writeScalar = (value: unknown, descriptor: {builtin: ExpandedName; retainLexical?: true; list?: ProjectionScalarList},
+        path: string, write: (word: string) => void) => {
+        const emit = () => write(spelling(value, descriptor.builtin, path, element, descriptor.retainLexical, descriptor.list, writer));
+        // @why Reserve all lexical namespace bindings on this element before allocating any QName prefixes.
+        if (descriptor.builtin.local === 'QName' && !descriptor.retainLexical) pendingNames.push(emit);
+        else emit();
+      };
       const children: SyntaxNode[] = [];
       if (record.text && !nil) {
         const path = valuePath + '/$value';
         if (!Object.hasOwn(value, '$value')) return invalid('missing-simple-content', path, element);
-        children.push({kind: 'text', value: spelling(data(value, '$value', path, element), record.text.builtin, path, element, record.text.retainLexical, record.text.list), source: source(xmlPath + '/text')});
+        const member = data(value, '$value', path, element);
+        // @why Empty text can retain a source QName whose bindings cannot coexist with instance attributes.
+        if (!(record.text.builtin.local === 'QName' && shape.constraint && matchesSourceQName(member, record.text, shape.constraint, path, element)))
+          writeScalar(member, record.text, path, word => {children.push({kind: 'text', value: word, source: source(xmlPath + '/text')});});
       }
       const attributes: SyntaxAttribute[] = [];
+      const writeAttribute = (name: ExpandedName, member: unknown, at: string, descriptor?: DirectProjectionPlan['records'][number]['attributes'][number],
+        allowImplicit = false) => {
+        const constraint = descriptor?.constraint;
+        if (allowImplicit && descriptor?.builtin.local === 'QName' && !descriptor.required && constraint &&
+          matchesSourceQName(member, descriptor, constraint, at, element)) return;
+        const index = attributes.length;
+        const attribute = {name, lexicalName: name.local, value: ''};
+        attributes.push(attribute);
+        if (descriptor) writeScalar(member, descriptor, at, word => {attributes[index] = {...attribute, value: word};});
+        else attribute.value = lexical(member, at, element);
+      };
       if (nil) attributes.push({name: {namespace: 'http://www.w3.org/2001/XMLSchema-instance', local: 'nil'}, lexicalName: 'xsi:nil', value: 'true'});
       const bagValues = new Map<string, unknown>();
       const bagIdentities = new Set<string>();
@@ -728,13 +941,15 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
           if (candidates.length > 1 || record.attributeWildcard) {
             namespace = '';
             if (member && typeof member === 'object' && !Array.isArray(member)) {
-            if (!member || typeof member !== 'object' || types.isProxy(member) || Array.isArray(member)) return invalid('attribute-namespace-required', at, element);
-            const own = keys(member, 2, at, element);
-            if (own.length !== 2 || !own.includes('$namespace') || !own.includes('$value')) return invalid('attribute-holder-shape', at, element);
-            const uri = data(member, '$namespace', at, element);
-            if (typeof uri !== 'string' || !uri || !isXmlCharacters(uri) || uri === 'http://www.w3.org/2000/xmlns/') return invalid('attribute-namespace-required', at, element);
-            namespace = uri;
-            member = data(member, '$value', at, element);
+              if (types.isProxy(member)) return invalid('attribute-namespace-required', at, element);
+              if (Object.hasOwn(member, '$namespace')) {
+                const own = keys(member, 2, at, element);
+                if (own.length !== 2 || !own.includes('$value')) return invalid('attribute-holder-shape', at, element);
+                const uri = data(member, '$namespace', at, element);
+                if (typeof uri !== 'string' || !uri || !isXmlCharacters(uri) || uri === 'http://www.w3.org/2000/xmlns/') return invalid('attribute-namespace-required', at, element);
+                namespace = uri;
+                member = data(member, '$value', at, element);
+              }
             }
             selected = candidates.find(candidate => candidate.declaration.name.namespace === namespace);
           }
@@ -747,9 +962,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
             const selection = selectProjectionAttribute(context, record, {namespace, local: key}, check,
               () => {throw new Stop('unsupported', 'native-wildcard-attribute-scalar', element.context.source.path, at);});
             if (!selection) return invalid('unknown-attribute', at, element);
-            const descriptor = selection.attribute;
-            attributes.push({name: {namespace, local: key}, lexicalName: key, value: descriptor
-              ? spelling(member, descriptor.builtin, at, element, descriptor.retainLexical, descriptor.list) : lexical(member, at, element)});
+            writeAttribute({namespace, local: key}, member, at, selection.attribute);
             continue;
           }
           if (!selected) return invalid('unknown-attribute', at, element);
@@ -766,11 +979,12 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         }
         if (++items > maxItems) throw new Stop('resource-limit', 'application item limit');
         budget.chargeWork(128 + name.local.length * 4);
-        attributes.push({name, lexicalName: name.local, value: spelling(attribute.bag ? bagValues.get(attribute.declaration.id) : data(value, name.local, path, element), attribute.builtin, path, element, attribute.retainLexical, attribute.list)});
+        writeAttribute(name, attribute.bag ? bagValues.get(attribute.declaration.id) : data(value, name.local, path, element), path, attribute, true);
       }
-      const scope = record.contextual ? scopeFor(value, frame.scope, true, valuePath, element) : frame.scope;
+      for (const emit of pendingNames) emit();
+      const scope = inherited;
       into.push({kind: 'element', name: element.name, lexicalName: element.name.local,
-        namespaces: scope ?? Object.create(null) as Record<string, string>, baseUri: 'urn:typescript-wsdl-client:generated-direct-value',
+        namespaces: names?.scope(attributes) ?? scope ?? Object.create(null) as Record<string, string>, baseUri: 'urn:typescript-wsdl-client:generated-direct-value',
         attributes, source: source(xmlPath), children});
       if (nil) {active.delete(value); continue;}
       const pending: Frame[] = [];
@@ -937,7 +1151,12 @@ export function expandProjectionValue(context: SemanticContext, root: ElementNod
       if (!owned.projection) throw new TypeError('Native document projection required');
       application = mapApplicationGroups(owned.applicationGroups, owned.projection, copied, 'to-native', s.check);
     }
-    const payload = buildProjectionPayload(context, root, plan, application, options, s);
+    const evidence = owned ? inspectDirectOperation(owned.contract).evidence : undefined;
+    const reserved = evidence?.kind === 'component-source' && evidence.correspondence.kind === 'component-correspondence' && evidence.correspondence.scopedQName
+      ? new Set<string>() : undefined;
+    // @why The scope of an unbound lexical prefix extends beyond its own element under XML 1.0.
+    if (reserved) buildProjectionPayload(context, root, plan, application, options, s, undefined, reserved);
+    const payload = buildProjectionPayload(context, root, plan, application, options, s, reserved);
     const structural = matchDirectProjection(context, root, payload, options);
     if (structural.kind !== 'projection-match') {
       if (structural.kind === 'mismatch') {
@@ -948,7 +1167,8 @@ export function expandProjectionValue(context: SemanticContext, root: ElementNod
     }
     const validated = assessProjectionScalars(context, structural, options, mapping);
     if (validated.kind !== 'projection-value') throw new Stop(validated.kind, validated.rule, validated.schemaPath, validated.payloadPath, validated.diagnostic);
-    const expanded = s.publish({kind: 'projection-expanded' as const, provenance: 'generated-direct-value' as const, admitted: false as const, payload, validated});
+    const expanded = s.publish({kind: 'projection-expanded' as const, provenance: 'generated-direct-value' as const, admitted: false as const, payload, validated,
+      ...(reserved?.size ? {reservedQNamePrefixes: [...reserved]} : {})});
     projectionExpansions.set(expanded, context);
     return expanded;
   });

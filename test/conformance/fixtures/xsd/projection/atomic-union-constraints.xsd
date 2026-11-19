@@ -19,8 +19,8 @@
   <xs:simpleType name="BoundedIntegerUnion"><xs:union memberTypes="t:SignedExactInteger t:One"/></xs:simpleType>
   <xs:simpleType name="StringItems"><xs:union memberTypes="t:One t:True"/></xs:simpleType>
   <xs:simpleType name="RetainedList"><xs:list itemType="t:StringItems"/></xs:simpleType>
-  <xs:simpleType name="ExcludedList"><xs:list itemType="t:StringDecimal"/></xs:simpleType>
-  <xs:simpleType name="ExcludedUnion"><xs:union><xs:simpleType><xs:list itemType="xs:string"/></xs:simpleType><xs:simpleType><xs:restriction base="xs:decimal"/></xs:simpleType></xs:union></xs:simpleType>
+  <xs:simpleType name="StringDecimalList"><xs:list itemType="t:StringDecimal"/></xs:simpleType>
+  <xs:simpleType name="ListOrDecimal"><xs:union><xs:simpleType><xs:list itemType="xs:string"/></xs:simpleType><xs:simpleType><xs:restriction base="xs:decimal"/></xs:simpleType></xs:union></xs:simpleType>
   <xs:complexType name="Base"><xs:attribute name="fixedString" type="t:StringDecimal" fixed="1"/><xs:attribute name="fixedDecimal" type="t:DecimalString" fixed="+1"/><xs:attribute name="fixedBoolean" type="t:StringBoolean" fixed="true"/><xs:attribute name="defaultAlias" type="t:Alias" default="+1"/></xs:complexType>
   <xs:complexType name="Derived"><xs:complexContent><xs:extension base="t:Base"><xs:sequence><xs:element name="optional" type="t:Alias" default="+1" minOccurs="0"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
   <xs:complexType name="Simple"><xs:simpleContent><xs:extension base="t:StringDecimal"><xs:attribute name="fixedString" type="t:StringDecimal" fixed="1"/></xs:extension></xs:simpleContent></xs:complexType>
@@ -42,8 +42,8 @@
   <xs:element name="Simple" type="t:Simple" fixed="1"/>
   <xs:element name="NilSimple" type="t:Simple" nillable="true"/>
   <xs:element name="RetainedList" type="t:RetainedList"/>
-  <xs:element name="ExcludedList" type="t:ExcludedList"/>
-  <xs:element name="ExcludedUnion" type="t:ExcludedUnion"/>
+  <xs:element name="StringDecimalList" type="t:StringDecimalList"/>
+  <xs:element name="ListOrDecimal" type="t:ListOrDecimal"/>
   <xs:element name="LongFixed" type="xs:string" fixed="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"/>
   <xs:element name="LongOpen" type="xs:string"/>
 </xs:schema>

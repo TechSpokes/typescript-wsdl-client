@@ -121,13 +121,15 @@ describe('checked lexical atomic unions and typed constraints', () => {
     expect(await observed('FixedString', '', 'xsi:nil="true"')).toMatchObject({kind: 'mismatch', rule: 'nil-fixed-value'});
   });
 
-  it('preserves primitive-string union lists, composes atomic items and refuses list members', async () => {
+  it('keeps token arrays for lists of unions and complete lexical strings for union list members', async () => {
     const kept = await source('RetainedList');
     expect(expandProjectionValue(kept.context, kept.root, ['1', 'true'])).toMatchObject({kind: 'projection-expanded', validated: {value: ['1', 'true']}});
-    const composed = await source('ExcludedList');
+    const composed = await source('StringDecimalList');
     expect(expandProjectionValue(composed.context, composed.root, ['1', '+01.00'])).toMatchObject({kind: 'projection-expanded', validated: {value: ['1', '+01.00']}});
-    const excluded = await source('ExcludedUnion');
-    expect(expandProjectionValue(excluded.context, excluded.root, '1')).toMatchObject({kind: 'unsupported'});
+    const {context, root} = await source('ListOrDecimal');
+    expect(expandProjectionValue(context, root, 'one two')).toMatchObject({kind: 'projection-expanded', validated: {value: 'one two'}});
+    expect(await observed('ListOrDecimal', 'one two')).toMatchObject({kind: 'projection-value', value: 'one two'});
+    expect(expandProjectionValue(context, root, ['one', 'two'])).toMatchObject({kind: 'value-invalid', rule: 'string-required'});
   });
 
   it('does not turn cancellation or sticky exhaustion into failed-member fallthrough', async () => {

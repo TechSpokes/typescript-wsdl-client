@@ -14,10 +14,10 @@ import {Client} from 'soap/lib/client.js';
 import {HttpClient} from 'soap/lib/http.js';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
-import {createDirectValueMapping, inspectDirectValueMapping, createComponentDirectionalMapping, inspectComponentValueMapping} from './directValues.js';
+import {createDirectValueMapping, inspectDirectValueMapping, createComponentDirectionalMapping, inspectComponentValueMapping, sameScopedQNameWords} from './directValues.js';
 import type {DirectValueMapping, ComponentValueMapping} from './directValues.js';
 import {decodeDirectXml, encodeDirectXml, decodeComponentXml, encodeComponentXml, DIRECT_XML_LIMITS} from './directCodec.js';
-import type {DirectCodecFailure, DirectDecodedXml, ComponentDecodedXml, DirectXmlLimits} from './directCodec.js';
+import type {DirectCodecFailure, DirectDecodedXml, DirectEncodedXml, ComponentDecodedXml, ComponentEncodedXml, DirectXmlLimits} from './directCodec.js';
 import {prepareDirectSoapSource, prepareComponentSoapWsdl, DirectSoapSourceError, COMPONENT_SOAP_DISPATCH} from './directSoapSource.js';
 import {isXmlNCName, resolveLexicalQName, SchemaLoadingError, syntaxElements, syntaxAttribute, WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
@@ -30,7 +30,7 @@ import {observedSoapEntityBase} from './soapReceiverUri.js';
 import {buildUpstreamSoapRuntimeConfig, snapshotUpstreamSecurity} from '../util/upstreamSecurity.js';
 import type {SoapRuntimeConfig} from '../util/upstreamSecurity.js';
 import type {UpstreamSecurityConfig} from '../util/upstreamSecurityTypes.js';
-import {encodeDeclaredComponentHeaders, assessDeclaredComponentHeaders, snapshotComponentHeaderProcessors} from './componentSoapHeaders.js';
+import {encodeDeclaredComponentHeaders, assessDeclaredComponentHeaders, snapshotComponentHeaderProcessors, outgoingQNameHeaderScopesAgree} from './componentSoapHeaders.js';
 import type {ComponentHeaderProcessors} from './componentSoapHeaders.js';
 import {decodeComponentResponseBranchesXml, inspectComponentResponseBranches} from './componentResponseBranches.js';
 import type {ComponentResponseBranches, ComponentApplicationErrorDecodedXml} from './componentResponseBranches.js';
@@ -150,7 +150,7 @@ export interface ComponentSoapOptions extends Omit<DirectSoapOptions, 'endpoint'
   readonly ca?: string;
 }
 class Stop extends Error {
-  constructor(readonly kind: DirectSoapFailure['kind'], readonly rule: string) {super(rule);}
+  constructor(readonly kind: DirectSoapFailure['kind'], readonly rule: string, readonly phase?: 'input' | 'response') {super(rule);}
 }
 const same = (a: ExpandedName, b: ExpandedName) => a.namespace === b.namespace && a.local === b.local;
 
@@ -272,7 +272,7 @@ interface ExchangeProfile<M extends DirectValueMapping | ComponentValueMapping |
   component: boolean;
   soap11ProtocolFaults?: boolean;
   encode(contract: DirectOperationContract, mapping: M, value: unknown, options: {signal?: AbortSignal; limits: DirectXmlLimits}):
-    {bytes: Uint8Array} | DirectCodecFailure;
+    DirectEncodedXml | ComponentEncodedXml | DirectCodecFailure;
   decode(contract: DirectOperationContract, mapping: M, bytes: Uint8Array, options: {signal?: AbortSignal; limits: DirectXmlLimits;
     componentResponseEncoding?: {charset?: string; baseUri?: string};
     uri: string; selectPayload: (root: SyntaxElement) => {payload: SyntaxElement; mapping: M}}): D | DirectCodecFailure;
@@ -363,6 +363,8 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');
     const encoded = profile.encode(contract, input, application, {signal, limits});
     if (!('bytes' in encoded)) return fail(encoded.kind, encoded.rule, 'input');
+    const scopedOperands = 'operands' in encoded.expanded.validated && encoded.expanded.validated.operands
+      .some(operand => operand.builtin.local === 'QName' && operand.retainLexical) ? encoded.expanded.validated.operands : undefined;
     let headerProcessors: ComponentHeaderProcessors | undefined;
     try {headerProcessors = profile.component && options.headerProcessors !== undefined ? snapshotComponentHeaderProcessors(options.headerProcessors) : undefined;}
     catch {return fail('unsupported', 'explicit SOAP header processors required');}
@@ -426,6 +428,9 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
           const outgoing = profile.decode(contract, input, Buffer.from(data), {signal, limits,
             uri: 'urn:typescript-wsdl-client:outgoing-soap', selectPayload: root => {
               const payload = bodyRoot(root);
+              if (declaredHeaders?.kind === 'encoded-component-headers'
+                && !outgoingQNameHeaderScopesAgree(contract, root, declaredHeaders.blocks, {signal, limits}))
+                throw new Stop('value-invalid', 'qname-header-namespace-scope-changed', 'input');
               if (profile.component && contract.policy?.kind === 'https-transport' && contract.policy.includeTimestamp) {
                 const security = syntaxElements(root, soap12 ? 'http://www.w3.org/2003/05/soap-envelope' : SOAP11, 'Header')
                   .flatMap(header => syntaxElements(header, 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd', 'Security'));
@@ -435,6 +440,10 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
               return {payload, mapping: input};
             }});
           if (!('validated' in outgoing)) stop(outgoing.kind, outgoing.rule);
+          if ('validated' in outgoing && scopedOperands &&
+            (!('operands' in outgoing.validated) || !sameScopedQNameWords(scopedOperands,
+              outgoing.validated.operands, amount => {check(); budget.chargeWork(amount);})))
+            throw new Stop('value-invalid', 'qname-namespace-scope-changed', 'input');
          check();
         } catch (error) {
           hookFailure = error; callback(complete);
@@ -549,7 +558,7 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message);
     if (signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
     if (error instanceof DirectSoapSourceError) return fail(error.kind, error.message);
-    if (error instanceof Stop) return fail(error.kind, error.rule);
+    if (error instanceof Stop) return fail(error.kind, error.rule, error.phase);
     if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML');
     if (error instanceof Error && 'code' in error) {
       if (error.code === 'ERR_BAD_RESPONSE' && error.message.startsWith('maxContentLength size of ')) return fail('resource-limit', 'HTTP response byte limit');
