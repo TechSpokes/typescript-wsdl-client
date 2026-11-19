@@ -37,6 +37,24 @@ All file-producing APIs automatically apply [TypeScript preambles](generated-cod
 
 Generated-output compatibility is versioned separately from those preambles. Read the [migration guide for the intended version](migration.md), including [1.3.x-to-1.4.0 runtime adoption](migration.md#from-13x-to-140), before regenerating existing clients or changing their selected profile.
 
+## generateCheckedClient
+
+Generate a standalone checked client from the original WSDL with the same native qualification and client artifacts as the checked pipeline. Supply a WSDL file or HTTP(S) URL and an explicit client output directory. `checkedComponents` accepts the pipeline's partial selection and source choices. HTTP publication settings apply to generated gateways.
+
+```typescript
+import {generateCheckedClient, type CheckedClientOptions} from '@techspokes/typescript-wsdl-client';
+
+const options: CheckedClientOptions = {
+  wsdl: './sources/service.wsdl',
+  clientOutDir: '.generated/service-client',
+};
+const {checked, planning} = await generateCheckedClient(options);
+```
+
+`generateCheckedClient(options: CheckedClientOptions)` returns `Promise<CheckedClientResult>`. The result carries the checked operation inventory and diagnostic plan. A qualification refusal throws `CheckedPlanningError` with its structured `report` before client files are written. The API resolves relative paths from the invocation working directory and reads authorized metadata without dispatching SOAP.
+
+Deploy the complete output directory, including `source-resources.json` and the copied inputs. See [standalone checked client setup](checked-generation.md#standalone-checked-client) for runtime binding and invocation.
+
 ## compileWsdlToProject
 
 Generate a TypeScript SOAP client from WSDL.

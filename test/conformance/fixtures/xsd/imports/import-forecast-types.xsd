@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:checked:forecast:values">
+  <xs:simpleType name="Days">
+    <xs:restriction base="xs:int"><xs:minInclusive value="1"/></xs:restriction>
+  </xs:simpleType>
+</xs:schema>

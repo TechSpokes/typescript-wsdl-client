@@ -112,6 +112,51 @@ This POST executes a real SOAP operation. Supply independently chosen expected v
 
 TLS verification stays enabled. The optional `caFile` supplies a trusted CA; it does not disable verification. SOAP redirects remain disabled, and unsupported authentication or WS-Security requirements refuse. Check the [transport limits](checked-gateway.md#explicit-component-configuration) before trying a provider integration.
 
+## Standalone checked client
+
+Use a build that includes standalone checked generation to emit only the client and its source-backed contracts. Install `@techspokes/typescript-wsdl-client` as a runtime dependency in the consumer and run the [client command](cli-reference.md#checked-client) from the original WSDL.
+
+```bash
+npx wsdl-tsc client --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast-client
+```
+
+Keep the entire generated directory together when moving it. Compile the TypeScript with NodeNext module resolution and inject the package-root binding named in the generated operation client. For the bundled Forecast example, use the following code in a module adjacent to `.generated` and pass the URL of an owned SOAP endpoint.
+
+```typescript
+import {readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {checkedComponentRuntimeV3} from '@techspokes/typescript-wsdl-client';
+import {createClient} from './.generated/forecast-client/client.js';
+
+export async function getForecast(endpoint: string) {
+  const owner = new URL('./.generated/forecast-client/', import.meta.url);
+  const client = createClient(checkedComponentRuntimeV3);
+  return client.GetForecast({city: 'Paris', days: 2}, {
+    localSource: fileURLToPath(new URL('source/files/checked-forecast.wsdl', owner)),
+    fileRoots: [fileURLToPath(owner)],
+    sourceResources: [],
+    sourceOrigins: [],
+    capsule: await readFile(new URL('operations/0/contract.json', owner)),
+    soap: {
+      service: {namespace: 'urn:checked:forecast', local: 'ForecastService'},
+      port: 'ForecastPort',
+      endpoint,
+      allowEndpoint: url => url.href === new URL(endpoint).href,
+    },
+  });
+}
+```
+
+If your build emits JavaScript into a separate directory, copy the generated capsules and snapshots there with the same relative layout or point `owner` at their deployment directory.
+
+For services with imports, use the `runtime` block in `source-resources.json` as the owner-relative index. Resolve physical paths against the client directory, including `localSource`, `fileRoots`, snapshot `file` fields, `capsuleFiles`, `recordSources[].source` and `branchSources[].source`.
+
+Resolve relative `uri`, `canonicalUri` and `namespaceLocations[].location` values from the client directory before converting them with `pathToFileURL`. Preserve absolute HTTP(S) identities, content types and any additional source options.
+
+Pass the selected operation's capsule bytes and service/port to the generated method.
+
+Runtime checks reconstruct the contract from the physical snapshots and compare it with the generated capsule before SOAP dispatch. Missing snapshots, changes to snapshot bytes and mismatched capsules require the matching artifacts or regeneration. See [runtime configuration](checked-gateway.md#explicit-component-configuration).
+
 ## Programmatic planning and generation
 
 The package-root API uses the same loader and native preparation as the CLI:
@@ -130,6 +175,8 @@ await runGenerationPipeline({
   app: {appDir: '.generated/service'}, test: {testDir: '.generated/service/test'},
 });
 ```
+
+For standalone generation, call `generateCheckedClient` from the package root with `wsdl`, `clientOutDir` and optional `checkedComponents`.
 
 Partial choices and permissions go in `checkedComponents` for generation or the second argument to `planCheckedComponents`. Planning never invokes SOAP. Generation performs fresh checks even when an earlier planning report was ready.
 

@@ -2,7 +2,7 @@
 
 Commands and configuration for generation and assessment. See the root [README](../README.md).
 
-Generation offers legacy, the default, and opt-in `pipeline --model checked-components-v1`. Start with [Try Opt-in Checked Generation](checked-generation.md); the [checked gateway reference](checked-gateway.md) covers exact configuration and v1.1.5 runtime compatibility. Checked generation emits source-backed contracts rather than a legacy catalog and refuses unsupported compiler/streaming controls.
+Generation offers legacy by default and supports `--model checked-components-v1` on `client` and `pipeline`. Start with [Try Opt-in Checked Generation](checked-generation.md). The [checked gateway reference](checked-gateway.md) covers exact configuration and runtime compatibility.
 
 The `wsdl-tsc` tool generates TypeScript SOAP clients, OpenAPI specifications, and Fastify gateways from WSDL files.
 
@@ -57,7 +57,7 @@ Checked planning refusals print a concise reason, construct/location and next ac
 
 Component URL intake follows declared same-origin dependencies automatically. Extra origins need a reusable `sourceOrigins` decision in the checked configuration. Generated snapshots supply offline runtime bookkeeping; optional host/endpoint/trust overrides belong to the runtime configuration. The [trial guide](checked-generation.md) shows complete commands and explains the unchanged direct-runtime compatibility binding.
 
-Checked modes require all three explicit outputs: `--client-dir`, `--openapi-file` and `--gateway-dir`, plus `--gateway-service-name` and `--gateway-version-prefix`. For a runnable checked app, supply `--init-app` and an explicit `--app-dir` containing those outputs; scaffold tests use `--test-dir` with app generation. The legacy one-output minimum below does not apply to checked generation.
+The checked `pipeline` requires explicit `--client-dir`, `--openapi-file`, `--gateway-dir`, `--gateway-service-name` and `--gateway-version-prefix`. For a runnable checked app, supply `--init-app` and an explicit `--app-dir` containing those outputs. Scaffold tests use `--test-dir` with app generation.
 
 Run the complete generation pipeline in one pass: WSDL parsing, TypeScript client, OpenAPI spec, Fastify gateway, and optional app. This is the recommended command for most use cases.
 
@@ -301,7 +301,21 @@ npx wsdl-tsc pipeline \
 
 Generate strongly-typed TypeScript SOAP client code from WSDL or a pre-compiled catalog.
 
+### Checked client
+
+```bash
+npx wsdl-tsc client --model checked-components-v1 --wsdl-source ./sources/service.wsdl --client-dir .generated/service-client
+```
+
+Supply the original WSDL path or URL and an explicit client directory. The loader follows authorized imports with the same discovery, selection and qualification as the checked pipeline. The [checked planning flags](#checked-generation-flags) apply to this command, including `--checked-config` for ambiguous selection or additional source permissions.
+
+The output contains a service `client.ts`, per-operation clients and capsules in `operations/`, `inventory.json`, source snapshots, and `source-resources.json`. These files can travel together to a separate consumer. The command emits only client artifacts and explicitly requested diagnostic files.
+
+Use a dedicated output directory and regenerate the client, capsules and snapshots together when sources change. The checked command rejects `--catalog-file`, legacy compiler flags and `--stream-config`. See [runtime setup](checked-generation.md#standalone-checked-client) and [programmatic generation](checked-generation.md#programmatic-planning-and-generation).
+
 ### Usage
+
+Legacy generation is the default and can also be selected explicitly with `--model legacy`.
 
 ```bash
 npx wsdl-tsc client --wsdl-source <file|url> --client-dir <path> [options]

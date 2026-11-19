@@ -8,7 +8,10 @@ const commandNames = ["compile", "client", "openapi", "gateway", "app", "pipelin
 
 function extractCliFlags(source: string): string[] {
   // @why Quote style and line breaks do not change the public option/documentation contract.
-  const optionNames = [...source.matchAll(/\.option\(\s*(['"])([^'"]+)\1/g)].map((match) => match[2]);
+  const optionNames = [
+    ...source.matchAll(/\.option\(\s*(['"])([^'"]+)\1/g),
+    ...source.matchAll(/^\s*(['"])([a-z0-9-]+)\1:\s*\{\s*type:/gm),
+  ].map((match) => match[2]);
   const aliases = [...source.matchAll(/alias:\s*(['"])([^'"]+)\1/g)].map((match) => match[2]);
   return [...new Set([...optionNames, ...aliases].filter((flag) => flag !== "generate-app"))].sort();
 }
@@ -65,7 +68,13 @@ describe("CLI contract documentation", () => {
 
   it("keeps choice-mode support scoped to compiler-backed commands", () => {
     for (const command of ["compile", "client", "pipeline"] as const) {
-      expect(commandHelp(command)).toContain("--client-choice-mode");
+      const help = commandHelp(command);
+      expect(help).toContain("--client-choice-mode");
+      if (command !== "compile") {
+        for (const flag of ["--model", "--checked-config", "--checked-report", "--checked-draft", "--force-checked-files"]) {
+          expect(help).toContain(flag);
+        }
+      }
     }
 
     for (const command of ["openapi", "gateway", "app", "assess", "inspect-response"] as const) {

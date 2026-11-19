@@ -1,5 +1,5 @@
 /**
- * Opt-in direct gateway orchestration over the existing native owners.
+ * Opt-in checked client and pipeline orchestration over the existing native owners.
  * @since Unreleased
  * @see ../docs/decisions/003-content-model-contracts.md
  */
@@ -103,6 +103,27 @@ export interface CheckedInventory {
   readonly operations: readonly {readonly portType: {readonly namespace: string; readonly local: string}; readonly operation: string;
     readonly requested: boolean; readonly selected: boolean; readonly generated: boolean; readonly executed: boolean; readonly status: string}[];
 }
+
+/** Source and output choices for standalone checked client generation.
+ * @since Unreleased
+ */
+export interface CheckedClientOptions {
+  readonly wsdl: string;
+  readonly clientOutDir: string;
+  readonly checkedComponents?: Partial<CheckedComponentOptions>;
+}
+
+/** Diagnostic inventory and plan for a generated checked client.
+ * @since Unreleased
+ */
+export interface CheckedClientResult {
+  readonly checked: CheckedInventory;
+  readonly planning: import('./checkedPlanning.js').CheckedComponentPlan;
+}
+
+export type CheckedComponentOutputs = {clientDir: string} | {
+  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string;
+};
 
 /** Read explicit component configuration without invoking getters or accepting unknown controls.
  * @returns A copied configuration; all schema, mapping and operation decisions remain native duties.
@@ -347,6 +368,30 @@ export async function prepareCheckedSourceInputs(source: string, config: Pick<Ch
     recipeFile: {digest: createHash('sha256').update(bytes).digest('hex')}}};
 }
 
+/** Generate a checked client and its portable source snapshots from original metadata.
+ * @param opts WSDL path or URL, explicit client directory and optional component choices.
+ * @returns Diagnostic planning and generation inventory.
+ * @throws CheckedPlanningError If source qualification or client preparation refuses.
+ * @throws Error For missing output or filesystem failures.
+ * @sideEffects Reads authorized metadata and writes client artifacts without dispatching SOAP.
+ * @since Unreleased
+ */
+export async function generateCheckedClient(opts: CheckedClientOptions): Promise<CheckedClientResult> {
+  if (!opts.clientOutDir) throw new Error('Checked client generation requires an explicit client output directory');
+  const clientDir = path.resolve(opts.clientOutDir);
+  const {config, native, report} = await prepareCheckedGeneration(opts.wsdl, opts.checkedComponents, {clientDir});
+  const {inventory} = await emitComponentClient(config, clientDir, native, report);
+  return {checked: inventory, planning: report};
+}
+
+async function prepareCheckedGeneration(wsdl: string, choices: Partial<CheckedComponentOptions> | undefined,
+  outputs: CheckedComponentOutputs) {
+  const {prepareCheckedComponentPlan, CheckedPlanningError} = await import('./checkedPlanning.js');
+  const {config, native, report} = await prepareCheckedComponentPlan(wsdl, choices, outputs);
+  if (!native || !config) throw new CheckedPlanningError(report);
+  return {config, native, report};
+}
+
 /**
  * Generate the bounded preview without creating a flattened catalog authority.
  * @param opts Public pipeline options with the checked model explicitly selected.
@@ -397,16 +442,21 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
       }
     }
   }
-  const layout = {clientDir, gatewayDir, openapiFile, basePath: `/${versionSlug}/${serviceSlug}`};
-  const planning = await (await import('./checkedPlanning.js')).prepareCheckedComponentPlan(opts.wsdl, opts.checkedComponents, layout);
-  if (!planning.native || !planning.config) throw new (await import('./checkedPlanning.js')).CheckedPlanningError(planning.report);
-  return runComponentStages(opts, planning.config, {clientDir, gatewayDir, openapiFile,
-    basePath: planning.config.basePath ?? `/${versionSlug}/${serviceSlug}`}, planning.native, planning.report);
+  const {config, native, report} = await prepareCheckedGeneration(opts.wsdl, opts.checkedComponents,
+    {clientDir, gatewayDir, openapiFile, basePath: `/${versionSlug}/${serviceSlug}`});
+  if (!native.gateway) throw new TypeError('Prepared gateway required');
+  const {inventory, component} = await emitComponentClient(config, clientDir, native, report);
+  const {doc, routes} = native.gateway;
+  await native.gateway.emit();
+  if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
+  if (opts.test && opts.app) await generateCheckedTests({clientDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
+    ...opts.test, routePaths: Object.values(routes), sourceFile: component.source});
+  return {compiled: undefined, openapiDoc: doc, checked: inventory, planning: report};
 }
 
 /** Prepare through native owners only; internal handles remain within this invocation. */
 export async function prepareComponentStages(wsdl: string, config: CheckedComponentOptions, acquired?: SchemaInput,
-  outputs = {clientDir: 'client', gatewayDir: 'gateway', openapiFile: 'openapi.json', basePath: '/v1/service'},
+  outputs: CheckedComponentOutputs = {clientDir: 'client', gatewayDir: 'gateway', openapiFile: 'openapi.json', basePath: '/v1/service'},
   sourcePreparation?: PreparedCheckedSourceInputs, originals?: Awaited<ReturnType<typeof acquireCheckedSourceInputs>>) {
   const branchInputs = originals ?? (!sourcePreparation && config.responseBranches?.length ? await acquireCheckedSourceInputs(wsdl, config, acquired) : undefined);
   const correctedSources = sourcePreparation ?? (config.sourceCorrectionsFile ? await prepareCheckedSourceInputs(wsdl, config, acquired, branchInputs) : undefined);
@@ -538,7 +588,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       if (generated.kind !== 'generated-component-client') refusals.push({selector: operation.contract.selector, kind: generated.kind, rule: generated.rule, dimension: 'mapping-and-artifact'});
       else generatedClients.push(generated);
     }
-    if (!refusals.length) {
+    if (!refusals.length && 'gatewayDir' in outputs) {
       try {gateway = await generateComponentServiceGateway(expected, {...outputs, basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, httpResponseHeaderNames: config.httpResponseHeaderNames, httpResponseStatusHeaderName: config.httpResponseStatusHeaderName, signal: config.signal, emit: false});}
       catch (error) {
         const exhausted = expected.some(operation => inspectDirectOperation(operation.contract).context.budget.exhausted());
@@ -576,12 +626,10 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
   return {inspection, input, resources, allResources, common, wsdlDocumentation};
 }
 
-async function runComponentStages(opts: PipelineOptions, config: CheckedComponentOptions, outputs: {
-  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string;
-}, native: Awaited<ReturnType<typeof prepareComponentStages>>, report: import('./checkedPlanning.js').CheckedComponentPlan) {
+async function emitComponentClient(config: CheckedComponentOptions, clientDir: string,
+  native: Awaited<ReturnType<typeof prepareComponentStages>>, report: import('./checkedPlanning.js').CheckedComponentPlan) {
   const {expected, projections, namespaces} = native;
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
-  const {clientDir, gatewayDir, openapiFile, basePath} = outputs;
   if (!native.layout) throw new TypeError('Prepared source layout required');
   const {inspection, input, resources, allResources, common, wsdlDocumentation} = native.layout;
   const copied = new Map<string, string>();
@@ -621,9 +669,6 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     ...(resource.contentType === undefined ? {} : {contentType: resource.contentType}),
     aliases: [...new Set([...resources.values()].flatMap(({input: source}) => [...source.resourceAliases]
       .filter(([alias, uri]) => uri === resource.uri && alias !== uri).map(([alias]) => alias)))].sort()}));
-  if (!native.gateway) throw new TypeError('Prepared gateway required');
-  const {doc, routes} = native.gateway;
-  await native.gateway.emit();
   const operations = [...config.selectors.flatMap(selector => report.operations.filter(o => o.binding && JSON.stringify(o.portType) === JSON.stringify(selector.portType)
     && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
     .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
@@ -661,8 +706,5 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
       ...(component.recordSources ? {recordSources: component.recordSources.map(record => ({...record, source: relativeFile(record.source)}))} : {}),
       ...(component.branchSources ? {branchSources: component.branchSources.map(branch => ({...branch, source: relativeFile(branch.source)}))} : {}),
       ...(component.standardLibraries ? {standardLibraries: component.standardLibraries} : {})}}, null, 2) + '\n');
-  if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
-  if (opts.test && opts.app) await generateCheckedTests({clientDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
-    ...opts.test, routePaths: Object.values(routes), sourceFile: root});
-  return {compiled: undefined, openapiDoc: doc, checked: inventory, planning: report};
+  return {inventory, component};
 }
