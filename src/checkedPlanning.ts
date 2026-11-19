@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
 import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages, prepareCheckedSourceInputs, acquireCheckedSourceInputs} from './checkedPipeline.js';
-import type {CheckedComponentOptions, PreparedCheckedSourceInputs} from './checkedPipeline.js';
+import type {CheckedComponentOptions, CheckedComponentOutputs, PreparedCheckedSourceInputs} from './checkedPipeline.js';
 import type {DirectOperationSelector} from './compiler/directOperation.js';
 import {inspectDirectOperation} from './compiler/directOperation.js';
 import {loadSemanticSchemaInput, prepareSchemaSnapshotFiles} from './loader/schemaInput.js';
@@ -110,7 +110,7 @@ export function writeCheckedPlanningFile(file: string, value: unknown, force = f
 
 // @constraints Internal composition only. Native handles are never attached to the public report.
 export async function prepareCheckedComponentPlan(source: string, choices: unknown = {},
-  outputs?: {clientDir: string; gatewayDir: string; openapiFile: string; basePath: string},
+  outputs?: CheckedComponentOutputs,
   inspectionSelector?: DirectOperationSelector): Promise<{
   report: CheckedComponentPlan; config?: CheckedComponentOptions; native?: Awaited<ReturnType<typeof prepareComponentStages>>;
   sources?: PreparedCheckedSourceInputs;
@@ -331,7 +331,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         retainedValue: 'complete-selected-error-response' as const}] : [])} : {}),
     ...(config && selectors.length ? {selection: {service: config.service, port: config.port, selectors}} : {}), blockers: order(blockers),
     ...(intake && blockers.some(b => b.category === 'missing-dependency' && b.reason.startsWith('locationless-import:')) ? {resolution: {
-      instructions: 'Save configuration as checked JSON. Replace REQUIRED_SCHEMA_LOCATION with an authorized schema path; paths resolve from the invocation working directory. Rerun the same pipeline with --checked-config. Reports never authorize generation.',
+      instructions: 'Save configuration as checked JSON. Replace REQUIRED_SCHEMA_LOCATION with an authorized schema path; paths resolve from the invocation working directory. Rerun the generation command with --checked-config. Reports never authorize generation.',
       configuration: {...Object.fromEntries(Object.entries(explicit).filter(([key]) => key !== 'signal')), namespaceLocations: unresolved}}} : {})};
   return {report, ...(config ? {config} : {}), ...(native ? {native} : {}), ...(correctedSources ? {sources: correctedSources} : {}),
     ...(sourceInput ? {sourceInput} : {})};

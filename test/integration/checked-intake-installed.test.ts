@@ -6,6 +6,7 @@ import {qualifyUrlIntakeInstalled} from '../helpers/urlIntakeInstalled.js';
 import {qualifyCorrectedIntakeInstalled} from '../helpers/correctedIntakeInstalled.js';
 import {qualifyScopedMaintenanceInstalled} from '../helpers/scopedMaintenanceInstalled.js';
 import {qualifyResponseBranchesInstalled} from '../helpers/responseBranchesInstalled.js';
+import {qualifyCheckedStandaloneInstalled} from '../helpers/checkedStandaloneInstalled.js';
 
 let tooling: InstalledIntakeTooling;
 beforeAll(async () => {tooling = await installIntakeTooling();}, 480_000);
@@ -14,6 +15,9 @@ afterAll(async () => {if (tooling) await rm(tooling.root, {recursive: true, forc
 it('generates through the installed CLI/API and executes the recovered gateway over TLS',
   {tags: 'installed-compatibility', timeout: 1_200_000},
   context => qualifyLocalIntakeInstalled(tooling, context.signal));
+it('qualifies the installed standalone checked client against the pipeline and relocated SOAP wire',
+  {tags: 'installed-compatibility', timeout: 480_000},
+  context => qualifyCheckedStandaloneInstalled(tooling, context.signal));
 it('acquires URL graphs and executes relocated separate gateways with metadata offline',
   context => qualifyUrlIntakeInstalled(tooling, context.signal), 1_200_000);
 it('installs completed-wrapper recipes and preserves corrected SOAP fields without runtime source or recipe access',

@@ -23,7 +23,7 @@ See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
 ## Two generation modes
 
-Legacy generation is the default. Opt into [checked generation](docs/checked-generation.md) with `pipeline --model checked-components-v1` for native validation of supported contracts across generated clients, OpenAPI, gateways, app scaffolding and tests.
+Legacy generation is the default. Opt into native validation of supported SOAP contracts with `client --model checked-components-v1` for a [standalone checked client](docs/checked-generation.md#standalone-checked-client) or `pipeline --model checked-components-v1` for [checked generation](docs/checked-generation.md) across the full stack.
 
 Unambiguous sources select their service and operations automatically; ambiguous sources need an explicit `--checked-config`. Checked mode refuses unsupported or unresolved constructs rather than silently dropping their rules; the [checked gateway guide](docs/checked-gateway.md) explains configuration and scope.
 
@@ -82,6 +82,8 @@ npx wsdl-tsc client \
 ```
 
 This produces `types.ts`, `client.ts`, `operations.ts`, and `utils.ts` in the output directory.
+
+To generate a standalone checked client, start from the original WSDL, specify `--model checked-components-v1`, and keep the generated operation capsules and source snapshots with the client. See [standalone checked client setup](docs/checked-generation.md#standalone-checked-client).
 
 Generated TypeScript includes an ESLint suppression preamble. See [generated-code linting guidance](docs/generated-code.md#generated-preambles-and-eslint) for strict policies, path exclusions, and editable scaffold ownership.
 

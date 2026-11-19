@@ -13,8 +13,10 @@
 import {assessSchemaSource, serializeAssessmentReport, assessmentExitCode} from "./compiler/checkedAssessment.js";
 import {inspectCheckedResponse} from './checkedResponseInspection.js';
 import {readBoundedFile} from './util/readBoundedFile.js';
-import {parseCheckedComponentChoices} from './checkedPipeline.js';
-import {writeCheckedPlanningFile} from './checkedPlanning.js';
+import {generateCheckedClient, parseCheckedComponentChoices} from './checkedPipeline.js';
+import type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
+import {CheckedPlanningError, prepareCheckedComponentPlan, writeCheckedPlanningFile} from './checkedPlanning.js';
+import type {CheckedComponentPlan} from './checkedPlanning.js';
 import yargs from "yargs/yargs";
 import {hideBin} from "yargs/helpers";
 import fs from "node:fs";
@@ -63,6 +65,48 @@ function loadStreamConfigOrExit(filePath: string | undefined): StreamConfig | un
   }
 }
 
+const checkedPlanningOptions = {
+  'checked-config': {type: 'string', desc: 'Optional component choices, extra metadata origins or closed offline snapshots'},
+  'checked-report': {type: 'string', desc: 'Write checked component readiness or refusal as JSON'},
+  'checked-draft': {type: 'string', desc: 'Write an available missing-schema recovery draft'},
+  'force-checked-files': {type: 'boolean', default: false, desc: 'Replace requested checked report or draft files'},
+} as const;
+
+async function runCheckedGenerationCommand(argv: {'wsdl-source': string; 'checked-config'?: string;
+  'checked-report'?: string; 'checked-draft'?: string; 'force-checked-files'?: boolean},
+  generate: (choices: Partial<CheckedComponentOptions>) => Promise<{checked?: CheckedInventory; planning?: CheckedComponentPlan}>): Promise<never> {
+  const supplied: unknown = argv['checked-config'] ? JSON.parse(fs.readFileSync(argv['checked-config'], 'utf8')) : {};
+  const writePlan = (report: CheckedComponentPlan) => {
+    if (argv['checked-report']) writeCheckedPlanningFile(argv['checked-report'], report, argv['force-checked-files']);
+    if (argv['checked-draft'] && report.resolution) writeCheckedPlanningFile(argv['checked-draft'], report.resolution.configuration, argv['force-checked-files']);
+  };
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  process.on('SIGINT', cancel);
+  let exitCode = 0;
+  try {
+    if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied)) {
+      throw new CheckedPlanningError((await prepareCheckedComponentPlan(argv['wsdl-source'], supplied)).report);
+    }
+    const result = await generate({...supplied, signal: controller.signal});
+    if (result.planning) writePlan(result.planning);
+    console.log(JSON.stringify(result.checked, null, 2));
+    await new Promise<void>(resolve => {process.stdout.write('', () => resolve());});
+  } catch (error) {
+    if (!(error instanceof CheckedPlanningError)) throw error;
+    writePlan(error.report);
+    if (process.env.DEBUG?.split(/[\s,]+/).includes('wsdl-tsc')) console.error(error);
+    else {
+      const {formatCheckedCliRefusal} = await import('./util/checkedCliDiagnostics.js');
+      console.error(formatCheckedCliRefusal(error.report));
+    }
+    // @why Drain diagnostic writes before the CLI's explicit exit, including piped DEBUG reports.
+    await new Promise<void>(resolve => {process.stderr.write('', () => resolve());});
+    exitCode = 1;
+  } finally {process.off('SIGINT', cancel);}
+  process.exit(exitCode);
+}
+
 // Process command line arguments, removing the first two elements (node executable and script path)
 const rawArgs = hideBin(process.argv);
 const hasServicesConfig = rawArgs.some(argument => argument === "--services-config" || argument.startsWith("--services-config="));
@@ -82,7 +126,7 @@ if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
     .command("assess", "Assess narrow direct-schema obligations; component readiness uses pipeline --checked-report")
     .command('inspect-response', 'Inspect a captured SOAP response offline against a checked contract')
     .command("compile", "Compile WSDL to catalog.json")
-    .command("client", "Generate TypeScript SOAP client from WSDL or catalog")
+    .command("client", "Generate TypeScript SOAP client from WSDL or a legacy catalog")
     .command("openapi", "Generate OpenAPI specification from WSDL or catalog")
     .command("gateway", "Generate Fastify gateway from OpenAPI specification")
     .command("app", "Generate runnable Fastify application from client + gateway + OpenAPI")
@@ -257,18 +301,20 @@ if (rawArgs[0] === "client") {
     .version(false)
     .scriptName("wsdl-tsc client")
     .usage("$0 [--wsdl-source <file|url> | --catalog-file <file>] --client-dir <dir> [--catalog-file <path>] [options]")
+    .option('model', {type: 'string', choices: ['legacy', 'checked-components-v1'], default: 'legacy', desc: 'Generation model; checked clients require original WSDL'})
+    .options(checkedPlanningOptions)
     .option("wsdl-source", {
       type: "string",
-      desc: "Path or URL to the WSDL (exclusive with --catalog-file when used as input)"
+      desc: "Path or URL to the WSDL"
     })
     .option("catalog-file", {
       type: "string",
-      desc: "Existing catalog input, or WSDL compilation output (default: {client-dir}/catalog.json)"
+      desc: "Legacy catalog input or WSDL compilation output (default: {client-dir}/catalog.json)"
     })
     .option("client-dir", {
       type: "string",
       demandOption: true,
-      desc: "Directory for generated client (client.ts, types.ts, utils.ts)"
+      desc: "Directory for the generated client and its artifacts"
     })
     // Compiler flags
     .option("import-extensions", {
@@ -291,7 +337,21 @@ if (rawArgs[0] === "client") {
     .help()
     .parse();
 
-  // Validate mutually exclusive options
+  if (clientArgv.model === 'checked-components-v1') {
+    const allowed = new Set(['--model', '--wsdl-source', '--client-dir', ...Object.keys(checkedPlanningOptions).map(key => '--' + key)]);
+    for (const arg of rawArgs.slice(1).filter(value => value.startsWith('-'))) {
+      const flag = arg.split('=')[0]!;
+      if (!allowed.has(flag)) handleCLIError(`Unsupported checked model option: ${flag}`);
+    }
+    const wsdl = clientArgv['wsdl-source'];
+    if (!wsdl) handleCLIError('checked-components-v1 requires --wsdl-source with the original WSDL and its imports');
+    await runCheckedGenerationCommand({...clientArgv, 'wsdl-source': wsdl}, checkedComponents =>
+      generateCheckedClient({wsdl, clientOutDir: clientArgv['client-dir'], checkedComponents}));
+  }
+  if (clientArgv['checked-config'] || clientArgv['checked-report'] || clientArgv['checked-draft'] || clientArgv['force-checked-files']) {
+    handleCLIError('Checked configuration and planning files require --model checked-components-v1');
+  }
+
   const hasWsdl = !!clientArgv["wsdl-source"];
   const hasCatalog = !!clientArgv["catalog-file"];
 
@@ -744,10 +804,7 @@ if (rawArgs[0] === "pipeline" && !hasServicesConfig) {
     .usage("$0 --wsdl-source <file|url> [--client-dir <dir>] [--openapi-file <path>] [--gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug>] [--catalog-file <path>] [options]")
     .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
     .option("model", {type: "string", choices: ["legacy", "checked-components-v1"], default: "legacy", desc: "Generation model; components derive unambiguous WSDL selections"})
-    .option("checked-config", {type: "string", desc: "Optional component choices, extra metadata origins or closed offline snapshots"})
-    .option("checked-report", {type: "string", desc: "Write versioned component planning JSON on success or refusal"})
-    .option("checked-draft", {type: "string", desc: "Write minimal component missing-schema configuration when needed"})
-    .option("force-checked-files", {type: "boolean", default: false, desc: "Explicitly replace requested planning report/draft files"})
+    .options(checkedPlanningOptions)
     // Per-artifact outputs
     .option("client-dir", {
       type: "string",
@@ -912,50 +969,19 @@ if (rawArgs[0] === "pipeline" && !hasServicesConfig) {
     for (const arg of rawArgs.slice(1).filter(a => a.startsWith('--'))) {
       if (!allowed.has(arg.slice(2).split('=')[0]!)) handleCLIError(`Unsupported checked model option: ${arg.split('=')[0]}`);
     }
-    if (pipelineArgv.model !== 'checked-components-v1' && (pipelineArgv['checked-report'] || pipelineArgv['checked-draft'] || pipelineArgv['force-checked-files'])) handleCLIError('Planning files require checked-components-v1');
     if (pipelineArgv['init-app'] && !pipelineArgv['app-dir']) handleCLIError(`${pipelineArgv.model} requires explicit --app-dir with --init-app`);
     if (pipelineArgv['openapi-format'] && pipelineArgv['openapi-format'] !== 'json') handleCLIError(`${pipelineArgv.model} emits JSON OpenAPI only`);
-    const {CheckedPlanningError, writeCheckedPlanningFile, prepareCheckedComponentPlan} = await import('./checkedPlanning.js');
-    const supplied = pipelineArgv['checked-config'] ? JSON.parse(fs.readFileSync(pipelineArgv['checked-config'], 'utf8')) as Record<string, unknown> : {};
-    const writePlan = (report: import('./checkedPlanning.js').CheckedComponentPlan) => {
-      if (pipelineArgv['checked-report']) writeCheckedPlanningFile(pipelineArgv['checked-report'], report, pipelineArgv['force-checked-files']);
-      if (pipelineArgv['checked-draft'] && report.resolution) writeCheckedPlanningFile(pipelineArgv['checked-draft'], report.resolution.configuration, pipelineArgv['force-checked-files']);
-    };
-    const controller = new AbortController();
-    const cancel = () => controller.abort();
-    process.on('SIGINT', cancel);
-    let checkedExitCode = 0;
-    try {
-      if (pipelineArgv.model === 'checked-components-v1' && (!supplied || typeof supplied !== 'object' || Array.isArray(supplied))) {
-        throw new CheckedPlanningError((await prepareCheckedComponentPlan(pipelineArgv['wsdl-source'], supplied)).report);
-      }
-      const result = await runGenerationPipeline({
-        model: pipelineArgv.model,
-        checkedComponents: {...supplied, signal: controller.signal},
-        wsdl: pipelineArgv['wsdl-source'], catalogOut: '',
-        clientOutDir: pipelineArgv['client-dir'],
-        openapi: {outFile: pipelineArgv['openapi-file']},
-        gateway: {outDir: pipelineArgv['gateway-dir'] ?? '', serviceSlug: pipelineArgv['gateway-service-name'] ?? '',
-          versionSlug: pipelineArgv['gateway-version-prefix'] ?? ''},
-        app: pipelineArgv['init-app'] ? {appDir: pipelineArgv['app-dir'] ?? '', force: pipelineArgv['force-init'],
-          host: pipelineArgv['app-host'], port: pipelineArgv['app-port']} : undefined,
-        test: pipelineArgv['test-dir'] ? {testDir: pipelineArgv['test-dir'], force: pipelineArgv['force-test']} : undefined,
-      });
-      if (result.planning) writePlan(result.planning);
-      console.log(JSON.stringify((result as {checked?: unknown}).checked, null, 2));
-    } catch (error) {
-      if (!(error instanceof CheckedPlanningError)) throw error;
-      writePlan(error.report);
-      if (process.env.DEBUG?.split(/[\s,]+/).includes('wsdl-tsc')) console.error(error);
-      else {
-        const {formatCheckedCliRefusal} = await import('./util/checkedCliDiagnostics.js');
-        console.error(formatCheckedCliRefusal(error.report));
-      }
-      // @why Drain diagnostic writes before the CLI's explicit exit, including piped DEBUG reports.
-      await new Promise<void>(resolve => {process.stderr.write('', () => resolve());});
-      checkedExitCode = 1;
-    } finally {process.off('SIGINT', cancel);}
-    process.exit(checkedExitCode);
+    await runCheckedGenerationCommand(pipelineArgv, checkedComponents => runGenerationPipeline({
+      model: 'checked-components-v1', checkedComponents,
+      wsdl: pipelineArgv['wsdl-source'], catalogOut: '',
+      clientOutDir: pipelineArgv['client-dir'],
+      openapi: {outFile: pipelineArgv['openapi-file']},
+      gateway: {outDir: pipelineArgv['gateway-dir'] ?? '', serviceSlug: pipelineArgv['gateway-service-name'] ?? '',
+        versionSlug: pipelineArgv['gateway-version-prefix'] ?? ''},
+      app: pipelineArgv['init-app'] ? {appDir: pipelineArgv['app-dir'] ?? '', force: pipelineArgv['force-init'],
+        host: pipelineArgv['app-host'], port: pipelineArgv['app-port']} : undefined,
+      test: pipelineArgv['test-dir'] ? {testDir: pipelineArgv['test-dir'], force: pipelineArgv['force-test']} : undefined,
+    }));
   }
   if (pipelineArgv['checked-config']) handleCLIError('--checked-config requires --model checked-components-v1');
   if (pipelineArgv['checked-report'] || pipelineArgv['checked-draft'] || pipelineArgv['force-checked-files']) handleCLIError('Planning files require checked-components-v1');
