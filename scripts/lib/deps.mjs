@@ -18,9 +18,6 @@ export const APP_DEPENDENCIES = {
 
 const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 const NPM_CLI = process.env.npm_execpath;
-const MAINTAINED_VERSION_SPECS = new Map([
-  ["typescript", "typescript@6"],
-]);
 
 export function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -61,17 +58,13 @@ export function run(command, args, options = {}) {
 }
 
 export function runNpm(args, options = {}) {
-  if (NPM_CLI) {
-    return run(process.execPath, [NPM_CLI, ...args], options);
-  }
-  return run(NPM, args, { ...options, shell: process.platform === "win32" });
+  const invocation = npmInvocation(args);
+  return run(invocation.command, invocation.args, { ...options, shell: invocation.shell });
 }
 
-export function latestVersion(packageName) {
-  const packageSpec = MAINTAINED_VERSION_SPECS.get(packageName) ?? packageName;
-  const raw = runNpm(["view", packageSpec, "version", "--json"]);
-  const versions = JSON.parse(raw);
-  return Array.isArray(versions) ? versions.at(-1) : versions;
+export function npmInvocation(args) {
+  if (NPM_CLI) return { command: process.execPath, args: [NPM_CLI, ...args], shell: false };
+  return { command: NPM, args, shell: process.platform === "win32" };
 }
 
 export function directDependencyNames(pkg) {
@@ -112,15 +105,6 @@ export function selectExpectedRange(currentRange, latest) {
     return currentRange;
   }
   return latestRange;
-}
-
-export function expectedRanges(names, currentRanges = new Map()) {
-  const ranges = new Map();
-  for (const name of names) {
-    const latest = latestVersion(name);
-    ranges.set(name, selectExpectedRange(currentRanges.get(name), latest));
-  }
-  return ranges;
 }
 
 export function verifyRootManifestAndLock(ranges) {

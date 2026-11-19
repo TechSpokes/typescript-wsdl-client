@@ -285,6 +285,8 @@ Examples:
 
 ### Release workflow
 
+Choose one release-ready PR for a change approved to ship immediately when the combined scope can be reviewed and qualified together. Use separate qualification or release PRs when review, hosted controls or release sequencing require them. Follow the [candidate publication procedure](../docs/releases/README.md#candidate-publication) on either path.
+
 Prepare the complete release candidate, including `docs/releases/vX.Y.Z.md`, package versions, changelog, and root documentation index, before pushing the release PR. Complete the PR template checklist. Commit the preflight-validated tree, push the PR, and require Node 24 and Node 26 checks on its exact head before merging. Verify that merged main has the same tree and successful CI, then tag that merged commit. A different merged tree requires a newly validated candidate before tagging.
 
 Agent delivery ends after the tag-triggered workflow creates and verifies the draft and its artifacts, followed by task-owned local and remote cleanup. Agents must never access GitHub through a browser, publish releases, or dispatch package publication. The maintainer signs in through their own browser and clicks Publish; that event triggers npm publication. Preserve unrelated work, contributor-owned branches, release tags, and abandonment markers during cleanup.

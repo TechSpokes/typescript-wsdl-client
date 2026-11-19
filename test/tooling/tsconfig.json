@@ -13,10 +13,12 @@
     "../../scripts/semantic-reference.ts",
     "../../scripts/readiness-inventory.ts",
     "../../scripts/validate-npm-package.ts",
+    "../../scripts/qualify-release-tarball.ts",
     "../../scripts/product-corpus.ts",
     "../../scripts/run-verification.ts",
     "../../scripts/smoke-pipeline.ts",
     "../../scripts/smoke-npm-package.ts",
-    "../../scripts/lib/conformance-gate.ts"
+    "../../scripts/lib/conformance-gate.ts",
+    "../../scripts/lib/dependency-freshness.ts"
   ]
 }

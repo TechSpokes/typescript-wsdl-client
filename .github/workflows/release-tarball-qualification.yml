@@ -1,0 +1,78 @@
+name: Release tarball qualification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/release-tarball-qualification.yml'
+      - 'scripts/qualify-release-tarball.ts'
+      - 'scripts/lib/release-tarball.ts'
+      - 'scripts/validate-npm-package.ts'
+
+permissions:
+  contents: read
+
+env:
+  NPM_VERSION: 12.0.1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      sha256: ${{ steps.bind.outputs.sha256 }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install -g npm@${NPM_VERSION}
+      - run: npm ci
+      - run: npm run clean && npm run build && npm run typecheck && npm run skill:validate
+      - name: Validate and identify packed bytes
+        id: bind
+        env:
+          RELEASE_TARBALL_DIR: ${{ runner.temp }}/qualified-package
+        run: |
+          npm run package:validate -- --release-tarball
+          node scripts/qualify-release-tarball.ts bind
+      - uses: actions/upload-artifact@v7
+        id: upload
+        with:
+          name: qualified-package-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/qualified-package/package.tgz
+            ${{ runner.temp }}/qualified-package/package.json
+          if-no-files-found: error
+          retention-days: 7
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Require exact build outputs before downloading
+        shell: bash
+        env:
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+          VALIDATED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: |
+          [[ "$ARTIFACT_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$VALIDATED_SHA256" =~ ^[a-f0-9]{64}$ ]]
+      - uses: actions/download-artifact@v8
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          path: ${{ runner.temp }}/qualified-package
+      - name: Verify the received archive without installing or publishing
+        env:
+          RELEASE_TARBALL_DIR: ${{ runner.temp }}/qualified-package
+          VALIDATED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: node scripts/qualify-release-tarball.ts verify

@@ -135,6 +135,9 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     const result: unknown = JSON.parse(executed.stdout);
     expect(result).toMatchObject({kind: 'checked-gateway-installed', originalCheckoutReadable: false});
     await writeFile(path.join(evidence, 'wire.log'), executed.stdout + executed.stderr);
+    for (const line of executed.stderr.split(/\r?\n/)) {
+      if (line.startsWith('[wire timing]')) console.info(line);
+    }
     const encodingFixture = path.join(root, 'test/conformance/fixtures/assessment/metadata-encoding');
     const metadata = await readFile(path.join(encodingFixture, 'service.wsdl'), 'utf8');
     const values = await readFile(path.join(encodingFixture, 'values.xsd'), 'utf8');

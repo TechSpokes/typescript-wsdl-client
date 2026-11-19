@@ -43,7 +43,7 @@ Plain `npm test` collects every product test. Run `npm run build` first when sel
 
 GitHub runs the full delivery gate on Linux with Node 24. Ordinary pushes and PRs run the shorter compatibility command on Linux with Node 26 and on Windows with Node 24 and 26. Those jobs retain the audited reference and platform controls, install and run the packed legacy generator, and execute a relocated checked gateway over TLS.
 
-Use the complete compatibility command or manually dispatch the CI workflow at the candidate branch when an OS or Node change needs the deeper installed matrix. Manually dispatched jobs run the full compatibility variants. Release preflight runs full delivery before packaging the release skill asset.
+Use the complete compatibility command or manually dispatch the CI workflow at the candidate branch when changes to Node, dependencies, runner behavior or verification tooling need the deeper installed matrix. Manually dispatched jobs run the full compatibility variants. Release preflight runs full delivery before packaging the release skill asset.
 
 Run an affected capability stage while iterating. Full delivery already runs the capability suite. Use standalone conformance when you need just that evidence, or when the task explicitly requires a separate run.
 

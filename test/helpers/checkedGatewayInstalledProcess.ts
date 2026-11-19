@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import {readFile, writeFile} from 'node:fs/promises';
 import {spawn, type ChildProcess} from 'node:child_process';
-import {createServer} from 'node:http';
+import {createServer, request as httpRequest, type IncomingMessage} from 'node:http';
 import {once} from 'node:events';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -57,17 +57,34 @@ const sourceConfig = process.argv[3]?.startsWith('encoding-') ? {} : {
   localSource: source, fileRoots: [path.join(root, 'client')], sourceResources: [], sourceOrigins: []};
 const config = {...sourceConfig, endpoint, allowedEndpoints: [endpoint],
   host: '127.0.0.1', port: 0};
+const mode = process.argv[3];
+let phaseStart = performance.now();
+const phase = (label: string, started = phaseStart) => {
+  if (mode !== undefined) return;
+  const now = performance.now();
+  process.stderr.write(`[wire timing] ${label}: ${Math.round(now - started)}ms\n`);
+  phaseStart = now;
+};
 let child: ChildProcess | undefined;
+let controlApp: FastifyInstance | undefined;
 let runtimeLog = '';
 const stop = async () => {
+  const started = performance.now();
+  if (controlApp) {
+    const current = controlApp; controlApp = undefined;
+    await current.close();
+    phase('runtime control shutdown', started);
+  }
   if (!child) return;
   const current = child; child = undefined;
-  if (current.exitCode !== null) return;
+  if (current.exitCode !== null || current.signalCode !== null) return;
   const closed = once(current, 'exit'); current.kill();
   await closed;
+  phase('gateway shutdown', started);
 };
 const start = async (overrides: Record<string, unknown> = {}): Promise<string> => {
   await stop();
+  const started = performance.now();
   const configFile = path.join(root, 'runtime.json');
   await writeFile(configFile, JSON.stringify({...config, ...overrides}));
   const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
@@ -76,7 +93,7 @@ const start = async (overrides: Record<string, unknown> = {}): Promise<string> =
     path.join(root, 'dist/server.js')], {cwd: root, env: {...process.env, CHECKED_GATEWAY_CONFIG: configFile},
   stdio: ['ignore', 'pipe', 'pipe', 'ipc']});
   const current = child;
-  return await new Promise<string>((resolve, reject) => {
+  const ready = await new Promise<string>((resolve, reject) => {
     let output = '';
     const timer = setTimeout(() => reject(new Error('Gateway readiness timeout: ' + output)), 30_000);
     const data = (chunk: Buffer) => {
@@ -88,15 +105,41 @@ const start = async (overrides: Record<string, unknown> = {}): Promise<string> =
     current.once('error', error => {clearTimeout(timer); reject(error);});
     current.once('exit', code => {clearTimeout(timer); reject(new Error(`Gateway exited ${code}: ${output}`));});
   });
+  phase('gateway readiness', started);
+  return ready;
 };
-const mode = process.argv[3];
 const route = mode === 'atomic-unions' || mode === 'scalar-base-extension' || mode === 'qnames' ? `/v1/${mode}/Exchange`
   : (mode === 'scalar' ? '/v1/forecast-scalar/' : '/v1/forecast/') + (mode === 'noaa' ? 'LatLonListZipCode' : 'GetForecast');
+
+// @why #501: probe-owned pooled sockets can keep the installed gateway in graceful shutdown until its idle deadline.
+async function oneShotJson(url: string, post?: {value: unknown; signal?: AbortSignal}) {
+  const body = post ? JSON.stringify(post.value) : undefined;
+  const response = await new Promise<IncomingMessage>((resolve, reject) => {
+    const request = httpRequest(url, {
+      method: post ? 'POST' : 'GET', agent: false, signal: post?.signal,
+      headers: body === undefined ? undefined : {'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body)},
+    }, resolve);
+    request.once('error', reject);
+    request.end(body);
+  });
+  const chunks: Buffer[] = [];
+  for await (const chunk of response) chunks.push(chunk as Buffer);
+  const status = response.statusCode;
+  assert.ok(status !== undefined);
+  return {status, value: JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown};
+}
+
 let calls = 0, refusals = 0;
 try {
   let url = await start();
   const post = async (value: unknown, operation?: string) => {
-    const response = await fetch(url + (operation ? '/v1/forecast/' + operation : route), {method: 'POST', headers: {'Content-Type': 'application/json'},
+    const target = url + (operation ? '/v1/forecast/' + operation : route);
+    if (mode === undefined) {
+      const result = await oneShotJson(target, {value});
+      calls++;
+      return result;
+    }
+    const response = await fetch(target, {method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(value)});
     calls++;
     return {status: response.status, value: await response.json() as unknown};
@@ -723,10 +766,9 @@ try {
     process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
       variant: mode, calls, refusals, upstreamRequests: upstream.length}) + '\n');
   } else {
-  const health = await fetch(url + '/health'); assert.equal(health.status, 200);
-  assert.deepEqual(await health.json(), {status: 'ok'});
-  const openapi = await fetch(url + '/openapi.json'); assert.equal(openapi.status, 200);
-  const spec = await openapi.json() as {openapi: string; paths: Record<string, unknown>};
+  assert.deepEqual(await oneShotJson(url + '/health'), {status: 200, value: {status: 'ok'}});
+  const openapi = await oneShotJson(url + '/openapi.json'); assert.equal(openapi.status, 200);
+  const spec = openapi.value as {openapi: string; paths: Record<string, unknown>};
   assert.equal(spec.openapi, '3.1.1'); assert.ok(Object.hasOwn(spec.paths, route));
   assert.deepEqual(await post(expected.request), {status: 200, value: expected.response});
   assert.equal(upstream.length, 1);
@@ -734,6 +776,7 @@ try {
   assert.equal(upstream[0]!.action, '"urn:checked:GetForecast"');
   assert.equal(upstream[0]!.contentType, 'text/xml; charset=utf-8');
   assert.equal(upstream[0]!.method, 'POST'); assert.equal(upstream[0]!.path, '/owned-forecast');
+  phase('initial HTTP and SOAP exchange');
   for (const charset of ['US-ASCII', 'UTF-16LE', 'UTF-16BE']) {
     replyStatus = 200;
     replyContentType = 'text/xml; charset=' + charset;
@@ -751,6 +794,7 @@ try {
       {code: expected.fault.detail.code, message: expected.fault.detail.message});
   }
   reply = normal; replyStatus = 200; replyContentType = 'text/xml; charset=utf-8';
+  phase('charset success and fault exchanges');
   const receiver = (xml: string) => xml.replace('<s:Envelope ', '<s:Envelope xmlns:x="urn:extension" x:envelope="opaque" ')
     .replace('<s:Body>', '<s:Header x:header="opaque"><x:Trace s:actor="urn:other" s:mustUnderstand="1"/></s:Header><s:Body x:body="opaque">');
   reply = receiver(normal);
@@ -768,6 +812,7 @@ try {
   reply = receiver(normal.replace('>true<', '>yes<')); replyStatus = 200;
   const invalidReceiver = await post(expected.request);
   assert.equal(invalidReceiver.status, 502); assert.equal(Object.hasOwn(invalidReceiver.value as object, 'value'), false);
+  phase('SOAP receiver and header cases');
   reply = normal;
   for (const value of [{city: 'Paris', days: '2'}, {city: 'Paris'}, {city: 'Paris', days: 2, extra: true},
     {city: 7, days: 2}, {city: 'Paris', days: 2147483648}, {city: 'Paris', days: 1.5},
@@ -802,17 +847,17 @@ try {
     const outcome = await post(expected.request);
     assert.ok(outcome.status >= 400, JSON.stringify(outcome)); refusals++;
   }
+  phase('request, response and declared fault cases');
   reply = normal;
   const beforeCancel = upstream.length;
   hang = true;
   const abort = new AbortController();
-  const pending = fetch(url + route, {method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(expected.request), signal: abort.signal});
+  const pending = oneShotJson(url + route, {value: expected.request, signal: abort.signal});
   for (let attempt = 0; attempt < 500 && upstream.length === beforeCancel; attempt++) {
     await new Promise<void>(resolve => {setTimeout(resolve, 10);});
   }
   assert.equal(upstream.length, beforeCancel + 1, 'SOAP call must start before cancellation');
-  abort.abort(); await assert.rejects(pending);
+  abort.abort(); await assert.rejects(pending, {code: 'ABORT_ERR'});
   assert.ok(hangingClosed);
   let cancellationTimer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -820,32 +865,46 @@ try {
       cancellationTimer = setTimeout(() => reject(new Error('HTTP cancellation did not close upstream SOAP')), 10_000);
     })]);
   } finally {clearTimeout(cancellationTimer);}
+  phase('HTTP cancellation and upstream close');
   hang = false;
+  const serverModule = await import(pathToFileURL(path.join(root, 'dist/server.js')).href) as {
+    buildServer(options: typeof config & {signal?: AbortSignal}): Promise<FastifyInstance>;
+  };
+  const startRuntimeControl = async (overrides: Record<string, unknown>) => {
+    await stop();
+    const started = performance.now();
+    // @why #501: runtime policy controls need fresh listeners and real HTTP, but share the installed module load.
+    controlApp = await serverModule.buildServer({...config, ...overrides});
+    const address = await controlApp.listen({host: '127.0.0.1', port: 0});
+    phase('runtime control readiness', started);
+    return address;
+  };
   let before: number = upstream.length;
-  url = await start({capabilities: ['authentication']});
+  url = await startRuntimeControl({capabilities: ['authentication']});
   const unsupportedCapability = await post(expected.request);
   assert.equal(unsupportedCapability.status, 502);
   assert.deepEqual(unsupportedCapability.value, {kind: 'unsupported', rule: 'SOAP capability'});
   assert.equal(upstream.length, before); refusals++;
   await assert.rejects(start({authentication: true}), /Unsupported checked gateway configuration field/);
   assert.equal(upstream.length, before); refusals++;
-  url = await start({limits: {maxBytes: 1}});
+  url = await startRuntimeControl({limits: {maxBytes: 1}});
   const explicitLimit = await post(expected.request);
   assert.equal(explicitLimit.status, 400);
   assert.equal((explicitLimit.value as {kind: string}).kind, 'resource-limit');
   assert.equal(upstream.length, before); refusals++;
-  url = await start({timeoutMs: 1000});
+  url = await startRuntimeControl({timeoutMs: 1000});
   hang = true;
   const explicitTimeout = await post(expected.request);
   assert.equal(explicitTimeout.status, 502);
   assert.equal((explicitTimeout.value as {kind: string}).kind, 'transport');
   assert.equal(upstream.length, before + 1, 'Explicit timeout must terminate the started SOAP request'); refusals++;
+  phase('configured SOAP timeout');
   hang = false;
   before = upstream.length;
-  url = await start({allowedEndpoints: []});
+  url = await startRuntimeControl({allowedEndpoints: []});
   assert.ok((await post(expected.request)).status >= 400);
   assert.equal(upstream.length, before); refusals++;
-  url = await start({fileRoots: [path.join(root, 'test')]});
+  url = await startRuntimeControl({fileRoots: [path.join(root, 'test')]});
   assert.ok((await post(expected.request)).status >= 400);
   assert.equal(upstream.length, before); refusals++;
   const originalSource = await readFile(source);
@@ -868,9 +927,6 @@ try {
   assert.equal(upstream.length, before); refusals++;
   await writeFile(openapiFile, originalOpenapi);
   await stop();
-  const serverModule = await import(pathToFileURL(path.join(root, 'dist/server.js')).href) as {
-    buildServer(options: typeof config & {signal: AbortSignal}): Promise<FastifyInstance>;
-  };
   const cancelledApp = await serverModule.buildServer({...config, signal: AbortSignal.abort()});
   try {
     const cancelled = await cancelledApp.inject({method: 'POST', url: route, payload: expected.request});
@@ -895,12 +951,19 @@ try {
   const rejected = await host.inject({method: 'POST', url: route, payload: {city: 'Paris', days: '2', extra: true}});
   assert.equal(rejected.statusCode, 400); assert.equal(upstream.length, before); refusals++;
   await host.close();
+  phase('in-process host controls');
   await writeFile('server.log', runtimeLog);
   process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
     calls, refusals, upstreamRequests: upstream.length, selected: 'ForecastService/ForecastPort/ForecastBinding/GetForecast',
     scope: 'synthetic component string/int32/Boolean flat SOAP 1.1 owned loopback'}) + '\n');
   }
 } finally {
-  await stop(); soap.closeAllConnections();
-  await new Promise<void>((resolve, reject) => soap.close(error => error ? reject(error) : resolve()));
+  try {
+    await stop();
+  } finally {
+    const started = performance.now();
+    soap.closeAllConnections();
+    await new Promise<void>((resolve, reject) => soap.close(error => error ? reject(error) : resolve()));
+    phase('upstream shutdown', started);
+  }
 }

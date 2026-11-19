@@ -59,15 +59,22 @@ When an abandoned major or minor candidate contains the complete launch narrativ
 
 The supported release path keeps final-form tags immutable:
 
+Choose the PR path before final candidate review. A change the maintainer has approved to ship immediately can include its code and release metadata in one release-ready PR. Use a separate qualification or release PR when a change needs to merge independently, the release decision is pending, or a combined diff would make independent review or hosted qualification harder. Use a later release PR when it needs to collect multiple independently merged changes.
+
+[v1.9.0 used one release-ready PR](https://github.com/TechSpokes/typescript-wsdl-client/pull/496). Its reviewed candidate included release metadata and passed preflight, PR CI and merged-main CI. For v1.10.0, the [standalone client feature](https://github.com/TechSpokes/typescript-wsdl-client/pull/497) merged first with its own review and delivery checks. The [release PR](https://github.com/TechSpokes/typescript-wsdl-client/pull/499) then validated the final versioned tree locally, in PR CI and on merged main.
+
+Both paths follow the same release gates.
+
 1. Prepare versions, changelog, release notes, and the documentation index before pushing the release PR.
-2. Include new release files in the staging index. Review the final uncommitted tree, run preflight once, and commit that exact tree.
-3. Push the PR and require Node 24 and Node 26 checks on its final head before merging.
-4. Verify the merged main tree matches the validated tree and require CI on the merged commit.
-5. Tag the validated merged main commit and push the tag to start the draft workflow.
-6. Verify the draft, release notes, uploaded skill ZIP, checksum manifest, and artifact verification results.
-7. Clean up task-owned merged branches and temporary outputs, then hand the draft to the maintainer.
-8. The maintainer reviews the draft in their own browser and clicks Publish.
-9. The guarded package workflow publishes to npmjs with provenance.
+2. Stage all candidate files. Confirm the index and working tree agree and record the staged tree with `git write-tree`.
+3. Obtain independent review of that uncommitted tree, run complete preflight, and commit the validated tree.
+4. Push the PR and require Node 24 and Node 26 checks for its final head. Verify the actual tested checkout and tree before merging.
+5. Verify the merged main tree matches the validated tree and require CI on the merged commit.
+6. Tag the validated merged main commit and push the tag to start the draft workflow.
+7. Verify the draft, release notes, uploaded skill ZIP, checksum manifest, and artifact verification results.
+8. Clean up task-owned merged branches and temporary outputs, then hand the draft to the maintainer.
+9. The maintainer reviews the draft in their own browser and clicks Publish.
+10. The guarded package workflow publishes to npmjs with provenance.
 
 The agent stops after draft verification and cleanup. Agents must never access GitHub through a browser, publish a release, or dispatch package publication. Use authenticated git and GitHub CLI commands for preparation and verification. Preserve unrelated work, contributor-owned branches, immutable release tags, and abandonment markers during cleanup.
 

@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-11-19
+
+- docs(release): document when the feature and release can use one reviewed PR.
+- test(ci): report actual checkout identity and profile installed consumer verification phases.
+- perf(test): share the installed server module across five checked-gateway runtime controls.
+- perf(release): check live dependency freshness with at most four concurrent npm lookups.
+- test(release): rehearse verification of the exact npm archive across two read-only workflow jobs.
+
 ## [1.10.0] - 2026-11-19
 
 - feat(checked): generate standalone checked SOAP clients from original WSDL through the CLI and package-root API.
