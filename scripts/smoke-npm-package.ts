@@ -29,6 +29,7 @@ const npm = (args: string[], cwd = consumer) =>
   run([npmCli, ...args, '--ignore-scripts', '--no-audit', '--no-fund'], cwd);
 const cli = (args: string[]) => run([npmCli, 'exec', '--offline', '--no', '--', 'wsdl-tsc', ...args]);
 const write = (file: string, content: string) => writeFile(path.join(consumer, file), content);
+let canRemoveConsumer = true;
 
 try {
   const tarball = await candidateTarball(workspace, async () =>
@@ -63,12 +64,33 @@ try {
   ])]);
   phase('developer tooling install');
   await copyFile('test/helpers/installedDeclarationNavigation.ts', path.join(consumer, 'declaration-navigation.ts'));
-  await run(['declaration-navigation.ts']);
-  phase('declaration navigation');
-  await run(['node_modules/typescript/bin/tsc', '--noEmit', '-p', '.generated/app/tsconfig.json']);
-  await run([path.join(consumer, 'node_modules/vitest/vitest.mjs'), 'run', '--config', 'vitest.config.ts'],
+  const declaration = () => run(['declaration-navigation.ts']);
+  const compile = () => run(['node_modules/typescript/bin/tsc', '--noEmit', '-p', '.generated/app/tsconfig.json']);
+  const tests = () => run([path.join(consumer, 'node_modules/vitest/vitest.mjs'), 'run', '--config', 'vitest.config.ts'],
     path.join(consumer, '.generated/tests'), true);
-  phase('generated app compile and tests');
+  if (process.platform === 'win32') {
+    const measure = async (label: string, check: typeof declaration) => {
+      const start = performance.now();
+      await check();
+      console.info(`[legacy smoke] ${label}: ${Math.round(performance.now() - start)}ms`);
+    };
+    // @constraints Every child must finish before changing the installed package or removing the consumer.
+    const results = await Promise.allSettled([
+      measure('declaration navigation', declaration), measure('generated app compile', compile), measure('generated app tests', tests),
+    ]);
+    const failures = results.flatMap(result => result.status === 'rejected' ? [result.reason as unknown] : []);
+    const unresolvedCleanup = failures.find(failure => failure instanceof AggregateError);
+    if (unresolvedCleanup) throw unresolvedCleanup;
+    if (failures.length === 1) throw failures[0];
+    if (failures.length > 1) throw new Error('Installed consumer checks failed', {cause: new AggregateError(failures)});
+    phase('parallel declaration, compile and tests');
+  } else {
+    await declaration();
+    phase('declaration navigation');
+    await compile();
+    await tests();
+    phase('generated app compile and tests');
+  }
   for (const directory of ['.generated/client', '.generated/gateway', '.generated/app', '.generated/tests', 'api-client']) {
     const files = (await readdir(path.join(consumer, directory), {recursive: true, withFileTypes: true}))
       .filter(entry => entry.isFile() && entry.name.endsWith('.ts'));
@@ -87,9 +109,15 @@ try {
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
+  if (error instanceof AggregateError) {
+    canRemoveConsumer = false;
+    await writeFile(path.join(workspace, 'external-recovery-required'), consumer + '\n', {flag: 'wx'});
+  }
 } finally {
-  phaseStart = performance.now();
-  await rm(consumer, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
-  phase('cleanup');
+  if (canRemoveConsumer) {
+    phaseStart = performance.now();
+    await rm(consumer, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+    phase('cleanup');
+  }
   console.info(`[legacy smoke] total: ${Math.round(performance.now() - started)}ms`);
 }

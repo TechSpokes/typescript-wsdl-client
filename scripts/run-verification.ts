@@ -172,7 +172,7 @@ if (command === 'recover') {
   } finally {
     process.off('SIGINT', interrupt);
     process.off('SIGTERM', terminate);
-    if (treeStopped) {
+    if (treeStopped && !await inspect(path.join(run, 'external-recovery-required'))) {
       try {await clean(run);}
       catch (error) {
         console.error(`Workspace cleanup failed at ${run}`, error);
@@ -180,6 +180,7 @@ if (command === 'recover') {
       }
     } else {
       console.error(`Workspace retained at ${run}. Verify child processes have stopped before recovery.`);
+      process.exitCode ||= 1;
     }
   }
 }
