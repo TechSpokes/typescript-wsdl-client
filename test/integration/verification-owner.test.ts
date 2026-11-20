@@ -44,6 +44,10 @@ const port = nested ? Number(await new Promise(resolve => nested.stdout.once('da
 writeFileSync('ready.json', JSON.stringify({port, nested: nested?.pid, name: path.basename(run), external: tmpdir()}));
 if (nested) setInterval(() => {}, 1000);
 else if (process.env.PROBE_MODE === 'fail') process.exitCode = 23;
+else if (process.env.PROBE_MODE === 'retain-external') {
+  writeFileSync(path.join(run, 'external-recovery-required'), tmpdir());
+  process.exitCode = 23;
+}
 `);
   await writeFile(path.join(root, 'entry.ts'), `import {existsSync} from 'node:fs';
 const timer = setInterval(() => {if (existsSync('cancel')) {clearInterval(timer); process.emit('SIGINT');}}, 25);
@@ -72,6 +76,12 @@ try {await import(${JSON.stringify(pathToFileURL(runner).href)});} finally {clea
   expect(await launch('success')).toBe(0);
   await expectClean();
   expect(await launch('fail')).toBe(23);
+  await expectClean();
+  expect(await launch('retain-external')).toBe(23);
+  const retained = JSON.parse(await readFile(control, 'utf8')) as {name: string; external: string};
+  expect(await readFile(path.join(retained.external, 'outside-scratch.txt'), 'utf8')).toBe('');
+  expect(await readFile(path.join(base, retained.name, 'external-recovery-required'), 'utf8')).toBe(retained.external);
+  expect(await launch('success', ['recover', retained.name])).toBe(0);
   await expectClean();
 
   const modes = process.platform === 'win32' ? ['hold'] : ['hold', 'kill-npm'];
