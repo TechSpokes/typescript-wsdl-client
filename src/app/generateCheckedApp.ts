@@ -32,7 +32,7 @@ export interface GenerateCheckedAppOptions {
 
 function relative(from: string, to: string): string {
   const result = path.relative(from, to).split(path.sep).join('/');
-  return result.startsWith('.') ? result : './' + result;
+  return result.startsWith('../') ? result : './' + result;
 }
 
 /**

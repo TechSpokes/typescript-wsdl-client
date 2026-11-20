@@ -3,8 +3,9 @@ import {COMPONENT_SOAP11_ONE_WAY_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_ONE_WA
 import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP11_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR, COMPONENT_SOAP12_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 /** Native-plan generator consumed by the opt-in checked pipeline. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
-import {writeFileSync, mkdirSync} from 'node:fs';
+import {writeFileSync} from 'node:fs';
 import path from 'node:path';
+import {writeCheckedArtifact, type CheckedArtifactWriter} from '../generation/checkedArtifactFiles.js';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectDirectValueMapping, inspectComponentValueMapping} from '../compiler/directValues.js';
 import type {DirectValueMapping} from '../compiler/directValues.js';
@@ -264,7 +265,7 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
  * @throws For foreign/mixed native operations, refused generation, cancellation or filesystem failure.
  */
 export async function writeComponentServiceClient(expected: readonly ReconstructedComponentSource[], directory: string, signal?: AbortSignal,
-  prepared?: readonly GeneratedComponentClient[]):
+  prepared?: readonly GeneratedComponentClient[], write: CheckedArtifactWriter = writeCheckedArtifact):
   Promise<Readonly<Record<string, string>>> {
   const operations = inspectComponentSourceService(expected);
   const generated: GeneratedComponentClient[] = [];
@@ -316,12 +317,14 @@ export async function writeComponentServiceClient(expected: readonly Reconstruct
         : `    ...operation_${index}(${mixed ? `runtime[${JSON.stringify(operation.contract.selector.operation)}]` : 'runtime'}),`), '  });', '}', '');
   for (const [index, operation] of operations.entries()) {
     const dir = path.join(directory, 'operations', String(index));
-    mkdirSync(dir, {recursive: true}); writeDirectClient(path.join(dir, 'client.ts'), generated[index]!);
-    writeFileSync(path.join(dir, 'contract.json'), generated[index]!.capsule);
+    checkSemanticBudget(inspectDirectOperation(operation.contract).context.budget);
+    if (signal?.aborted) throw new Error('Checked client generation cancelled');
+    write(path.join(dir, 'client.ts'), generated[index]!.source);
+    write(path.join(dir, 'contract.json'), generated[index]!.capsule);
     files[operation.contract.selector.operation] = `operations/${index}/contract.json`;
   }
   const {budget} = inspectDirectOperation(operations[0]!.contract).context;
   checkSemanticBudget(budget);
-  writeFileSync(path.join(directory, 'client.ts'), composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client')), 'utf8');
+  write(path.join(directory, 'client.ts'), composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client')));
   return Object.freeze(files);
 }

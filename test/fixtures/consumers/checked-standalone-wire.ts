@@ -5,10 +5,11 @@ import {createServer} from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {SaxesParser} from 'saxes';
 import {checkedComponentRuntimeV3} from '@techspokes/typescript-wsdl-client';
-import {createClient, type Operation_0} from './client/client.js';
+import {createClient, type Operation_0} from './.client/client.js';
+import {buildServer} from './server.js';
 
 await assert.rejects(readFile(process.argv[2]!), {code: 'ERR_ACCESS_DENIED'});
-const owner = new URL('../client/', import.meta.url);
+const owner = new URL('../.client/', import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('source-resources.json', owner), 'utf8')) as {
   version: string;
   runtime: {localSource: string; fileRoots: string[]; capsuleFiles: Record<string, string>;
@@ -31,7 +32,9 @@ const xmlEvents = (xml: string) => {
   return {names, values};
 };
 const expectedRequest = xmlEvents(await readFile('request.xml', 'utf8'));
-let response = await readFile('response.xml', 'utf8');
+const validResponse = await readFile('response.xml', 'utf8');
+const declaredFault = await readFile('fault.xml', 'utf8');
+let response = validResponse;
 let status = 200;
 const requests: {method?: string; url?: string; action?: string | string[]; body: string}[] = [];
 const server = createServer(async (request, reply) => {
@@ -85,7 +88,7 @@ try {
   assert.equal(success.kind, 'soap-response');
   assert.deepEqual({...success.value}, {city: 'Paris', temperature: [18, -2], complete: true});
   assert.equal(success.status, 200);
-  response = await readFile('fault.xml', 'utf8');
+  response = declaredFault;
   status = 500;
   const fault = await client.GetForecast(input, options);
   assert.equal(fault.kind, 'soap-fault');
@@ -95,13 +98,75 @@ try {
   assert.equal(fault.fault.string, 'Unknown city');
   assert.deepEqual({...fault.value}, {code: 'NOT_FOUND', message: 'Unknown city'});
   assert.equal(requests.length, 2);
+
+  const app = await buildServer({endpoint, allowedEndpoints: [endpoint], timeoutMs: 5000});
+  const capsuleFile = localFile(runtime.capsuleFiles.GetForecast!);
+  const snapshot = options.sourceResources[0]!.file;
+  const snapshotBytes = await readFile(snapshot);
+  let gatewayRefusals = 0;
+  try {
+    const address = await app.listen({host: '127.0.0.1', port: 0});
+    const post = async (value: unknown) => {
+      const reply = await fetch(address + '/v1/forecast/GetForecast', {method: 'POST',
+        headers: {'content-type': 'application/json'}, body: JSON.stringify(value)});
+      return {status: reply.status, value: await reply.json() as Record<string, unknown>};
+    };
+    assert.deepEqual(await (await fetch(address + '/health')).json(), {status: 'ok'});
+    const openapi = await (await fetch(address + '/openapi.json')).json();
+    assert.deepEqual(openapi, JSON.parse(await readFile('openapi.json', 'utf8')));
+    assert.equal((await post({...input, days: 0})).status, 400);
+    assert.equal(requests.length, 2);
+    gatewayRefusals++;
+
+    await rename(snapshot, snapshot + '.unavailable');
+    try {await assert.rejects(buildServer({endpoint}), {code: 'ENOENT'});}
+    finally {await rename(snapshot + '.unavailable', snapshot);}
+    assert.equal(requests.length, 2);
+    gatewayRefusals++;
+    await writeFile(snapshot, Buffer.concat([snapshotBytes, Buffer.from('\n<!-- altered import -->')]));
+    try {await assert.rejects(buildServer({endpoint}), /stale or mixed generated source records/);}
+    finally {await writeFile(snapshot, snapshotBytes);}
+    assert.equal(requests.length, 2);
+    gatewayRefusals++;
+
+    await writeFile(capsuleFile, foreignCapsule);
+    let mismatched: Awaited<ReturnType<typeof buildServer>> | undefined;
+    try {
+      mismatched = await buildServer({endpoint});
+      const reply = await mismatched.inject({method: 'POST', url: '/v1/forecast/GetForecast', payload: input});
+      assert.equal(reply.statusCode, 500);
+      assert.match(reply.body, /generated-capsule-mismatch/);
+    } finally {
+      await mismatched?.close();
+      await writeFile(capsuleFile, capsule);
+    }
+    assert.equal(requests.length, 2);
+    gatewayRefusals++;
+
+    status = 200;
+    response = validResponse;
+    assert.deepEqual(await post(input), {status: 200, value: {city: 'Paris', temperature: [18, -2], complete: true}});
+    status = 500;
+    response = declaredFault;
+    assert.deepEqual(await post(input), {status: 502, value: {
+      fault: {name: 'ForecastError', code: {namespace: 'http://schemas.xmlsoap.org/soap/envelope/', local: 'Server'}, string: 'Unknown city'},
+      value: {code: 'NOT_FOUND', message: 'Unknown city'},
+    }});
+    status = 200;
+    response = validResponse.replace('>18<', '>invalid-temperature<');
+    const invalidResponse = await post(input);
+    assert.equal(invalidResponse.status, 502);
+    assert.equal(Object.hasOwn(invalidResponse.value, 'value'), false);
+  } finally {await app.close();}
+
+  assert.equal(requests.length, 5);
   for (const request of requests) {
     assert.equal(request.method, 'POST');
     assert.equal(request.url, '/forecast');
     assert.equal(request.action, '"urn:checked:GetForecast"');
     assert.deepEqual(xmlEvents(request.body), expectedRequest);
   }
-  console.log(JSON.stringify({exchanges: requests.length, refusals, originalCheckoutReadable: false}));
+  console.log(JSON.stringify({exchanges: requests.length, clientRefusals: refusals, gatewayRefusals, originalCheckoutReadable: false}));
 } finally {
   if (server.listening) {
     server.closeAllConnections();

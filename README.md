@@ -23,7 +23,7 @@ See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
 ## Two generation modes
 
-Legacy generation is the default. Opt into native validation of supported SOAP contracts with `client --model checked-components-v1` for a [standalone checked client](docs/checked-generation.md#standalone-checked-client) or `pipeline --model checked-components-v1` for [checked generation](docs/checked-generation.md) across the full stack.
+Legacy generation is the default. Opt into native validation of supported SOAP contracts with `--model checked-components-v1`. Generate the whole stack with `pipeline` or run [`client`, `openapi`, `gateway`, and `app` separately](docs/checked-generation.md#generate-the-checked-stack-in-separate-commands).
 
 Unambiguous sources select their service and operations automatically; ambiguous sources need an explicit `--checked-config`. Checked mode refuses unsupported or unresolved constructs rather than silently dropping their rules; the [checked gateway guide](docs/checked-gateway.md) explains configuration and scope.
 
@@ -305,6 +305,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.12.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.0.md) | Standalone checked OpenAPI, gateway, app and test generation |
 | [v1.11.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.11.1.md) | Exact npm archive delivery and faster Windows smoke verification |
 | [v1.11.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.11.0.md) | Release verification, dependency freshness and package handoff controls |
 | [v1.10.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.10.0.md) | Standalone checked SOAP clients through the CLI and package-root API |

@@ -3,8 +3,8 @@
  * @since 1.1.6
  * @constraints Serialized descriptions never issue native source or execution authority.
  */
-import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {writeCheckedArtifact, type CheckedArtifactWriter} from '../generation/checkedArtifactFiles.js';
 import {componentSourceCapsuleBytes, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from '../compiler/directSourceCapsule.js';
 import {lowerComponentShape} from '../generation/componentShape.js';
@@ -34,12 +34,12 @@ type Schema = Readonly<Record<string, unknown>>;
 const draft07 = 'http://json-schema.org/draft-07/schema#';
 
 /** Lower component mappings through the existing checked gateway emitter, retaining native supplemental validation. */
-export async function generateComponentGateway(expected: ReconstructedComponentSource, options: CheckedGatewayOptions): Promise<{doc: unknown; emit: () => Promise<void>}> {
+export async function generateComponentGateway(expected: ReconstructedComponentSource, options: CheckedGatewayOptions) {
   inspectReconstructedComponentSource(expected);
   return generateGatewayFromReconstruction(expected, options);
 }
 
-async function generateGatewayFromReconstruction(expected: ReconstructedComponentSource, options: CheckedGatewayOptions): Promise<{doc: unknown; emit: () => Promise<void>}> {
+async function generateGatewayFromReconstruction(expected: ReconstructedComponentSource, options: CheckedGatewayOptions) {
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   inspectReconstructedComponentSource(expected);
   const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
@@ -262,17 +262,15 @@ export default plugin;
 `;
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   const source = composeGeneratedSource(body, resolvePreamble('gateway'));
-  const emit = async () => {
+  const emit = (write: CheckedArtifactWriter = writeCheckedArtifact) => {
     inspectReconstructedComponentSource(expected);
     checkSemanticBudget(inspectDirectOperation(expected.contract).context.budget);
     if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
-    await mkdir(options.gatewayDir, {recursive: true});
-    await mkdir(path.dirname(options.openapiFile), {recursive: true});
-    await writeFile(path.join(options.gatewayDir, 'plugin.ts'), source, 'utf8');
-    await writeFile(path.join(options.gatewayDir, 'schemas.json'), JSON.stringify(schemas, null, 2) + '\n', 'utf8');
-    await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+    write(path.join(options.gatewayDir, 'plugin.ts'), source);
+    write(path.join(options.gatewayDir, 'schemas.json'), JSON.stringify(schemas, null, 2) + '\n');
+    write(options.openapiFile, JSON.stringify(doc, null, 2) + '\n');
   };
-  if (options.emit !== false) await emit();
+  if (options.emit !== false) emit();
   return {doc, emit};
 }
 
@@ -283,11 +281,11 @@ export default plugin;
 export async function generateComponentServiceGateway(expected: readonly ReconstructedComponentSource[], options: {
   clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean; httpResponseHeaders?: readonly string[];
   httpResponseHeaderNames?: Readonly<Record<string, string>>; httpResponseStatusHeaderName?: string;
-}): Promise<{doc: unknown; routes: Readonly<Record<string, string>>; emit: () => Promise<void>}> {
+}) {
   const operations = inspectComponentSourceService(expected), routes: Record<string, string> = Object.create(null) as Record<string, string>;
   const paths: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
   const documents: Record<string, unknown>[] = [];
-  const emissions: (() => Promise<void>)[] = [];
+  const emissions: ((write: CheckedArtifactWriter) => void)[] = [];
   const tick = () => {
     checkSemanticBudget(inspectDirectOperation(operations[0]!.contract).context.budget);
     if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
@@ -346,13 +344,19 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   ];
   tick();
   const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('gateway'));
-  const emit = async () => {
+  const emitGateway = (write: CheckedArtifactWriter = writeCheckedArtifact) => {
     tick();
-    for (const write of emissions) {tick(); await write();}
-    await mkdir(options.gatewayDir, {recursive: true}); await mkdir(path.dirname(options.openapiFile), {recursive: true});
-    await writeFile(path.join(options.gatewayDir, 'plugin.ts'), source, 'utf8');
-    await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+    for (const emitOperation of emissions) {tick(); emitOperation(write);}
+    write(path.join(options.gatewayDir, 'plugin.ts'), source);
   };
-  if (options.emit !== false) await emit();
-  return {doc, routes: Object.freeze(routes), emit};
+  const emitOpenAPI = (write: CheckedArtifactWriter = writeCheckedArtifact) => {
+    tick();
+    write(options.openapiFile, JSON.stringify(doc, null, 2) + '\n');
+  };
+  const emit = (write: CheckedArtifactWriter = writeCheckedArtifact) => {
+    emitGateway(write);
+    emitOpenAPI(write);
+  };
+  if (options.emit !== false) emit();
+  return {doc, routes: Object.freeze(routes), emit, emitGateway, emitOpenAPI};
 }

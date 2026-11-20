@@ -367,6 +367,8 @@ npm test
 
 Checked tests require app generation and emit `test/checked-scaffold.test.ts` at these paths, without a separate Vitest config. The checked app's package provides Vitest, TypeScript and runtime dependencies plus `typecheck`, `test`, `build` and `start` scripts; `npm test` runs `vitest run` with normal consumer discovery/defaults. It does not inherit this repository's project groups or lock. See [checked generation](checked-generation.md#check-and-start-the-generated-project) for build/start steps and how to substitute your source.
 
+In the [standalone checked sequence](checked-generation.md#generate-the-checked-stack-in-separate-commands), `app --test-dir` emits the same test scaffold. `app --force` refreshes app files and `app --force-test` refreshes tests independently.
+
 ### What generated checks establish
 
 Legacy mock checks exercise route validation, envelopes, error serialization and runtime helpers. Checked scaffold checks exercise health, selected OpenAPI and invalid-request refusal without upstream dispatch, using a loopback placeholder and empty endpoint restrictions. Neither proves independent SOAP wire compatibility, provider behavior or business acceptance, and neither authorizes production transactions.

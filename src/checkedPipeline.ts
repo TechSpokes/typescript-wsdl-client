@@ -27,6 +27,7 @@ import {directLoadingLimits} from './compiler/directExecutionPolicy.js';
 import {generateComponentServiceGateway} from './gateway/generateCheckedGateway.js';
 import {generateCheckedApp} from './app/generateCheckedApp.js';
 import {generateCheckedTests} from './test/generateCheckedTests.js';
+import {checkedArtifactLocation, checkedPathContains, verifyCheckedArtifact, writeCheckedArtifact, type CheckedArtifactWriter} from './generation/checkedArtifactFiles.js';
 import {commonSourceDirectory, assertCanonicalSourceLayout} from './generation/sourceLayout.js';
 import {createComponentRecordProjection, inspectComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import type {ComponentRecordProjectionSpec, ComponentRecordProjectionAssociation, ComponentRecordProjection} from './compiler/componentRecordProjection.js';
@@ -122,8 +123,35 @@ export interface CheckedClientResult {
 }
 
 export type CheckedComponentOutputs = {clientDir: string} | {
-  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string;
+  clientDir?: string; gatewayDir?: string; openapiFile: string; basePath: string;
 };
+
+/** Source, document path and route names for checked OpenAPI generation. */
+export interface CheckedOpenAPIOptions extends Omit<CheckedClientOptions, 'clientOutDir'> {
+  readonly openapiFile: string;
+  readonly versionSlug: string;
+  readonly serviceSlug: string;
+}
+
+/** Check the existing client and OpenAPI against the same source before writing the gateway. */
+export interface CheckedGatewayOptions extends CheckedOpenAPIOptions {
+  readonly clientOutDir: string;
+  readonly gatewayDir: string;
+}
+
+/** Scaffold an app and optional tests around existing, matched checked artifacts. */
+export interface CheckedAppOptions extends CheckedGatewayOptions {
+  readonly appDir: string;
+  readonly force?: boolean;
+  readonly host?: string;
+  readonly port?: number;
+  readonly test?: {readonly testDir: string; readonly force?: boolean};
+}
+
+/** The qualified operation inventory, diagnostic plan, and emitted HTTP contract. */
+export interface CheckedOpenAPIResult extends CheckedClientResult {
+  readonly openapiDoc: Readonly<Record<string, unknown>>;
+}
 
 /** Read explicit component configuration without invoking getters or accepting unknown controls.
  * @returns A copied configuration; all schema, mapping and operation decisions remain native duties.
@@ -392,6 +420,105 @@ async function prepareCheckedGeneration(wsdl: string, choices: Partial<CheckedCo
   return {config, native, report};
 }
 
+function checkedBasePath(versionSlug: string, serviceSlug: string): string {
+  if (![versionSlug, serviceSlug].every(slug => typeof slug === 'string' && /^[A-Za-z0-9_-]+$/.test(slug))) {
+    throw new Error('Checked route slugs must use letters, digits, underscores or hyphens');
+  }
+  return `/${versionSlug}/${serviceSlug}`;
+}
+
+export const checkedAppReservedNames = ['server.ts', 'package.json', 'tsconfig.json', 'README.md', '.gitignore',
+  'checked-gateway.example.json', 'checked-gateway.local.json', 'dist', 'node_modules', '.git'] as const;
+
+function assertCheckedLocations(outputs: readonly string[], appDir?: string): void {
+  if (appDir) {
+    if (outputs.some(file => {const relative = path.relative(appDir, file); return !relative || relative === '..'
+      || relative.startsWith('..' + path.sep) || path.isAbsolute(relative);})) {
+      throw new Error('Checked project client, gateway, OpenAPI and tests must be within appDir');
+    }
+    const reserved = new Set(checkedAppReservedNames.map(name => name.toLowerCase()));
+    if (outputs.some(file => reserved.has(path.relative(appDir, file).split(path.sep)[0]!.toLowerCase()))) {
+      throw new Error('Checked artifact outputs must not occupy scaffold files or build/dependency directories');
+    }
+  }
+  for (const [index, output] of outputs.entries()) {
+    if (outputs.slice(index + 1).some(other => checkedPathContains(output, other) || checkedPathContains(other, output))) {
+      throw new Error('Checked artifact output locations must not overlap');
+    }
+  }
+}
+
+async function prepareCheckedHttpStages(opts: CheckedOpenAPIOptions,
+  paths: {clientDir?: string; gatewayDir?: string; openapiFile: string}) {
+  const prepared = await prepareCheckedGeneration(opts.wsdl, opts.checkedComponents,
+    {...paths, basePath: checkedBasePath(opts.versionSlug, opts.serviceSlug)});
+  if (!prepared.native.gateway) throw new TypeError('Prepared gateway required');
+  return {...prepared, gateway: prepared.native.gateway};
+}
+
+/** Write the checked OpenAPI document for the original WSDL and selected operations.
+ * @throws If native qualification or document generation refuses.
+ * @since 1.12.0
+ */
+export async function generateCheckedOpenAPI(opts: CheckedOpenAPIOptions): Promise<CheckedOpenAPIResult> {
+  if (!opts.openapiFile) throw new Error('Checked OpenAPI generation requires an explicit OpenAPI file');
+  const openapiFile = path.resolve(opts.openapiFile);
+  const {config, native, report, gateway} = await prepareCheckedHttpStages(opts, {openapiFile});
+  const file = checkedArtifactLocation(openapiFile);
+  const sourceFiles = [resolveResourceUri(opts.wsdl), ...(native.layout?.allResources.map(resource => resource.uri) ?? [])]
+    .filter(uri => new URL(uri).protocol === 'file:').map(uri => fileURLToPath(uri));
+  sourceFiles.push(...config.sourceResources.map(resource => resource.file));
+  if (config.sourceCorrectionsFile) sourceFiles.push(config.sourceCorrectionsFile);
+  if (sourceFiles.some(source => path.relative(file, checkedArtifactLocation(source)) === '')) {
+    throw new Error('The checked OpenAPI output overlaps an original source file. Choose a separate --openapi-file');
+  }
+  gateway.emitOpenAPI();
+  return {checked: componentInventory(config, native, report), planning: report, openapiDoc: gateway.doc};
+}
+
+function checkedGatewayPaths(opts: CheckedGatewayOptions) {
+  if (!opts.clientOutDir || !opts.gatewayDir || !opts.openapiFile) {
+    throw new Error('Checked gateway generation requires explicit client, OpenAPI and gateway paths');
+  }
+  return {clientDir: path.resolve(opts.clientOutDir), gatewayDir: path.resolve(opts.gatewayDir), openapiFile: path.resolve(opts.openapiFile)};
+}
+
+/** Write gateway files after verifying the existing client and OpenAPI against the original WSDL.
+ * @throws If source qualification fails or a required checked artifact is missing or mismatched.
+ * @since 1.12.0
+ */
+export async function generateCheckedGateway(opts: CheckedGatewayOptions): Promise<CheckedOpenAPIResult> {
+  const paths = checkedGatewayPaths(opts);
+  assertCheckedLocations(Object.values(paths));
+  const {config, native, report, gateway} = await prepareCheckedHttpStages(opts, paths);
+  gateway.emitOpenAPI(verifyCheckedArtifact);
+  const {inventory} = await emitComponentClient(config, paths.clientDir, native, report, verifyCheckedArtifact);
+  gateway.emitGateway();
+  return {checked: inventory, planning: report, openapiDoc: gateway.doc};
+}
+
+/** Write consumer-owned app and test scaffolds around verified checked artifacts.
+ * @throws If paths overlap, source qualification fails, or a required artifact is missing or mismatched.
+ * @sideEffects Preserves existing scaffold files unless their respective force option is true.
+ * @since 1.12.0
+ */
+export async function scaffoldCheckedApp(opts: CheckedAppOptions): Promise<CheckedOpenAPIResult> {
+  if (!opts.appDir || opts.test && !opts.test.testDir) throw new Error('Checked scaffolding requires explicit app and test outputs');
+  const paths = checkedGatewayPaths(opts), appDir = path.resolve(opts.appDir);
+  const testDir = opts.test && path.resolve(opts.test.testDir);
+  assertCheckedLocations([...Object.values(paths), ...(testDir ? [testDir] : [])], appDir);
+  const {config, native, report, gateway} = await prepareCheckedHttpStages(opts, paths);
+  gateway.emit(verifyCheckedArtifact);
+  const {inventory, component} = await emitComponentClient(config, paths.clientDir, native, report, verifyCheckedArtifact);
+  await generateCheckedApp({...paths, appDir, component, force: opts.force, host: opts.host, port: opts.port});
+  if (testDir) {
+    const routePaths = Object.values(gateway.routes);
+    await generateCheckedTests({clientDir: paths.clientDir, appDir, testDir, force: opts.test?.force,
+      routePath: routePaths[0]!, routePaths, sourceFile: component.source});
+  }
+  return {checked: inventory, planning: report, openapiDoc: gateway.doc};
+}
+
 /**
  * Generate the bounded preview without creating a flattened catalog authority.
  * @param opts Public pipeline options with the checked model explicitly selected.
@@ -419,35 +546,17 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
   rejectExtra(opts.app, ['appDir', 'force', 'host', 'port']);
   rejectExtra(opts.test, ['testDir', 'force']);
   const {versionSlug, serviceSlug} = opts.gateway;
-  if (![versionSlug, serviceSlug].every(s => /^[A-Za-z0-9_-]+$/.test(s))) throw new Error('Checked route slugs must use letters, digits, underscores or hyphens');
+  const basePath = checkedBasePath(versionSlug, serviceSlug);
   const clientDir = path.resolve(opts.clientOutDir), gatewayDir = path.resolve(opts.gateway.outDir);
   const openapiFile = path.resolve(opts.openapi.outFile);
   const outputs = [clientDir, gatewayDir, openapiFile, ...(opts.test ? [path.resolve(opts.test.testDir)] : [])];
-  if (opts.app) {
-    const appDir = path.resolve(opts.app.appDir);
-    if (outputs.some(p => {const relative = path.relative(appDir, p); return !relative || relative.startsWith('..') || path.isAbsolute(relative);})) {
-      throw new Error('Checked project client, gateway, OpenAPI and tests must be within appDir');
-    }
-    const reserved = new Set(['server.ts', 'package.json', 'tsconfig.json', 'readme.md', '.gitignore',
-      'checked-gateway.example.json', 'checked-gateway.local.json', 'dist', 'node_modules', '.git']);
-    if (outputs.some(p => reserved.has(path.relative(appDir, p).split(path.sep)[0]!.toLowerCase()))) {
-      throw new Error('Checked artifact outputs must not occupy scaffold files or build/dependency directories');
-    }
-  }
-  for (const [i, output] of outputs.entries()) {
-    for (const other of outputs.slice(i + 1)) {
-      const a = path.relative(output, other), b = path.relative(other, output);
-      if (!a || !a.startsWith('..') && !path.isAbsolute(a) || !b.startsWith('..') && !path.isAbsolute(b)) {
-        throw new Error('Checked artifact output locations must not overlap');
-      }
-    }
-  }
+  assertCheckedLocations(outputs, opts.app && path.resolve(opts.app.appDir));
   const {config, native, report} = await prepareCheckedGeneration(opts.wsdl, opts.checkedComponents,
-    {clientDir, gatewayDir, openapiFile, basePath: `/${versionSlug}/${serviceSlug}`});
+    {clientDir, gatewayDir, openapiFile, basePath});
   if (!native.gateway) throw new TypeError('Prepared gateway required');
   const {inventory, component} = await emitComponentClient(config, clientDir, native, report);
   const {doc, routes} = native.gateway;
-  await native.gateway.emit();
+  native.gateway.emit();
   if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
   if (opts.test && opts.app) await generateCheckedTests({clientDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
     ...opts.test, routePaths: Object.values(routes), sourceFile: component.source});
@@ -588,8 +697,9 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       if (generated.kind !== 'generated-component-client') refusals.push({selector: operation.contract.selector, kind: generated.kind, rule: generated.rule, dimension: 'mapping-and-artifact'});
       else generatedClients.push(generated);
     }
-    if (!refusals.length && 'gatewayDir' in outputs) {
-      try {gateway = await generateComponentServiceGateway(expected, {...outputs, basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, httpResponseHeaderNames: config.httpResponseHeaderNames, httpResponseStatusHeaderName: config.httpResponseStatusHeaderName, signal: config.signal, emit: false});}
+    if (!refusals.length && 'openapiFile' in outputs) {
+      try {gateway = await generateComponentServiceGateway(expected, {...outputs, clientDir: outputs.clientDir ?? 'client',
+        gatewayDir: outputs.gatewayDir ?? 'gateway', basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, httpResponseHeaderNames: config.httpResponseHeaderNames, httpResponseStatusHeaderName: config.httpResponseStatusHeaderName, signal: config.signal, emit: false});}
       catch (error) {
         const exhausted = expected.some(operation => inspectDirectOperation(operation.contract).context.budget.exhausted());
         if (!config.signal?.aborted && !exhausted) throw error;
@@ -626,12 +736,25 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
   return {inspection, input, resources, allResources, common, wsdlDocumentation};
 }
 
+function componentInventory(config: CheckedComponentOptions, native: Awaited<ReturnType<typeof prepareComponentStages>>,
+  report: import('./checkedPlanning.js').CheckedComponentPlan): CheckedInventory {
+  const wsdlDocumentation = native.layout?.wsdlDocumentation ?? {};
+  const operations = [...config.selectors.flatMap(selector => report.operations.filter(o => o.binding && JSON.stringify(o.portType) === JSON.stringify(selector.portType)
+    && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
+    .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
+  return {model: 'checked-components-v1', assurance: 'native-component-source-and-mapping', admitted: false,
+    ...(native.applicationGroups ? {applicationGroups: native.applicationGroups} : {}),
+    ...(Object.keys(wsdlDocumentation).length ? {wsdlDocumentation} : {}),
+    selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
+}
+
 async function emitComponentClient(config: CheckedComponentOptions, clientDir: string,
-  native: Awaited<ReturnType<typeof prepareComponentStages>>, report: import('./checkedPlanning.js').CheckedComponentPlan) {
+  native: Awaited<ReturnType<typeof prepareComponentStages>>, report: import('./checkedPlanning.js').CheckedComponentPlan,
+  write: CheckedArtifactWriter = writeCheckedArtifact) {
   const {expected, projections, namespaces} = native;
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
   if (!native.layout) throw new TypeError('Prepared source layout required');
-  const {inspection, input, resources, allResources, common, wsdlDocumentation} = native.layout;
+  const {inspection, input, resources, allResources, common} = native.layout;
   const copied = new Map<string, string>();
   const destinations = new Set<string>();
   for (const resource of allResources) {
@@ -659,28 +782,22 @@ async function emitComponentClient(config: CheckedComponentOptions, clientDir: s
   const namespaceLocations = [...namespaces].map(([namespace, location]) => ({namespace,
     location: relocated(resolveResourceUri(location))}));
   tick();
-  const contracts = await writeComponentServiceClient(expected, clientDir, config.signal, native.generatedClients);
+  const contracts = await writeComponentServiceClient(expected, clientDir, config.signal, native.generatedClients, write);
   for (const resource of allResources) {
-    tick(); const file = copied.get(resource.uri)!; fs.mkdirSync(path.dirname(file), {recursive: true});
-    fs.writeFileSync(file, copyOriginalSchemaResource(resources.get(resource.uri)!.input, resource.uri, amount => inspection.context.budget.chargeWork(amount)));
+    tick();
+    write(copied.get(resource.uri)!, copyOriginalSchemaResource(resources.get(resource.uri)!.input, resource.uri, amount => inspection.context.budget.chargeWork(amount)));
   }
   const sourceRecords = allResources.map(resource => ({originalUri: resource.uri,
     logicalUri: relocated(resource.uri), file: path.relative(clientDir, copied.get(resource.uri)!).replaceAll('\\', '/'), digest: resource.digest,
     ...(resource.contentType === undefined ? {} : {contentType: resource.contentType}),
     aliases: [...new Set([...resources.values()].flatMap(({input: source}) => [...source.resourceAliases]
       .filter(([alias, uri]) => uri === resource.uri && alias !== uri).map(([alias]) => alias)))].sort()}));
-  const operations = [...config.selectors.flatMap(selector => report.operations.filter(o => o.binding && JSON.stringify(o.portType) === JSON.stringify(selector.portType)
-    && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
-    .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
-  const inventory: CheckedInventory = {model: 'checked-components-v1', assurance: 'native-component-source-and-mapping', admitted: false,
-    ...(native.applicationGroups ? {applicationGroups: native.applicationGroups} : {}),
-    ...(Object.keys(wsdlDocumentation).length ? {wsdlDocumentation} : {}),
-    selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
-  fs.writeFileSync(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
+  const inventory = componentInventory(config, native, report);
+  write(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
   // @why This generator-owned manifest must describe the current generation, including removal of corrections.
   const correctionManifest = path.join(clientDir, 'source-corrections.json');
-  if (native.sourceCorrections) fs.writeFileSync(correctionManifest, JSON.stringify(native.sourceCorrections, null, 2) + '\n');
-  else fs.rmSync(correctionManifest, {force: true});
+  if (native.sourceCorrections) write(correctionManifest, JSON.stringify(native.sourceCorrections, null, 2) + '\n');
+  else if (write === writeCheckedArtifact) fs.rmSync(correctionManifest, {force: true});
   const component = {source: root, capsules: Object.fromEntries(Object.entries(contracts).map(([name, file]) => [name, path.resolve(clientDir, file)])),
     sourceResources, sourceOrigins: config.sourceOrigins, ...(new URL(input.root.uri).protocol === 'file:' ? {} : {sourceUri: input.root.uri}),
     ...(namespaceLocations.length ? {namespaceLocations} : {}),
@@ -695,7 +812,7 @@ async function emitComponentClient(config: CheckedComponentOptions, clientDir: s
         ...(config.responseBranches ?? []).flatMap(item => item.branches.flatMap(branch => branch.standardLibraries ?? []))])].sort()} : {})};
   const relativeFile = (file: string) => path.relative(clientDir, file).replaceAll('\\', '/') || '.';
   const logical = (uri: string) => new URL(uri).protocol === 'file:' ? relativeFile(fileURLToPath(uri)) : uri;
-  fs.writeFileSync(path.join(clientDir, 'source-resources.json'), JSON.stringify({version: 'checked-source-resources-v2', resources: sourceRecords,
+  write(path.join(clientDir, 'source-resources.json'), JSON.stringify({version: 'checked-source-resources-v2', resources: sourceRecords,
     runtime: {localSource: relativeFile(component.source), fileRoots: ['.'],
       capsuleFiles: Object.fromEntries(Object.entries(component.capsules).map(([name, file]) => [name, relativeFile(file)])),
       sourceResources: component.sourceResources.map(resource => ({uri: logical(resource.uri), file: relativeFile(resource.file),
