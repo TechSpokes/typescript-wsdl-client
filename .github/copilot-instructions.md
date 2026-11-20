@@ -330,7 +330,7 @@ Release notes are required for every release tag. The tag-triggered draft releas
 
 The draft release workflow packages and attests `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip`, uploads the ZIP and `SHA256SUMS`, then downloads, verifies, installs, and smoke-tests the uploaded artifact. Continue refusing to mutate a published non-draft release.
 
-The published-release package workflow must stay targeted. It checks out the tag, installs the tested npm version, runs `npm run release:publish-check`, then publishes only to npmjs with provenance. Do not add GitHub Packages capability or replace that publish check with `npm run ci`; full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed.
+The published-release package workflow must stay targeted. Its read-only build job checks the release commit and runs `npm run release:publish-check -- --release-tarball` with the tested npm version. The npmjs publication job independently checks the release state and verifies the artifact from that build attempt before publishing the exact archive with provenance. Full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed. Keep standalone `prepublishOnly` validation and follow the [npm tarball delivery procedure](../docs/releases/README.md#npm-tarball-delivery) for first-run proof and recovery.
 
 Keep the H1 in repository release files. Do not remove it to avoid a duplicate title on GitHub; the workflow handles that display-only transformation.
 

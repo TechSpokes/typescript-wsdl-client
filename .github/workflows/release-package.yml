@@ -6,15 +6,16 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to release from (e.g. v0.8.0)"
+        description: "Published release tag, also selected as the workflow ref"
         required: true
 
 env:
   NODE_VERSION: 24
   NPM_VERSION: 12.0.1
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
 
 concurrency:
-  group: release-state-${{ github.event.release.tag_name || github.event.inputs.tag }}
+  group: release-state-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
 jobs:
@@ -24,102 +25,116 @@ jobs:
       contents: read
 
     outputs:
-      tag: ${{ steps.determine_tag.outputs.tag }}
+      sha256: ${{ steps.bind.outputs.sha256 }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
 
     steps:
-      - name: Determine tag
-        id: determine_tag
+      - &require-release-ref
+        name: Require the target release ref
+        shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            TAG="${{ github.event.release.tag_name }}"
-          else
-            TAG="${{ github.event.inputs.tag }}"
-          fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Using TAG=$TAG"
-      - name: Validate tag naming rule
-        run: |
-          echo "Validating tag: $TAG"
-          if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Tag '$TAG' does not match required pattern v<major>.<minor>.<patch> (e.g. v0.8.11)"
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ || "$GITHUB_REF" != "refs/tags/$RELEASE_TAG" ]]; then
+            echo 'Select the target vX.Y.Z release tag as the workflow ref.' >&2
             exit 1
           fi
-        env:
-          TAG: ${{ steps.determine_tag.outputs.tag }}
-
-      - name: Check out code
+      - &release-checkout
+        name: Check out the release commit
         uses: actions/checkout@v7
         with:
-          ref: ${{ steps.determine_tag.outputs.tag }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
-
-      - name: Use Node.js
-        uses: actions/setup-node@v7
+          persist-credentials: false
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      - name: Use tested npm version
-        run: npm install -g npm@${NPM_VERSION}
-
-      - name: Guard package publication state
+      - &guard-release-state
+        name: Guard package publication state
+        id: release-state
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.determine_tag.outputs.tag }}
         run: |
           set -euo pipefail
 
-          git fetch --force --tags origin
-          git fetch --force origin main:refs/remotes/origin/main
+          git fetch --force --prune --no-tags origin \
+            "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG" \
+            'refs/tags/abandoned/*:refs/tags/abandoned/*' \
+            'refs/heads/main:refs/remotes/origin/main'
 
-          release_json="$(gh release view "${TAG}" --json isDraft,isPrerelease)"
+          release_json="$(gh release view "${RELEASE_TAG}" --repo "$GITHUB_REPOSITORY" --json tagName,isDraft,isPrerelease,publishedAt)"
+          [[ "$(jq -r '.tagName' <<<"${release_json}")" == "$RELEASE_TAG" ]]
           is_draft="$(jq -r '.isDraft' <<<"${release_json}")"
           is_prerelease="$(jq -r '.isPrerelease' <<<"${release_json}")"
-          is_published="false"
-          if [[ "${is_draft}" == "false" ]]; then
-            is_published="true"
-          fi
+          is_published="$(jq -r '.publishedAt != null' <<<"${release_json}")"
 
           node scripts/lib/release-state.mjs guard \
-            --tag "${TAG}" \
+            --tag "${RELEASE_TAG}" \
             --mode package \
             --draft "${is_draft}" \
             --prerelease "${is_prerelease}" \
             --published "${is_published}" \
-            --require-main true
+            --require-main true \
+            --github-output "$GITHUB_OUTPUT"
+          [[ "$(git rev-parse --verify "refs/tags/${RELEASE_TAG}^{commit}")" == "$GITHUB_SHA" ]]
+          [[ "$(git rev-parse --verify 'HEAD^{commit}')" == "$GITHUB_SHA" ]]
 
+      - name: Use tested npm version
+        run: npm install -g npm@${NPM_VERSION} --ignore-scripts --no-audit --no-fund
       - run: npm ci
-      - run: npm run release:publish-check
+      - name: Build and validate the release archive
+        id: bind
+        env:
+          RELEASE_TARBALL_DIR: ${{ runner.temp }}/verified-package
+          GUARDED_RELEASE_COMMIT: ${{ steps.release-state.outputs.release_commit }}
+        run: |
+          npm run release:publish-check -- --release-tarball
+          node scripts/qualify-release-tarball.ts bind --release
+      - uses: actions/upload-artifact@v7
+        id: upload
+        with:
+          name: release-package-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/verified-package/package.tgz
+            ${{ runner.temp }}/verified-package/package.json
+          if-no-files-found: error
+          retention-days: 7
 
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.build.outputs.tag }}
-
-      - name: Use Node.js (npmjs)
-        uses: actions/setup-node@v7
+      - *require-release-ref
+      - *release-checkout
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org/
-
+      - *guard-release-state
+      - name: Require exact build outputs before downloading
+        shell: bash
+        env:
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+          VALIDATED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: |
+          [[ "$ARTIFACT_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$VALIDATED_SHA256" =~ ^[a-f0-9]{64}$ ]]
+      - uses: actions/download-artifact@v8
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          path: ${{ runner.temp }}/verified-package
       - name: Use tested npm version
-        run: npm install -g npm@${NPM_VERSION}
-
-      - name: Clear NODE_AUTH_TOKEN for trusted publishing
-        run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Publish to npm (trusted publishing via OIDC)
-        run: npm publish --provenance --access public
+        run: npm install -g npm@${NPM_VERSION} --ignore-scripts --no-audit --no-fund
+      - name: Verify and publish the validated archive via OIDC
+        env:
+          NODE_AUTH_TOKEN: ''
+          RELEASE_TARBALL_DIR: ${{ runner.temp }}/verified-package
+          GUARDED_RELEASE_COMMIT: ${{ steps.release-state.outputs.release_commit }}
+          VALIDATED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: |
+          node scripts/qualify-release-tarball.ts verify --release
+          npm publish "$RELEASE_TARBALL_DIR/package.tgz" --ignore-scripts --provenance --access public

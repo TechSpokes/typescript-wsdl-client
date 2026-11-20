@@ -7,7 +7,10 @@ on:
       - '.github/workflows/release-tarball-qualification.yml'
       - 'scripts/qualify-release-tarball.ts'
       - 'scripts/lib/release-tarball.ts'
+      - 'scripts/lib/release-state.mjs'
       - 'scripts/validate-npm-package.ts'
+      - '.github/workflows/release-package.yml'
+      - 'package.json'
 
 permissions:
   contents: read
@@ -29,15 +32,14 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - run: npm install -g npm@${NPM_VERSION}
+      - run: npm install -g npm@${NPM_VERSION} --ignore-scripts --no-audit --no-fund
       - run: npm ci
-      - run: npm run clean && npm run build && npm run typecheck && npm run skill:validate
       - name: Validate and identify packed bytes
         id: bind
         env:
           RELEASE_TARBALL_DIR: ${{ runner.temp }}/qualified-package
         run: |
-          npm run package:validate -- --release-tarball
+          npm run release:publish-check -- --release-tarball
           node scripts/qualify-release-tarball.ts bind
       - uses: actions/upload-artifact@v7
         id: upload
@@ -71,8 +73,18 @@ jobs:
         with:
           artifact-ids: ${{ needs.build.outputs.artifact-id }}
           path: ${{ runner.temp }}/qualified-package
-      - name: Verify the received archive without installing or publishing
+      - name: Use tested npm version
+        run: npm install -g npm@${NPM_VERSION} --ignore-scripts --no-audit --no-fund
+      - name: Verify the archive and rehearse npm's tarball selection offline
         env:
+          NODE_AUTH_TOKEN: ''
           RELEASE_TARBALL_DIR: ${{ runner.temp }}/qualified-package
           VALIDATED_SHA256: ${{ needs.build.outputs.sha256 }}
-        run: node scripts/qualify-release-tarball.ts verify
+        shell: bash
+        run: |
+          node scripts/qualify-release-tarball.ts verify
+          manifest="$RELEASE_TARBALL_DIR/package.json"
+          package="$(jq -er '.name' "$manifest")"
+          report="$(npm publish "$RELEASE_TARBALL_DIR/package.tgz" --ignore-scripts --provenance --access public --dry-run --offline --json)"
+          jq -e --arg package "$package" --slurpfile expected "$manifest" \
+            '(.[$package] // .) | .name == $expected[0].name and .version == $expected[0].version and .integrity == $expected[0].integrity' <<<"$report"

@@ -69,6 +69,8 @@ The runner waits for its command to finish, removes its workspace after success 
 
 Use Ctrl+C for ordinary cancellation and wait for cleanup. If the runner is forcibly stopped, find the exact printed `run-*` directory, check its recorded `owner` and `child` PIDs, and confirm that their descendants have stopped. Recover from the same checkout with the same temporary-directory environment.
 
+When installed smoke cannot confirm that a child process tree stopped, its `external-recovery-required` marker keeps the consumer and verification workspace available. Confirm that all owned descendants have stopped before recovering the named run.
+
 ```bash
 npm run clean:verification -- run-ABC123
 ```

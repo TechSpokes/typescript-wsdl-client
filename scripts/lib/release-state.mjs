@@ -61,12 +61,15 @@ function git(args) {
 
 function optionalRefCommit(ref) {
   try {
-    return execFileSync("git", ["rev-parse", "--verify", `${ref}^{commit}`], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    }).trim();
-  } catch {
-    return undefined;
+    execFileSync("git", ["show-ref", "--verify", "--quiet", ref], {stdio: "pipe"});
+  } catch (error) {
+    if (error?.status === 1) return undefined;
+    throw error;
+  }
+  try {
+    return execFileSync("git", ["rev-parse", "--verify", `${ref}^{commit}`], {encoding: "utf8", stdio: "pipe"}).trim();
+  } catch (error) {
+    throw new Error(`Abandonment marker ${ref} does not resolve to a commit. Maintainer review is required.`, {cause: error});
   }
 }
 
@@ -107,8 +110,8 @@ function writeGithubOutput(filePath, values) {
 
 function inspectTag(tag) {
   const identity = parseReleaseTag(tag);
-  const releaseCommit = git(["rev-parse", "--verify", `${identity.tag}^{commit}`]);
-  const markerCommit = optionalRefCommit(identity.marker);
+  const releaseCommit = git(["rev-parse", "--verify", `refs/tags/${identity.tag}^{commit}`]);
+  const markerCommit = optionalRefCommit(`refs/tags/${identity.marker}`);
   const markerState = classifyAbandonmentMarker({releaseCommit, markerCommit});
 
   return {...identity, releaseCommit, markerCommit, markerState};
