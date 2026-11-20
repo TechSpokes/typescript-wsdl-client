@@ -82,6 +82,14 @@ If the merged tree differs from the preflight-validated tree, stop before taggin
 
 Manual package dispatch is a recovery path after the GitHub Release is published. It enforces the same tag, marker, reachability, draft, and prerelease checks.
 
+### npm tarball delivery
+
+The package workflow builds and validates one npm tarball from the released commit. It uploads the archive and a record that identifies the producing repository, workflow attempt, tag, package, commit and digest. The publishing job checks the live release state independently and downloads by the successful build job's artifact ID. It verifies the archive against that job's SHA-256 output before passing the file to npm with provenance enabled. The standalone npm lifecycle still validates source-based publication.
+
+Use the target tag as both the workflow ref and the `tag` input for manual recovery. Rerun all jobs if a release attempt needs a new tarball. A failed-job rerun that tries to use an archive from an earlier attempt will be refused. If a publish step may have succeeded, check npm for the version before retrying.
+
+For the first maintainer-operated run of this path, record the successful `Node.js Package` run and the build and publish jobs. Compare the logged archive `integrity` with the version's npm `dist.integrity`. Verify that npm's provenance identifies the same repository, release commit and trusted workflow and that its subject digest matches the archive. The read-only qualification workflow verifies the file transfer and the pinned npm CLI's offline tarball selection. Live OIDC authorization and registry provenance come from publishing the approved release.
+
 The normal path uses GitHub UI publication because a workflow publishing with its standard `GITHUB_TOKEN` does not trigger another workflow from the resulting event. Do not rely on recursive workflow delivery for package publication.
 
 ## Abandoned Candidates

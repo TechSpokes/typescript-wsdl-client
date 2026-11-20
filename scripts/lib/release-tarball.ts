@@ -8,6 +8,7 @@ import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {mkdtemp, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {parseReleaseTag} from './release-state.mjs';
 
 export interface TarballIdentity {
   repository: string;
@@ -23,6 +24,7 @@ export interface TarballIdentity {
 
 export interface TarballRecord extends TarballIdentity {
   sha256: string;
+  integrity: string;
 }
 
 function tar(args: string[], input?: Buffer): string {
@@ -31,6 +33,37 @@ function tar(args: string[], input?: Buffer): string {
 
 function digestArchive(bytes: Buffer): string {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+function archiveIntegrity(bytes: Buffer): string {
+  return `sha512-${createHash('sha512').update(bytes).digest('base64')}`;
+}
+
+/**
+ * Resolves an eligible release checkout for the trusted Actions workflow.
+ * @param identity GitHub's workflow and event identity plus the checked-out package version.
+ * @returns Final release tag and commit after comparing event, guard and checkout evidence.
+ * @throws Error When the release or manual recovery uses a different workflow, tag or commit.
+ * @why #505 requires the receiving job to establish the release identity independently of the archive.
+ */
+export function releaseTarballSource(identity: {
+  repository: string; workflowRef: string; event: string; ref: string; sha: string;
+  tag: string; guardedCommit: string; checkout: string; version: string;
+}): {tag: string; commit: string} {
+  const {tag, version} = parseReleaseTag(identity.tag);
+  const ref = `refs/tags/${tag}`;
+  if (identity.event !== 'release' && identity.event !== 'workflow_dispatch') {
+    throw new Error('Package publication requires a release event or manual recovery');
+  }
+  if (identity.ref !== ref || identity.workflowRef !== `${identity.repository}/.github/workflows/release-package.yml@${ref}`) {
+    throw new Error('Package publication workflow must run from the target release tag');
+  }
+  if (!/^[a-f0-9]{40}$/.test(identity.guardedCommit)
+    || identity.checkout !== identity.guardedCommit || identity.sha !== identity.guardedCommit) {
+    throw new Error('Package publication checkout must match the event and guarded tag commit');
+  }
+  if (identity.version !== version) throw new Error('Package version must match the guarded release tag');
+  return {tag, commit: identity.checkout};
 }
 
 /**
@@ -49,7 +82,7 @@ export async function validatePackedTarball(
   validate: (files: readonly string[], readText: (file: string) => string) => void,
 ): Promise<string> {
   const bytes = readFileSync(archive);
-  if (integrity !== `sha512-${createHash('sha512').update(bytes).digest('base64')}`) {
+  if (integrity !== archiveIntegrity(bytes)) {
     throw new Error('Tarball bytes differ from the npm pack report');
   }
   const extracted = await mkdtemp(path.join(path.dirname(archive), 'validated-'));
@@ -80,7 +113,7 @@ export async function validatePackedTarball(
  * @param archive Absolute archive path.
  * @param identity Expected checkout, run and release identity.
  * @param expectedDigest SHA-256 from the completed validation step.
- * @returns Identity and SHA-256 of the archive.
+ * @returns Identity, SHA-256 and npm integrity of the archive.
  * @throws Error When the archive or its manifest is missing or the package identity disagrees.
  */
 export function bindTarball(archive: string, identity: TarballIdentity, expectedDigest: string): TarballRecord {
@@ -92,7 +125,7 @@ export function bindTarball(archive: string, identity: TarballIdentity, expected
     || manifest.name !== identity.name || manifest.version !== identity.version || identity.tag !== `v${identity.version}`) {
     throw new Error('Tarball package identity does not match the candidate');
   }
-  return {...identity, sha256};
+  return {...identity, sha256, integrity: archiveIntegrity(bytes)};
 }
 
 /**
@@ -112,5 +145,9 @@ export function verifyTarball(archive: string, record: unknown, identity: Tarbal
   if (!/^[a-f0-9]{64}$/.test(digest) || !('sha256' in record) || record.sha256 !== digest) {
     throw new Error('Tarball record digest differs from the build job output');
   }
-  return bindTarball(archive, identity, digest);
+  const verified = bindTarball(archive, identity, digest);
+  if (!('integrity' in record) || record.integrity !== verified.integrity) {
+    throw new Error('Tarball integrity differs from the validated archive');
+  }
+  return verified;
 }

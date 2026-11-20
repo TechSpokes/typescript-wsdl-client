@@ -128,7 +128,7 @@
     "package:smoke": "tsx scripts/run-verification.ts package:smoke:run",
     "package:smoke:run": "tsx scripts/smoke-npm-package.ts",
     "release:preflight": "node scripts/release-preflight.mjs",
-    "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate",
+    "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate --",
     "ci": "tsx scripts/run-verification.ts ci:run",
     "ci:run": "npm run check:toolchain && npm run typecheck:tooling && npm run typecheck:reference && npm run build && npm run test:reference:run && npm run typecheck:integration && npm run skill:validate && npm run package:validate -- --pack && npm run docs:validate && vitest run --exclude \"test/conformance/reference/**\" && npm run smoke:pipeline:run && npm run package:smoke:run",
     "ci:platform": "tsx scripts/run-verification.ts ci:platform:run --tags-filter installed-compatibility",

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- ci(release): publish the validated npm archive from the guarded build attempt.
+
 ## [1.11.0] - 2026-11-19
 
 - docs(release): document when the feature and release can use one reviewed PR.
