@@ -37,6 +37,8 @@ Use `--wsdl-source` with the original WSDL and its imports, and pass the same `-
 
 `app --test-dir <directory>` emits checked Vitest scaffolds. `--host` and `--port` set the app defaults. `--force` replaces app files and `--force-test` replaces checked test files. See the [complete standalone sequence](checked-generation.md#generate-the-checked-stack-in-separate-commands).
 
+For these standalone HTTP commands, `--force-checked-files` replaces only a matching component plan report or a recovery draft that still contains a `REQUIRED_SCHEMA_LOCATION` placeholder. Use a separate destination after filling in the draft's schema locations. An existing file larger than 8 MiB requires a new destination.
+
 ## inspect-response
 
 Inspect saved SOAP XML using an authorized local checked source and closed snapshots. This command never dispatches SOAP or reads credentials.

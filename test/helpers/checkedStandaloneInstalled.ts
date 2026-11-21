@@ -86,8 +86,50 @@ export async function qualifyCheckedStandaloneInstalled(shared: InstalledIntakeT
       '--app-dir', cliDir, '--test-dir', path.join(cliDir, 'test')];
     await expect(run(gateway, consumer, true)).rejects.toThrow(/missing checked artifact.*openapi\.json.*regenerate/i);
     await expect(readdir(gatewayDir)).rejects.toMatchObject({code: 'ENOENT'});
-    const spec = await run([...permissions, cli, 'openapi', ...http, '--checked-report', path.join(consumer, 'openapi-plan.json')], consumer);
+    const openapi = [...permissions, cli, 'openapi', ...http];
+    const forceDiagnostic = '--force-checked-files';
+    const diagnosticError = /can only replace an existing matching diagnostic/;
+    const imported = path.join(inputs, dependencyName), importedBytes = await readFile(imported);
+    await expect(run([...openapi, '--checked-report', imported, forceDiagnostic], consumer, true)).rejects.toThrow(diagnosticError);
+    expect(await readFile(imported)).toEqual(importedBytes);
+    await expect(readFile(openapiFile)).rejects.toMatchObject({code: 'ENOENT'});
+
+    const report = path.join(consumer, 'openapi-plan.json');
+    const spec = await run([...openapi, '--checked-report', report], consumer);
     expect(JSON.parse(spec.stdout)).toEqual(generatedApi.openapi.checked);
+    const reportBytes = await readFile(report, 'utf8');
+    await writeFile(report, reportBytes + '\n');
+    await expect(run([...openapi, '--checked-report', report], consumer, true)).rejects.toThrow('EEXIST');
+    expect(await readFile(report, 'utf8')).toBe(reportBytes + '\n');
+    await run([...openapi, '--checked-report', report, forceDiagnostic], consumer);
+    expect(await readFile(report, 'utf8')).toBe(reportBytes);
+
+    const malformed = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">';
+    await writeFile(imported, malformed);
+    await expect(run([...openapi, '--checked-report', report, forceDiagnostic], consumer, true)).rejects.toThrow('Checked generation refused');
+    expect(JSON.parse(await readFile(report, 'utf8'))).toMatchObject({ready: false});
+    await expect(run([...openapi, '--checked-report', imported, forceDiagnostic], consumer, true)).rejects.toThrow(diagnosticError);
+    expect(await readFile(imported, 'utf8')).toBe(malformed);
+    await writeFile(imported, importedBytes);
+
+    const missing = path.join(inputs, 'locationless.wsdl');
+    await copyFile(path.join(checkout, 'test/conformance/fixtures/assessment/wsdl-first-missing.wsdl'), missing);
+    const recovery = [...openapi];
+    recovery[recovery.indexOf('--wsdl-source') + 1] = missing;
+    const draft = path.join(consumer, 'recovery.json');
+    await expect(run([...recovery, '--checked-draft', imported, forceDiagnostic], consumer, true)).rejects.toThrow(diagnosticError);
+    expect(await readFile(imported)).toEqual(importedBytes);
+    await expect(run([...recovery, '--checked-draft', report, forceDiagnostic], consumer, true)).rejects.toThrow(diagnosticError);
+    await expect(run([...recovery, '--checked-draft', draft], consumer, true)).rejects.toThrow('locationless-import');
+    const draftBytes = await readFile(draft, 'utf8');
+    expect(draftBytes).toContain('REQUIRED_SCHEMA_LOCATION');
+    await writeFile(draft, draftBytes + '\n');
+    await expect(run([...recovery, '--checked-draft', draft, forceDiagnostic], consumer, true)).rejects.toThrow('locationless-import');
+    expect(await readFile(draft, 'utf8')).toBe(draftBytes);
+    const resolved = draftBytes.replace('REQUIRED_SCHEMA_LOCATION', 'schema.xsd');
+    await writeFile(draft, resolved);
+    await expect(run([...recovery, '--checked-draft', draft, forceDiagnostic], consumer, true)).rejects.toThrow(diagnosticError);
+    expect(await readFile(draft, 'utf8')).toBe(resolved);
     expect((await readdir(cliDir)).sort()).toEqual(['.client', 'openapi.json']);
     for (const input of [source, path.join(inputs, dependencyName)]) {
       const bytes = await readFile(input), args = [...http];

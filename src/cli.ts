@@ -16,6 +16,7 @@ import {readBoundedFile} from './util/readBoundedFile.js';
 import {checkedAppReservedNames, generateCheckedClient, generateCheckedOpenAPI, generateCheckedGateway, scaffoldCheckedApp, parseCheckedComponentChoices} from './checkedPipeline.js';
 import type {CheckedComponentOptions, CheckedInventory, CheckedOpenAPIOptions, CheckedOpenAPIResult} from './checkedPipeline.js';
 import {checkedArtifactLocation, checkedPathContains} from './generation/checkedArtifactFiles.js';
+import {assertStandaloneReportDestination, writeStandaloneCheckedDiagnostic, type CheckedDiagnosticKind} from './generation/checkedDiagnosticFiles.js';
 import {CheckedPlanningError, prepareCheckedComponentPlan, writeCheckedPlanningFile} from './checkedPlanning.js';
 import type {CheckedComponentPlan} from './checkedPlanning.js';
 import yargs from "yargs/yargs";
@@ -83,12 +84,13 @@ const checkedRouteOptions = {
 async function runCheckedGenerationCommand(argv: {'wsdl-source': string; 'checked-config'?: string;
   'checked-report'?: string; 'checked-draft'?: string; 'force-checked-files'?: boolean},
   generate: (choices: Partial<CheckedComponentOptions>) => Promise<{checked?: CheckedInventory; planning?: CheckedComponentPlan}>,
-  validatePlanPaths?: () => void): Promise<never> {
+  validatePlanPaths?: () => void,
+  writeDiagnostic: (file: string, value: unknown, force: boolean | undefined, kind: CheckedDiagnosticKind) => void = writeCheckedPlanningFile): Promise<never> {
   const supplied: unknown = argv['checked-config'] ? JSON.parse(fs.readFileSync(argv['checked-config'], 'utf8')) : {};
   const writePlan = (report: CheckedComponentPlan) => {
     validatePlanPaths?.();
-    if (argv['checked-report']) writeCheckedPlanningFile(argv['checked-report'], report, argv['force-checked-files']);
-    if (argv['checked-draft'] && report.resolution) writeCheckedPlanningFile(argv['checked-draft'], report.resolution.configuration, argv['force-checked-files']);
+    if (argv['checked-report']) writeDiagnostic(argv['checked-report'], report, argv['force-checked-files'], 'report');
+    if (argv['checked-draft'] && report.resolution) writeDiagnostic(argv['checked-draft'], report.resolution.configuration, argv['force-checked-files'], 'draft');
   };
   const controller = new AbortController();
   const cancel = () => controller.abort();
@@ -156,8 +158,9 @@ async function runCheckedStandaloneHttp(argv: CheckedHttpArguments, extras: read
   if (!versionSlug || !serviceSlug) handleCLIError('Checked HTTP stages require --gateway-version-prefix and --gateway-service-name');
   const validatePlanPaths = () => assertStandaloneDiagnosticPaths(argv, wsdl);
   validatePlanPaths();
+  if (argv['force-checked-files'] && argv['checked-report']) assertStandaloneReportDestination(argv['checked-report']);
   return runCheckedGenerationCommand({...argv, 'wsdl-source': wsdl}, checkedComponents =>
-    generate({wsdl, checkedComponents, openapiFile: argv['openapi-file'], versionSlug, serviceSlug}), validatePlanPaths);
+    generate({wsdl, checkedComponents, openapiFile: argv['openapi-file'], versionSlug, serviceSlug}), validatePlanPaths, writeStandaloneCheckedDiagnostic);
 }
 
 function rejectCheckedPlanningOptions(argv: Omit<CheckedHttpArguments, 'openapi-file'>): void {
