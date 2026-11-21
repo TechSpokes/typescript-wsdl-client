@@ -17,6 +17,7 @@ import {inspectComponentResponseBranches} from '../compiler/componentResponseBra
 import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from '../compiler/httpResponseHeaders.js';
 import {documentationComment, sourceDocumentation} from '../generation/sourceDocumentation.js';
 import {WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
+import {checkedModuleLoad, checkedModulePath, hasModuleUrlDelimiters} from '../generation/checkedModulePath.js';
 
 interface CheckedGatewayOptions {
   readonly httpResponseHeaders?: readonly string[];
@@ -167,15 +168,16 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
         '499': {...observedHeaders, description: 'Cancelled request', content: {'application/json': {schema: failureSchema}}},
         '500': {...observedHeaders, description: 'Incompatible artifacts or gateway configuration', content: {'application/json': {schema: failureSchema}}}}}}},
   };
-  let clientImport = path.relative(options.gatewayDir, path.join(options.clientDir, 'client.js')).replace(/\\/g, '/');
-  if (!clientImport.startsWith('.')) clientImport = './' + clientImport;
+  const clientImport = checkedModulePath(options.gatewayDir, path.join(options.clientDir, 'client.js'));
+  const dynamicClient = hasModuleUrlDelimiters(clientImport);
   const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   // language=TypeScript
   const body = `import type {FastifyPluginAsync} from 'fastify';
 import {Ajv} from 'ajv';
 import {types} from 'node:util';
 import {${runtime}} from '@techspokes/typescript-wsdl-client';
-import {createClient, expectedCapsuleBase64, type Options, type Request} from ${literal(clientImport)};
+${dynamicClient ? `import type {Options, Request} from ${literal(clientImport)};`
+    : `import {createClient, expectedCapsuleBase64, type Options, type Request} from ${literal(clientImport)};`}
 
 export interface CheckedGatewayOptions { readonly clientOptions: Options }
 // @constraints JSON parsing preserves XML names such as __proto__ as ordinary own data properties.
@@ -195,7 +197,8 @@ function dataCopy<T extends object>(value: T): T {
   return copy as T;
 }
 
-const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {${dynamicClient
+    ? `\n  const {createClient, expectedCapsuleBase64} = ${checkedModuleLoad(clientImport)};` : ''}
   if (expectedCapsuleBase64 !== ${literal(Buffer.from(capsule.bytes).toString('base64'))}) throw new Error('incompatible-artifact: generated gateway/client mismatch; regenerate the complete project');
   const client = createClient(${runtime});
   const ajv = new Ajv({coerceTypes: false, useDefaults: false, removeAdditional: false, ownProperties: true, strict: true, allErrors: true});
@@ -315,14 +318,14 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   const doc = {...documents[0], ...(Object.keys(componentSchemas).length ? {components:{schemas:componentSchemas}} : {}), 'x-checked-model': {...serviceModel,
     selection: {service: operations[0]!.selection.service, port: operations[0]!.selection.port,
       selectors: operations.map(operation => operation.contract.selector)}}, paths};
-  let clientImport = path.relative(options.gatewayDir, path.join(options.clientDir, 'client.js')).replaceAll('\\', '/');
-  if (!clientImport.startsWith('.')) clientImport = './' + clientImport;
+  const clientImport = checkedModulePath(options.gatewayDir, path.join(options.clientDir, 'client.js'));
   const literal = (value: unknown) => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   const names = operations.map(operation => operation.contract.selector.operation);
   const mixed = operations.some(operation => operation.responseBranches) && operations.some(operation => !operation.responseBranches);
   const hasHeaders = operations.some(operation => operation.contract.headers?.length);
+  const dynamicClient = hasHeaders && hasModuleUrlDelimiters(clientImport);
   const lines = ["import type {FastifyPluginAsync} from 'fastify';", "import {types} from 'node:util';",
-    hasHeaders ? `import {serviceOperationOptions, type Options} from ${literal(clientImport)};` : `import type {Options} from ${literal(clientImport)};`,
+    hasHeaders && !dynamicClient ? `import {serviceOperationOptions, type Options} from ${literal(clientImport)};` : `import type {Options} from ${literal(clientImport)};`,
     ...operations.map((_, index) => `import operation_${index} from './routes/${index}/plugin.js';`),
     'export interface CheckedGatewayOptions {readonly clientOptions: Options; readonly capsules: Readonly<Record<string, Uint8Array>>}',
     `export const expectedOpenApiJson = ${literal(JSON.stringify(doc))};`,
@@ -334,6 +337,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
     "    if (typeof key !== 'string' || !allowed.includes(key) || !Object.hasOwn(descriptor, 'value')) throw new TypeError('Unsupported service option');",
     '    result[key] = descriptor.value;', '  }', '  return result;', '}',
     'const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {',
+    ...(dynamicClient ? [`  const {serviceOperationOptions} = ${checkedModuleLoad(clientImport)};`] : []),
     "  const outer = data(options, ['clientOptions', 'capsules', 'prefix']);",
     `  const clientOptions = data(outer.clientOptions, ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', ${operations.some(operation => operation.responseBranches) ? "'branchSources', " : ''}'soap']) as unknown as Options;`,
     ...(mixed && !hasHeaders ? ['  const {branchSources, ...retainedClientOptions} = clientOptions;', '  void branchSources;'] : []),

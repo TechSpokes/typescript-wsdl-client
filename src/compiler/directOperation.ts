@@ -16,6 +16,7 @@ import type {ComponentSourceQualification} from './checkedComponentSource.js';
 import {prepareWsdlPolicyRequirements, assertWsdlPolicyRequirements} from './wsdlPolicyRequirements.js';
 import type {WsdlPolicyRequirements, BindingPolicyRequirements} from './wsdlPolicyRequirements.js';
 import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
+import type {ConstructionFailure} from './schemaConstructionAssessment.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
 const SOAP12 = 'http://schemas.xmlsoap.org/wsdl/soap12/';
@@ -83,7 +84,14 @@ export type DirectOperationContract = OperationContractBase & (
   {readonly pattern: 'one-way'; readonly output?: never}
 );
 export type DirectOperationResult = Readonly<{kind: 'selected'; contract: DirectOperationContract; usage: ResolverUsage}> |
-  Readonly<{kind: 'invalid-schema' | 'inconclusive' | 'unsupported' | 'selection-refused' | 'loading-refused' | 'resource-limit' | 'cancelled'; rule: string; usage: ResolverUsage}>;
+  Readonly<{kind: 'invalid-schema' | 'inconclusive' | 'unsupported' | 'selection-refused' | 'loading-refused' | 'resource-limit' | 'cancelled';
+    rule: string; usage: ResolverUsage; schemaDiagnostic?: SchemaQualificationDiagnostic}>;
+
+/** Internal evidence for one checked whole-source refusal.
+ * @since Unreleased
+ * @constraints The source carries a private URI. Public reports must resolve it to an opaque resource label.
+ */
+export type SchemaQualificationDiagnostic = Readonly<{profile: 'XSD 1.0'; rule: string; component?: ExpandedName; source?: SyntaxSource}>;
 export interface DirectOperationInspection {
   readonly contract: DirectOperationContract;
   readonly context: SemanticContext;
@@ -169,9 +177,10 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
 }>, budget: SemanticBudget, profile: 'direct' | 'components', cache?: ComponentSelectionCache): Promise<DirectOperationResult> {
   const check = () => {if (options.signal?.aborted) throw new Cancelled(); budget.chargeWork();};
   const refuse = (kind: Refusal['kind'], rule: string): never => {throw new Refusal(kind, rule);};
-  const failure = (kind: Refusal['kind'], rule: string): DirectOperationResult => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
-  const sourceFailure = (kind: Refusal['kind'], rule: string): DirectOperationResult => {
-    const result = failure(kind, rule);
+  const failure = (kind: Refusal['kind'], rule: string, schemaDiagnostic?: SchemaQualificationDiagnostic): DirectOperationResult =>
+    Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()}), ...(schemaDiagnostic ? {schemaDiagnostic} : {})});
+  const sourceFailure = (kind: Refusal['kind'], rule: string, schemaDiagnostic?: SchemaQualificationDiagnostic): DirectOperationResult => {
+    const result = failure(kind, rule, schemaDiagnostic);
     if (cache && result.kind !== 'selected') cache.failure = result;
     return result;
   };
@@ -181,23 +190,55 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
     const ownedSelector = budget.freeze(budget.snapshot(selector));
     const name = (value: ExpandedName | undefined) => value && typeof value.namespace === 'string' && typeof value.local === 'string' && isXmlNCName(value.local);
     if (!name(ownedSelector.portType) || !name(ownedSelector.binding) || typeof ownedSelector.operation !== 'string' || !isXmlNCName(ownedSelector.operation)) return failure('selection-refused', 'explicit-selector');
-    if (cache?.failure) return failure(cache.failure.kind, cache.failure.rule);
+    if (cache?.failure) return failure(cache.failure.kind, cache.failure.rule, cache.failure.schemaDiagnostic);
     const input = cache?.input ?? await loadSemanticSchemaInput(source, {...options.loading, limits: directLoadingLimits(budget, options.loading.limits), signal: options.signal, chargeWork: amount => {check(); budget.chargeWork(amount);}});
     if (cache) cache.input = input;
     check();
     const result = budget.guard(() => {
       const qualificationOptions = {budget, maxNodes: options.limits?.maxNodes ?? directLimit(budget, DEFAULT_MAX_NODES), check};
+      let localInvalid: ConstructionFailure | undefined;
+      let localUnqualified: ConstructionFailure | undefined;
       const qualified = cache?.qualified ?? (profile === 'direct' ? qualifyDirectSource(input, qualificationOptions)
-        : qualifyComponentSource(input, {...qualificationOptions, standardLibraries: options.standardLibraries}));
+        : qualifyComponentSource(input, {...qualificationOptions, standardLibraries: options.standardLibraries,
+          onLocal: (_, outcome) => {
+            if (outcome.kind === 'invalid-schema') localInvalid ??= outcome;
+            else if (outcome.kind === 'unresolved' || outcome.kind === 'unsupported-capability') localUnqualified ??= outcome;
+          }}));
       if (qualified.kind === 'resource-limit') return sourceFailure('resource-limit', 'source-qualification');
       if (qualified.kind === 'source-preparation-failed' && qualified.category === 'resource-limit') return sourceFailure('resource-limit', 'source-preparation');
       if (qualified.kind !== 'qualified-source' && qualified.kind !== 'component-source') return sourceFailure(qualified.kind === 'source-preparation-failed' && qualified.category === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'source-preparation');
       if (qualified.kind === 'component-source') inspectComponentSourceQualification(qualified, input);
       const construction = qualified.kind === 'component-source' ? qualified.construction : qualified;
       const eligible = qualified.kind === 'component-source' ? qualified.schemaEligible : qualified.eligible;
-      if (!eligible) return sourceFailure(construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive',
-        qualified.kind === 'component-source' && qualified.correspondence.kind === 'inconclusive-correspondence'
-          ? `whole-source-qualification:${qualified.correspondence.rule}${qualified.correspondence.path ? ':' + qualified.correspondence.path : ''}` : 'whole-source-qualification');
+      if (!eligible) {
+        const {closure} = construction;
+        const kind = construction.localDisproved || closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive';
+        let rule = 'whole-source-qualification';
+        let schemaDiagnostic: SchemaQualificationDiagnostic | undefined;
+        if (qualified.kind === 'component-source' && qualified.correspondence.kind === 'inconclusive-correspondence') {
+          const {rule: correspondenceRule, path} = qualified.correspondence;
+          rule += `:${correspondenceRule}${path ? ':' + path : ''}`;
+          // @why #510 needs the original native failure behind the consequential correspondence refusal.
+          let cause = closure.kind === 'invalid-schema' ? closure : localInvalid;
+          if (!cause && correspondenceRule === 'native-construction-unestablished') {
+            cause = closure.kind === 'unsupported-capability' || closure.kind === 'unresolved' ? closure : localUnqualified;
+          }
+          if (cause) {
+            const context = construction.request.actual;
+            const node = cause.component === undefined ? undefined : context.sourceNode(cause.component);
+            let declaration = node;
+            // @why A particle can give the exact error location while its containing declaration supplies the name.
+            while (declaration?.identity.kind === 'scoped') {
+              check();
+              declaration = context.sourceNode(declaration.identity.owner);
+            }
+            schemaDiagnostic = Object.freeze({profile: 'XSD 1.0', rule: cause.rule,
+              ...(node ? {source: node.context.source} : {}),
+              ...(declaration?.identity.kind === 'global' ? {component: declaration.identity.name} : {})});
+          }
+        }
+        return sourceFailure(kind, rule, schemaDiagnostic);
+      }
       const {request} = construction;
       const context = request.actual;
       let policyOwner: WsdlPolicyRequirements | undefined;

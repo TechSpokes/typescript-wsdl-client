@@ -197,29 +197,56 @@ export async function qualifyCheckedStandaloneInstalled(shared: InstalledIntakeT
     const other = path.join(consumer, 'other');
     await writeFile(source, original + '\n<!-- independently generated foreign capsule -->\n');
     await run([...permissions, planner, source, other], tooling);
-    await copyFile(path.join(other, 'operations/0/contract.json'), path.join(cliDir, 'other-contract.json'));
-    for (const file of ['request.xml', 'response.xml', 'fault.xml']) {
-      await copyFile(path.join(checkout, 'test/conformance/fixtures/assessment/forecast-messages', file), path.join(cliDir, file));
-    }
-    const wire = path.join(cliDir, 'wire.ts');
-    await copyFile(path.join(checkout, 'test/fixtures/consumers/checked-standalone-wire.ts'), wire);
+    await writeFile(source, original);
+
+    const special = path.join(consumer, 'special'), specialClient = 'client%23edge';
+    const destinations = new Map([
+      [cliClient, path.join(special, specialClient)], [openapiFile, path.join(special, 'openapi.json')],
+      [gatewayDir, path.join(special, 'gateway#edge$&__HOST_CLIENT_LOAD__')], [cliDir, special],
+      [path.join(cliDir, 'test'), path.join(special, 'qa/test')],
+    ]);
+    const regenerate = async () => {
+      for (const command of [[...permissions, ...cliBase, '--wsdl-source', source, '--client-dir', cliClient], openapi, gateway, app]) {
+        await run(command.map(argument => destinations.get(argument) ?? argument), consumer);
+      }
+    };
+    await regenerate();
+    const specialServer = path.join(special, 'server.ts'), specialTest = path.join(special, 'qa/test/checked-scaffold.test.ts');
+    await writeFile(specialServer, (await readFile(specialServer, 'utf8')) + customization + 'await Promise.resolve();\n');
+    await writeFile(specialTest, (await readFile(specialTest, 'utf8')) + customization);
+    await writeFile(path.join(special, 'checked-gateway.local.json'), '{"allowedEndpoints":[]}\n');
+    const beforeRegeneration = await generatedContract(special);
+    await regenerate();
+    expect(await generatedContract(special)).toEqual(beforeRegeneration);
+
+    const wire = await readFile(path.join(checkout, 'test/fixtures/consumers/checked-standalone-wire.ts'), 'utf8');
     await mkdir(evidence, {recursive: true});
-    await installIntakeProject(shared, cliDir, evidence, env, (_label, args, cwd) => run(args, cwd), 'standalone-app-install');
-    for (const command of ['typecheck', 'test', 'build']) {
-      const result = await run([npm, 'run', command], cliDir);
-      await writeFile(path.join(evidence, command + '.log'), result.stdout + result.stderr);
-    }
-    await run([npm, 'prune', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], cliDir);
-    await expect(readdir(path.join(cliDir, 'node_modules/vitest'))).rejects.toMatchObject({code: 'ENOENT'});
-    const deployed = path.join(consumer, 'deployed');
-    await rename(cliDir, deployed);
-    await Promise.all([inputs, apiDir, pipelineDir, other].map(directory => rm(directory, {recursive: true})));
     const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
-    const result = await run(['--permission', ...network, '--allow-fs-read=' + deployed, '--allow-fs-write=' + deployed,
-      path.join(deployed, 'dist/wire.js'), path.join(checkout, 'package.json')], deployed);
-    const observations = JSON.parse(result.stdout);
-    expect(observations).toEqual({exchanges: 5, clientRefusals: 6, gatewayRefusals: 4, originalCheckoutReadable: false});
-    await writeFile(path.join(evidence, 'wire.json'), result.stdout);
+    for (const [project, clientName, suffix] of [[cliDir, '.client', ''], [special, specialClient, '-special']] as const) {
+      await copyFile(path.join(other, 'operations/0/contract.json'), path.join(project, 'other-contract.json'));
+      for (const file of ['request.xml', 'response.xml', 'fault.xml']) {
+        await copyFile(path.join(checkout, 'test/conformance/fixtures/assessment/forecast-messages', file), path.join(project, file));
+      }
+      await writeFile(path.join(project, 'wire.ts'), wire.replaceAll("'./.client/client.js'", () => JSON.stringify(`./${clientName}/client.js`)));
+      await installIntakeProject(shared, project, evidence, env, (_label, args, cwd) => run(args, cwd), 'standalone-app-install' + suffix);
+      await expect(readdir(path.join(project, 'dist'))).rejects.toMatchObject({code: 'ENOENT'});
+      for (const command of ['typecheck', 'test', 'build']) {
+        const result = await run([npm, 'run', command], project);
+        await writeFile(path.join(evidence, command + suffix + '.log'), result.stdout + result.stderr);
+        if (command === 'test') {
+          await expect(readdir(path.join(project, 'dist'))).rejects.toMatchObject({code: 'ENOENT'});
+          expect((await readdir(project)).filter(file => file.startsWith('.checked-scaffold-'))).toEqual([]);
+        }
+      }
+      await run([npm, 'prune', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], project);
+      await expect(readdir(path.join(project, 'node_modules/vitest'))).rejects.toMatchObject({code: 'ENOENT'});
+      const deployed = path.join(consumer, 'deployed' + suffix);
+      await rename(project, deployed);
+      const result = await run(['--permission', ...network, '--allow-fs-read=' + deployed, '--allow-fs-write=' + deployed,
+        path.join(deployed, 'dist/wire.js'), path.join(checkout, 'package.json'), clientName], deployed);
+      expect(JSON.parse(result.stdout)).toEqual({exchanges: 5, clientRefusals: 6, gatewayRefusals: 5, originalCheckoutReadable: false});
+      await writeFile(path.join(evidence, 'wire' + suffix + '.json'), result.stdout);
+    }
   } finally {
     await rm(consumer, {recursive: true, force: true, maxRetries: 10, retryDelay: 200});
   }

@@ -13,7 +13,7 @@ import {constants as bufferConstants} from 'node:buffer';
 import {resolveResourceUri} from './loader/schemaResources.js';
 import type {PipelineOptions} from './pipeline.js';
 import {selectComponentOperations, selectComponentOperationInRequest, inspectDirectOperation} from './compiler/directOperation.js';
-import type {DirectOperationSelector} from './compiler/directOperation.js';
+import type {DirectOperationSelector, SchemaQualificationDiagnostic} from './compiler/directOperation.js';
 import {prepareComponentSourceForOperation} from './compiler/directSourceCapsule.js';
 import {inspectComponentSourceService} from './compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from './compiler/directSourceCapsule.js';
@@ -513,7 +513,7 @@ export async function scaffoldCheckedApp(opts: CheckedAppOptions): Promise<Check
   await generateCheckedApp({...paths, appDir, component, force: opts.force, host: opts.host, port: opts.port});
   if (testDir) {
     const routePaths = Object.values(gateway.routes);
-    await generateCheckedTests({clientDir: paths.clientDir, appDir, testDir, force: opts.test?.force,
+    await generateCheckedTests({clientDir: paths.clientDir, gatewayDir: paths.gatewayDir, appDir, testDir, force: opts.test?.force,
       routePath: routePaths[0]!, routePaths, sourceFile: component.source});
   }
   return {checked: inventory, planning: report, openapiDoc: gateway.doc};
@@ -558,7 +558,7 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
   const {doc, routes} = native.gateway;
   native.gateway.emit();
   if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
-  if (opts.test && opts.app) await generateCheckedTests({clientDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
+  if (opts.test && opts.app) await generateCheckedTests({clientDir, gatewayDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
     ...opts.test, routePaths: Object.values(routes), sourceFile: component.source});
   return {compiled: undefined, openapiDoc: doc, checked: inventory, planning: report};
 }
@@ -586,7 +586,10 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     : await prepareSchemaSnapshotFiles(wsdl, config.sourceResources, {...loading, sourceUri: config.sourceUri});
   const selected = await selectComponentOperations(config.sourceUri ?? prepared.source, config.selectors, {loading: prepared.loading, signal: config.signal,
     standardLibraries: config.standardLibraries?.map(acquireStandardSchemaLibrary)});
-  const refusals: {selector: DirectOperationSelector; kind: string; rule: string; dimension: 'qualification-and-correspondence' | 'mapping-and-artifact'}[] = selected.flatMap((result, index) => result.kind === 'selected' ? [] : [{selector: config.selectors[index]!, kind: result.kind, rule: result.rule, dimension: 'qualification-and-correspondence' as const}]);
+  const refusals: {selector: DirectOperationSelector; kind: string; rule: string; schemaDiagnostic?: SchemaQualificationDiagnostic;
+    dimension: 'qualification-and-correspondence' | 'mapping-and-artifact'}[] = selected.flatMap((result, index) =>
+    result.kind === 'selected' ? [] : [{selector: config.selectors[index]!, kind: result.kind, rule: result.rule,
+      ...(result.schemaDiagnostic ? {schemaDiagnostic: result.schemaDiagnostic} : {}), dimension: 'qualification-and-correspondence' as const}]);
   const expected: ReconstructedComponentSource[] = [];
   const projections = new Map<string, ComponentRecordProjection>();
   const responseBranches = new Map<string, ComponentResponseBranches>();

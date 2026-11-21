@@ -4,8 +4,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {types} from 'node:util';
 import {fileURLToPath, pathToFileURL} from 'node:url';
-import gateway, {expectedOpenApiJson} from __GATEWAY_IMPORT__;
-import {selection, type Options} from __CLIENT_IMPORT__;
+__HOST_IMPORTS__
 
 export interface CheckedGatewayConfig {
   readonly localSource?: string;
@@ -106,7 +105,7 @@ export async function buildServer(supplied: CheckedGatewayConfig = {}) {
     throw new Error('Explicit source configuration and valid endpoint restrictions are required');
   const allowed = config.allowedEndpoints === undefined ? undefined : new Set(config.allowedEndpoints.map(endpoint => new URL(endpoint).href));
   const capsules = Object.fromEntries(Object.entries(config.capsuleFiles ?? defaultCapsules)
-    .map(([name, file]) => [name, fs.readFileSync(path.resolve(projectRoot, file))]));
+    .map(([name, file]) => [name, fs.readFileSync(path.resolve(projectRoot, file))]));__HOST_CLIENT_LOAD__
   const selected = JSON.parse(selection) as {service: {namespace: string; local: string}; port: string};
   const clientOptions: Options = {
     localSource: config.localSource, fileRoots: config.fileRoots, sourceResources: config.sourceResources, sourceOrigins: config.sourceOrigins,
@@ -126,7 +125,7 @@ export async function buildServer(supplied: CheckedGatewayConfig = {}) {
     },
   };
   const app = Fastify({logger: false});
-  try {
+  try {__HOST_GATEWAY_LOAD__
     const openapi: unknown = JSON.parse(fs.readFileSync(path.resolve(projectRoot, __OPENAPI_FILE__), 'utf8'));
     if (JSON.stringify(openapi) !== expectedOpenApiJson) throw new Error('incompatible-artifact: mixed checked OpenAPI and gateway; regenerate together');
     app.get('/health', async () => ({status: 'ok'}));

@@ -43,7 +43,7 @@ node: '>=24'
 4. Prefer repo-scoped queries; avoid broad GitHub-wide searches for issues/PRs.
 5. For releases, read `CHANGELOG.md`, `package.json`, and the matching `docs/releases/vX.Y.Z.md` release notes when present; follow the release workflow below.
 6. Don't remote-fetch metadata already present in this file or `package.json`.
-7. For any code or docs change, propose (and on confirmation add) a concise bullet under `## [Unreleased]` in `CHANGELOG.md` (omit the `Version: <'>` prefix).
+7. Follow the [changelog rules](#changelog-rules-align-with-current-file) when preparing code or documentation changes.
 
 ## Project Context
 
@@ -277,11 +277,10 @@ Examples:
 
 ## CHANGELOG Rules (align with current file)
 
-- Keep `## [Unreleased]` at the top; new entries go there.
-- Style: one-line entries, no file lists, no vague phrasing.
-- For each code/docs change, ensure a bullet under `## [Unreleased]` before concluding work.
-- In interactive contexts, ask for confirmation to append a bullet derived from the commit title (strip `Version: <release-target-version>`).
-- In non-interactive contexts (e.g. CI), append the bullet automatically.
+- Authorization for a scoped code or documentation change includes its changelog entry.
+- Keep `## [Unreleased]` as the first version section.
+- Add the entry under `## [Unreleased]` before final candidate review and verification, including delivery CI or release preflight.
+- Write one concrete line in the style of existing entries. Use the commit summary without the `Version: <release-target-version>` prefix.
 
 ### Release workflow
 
@@ -375,11 +374,6 @@ Write `## Validation` as consumer-facing outcomes, not as maintainer command tra
 
 Keep `CHANGELOG.md` as the canonical version history. Write release notes as a concise user-facing summary of why the release matters, how to upgrade, and which release checks passed.
 
-### Updating the CHANGELOG
-
-- Propose a single bullet for `Unreleased` based on the described change.
-- Match the tone and precision of existing entries (e.g. `feat(cli):`, `fix(openapi):`).
-
 ## What to Generate (for Copilot Chat)
 
 ### Creating a commit message
@@ -388,11 +382,6 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 2. Determine the release target version for the current work.
 3. Use the `Version: <release-target-version> <type>(scope): summary` format.
 4. Provide an optional body with context, risks, or references.
-
-### Updating CHANGELOG.md
-
-- Draft a single bullet for `## [Unreleased]` derived from the commit summary (no `Version:` prefix).
-- Ask for confirmation before editing the file in interactive contexts.
 
 ### Preparing a release
 

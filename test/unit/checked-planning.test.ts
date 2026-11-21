@@ -2,11 +2,13 @@ import {verificationPath} from "../helpers/verificationPath.js";
 import {afterEach, expect, it, vi} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {planCheckedComponents, runGenerationPipeline, writeCheckedPlanningFile, CheckedPlanningError} from '../../src/index.js';
 import type {CheckedComponentOptions, PipelineOptions} from '../../src/index.js';
 import * as componentOwner from '../../src/checkedPipeline.js';
 
 const roots: string[] = [];
+const diagnosticsFixture = path.resolve('test/conformance/fixtures/assessment/checked-planner-diagnostics');
 afterEach(() => {for (const root of roots.splice(0)) fs.rmSync(root, {recursive: true, force: true});});
 function setup(fixture = 'test/conformance/fixtures/xsd/imports/import-relative-types.wsdl') {
   fs.mkdirSync(verificationPath('tmp/test-generation'), {recursive: true});
@@ -67,7 +69,51 @@ it('keeps ambiguity and same-name identities, resumes explicit selection, and re
   const name = (local: string) => ({namespace: 'urn:checked:choices', local});
   expect((await planCheckedComponents(wsdl, {service: name('First')})).ready).toBe(true);
   expect((await planCheckedComponents(wsdl, {port: 'Second'})).blockers).toMatchObject([{category: 'unsupported-capability'}]);
-  expect((await planCheckedComponents(wsdl, {service: name('First'), port: 'Second'})).blockers).toMatchObject([{category: 'ambiguous-selection'}]);
+  expect((await planCheckedComponents(wsdl, {service: name('First'), port: 'Second'})).blockers).toMatchObject([
+    {stage: 'selection', category: 'configuration', reason: 'no-matching-service-port-binding'}]);
+});
+it('reports a binding with no service port as missing configuration and leaves source qualification unassessed', async () => {
+  const report = await planCheckedComponents(path.join(diagnosticsFixture, 'binding.wsdl'));
+  expect(report).toMatchObject({ready: false, candidates: [],
+    inventory: {complete: true, services: 0, ports: 0, bindings: 1, operations: 2},
+    dimensions: {sourceLegality: 'unassessed', correspondence: 'unassessed', mapping: 'unassessed', runtime: 'unassessed'},
+    blockers: [{category: 'configuration', stage: 'selection', reason: 'missing-service-port'}]});
+  expect(report.operations.map(operation => operation.operation)).toEqual(['Check', 'Probe']);
+  expect(report.selection).toBeUndefined();
+  expect(report.blockers[0]?.action).toContain('Schema qualification has not run');
+});
+it('reports a requested binding with no port even when a different binding has a port', async () => {
+  const {wsdl} = setup('test/conformance/fixtures/assessment/wsdl-first-choices.wsdl');
+  fs.writeFileSync(wsdl, fs.readFileSync(wsdl, 'utf8').replace(/<w:service name="Second">[^\n]*<\/w:service>/, ''));
+  const {namespace, local} = {namespace: 'urn:checked:choices', local: 'Second'};
+  const report = await planCheckedComponents(wsdl, {selectors: [{
+    binding: {namespace, local}, portType: {namespace, local}, operation: 'Fetch',
+  }]});
+  expect(report).toMatchObject({ready: false, inventory: {complete: true, bindings: 2, ports: 1},
+    candidates: [{port: 'First'}], blockers: [{category: 'configuration', reason: 'missing-service-port'}]});
+  expect((await planCheckedComponents(wsdl)).ready).toBe(true);
+});
+it('reports the native rule and redacted imported location once for all operations blocked by the schema', async () => {
+  const report = await planCheckedComponents(path.join(diagnosticsFixture, 'service.wsdl'));
+  expect(report).toMatchObject({ready: false, dimensions: {sourceLegality: 'disproved', mapping: 'unassessed'},
+    blockers: [{category: 'invalid-source', stage: 'native-preparation', pointer: 'wsdl/sourceResources',
+      schema: {profile: 'XSD 1.0', rule: 'cos-nonambig', component: {namespace: 'urn:checked:planner-diagnostics:types', local: 'ExtensionData'}},
+      source: {resource: 'resource-3', line: 6},
+      affected: [{operation: 'Check'}, {operation: 'Probe'}]}]});
+  expect(report.blockers[0]?.schema).not.toHaveProperty('source');
+  expect(JSON.stringify(report)).not.toContain(pathToFileURL(diagnosticsFixture).href);
+});
+it('plans and generates the same SOAP 1.2 service with a disjoint wildcard', async () => {
+  const {root, opts} = setup();
+  for (const file of ['binding.wsdl', 'service.wsdl', 'types.xsd']) {
+    fs.copyFileSync(path.join(diagnosticsFixture, file), path.join(root, file));
+  }
+  const schema = path.join(root, 'types.xsd');
+  fs.writeFileSync(schema, fs.readFileSync(schema, 'utf8').replace('namespace="##any"', 'namespace="##other"'));
+  const result = await runGenerationPipeline({...opts, wsdl: path.join(root, 'service.wsdl')});
+  expect(result.planning).toMatchObject({ready: true, blockers: []});
+  expect(result.checked?.operations).toMatchObject([
+    {operation: 'Check', generated: true, executed: false}, {operation: 'Probe', generated: true, executed: false}]);
 });
 it('refuses unknown/accessor choices before I/O and keeps permissions and cancellation distinct', async () => {
   const {root, wsdl} = setup(); let reads = 0;
@@ -100,6 +146,7 @@ it('does not treat correspondence-inconclusive source as invalid vendor schema',
   const report = await planCheckedComponents(wsdl);
   expect(report).toMatchObject({ready: false, blockers: [{category: 'inconclusive',
     reason: 'whole-source-qualification:scalar-facet-correspondence-scope'}]});
+  expect(report.dimensions.sourceLegality).toBe('unassessed');
 });
 it.each(['int', 'float'])('qualifies an unrelated string and %s union through whole-source correspondence', async member => {
   const {wsdl} = setup('test/conformance/fixtures/assessment/forecast.wsdl');

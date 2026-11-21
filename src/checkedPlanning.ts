@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
 import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages, prepareCheckedSourceInputs, acquireCheckedSourceInputs} from './checkedPipeline.js';
 import type {CheckedComponentOptions, CheckedComponentOutputs, PreparedCheckedSourceInputs} from './checkedPipeline.js';
-import type {DirectOperationSelector} from './compiler/directOperation.js';
+import type {DirectOperationSelector, SchemaQualificationDiagnostic} from './compiler/directOperation.js';
 import {inspectDirectOperation} from './compiler/directOperation.js';
 import {loadSemanticSchemaInput, prepareSchemaSnapshotFiles} from './loader/schemaInput.js';
 import type {SchemaInput} from './loader/schemaInput.js';
@@ -24,6 +24,8 @@ export interface ComponentPlanBlocker {
   readonly stage: 'configuration' | 'loading' | 'selection' | 'native-preparation';
   readonly dimension: 'source' | 'selection' | 'qualification-and-correspondence' | 'mapping-and-artifact';
   readonly reason: string;
+  /** Evidence from the assessed profile and the relevant named declaration, when available. */
+  readonly schema?: Omit<SchemaQualificationDiagnostic, 'source'>;
   readonly source?: {readonly resource: string; readonly path: string; readonly line: number; readonly column: number};
   readonly affected: readonly DirectOperationSelector[];
   readonly action: string;
@@ -68,6 +70,14 @@ export interface CheckedComponentPlan {
 const same = (a: ExpandedName, b: ExpandedName) => a.namespace === b.namespace && a.local === b.local;
 const order = <T>(items: T[]): T[] => items.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), 'en'));
 
+/** Format the rule and optional expanded component name for the assessed schema profile.
+ * @param schema Redacted qualification diagnostic from the plan.
+ * @returns Profile and failed rule as a single diagnostic.
+ */
+export function formatCheckedSchemaDiagnostic(schema: NonNullable<ComponentPlanBlocker['schema']>): string {
+  return `${schema.profile} ${schema.rule}${schema.component ? ` for {${schema.component.namespace}}${schema.component.local}` : ''}`;
+}
+
 /** Refused generation retains actionable, serializable diagnostics.
  * @since Unreleased
  */
@@ -81,7 +91,7 @@ export class CheckedPlanningError extends Error {
  */
 export function formatCheckedComponentPlan(report: CheckedComponentPlan): string {
   return [`${report.model}: ${report.ready ? 'generation-ready' : 'blocked'}; discovered=${report.inventory.operations}; selected=${report.selection?.selectors.length ?? 0}; generated=0; executed=0; inventory=${report.inventory.complete ? 'complete' : 'incomplete'}`,
-    ...report.blockers.map(b => `${b.category} [${b.stage}/${b.dimension}] ${b.reason}${b.source ? ` at ${b.source.resource}:${b.source.line}:${b.source.column} ${b.source.path}` : ''}; affected=${b.affected.map(s => `{${s.portType.namespace}}${s.portType.local}/{${s.binding.namespace}}${s.binding.local}/${s.operation}`).join(',') || 'inventory unassessed'}; ${b.action} (${b.pointer})`)].join('\n');
+    ...report.blockers.map(b => `${b.category} [${b.stage}/${b.dimension}] ${b.reason}${b.schema ? ` (${formatCheckedSchemaDiagnostic(b.schema)})` : ''}${b.source ? ` at ${b.source.resource}:${b.source.line}:${b.source.column} ${b.source.path}` : ''}; affected=${b.affected.map(s => `{${s.portType.namespace}}${s.portType.local}/{${s.binding.namespace}}${s.binding.local}/${s.operation}`).join(',') || 'inventory unassessed'}; ${b.action} (${b.pointer})`)].join('\n');
 }
 
 /** Inspect a WSDL using the same native preparation as generation, without writing or dispatching.
@@ -126,8 +136,9 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
   const counts = {services: 0, ports: 0, bindings: 0, portTypes: 0, operations: 0};
   const locator = (s: SyntaxSource) => ({resource: `resource-${documents.findIndex(d => d.uri === s.uri) + 1}`, path: s.path, line: s.start.line, column: s.start.column});
   const add = (category: Category, stage: ComponentPlanBlocker['stage'], reason: string, action: string, pointer: string,
-    affected = selectors, source?: SyntaxSource, dimension: ComponentPlanBlocker['dimension'] = 'source') => {
-    blockers.push({category, stage, dimension, reason, affected, action, pointer, ...(source ? {source: locator(source)} : {})});
+    affected = selectors, source?: SyntaxSource, dimension: ComponentPlanBlocker['dimension'] = 'source', schema?: ComponentPlanBlocker['schema']) => {
+    blockers.push({category, stage, dimension, reason, affected, action, pointer,
+      ...(source ? {source: locator(source)} : {}), ...(schema ? {schema} : {})});
   };
   const inventory = () => {
     candidates = []; operations = [];
@@ -216,9 +227,25 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
       const possible = candidates.filter(c => (!Object.hasOwn(explicit, 'service') || intake!.service !== undefined && same(c.service, intake!.service))
         && (!Object.hasOwn(explicit, 'port') || c.port === intake!.port)
         && (!Object.hasOwn(explicit, 'selectors') || intake!.selectors !== undefined && intake!.selectors.every(s => same(s.binding, c.binding) && c.portType && same(s.portType, c.portType))));
-      if (possible.length !== 1) add('ambiguous-selection', 'selection', possible.length ? 'multiple-service-port-binding-candidates' : 'no-matching-service-port-binding',
-        'Choose service, port and selectors from candidates; conflicting choices must be corrected.', 'checkedComponents.service/port/selectors', [], undefined, 'selection');
-      else {
+      if (possible.length > 1) add('ambiguous-selection', 'selection', 'multiple-service-port-binding-candidates',
+        'Choose a service, port and selectors from the listed candidates.', 'checkedComponents.service/port/selectors', [], undefined, 'selection');
+      else if (possible.length === 0) {
+        const requested = intake.selectors?.[0];
+        const requestedBindingHasNoPort = requested
+          && !candidates.some(c => same(c.binding, requested.binding))
+          && operations.some(o => o.binding && same(o.binding, requested.binding) && same(o.portType, requested.portType))
+          && intake.selectors?.every(s => same(s.binding, requested.binding) && same(s.portType, requested.portType));
+        if ((counts.ports === 0 && counts.bindings > 0) || requestedBindingHasNoPort) {
+          add('configuration', 'selection', 'missing-service-port',
+            'Use a WSDL that declares a service port for the binding. Schema qualification has not run.',
+            'wsdl', [], undefined, 'selection');
+        } else {
+          add('configuration', 'selection', 'no-matching-service-port-binding',
+            candidates.length ? 'Check the configured service, port and selectors against the listed candidates.'
+              : 'Use a WSDL that declares a binding and a service port.',
+            candidates.length ? 'checkedComponents.service/port/selectors' : 'wsdl', [], undefined, 'selection');
+        }
+      } else {
         const chosen = possible[0]!;
         selectors = Object.hasOwn(explicit, 'selectors') ? [...intake.selectors!] : operations.filter(o => o.binding && same(o.binding, chosen.binding))
           .map(o => ({portType: o.portType, binding: o.binding!, operation: o.operation}));
@@ -254,6 +281,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
             add('operational-failure', 'native-preparation', 'source-changed-during-planning', 'Keep source files stable and rerun discovery and native checks.', 'wsdl/sourceResources');
           }
         }
+        const affectedBySchema = new Map<SchemaQualificationDiagnostic, DirectOperationSelector[]>();
         for (const refusal of native.refusals) {
           if (['whole-source-qualification', 'source-preparation'].includes(refusal.rule) && missing.size) {
             const referenced = new Set<string>();
@@ -284,6 +312,19 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           }
           const category: Category = refusal.kind === 'invalid-schema' && refusal.dimension === 'qualification-and-correspondence' ? 'invalid-source' : refusal.kind === 'unsupported' ? 'unsupported-capability'
             : refusal.kind === 'cancelled' || refusal.kind === 'resource-limit' ? refusal.kind : refusal.kind === 'selection-refused' ? 'configuration' : 'inconclusive';
+          if (refusal.schemaDiagnostic) {
+            const existing = affectedBySchema.get(refusal.schemaDiagnostic);
+            if (existing) {existing.push(refusal.selector); continue;}
+            const affected = [refusal.selector];
+            affectedBySchema.set(refusal.schemaDiagnostic, affected);
+            const {source, ...schema} = refusal.schemaDiagnostic;
+            const location = source && documents.some(d => d.uri === source.uri && d.digest === source.digest) ? source : undefined;
+            add(category, 'native-preparation', refusal.rule, category === 'invalid-source'
+              ? 'Review the indicated schema construct against the assessed profile and supply valid source metadata.'
+              : 'Review the indicated schema construct and the checked support profile.',
+            'wsdl/sourceResources', affected, location, refusal.dimension, schema);
+            continue;
+          }
           add(category, 'native-preparation', refusal.rule, 'Resolve the native rule or extend the qualified capability; no validity override is available.',
             'checkedComponents.selectors', [refusal.selector], undefined, refusal.dimension);
         }

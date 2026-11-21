@@ -77,7 +77,11 @@ Checked planning refusals show the construct or source location, the reason and 
 
 For a locationless import whose referenced components are unavailable, `--checked-draft` can write `service-resolution.json` containing a `REQUIRED_SCHEMA_LOCATION` placeholder. Replace that value with the actual permitted schema location, then rerun with `--checked-config service-resolution.json`. Unused locationless imports need no fabricated schema; native qualification and reference resolution remain mandatory.
 
-Multiple service/port/binding candidates require an explicit choice. Partial configuration and operation subsets are supported; see [selection and recovery details](checked-gateway.md#planning-and-missing-schema-recovery). Reports and drafts are preserved by default; use `--force-checked-files` deliberately to replace them on a later run.
+Multiple service/port/binding candidates require an explicit choice. A WSDL that declares a binding without a service port reports `missing-service-port` before schema qualification. Use a WSDL that declares a service port for that binding.
+
+When native qualification identifies a failing schema rule, the report can include a `schema` diagnostic with the assessed profile, rule, and named declaration when available. Source coordinates use the report's resource labels.
+
+Partial configuration and operation subsets are supported. Reports and drafts are preserved by default. Use `--force-checked-files` deliberately to replace them on a later run. [Selection and recovery details](checked-gateway.md#planning-and-missing-schema-recovery)
 
 The Weather quick-start fixture has multiple ports even though it has one service. Set `service`, `port` and `selectors` in a JSON file supplied through `--checked-config`; the diagnostic lists actual service/port choices and the report lists operation candidates. Legacy mode is a separate generation path with its own support limits, not an automatic fallback after a checked refusal.
 
@@ -182,6 +186,8 @@ Run these commands with the same generator version, source graph, and `--checked
 `openapi` writes only the JSON document and can run before `client`. `gateway` reads the client and OpenAPI and writes only the gateway. `app` reads all three and emits the app with optional Vitest scaffolds. Each stage qualifies the source afresh. Gateway and app compare the relevant generator-owned files against the expected output, including the portable source closure and capsule bytes. Keep those files as generated, including JSON formatting. If a file is missing, altered or mismatched, regenerate the matched artifacts from the original WSDL and imports.
 
 Place client, OpenAPI, gateway and test outputs in distinct locations inside the app directory. Give diagnostic reports and drafts their own paths outside the artifact and scaffold locations. The app preserves existing files by default. Use `app --force` for app files or `app --force-test --test-dir <directory>` for test files. The generated tests exercise health, OpenAPI and invalid requests offline. Use independently specified request, response and fault fixtures for positive contract and provider checks.
+
+Use literal filesystem names for artifact paths such as `gateway#edge` or `client%23edge`. When an artifact directory contains a URL delimiter, the generated scaffold test compiles to a temporary directory and removes it on completion. Run `npm test` as usual. To upgrade an affected app, regenerate the matched artifacts and refresh the host and scaffold test. Preserve custom host and test edits by copying the corresponding loader changes from a fresh scaffold into those copies.
 
 After building, keep the generated OpenAPI, client snapshots, capsules and project-relative layout with `dist/`. Install production dependencies, including the checked runtime, and use [the same runtime and endpoint controls as the pipeline app](#configure-and-invoke-an-owned-soap-backend).
 
