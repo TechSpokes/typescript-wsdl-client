@@ -41,8 +41,9 @@ export {runMultiServicePipeline, loadMultiServiceConfig} from './multiServicePip
 export type {MultiServicePipelineOptions, MultiServicePipelineResult, MultiServiceEntry} from './multiServicePipeline.js';
 export {composeOpenApiDocuments} from './openapi/composeOpenAPI.js';
 export type {ComposedOpenApiDocument, OpenApiCompositionEntry, OpenApiCompositionOptions} from './openapi/composeOpenAPI.js';
-export {generateCheckedClient} from './checkedPipeline.js';
-export type {CheckedClientOptions, CheckedClientResult} from './checkedPipeline.js';
+export {generateCheckedClient, generateCheckedOpenAPI, generateCheckedGateway, scaffoldCheckedApp} from './checkedPipeline.js';
+export type {CheckedClientOptions, CheckedClientResult, CheckedOpenAPIOptions, CheckedOpenAPIResult,
+  CheckedGatewayOptions, CheckedAppOptions} from './checkedPipeline.js';
 export type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
 export type {CheckedComponentResponseBranches} from './checkedPipeline.js';
 export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';

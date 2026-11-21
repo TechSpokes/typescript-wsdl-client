@@ -2,7 +2,7 @@
 
 Commands and configuration for generation and assessment. See the root [README](../README.md).
 
-Generation offers legacy by default and supports `--model checked-components-v1` on `client` and `pipeline`. Start with [Try Opt-in Checked Generation](checked-generation.md). The [checked gateway reference](checked-gateway.md) covers exact configuration and runtime compatibility.
+Generation offers legacy by default. Select `--model checked-components-v1` on `client`, `openapi`, `gateway`, `app`, or `pipeline`. Start with [Try Opt-in Checked Generation](checked-generation.md). The [checked gateway reference](checked-gateway.md) covers exact configuration and runtime compatibility.
 
 The `wsdl-tsc` tool generates TypeScript SOAP clients, OpenAPI specifications, and Fastify gateways from WSDL files.
 
@@ -24,6 +24,20 @@ TypeScript outputs automatically receive [generated preambles](generated-code.md
 | compile | Parse WSDL to catalog.json only | Debugging, multi-stage builds |
 | assess | Source schema diagnostic report | Checked evidence and unresolved duties |
 | inspect-response | Offline captured SOAP response inspection | Scoped mismatches and source correction drafts |
+
+## Standalone checked HTTP stages
+
+Use `--wsdl-source` with the original WSDL and its imports, and pass the same `--checked-config` choices as the client stage. All three HTTP stages require `--openapi-file`, `--gateway-service-name` and `--gateway-version-prefix`.
+
+| Command | Additional required flags | Result |
+| --- | --- | --- |
+| `openapi` | Original source and route choices | Writes JSON OpenAPI |
+| `gateway` | `--client-dir`, `--gateway-dir` | Verifies client and OpenAPI and writes gateway files |
+| `app` | `--client-dir`, `--gateway-dir`, `--app-dir` | Verifies all three artifacts and writes app files |
+
+`app --test-dir <directory>` emits checked Vitest scaffolds. `--host` and `--port` set the app defaults. `--force` replaces app files and `--force-test` replaces checked test files. See the [complete standalone sequence](checked-generation.md#generate-the-checked-stack-in-separate-commands).
+
+For these standalone HTTP commands, `--force-checked-files` replaces only a matching component plan report or a recovery draft that still contains a `REQUIRED_SCHEMA_LOCATION` placeholder. Use a separate destination after filling in the draft's schema locations. An existing file larger than 8 MiB requires a new destination.
 
 ## inspect-response
 

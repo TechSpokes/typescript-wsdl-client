@@ -13,8 +13,10 @@
 import {assessSchemaSource, serializeAssessmentReport, assessmentExitCode} from "./compiler/checkedAssessment.js";
 import {inspectCheckedResponse} from './checkedResponseInspection.js';
 import {readBoundedFile} from './util/readBoundedFile.js';
-import {generateCheckedClient, parseCheckedComponentChoices} from './checkedPipeline.js';
-import type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
+import {checkedAppReservedNames, generateCheckedClient, generateCheckedOpenAPI, generateCheckedGateway, scaffoldCheckedApp, parseCheckedComponentChoices} from './checkedPipeline.js';
+import type {CheckedComponentOptions, CheckedInventory, CheckedOpenAPIOptions, CheckedOpenAPIResult} from './checkedPipeline.js';
+import {checkedArtifactLocation, checkedPathContains} from './generation/checkedArtifactFiles.js';
+import {assertStandaloneReportDestination, writeStandaloneCheckedDiagnostic, type CheckedDiagnosticKind} from './generation/checkedDiagnosticFiles.js';
 import {CheckedPlanningError, prepareCheckedComponentPlan, writeCheckedPlanningFile} from './checkedPlanning.js';
 import type {CheckedComponentPlan} from './checkedPlanning.js';
 import yargs from "yargs/yargs";
@@ -72,13 +74,23 @@ const checkedPlanningOptions = {
   'force-checked-files': {type: 'boolean', default: false, desc: 'Replace requested checked report or draft files'},
 } as const;
 
+const standaloneModelOption = {type: 'string', choices: ['legacy', 'checked-components-v1'], default: 'legacy',
+  desc: 'Generation model; checked stages qualify the original WSDL'} as const;
+const checkedRouteOptions = {
+  'gateway-service-name': {type: 'string', desc: 'Checked route service segment'},
+  'gateway-version-prefix': {type: 'string', desc: 'Checked route version segment'},
+} as const;
+
 async function runCheckedGenerationCommand(argv: {'wsdl-source': string; 'checked-config'?: string;
   'checked-report'?: string; 'checked-draft'?: string; 'force-checked-files'?: boolean},
-  generate: (choices: Partial<CheckedComponentOptions>) => Promise<{checked?: CheckedInventory; planning?: CheckedComponentPlan}>): Promise<never> {
+  generate: (choices: Partial<CheckedComponentOptions>) => Promise<{checked?: CheckedInventory; planning?: CheckedComponentPlan}>,
+  validatePlanPaths?: () => void,
+  writeDiagnostic: (file: string, value: unknown, force: boolean | undefined, kind: CheckedDiagnosticKind) => void = writeCheckedPlanningFile): Promise<never> {
   const supplied: unknown = argv['checked-config'] ? JSON.parse(fs.readFileSync(argv['checked-config'], 'utf8')) : {};
   const writePlan = (report: CheckedComponentPlan) => {
-    if (argv['checked-report']) writeCheckedPlanningFile(argv['checked-report'], report, argv['force-checked-files']);
-    if (argv['checked-draft'] && report.resolution) writeCheckedPlanningFile(argv['checked-draft'], report.resolution.configuration, argv['force-checked-files']);
+    validatePlanPaths?.();
+    if (argv['checked-report']) writeDiagnostic(argv['checked-report'], report, argv['force-checked-files'], 'report');
+    if (argv['checked-draft'] && report.resolution) writeDiagnostic(argv['checked-draft'], report.resolution.configuration, argv['force-checked-files'], 'draft');
   };
   const controller = new AbortController();
   const cancel = () => controller.abort();
@@ -105,6 +117,56 @@ async function runCheckedGenerationCommand(argv: {'wsdl-source': string; 'checke
     exitCode = 1;
   } finally {process.off('SIGINT', cancel);}
   process.exit(exitCode);
+}
+
+type CheckedHttpArguments = Partial<Record<'wsdl-source' | 'checked-config' | 'checked-report' | 'checked-draft'
+  | 'gateway-version-prefix' | 'gateway-service-name' | 'client-dir' | 'gateway-dir' | 'app-dir' | 'test-dir', string>> & {
+  'openapi-file': string; 'force-checked-files'?: boolean;
+};
+
+function assertStandaloneDiagnosticPaths(argv: CheckedHttpArguments, wsdl: string): void {
+  const diagnostics = [argv['checked-report'], argv['checked-draft']].filter((file): file is string => !!file);
+  if (!diagnostics.length) return;
+  const uri = new URL(resolveResourceUri(wsdl));
+  const appDir = argv['app-dir'];
+  const protectedPaths = [argv['openapi-file'], argv['client-dir'], argv['gateway-dir'], argv['test-dir'], argv['checked-config'],
+    ...(uri.protocol === 'file:' ? [fileURLToPath(uri)] : []),
+    ...(appDir ? checkedAppReservedNames.map(name => path.join(appDir, name)) : [])]
+    .filter((file): file is string => !!file).map(checkedArtifactLocation);
+  for (const file of diagnostics) {
+    const location = checkedArtifactLocation(file);
+    if (protectedPaths.some(protectedPath => checkedPathContains(protectedPath, location))) {
+      handleCLIError('Checked report and draft files must have separate paths outside the source, artifact and scaffold locations');
+    }
+    protectedPaths.push(location);
+  }
+}
+
+async function runCheckedStandaloneHttp(argv: CheckedHttpArguments, extras: readonly string[],
+  generate: (options: CheckedOpenAPIOptions) => Promise<CheckedOpenAPIResult>): Promise<never> {
+  const allowed = new Set(['model', 'wsdl-source', 'openapi-file', ...Object.keys(checkedPlanningOptions),
+    ...Object.keys(checkedRouteOptions), ...extras]);
+  for (const arg of rawArgs.slice(1).filter(value => value.startsWith('-'))) {
+    const flag = arg.split('=')[0]!;
+    if (!flag.startsWith('--') || !allowed.has(flag.slice(2))) {
+      const guidance = flag === '--catalog-file' ? '. Regenerate from --wsdl-source with the original WSDL and its imports' : '';
+      handleCLIError(`Unsupported checked model option: ${flag}${guidance}`);
+    }
+  }
+  const wsdl = argv['wsdl-source'], versionSlug = argv['gateway-version-prefix'], serviceSlug = argv['gateway-service-name'];
+  if (!wsdl) handleCLIError('checked-components-v1 requires --wsdl-source with the original WSDL and its imports');
+  if (!versionSlug || !serviceSlug) handleCLIError('Checked HTTP stages require --gateway-version-prefix and --gateway-service-name');
+  const validatePlanPaths = () => assertStandaloneDiagnosticPaths(argv, wsdl);
+  validatePlanPaths();
+  if (argv['force-checked-files'] && argv['checked-report']) assertStandaloneReportDestination(argv['checked-report']);
+  return runCheckedGenerationCommand({...argv, 'wsdl-source': wsdl}, checkedComponents =>
+    generate({wsdl, checkedComponents, openapiFile: argv['openapi-file'], versionSlug, serviceSlug}), validatePlanPaths, writeStandaloneCheckedDiagnostic);
+}
+
+function rejectCheckedPlanningOptions(argv: Omit<CheckedHttpArguments, 'openapi-file'>): void {
+  if (argv['checked-config'] || argv['checked-report'] || argv['checked-draft'] || argv['force-checked-files']) {
+    handleCLIError('Checked configuration and planning files require --model checked-components-v1');
+  }
 }
 
 // Process command line arguments, removing the first two elements (node executable and script path)
@@ -430,6 +492,9 @@ if (rawArgs[0] === "openapi") {
     .version(false)
     .scriptName("wsdl-tsc openapi")
     .usage("$0 [--wsdl-source <file|url> | --catalog-file <file>] --openapi-file <path> [options]")
+    .option('model', standaloneModelOption)
+    .options(checkedPlanningOptions)
+    .options(checkedRouteOptions)
     .option("wsdl-source", {type: "string", desc: "Path or URL to the WSDL (exclusive with --catalog-file)"})
     .option("catalog-file", {type: "string", desc: "Existing catalog input (default: {openapi-file-dir}/catalog.json when --wsdl-source is omitted)"})
     .option("openapi-file", {type: "string", demandOption: true, desc: "Output file or base path for OpenAPI"})
@@ -503,6 +568,13 @@ if (rawArgs[0] === "openapi") {
     .help()
     .parse();
 
+  if (openapiArgv.model === 'checked-components-v1') {
+    if (openapiArgv['openapi-format'] && openapiArgv['openapi-format'] !== 'json') handleCLIError('checked-components-v1 emits JSON OpenAPI only');
+    await runCheckedStandaloneHttp(openapiArgv, ['openapi-format'], generateCheckedOpenAPI);
+  }
+  rejectCheckedPlanningOptions(openapiArgv);
+  if (openapiArgv['gateway-version-prefix'] || openapiArgv['gateway-service-name']) handleCLIError('Checked route segments require --model checked-components-v1');
+
   // Resolve format
   const format = (openapiArgv["openapi-format"] as "json" | "yaml" | "both") ?? "json";
 
@@ -547,6 +619,9 @@ if (rawArgs[0] === "gateway") {
     .version(false)
     .scriptName("wsdl-tsc gateway")
     .usage("$0 --openapi-file <file> --client-dir <dir> --gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug> [options]")
+    .option('model', standaloneModelOption)
+    .options(checkedPlanningOptions)
+    .option('wsdl-source', {type: 'string', desc: 'Original WSDL for checked gateway generation'})
     .option("openapi-file", {
       type: "string",
       demandOption: true,
@@ -618,6 +693,14 @@ if (rawArgs[0] === "gateway") {
     .help()
     .parse();
 
+  if (gatewayArgv.model === 'checked-components-v1') {
+    await runCheckedStandaloneHttp(gatewayArgv, ['client-dir', 'gateway-dir'], options => generateCheckedGateway({
+      ...options, clientOutDir: gatewayArgv['client-dir'], gatewayDir: gatewayArgv['gateway-dir'],
+    }));
+  }
+  rejectCheckedPlanningOptions(gatewayArgv);
+  if (gatewayArgv['wsdl-source']) handleCLIError('Gateway --wsdl-source requires --model checked-components-v1');
+
   // Parse default response status codes
   let defaultResponseStatusCodes: number[] | undefined;
   if (gatewayArgv["gateway-default-status-codes"]) {
@@ -669,6 +752,12 @@ if (rawArgs[0] === "app") {
     .version(false)
     .scriptName("wsdl-tsc app")
     .usage("$0 --client-dir <dir> --gateway-dir <dir> --openapi-file <file> [--catalog-file <file>] [--app-dir <dir>] [options]")
+    .option('model', standaloneModelOption)
+    .options(checkedPlanningOptions)
+    .options(checkedRouteOptions)
+    .option('wsdl-source', {type: 'string', desc: 'Original WSDL for checked app generation'})
+    .option('test-dir', {type: 'string', desc: 'Checked app test scaffold output'})
+    .option('force-test', {type: 'boolean', default: false, desc: 'Overwrite existing checked test scaffold files'})
     .option("client-dir", {
       type: "string",
       demandOption: true,
@@ -735,6 +824,19 @@ if (rawArgs[0] === "app") {
     .strict()
     .help()
     .parse();
+
+  if (appArgv.model === 'checked-components-v1') {
+    const appDir = appArgv['app-dir'], testDir = appArgv['test-dir'];
+    if (!appDir) handleCLIError('checked-components-v1 requires explicit --app-dir');
+    if (appArgv['force-test'] && !testDir) handleCLIError('--force-test requires --test-dir');
+    await runCheckedStandaloneHttp(appArgv, ['client-dir', 'gateway-dir', 'app-dir', 'host', 'port', 'force', 'test-dir', 'force-test'],
+      options => scaffoldCheckedApp({...options, appDir, clientOutDir: appArgv['client-dir'], gatewayDir: appArgv['gateway-dir'],
+        host: appArgv.host, port: appArgv.port, force: appArgv.force, test: testDir ? {testDir, force: appArgv['force-test']} : undefined}));
+  }
+  rejectCheckedPlanningOptions(appArgv);
+  if (appArgv['wsdl-source'] || appArgv['test-dir'] || appArgv['force-test'] || appArgv['gateway-version-prefix'] || appArgv['gateway-service-name']) {
+    handleCLIError('App source, route and test controls require --model checked-components-v1');
+  }
 
   const clientDir = path.resolve(String(appArgv["client-dir"]));
   const gatewayDir = path.resolve(String(appArgv["gateway-dir"]));

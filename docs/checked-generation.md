@@ -157,6 +157,47 @@ Pass the selected operation's capsule bytes and service/port to the generated me
 
 Runtime checks reconstruct the contract from the physical snapshots and compare it with the generated capsule before SOAP dispatch. Missing snapshots, changes to snapshot bytes and mismatched capsules require the matching artifacts or regeneration. See [runtime configuration](checked-gateway.md#explicit-component-configuration).
 
+## Generate the checked stack in separate commands
+
+Install generator v1.12.0 or later in an ESM project on Node.js 24 or later. Use the bundled Forecast WSDL to try the commands. For your own service, set `wsdl` to the original WSDL file or URL and keep its WSDL and XSD imports available.
+
+```bash
+npm install --save-dev @techspokes/typescript-wsdl-client
+wsdl=node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl
+app=.generated/forecast
+npx wsdl-tsc client --model checked-components-v1 --wsdl-source "$wsdl" --client-dir "$app/client"
+npx wsdl-tsc openapi --model checked-components-v1 --wsdl-source "$wsdl" --openapi-file "$app/openapi.json" --gateway-version-prefix v1 --gateway-service-name forecast
+npx wsdl-tsc gateway --model checked-components-v1 --wsdl-source "$wsdl" --client-dir "$app/client" --openapi-file "$app/openapi.json" --gateway-dir "$app/gateway" --gateway-version-prefix v1 --gateway-service-name forecast
+npx wsdl-tsc app --model checked-components-v1 --wsdl-source "$wsdl" --client-dir "$app/client" --openapi-file "$app/openapi.json" --gateway-dir "$app/gateway" --gateway-version-prefix v1 --gateway-service-name forecast --app-dir "$app" --test-dir "$app/test"
+cd "$app"
+npm install
+npm run typecheck
+npm test
+npm run build
+npm start
+```
+
+Run these commands with the same generator version, source graph, and `--checked-config` choices, if needed. The HTTP stages use the same service and version segments. Relative CLI and API paths resolve from each invocation's working directory. Use explicit paths to the same sources and artifacts when running steps from different directories.
+
+`openapi` writes only the JSON document and can run before `client`. `gateway` reads the client and OpenAPI and writes only the gateway. `app` reads all three and emits the app with optional Vitest scaffolds. Each stage qualifies the source afresh. Gateway and app compare the relevant generator-owned files against the expected output, including the portable source closure and capsule bytes. Keep those files as generated, including JSON formatting. If a file is missing, altered or mismatched, regenerate the matched artifacts from the original WSDL and imports.
+
+Place client, OpenAPI, gateway and test outputs in distinct locations inside the app directory. Give diagnostic reports and drafts their own paths outside the artifact and scaffold locations. The app preserves existing files by default. Use `app --force` for app files or `app --force-test --test-dir <directory>` for test files. The generated tests exercise health, OpenAPI and invalid requests offline. Use independently specified request, response and fault fixtures for positive contract and provider checks.
+
+After building, keep the generated OpenAPI, client snapshots, capsules and project-relative layout with `dist/`. Install production dependencies, including the checked runtime, and use [the same runtime and endpoint controls as the pipeline app](#configure-and-invoke-an-owned-soap-backend).
+
+### Migrate a catalog-based workflow
+
+| Workflow | Legacy CLI and package API | Checked input and result |
+| --- | --- | --- |
+| Compile or assess | `compile` emits `catalog.json`. `compileWsdlToProject` compiles and emits a client. | `assess` and `assessSchemaSource` diagnose narrow direct-schema obligations. `planCheckedComponents` describes component readiness from source. |
+| Client | `client` or `compileWsdlToProject`. The CLI accepts WSDL or a legacy catalog. | `client` or `generateCheckedClient` qualifies original sources and emits typed operations, capsules, inventory and source snapshots. |
+| OpenAPI | `openapi` or `generateOpenAPI` uses WSDL or a legacy catalog. | `openapi` or `generateCheckedOpenAPI` qualifies original sources and emits the selected JSON HTTP contract. |
+| Gateway | `gateway` or `generateGateway` reads OpenAPI and optional catalog metadata. | `gateway` or `generateCheckedGateway` requalifies source and checks the matching client and OpenAPI before emitting Fastify code. |
+| App | `app` or the app stage of `runGenerationPipeline` uses legacy artifacts. | `app` or `scaffoldCheckedApp` verifies the matched files with original source and emits an installable app. |
+| Generated tests | `pipeline --test-dir` or `generateTests` uses the compiled legacy contract. | `app --test-dir` or `scaffoldCheckedApp` with `test` emits offline checked tests alongside the app. |
+
+Start the checked workflow from the WSDL and its imports, with a fresh output directory separate from legacy files. A legacy catalog or diagnostic report cannot supply native qualification. Use `--checked-report` on a checked generation stage to retain its diagnostic plan. Keep client, OpenAPI and gateway together when updating the app.
+
 ## Programmatic planning and generation
 
 The package-root API uses the same loader and native preparation as the CLI:
@@ -176,7 +217,22 @@ await runGenerationPipeline({
 });
 ```
 
-For standalone generation, call `generateCheckedClient` from the package root with `wsdl`, `clientOutDir` and optional `checkedComponents`.
+The package root also exposes the individual stages. The following example uses the same original source and route choices for each call.
+
+```typescript
+import {generateCheckedClient, generateCheckedOpenAPI, generateCheckedGateway, scaffoldCheckedApp} from '@techspokes/typescript-wsdl-client';
+
+const wsdl = './service.wsdl';
+const appDir = '.generated/service';
+const clientOutDir = `${appDir}/client`;
+const http = {wsdl, openapiFile: `${appDir}/openapi.json`, versionSlug: 'v1', serviceSlug: 'service'};
+const artifacts = {...http, clientOutDir, gatewayDir: `${appDir}/gateway`};
+
+await generateCheckedClient({wsdl, clientOutDir});
+await generateCheckedOpenAPI(http);
+await generateCheckedGateway(artifacts);
+await scaffoldCheckedApp({...artifacts, appDir, test: {testDir: `${appDir}/test`}});
+```
 
 Partial choices and permissions go in `checkedComponents` for generation or the second argument to `planCheckedComponents`. Planning never invokes SOAP. Generation performs fresh checks even when an earlier planning report was ready.
 

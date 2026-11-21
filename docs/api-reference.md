@@ -55,6 +55,20 @@ const {checked, planning} = await generateCheckedClient(options);
 
 Deploy the complete output directory, including `source-resources.json` and the copied inputs. See [standalone checked client setup](checked-generation.md#standalone-checked-client) for runtime binding and invocation.
 
+## Standalone checked HTTP generation
+
+These package-root functions use original WSDL metadata and the same optional `checkedComponents` choices as `generateCheckedClient`. Each returns `Promise<CheckedOpenAPIResult>` with `checked`, `planning` and `openapiDoc`.
+
+| Function | Input type | Required fields |
+| --- | --- | --- |
+| `generateCheckedOpenAPI` | `CheckedOpenAPIOptions` | `wsdl`, `openapiFile`, `versionSlug`, `serviceSlug` |
+| `generateCheckedGateway` | `CheckedGatewayOptions` | OpenAPI options plus `clientOutDir` and `gatewayDir` |
+| `scaffoldCheckedApp` | `CheckedAppOptions` | Gateway options plus `appDir` |
+
+`generateCheckedOpenAPI` writes the JSON document. `generateCheckedGateway` verifies the existing client and OpenAPI and writes the gateway. `scaffoldCheckedApp` also verifies the gateway before writing consumer-owned files. Use `test: {testDir, force}` to emit or replace checked tests and the separate top-level `force` for app files. Optional `host` and `port` set app defaults.
+
+Source qualification failures throw `CheckedPlanningError`. Required generated inputs that differ from the newly qualified output produce `incompatible-artifact` errors. See the [standalone CLI sequence](checked-generation.md#generate-the-checked-stack-in-separate-commands) and the [typed API example](checked-generation.md#programmatic-planning-and-generation).
+
 ## compileWsdlToProject
 
 Generate a TypeScript SOAP client from WSDL.
