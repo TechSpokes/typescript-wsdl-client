@@ -17,11 +17,16 @@ import {prepareWsdlPolicyRequirements, assertWsdlPolicyRequirements} from './wsd
 import type {WsdlPolicyRequirements, BindingPolicyRequirements} from './wsdlPolicyRequirements.js';
 import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
 import type {ConstructionFailure} from './schemaConstructionAssessment.js';
+import {verifyOperationSchemaRoots, type FiniteRe01Frontier} from './finiteRe01Verification.js';
+import {checkScopedComponentCorrespondence} from './componentCorrespondence.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
 const SOAP12 = 'http://schemas.xmlsoap.org/wsdl/soap12/';
 const HTTP = 'http://schemas.xmlsoap.org/soap/http';
 const ADDRESSING_WSDL = 'http://www.w3.org/2006/05/addressing/wsdl';
+export const CLOSED_OPERATION_SCOPE = 'closed-operation-v1' as const;
+export type ComponentQualificationScope = typeof CLOSED_OPERATION_SCOPE;
+export type WholeSourceLegality = 'established' | 'disproved' | 'unassessed';
 export interface DirectOperationSelector {
   readonly portType: ExpandedName;
   readonly binding: ExpandedName;
@@ -69,6 +74,7 @@ interface OperationContractBase {
   readonly contextId: string;
   readonly basis: 'native-direct-premises-v1' | 'native-component-premises-v1';
   readonly correspondence: 'dated-XSD-2004-direct-v1' | 'dated-XSD-2004-components-v1';
+  readonly qualification?: Readonly<{scope: ComponentQualificationScope; wholeSourceLegality: WholeSourceLegality}>;
   readonly binding: Readonly<{version: '1.1' | '1.2'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; actionRequired?: boolean; source: SyntaxSource}>;
   readonly input: DirectMessageRoot | RpcMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
@@ -85,7 +91,7 @@ export type DirectOperationContract = OperationContractBase & (
 );
 export type DirectOperationResult = Readonly<{kind: 'selected'; contract: DirectOperationContract; usage: ResolverUsage}> |
   Readonly<{kind: 'invalid-schema' | 'inconclusive' | 'unsupported' | 'selection-refused' | 'loading-refused' | 'resource-limit' | 'cancelled';
-    rule: string; usage: ResolverUsage; schemaDiagnostic?: SchemaQualificationDiagnostic}>;
+    rule: string; usage: ResolverUsage; schemaDiagnostic?: SchemaQualificationDiagnostic; wholeSourceLegality?: WholeSourceLegality}>;
 
 /** Internal evidence for one checked whole-source refusal.
  * @since Unreleased
@@ -97,6 +103,7 @@ export interface DirectOperationInspection {
   readonly context: SemanticContext;
   readonly source: SchemaInput;
   readonly evidence: Extract<DirectSourceQualification, {kind: 'qualified-source'}> | ComponentSourceQualification;
+  readonly operationFrontier?: FiniteRe01Frontier;
   readonly operationSyntax: SyntaxElement;
   readonly policyOwner?: WsdlPolicyRequirements;
 }
@@ -136,6 +143,7 @@ export async function selectDirectOperationInRequest(source: string, selector: D
 export async function selectComponentOperation(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>): Promise<DirectOperationResult> {
   return selectComponentOperationInRequest(source, selector, options, createApplicationBudget(options.limits));
 }
@@ -144,6 +152,7 @@ export async function selectComponentOperation(source: string, selector: DirectO
 export async function selectComponentOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>, budget: SemanticBudget): Promise<DirectOperationResult> {
   return selectOperationInRequest(source, selector, {...options, standardLibraries: Object.freeze([...(options.standardLibraries ?? [])])}, budget, 'components');
 }
@@ -161,6 +170,7 @@ interface ComponentSelectionCache {
 export async function selectComponentOperations(source: string, selectors: readonly DirectOperationSelector[], options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>): Promise<readonly DirectOperationResult[]> {
   const budget = createApplicationBudget(options.limits), cache: ComponentSelectionCache = {};
   const owned = budget.snapshot(selectors);
@@ -174,11 +184,14 @@ export async function selectComponentOperations(source: string, selectors: reado
 async function selectOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>, budget: SemanticBudget, profile: 'direct' | 'components', cache?: ComponentSelectionCache): Promise<DirectOperationResult> {
   const check = () => {if (options.signal?.aborted) throw new Cancelled(); budget.chargeWork();};
   const refuse = (kind: Refusal['kind'], rule: string): never => {throw new Refusal(kind, rule);};
+  let wholeSourceLegality: WholeSourceLegality | undefined;
   const failure = (kind: Refusal['kind'], rule: string, schemaDiagnostic?: SchemaQualificationDiagnostic): DirectOperationResult =>
-    Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()}), ...(schemaDiagnostic ? {schemaDiagnostic} : {})});
+    Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()}), ...(schemaDiagnostic ? {schemaDiagnostic} : {}),
+      ...(wholeSourceLegality ? {wholeSourceLegality} : {})});
   const sourceFailure = (kind: Refusal['kind'], rule: string, schemaDiagnostic?: SchemaQualificationDiagnostic): DirectOperationResult => {
     const result = failure(kind, rule, schemaDiagnostic);
     if (cache && result.kind !== 'selected') cache.failure = result;
@@ -210,7 +223,11 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       if (qualified.kind === 'component-source') inspectComponentSourceQualification(qualified, input);
       const construction = qualified.kind === 'component-source' ? qualified.construction : qualified;
       const eligible = qualified.kind === 'component-source' ? qualified.schemaEligible : qualified.eligible;
-      if (!eligible) {
+      if (options.qualificationScope === CLOSED_OPERATION_SCOPE && qualified.kind === 'component-source') {
+        wholeSourceLegality = qualified.construction.nativeEstablished ? 'established'
+          : construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'disproved' : 'unassessed';
+      }
+      if (!eligible && options.qualificationScope !== CLOSED_OPERATION_SCOPE) {
         const {closure} = construction;
         const kind = construction.localDisproved || closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive';
         let rule = 'whole-source-qualification';
@@ -513,10 +530,25 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         return Object.freeze({name: faultName, root: root(f, matches[0]!, faultName)});
       });
       check();
+      let operationFrontier: FiniteRe01Frontier | undefined;
+      if (options.qualificationScope === CLOSED_OPERATION_SCOPE) {
+        if (qualified.kind !== 'component-source' || !responseRoot || isRpcMessageRoot(requestRoot) || isRpcMessageRoot(responseRoot))
+          return failure('unsupported', 'closed-operation-document-request-response');
+        const roots = [requestRoot, responseRoot, ...headers.map(header => header.root), ...faults.map(fault => fault.root)];
+        const verified = verifyOperationSchemaRoots(context, roots.map(item => item.element.id));
+        if (verified.kind !== 'inspected-frontier') {
+          if (verified.kind === 'resource-limit') return failure('resource-limit', 'operation-source-qualification');
+          return failure(verified.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', `operation-source-qualification:${verified.rule}`);
+        }
+        const outside = checkScopedComponentCorrespondence(input, context, verified, check);
+        if (outside) return failure('unsupported', `operation-correspondence:${outside.rule}`);
+        operationFrontier = verified;
+      }
       // Charge publication traversal before retaining authority. Roots stay exact context objects.
       const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId,
         basis: profile === 'direct' ? 'native-direct-premises-v1' : 'native-component-premises-v1',
         correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
+        ...(operationFrontier ? {qualification: {scope: CLOSED_OPERATION_SCOPE, wholeSourceLegality: wholeSourceLegality ?? 'unassessed'}} : {}),
         binding: {version: soapNamespace === SOAP12 ? '1.2' : '1.1', ...(soapNamespace === SOAP12 ? {actionRequired} : {}), style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
           ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
         input: requestRoot, ...(responseRoot ? {output: responseRoot} : {pattern: 'one-way' as const}), faults,
@@ -530,6 +562,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       budget.freeze(contract); check(); budget.chargeWork(256);
       const selected = Object.freeze({kind: 'selected' as const, contract, usage: Object.freeze({...budget.usage()})});
       issued.set(contract, Object.freeze({contract, context, source: input, evidence: qualified, operationSyntax: abstract,
+        ...(operationFrontier ? {operationFrontier} : {}),
         ...(policyOwner ? {policyOwner} : {})}));
       return selected;
     });

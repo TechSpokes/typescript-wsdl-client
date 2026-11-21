@@ -148,6 +148,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     info: {title: expected.selection.service.local, version: '1.0.0'},
     ...(Object.keys(components).length ? {components:{schemas:components}} : {}),
     'x-checked-model': {model: 'checked-components-v1', scope: soap12 ? 'native-component-structured-soap12' : 'native-component-structured-soap11',
+      ...(expected.contract.qualification ? {qualification: expected.contract.qualification} : {}),
       ...(expected.responseProjection
         ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
       ...(expected.responseBranches ? {responseBranches: {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),

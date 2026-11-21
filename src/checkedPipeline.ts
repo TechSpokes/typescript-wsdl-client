@@ -12,8 +12,8 @@ import {createHash} from 'node:crypto';
 import {constants as bufferConstants} from 'node:buffer';
 import {resolveResourceUri} from './loader/schemaResources.js';
 import type {PipelineOptions} from './pipeline.js';
-import {selectComponentOperations, selectComponentOperationInRequest, inspectDirectOperation} from './compiler/directOperation.js';
-import type {DirectOperationSelector, SchemaQualificationDiagnostic} from './compiler/directOperation.js';
+import {selectComponentOperations, selectComponentOperationInRequest, inspectDirectOperation, CLOSED_OPERATION_SCOPE} from './compiler/directOperation.js';
+import type {ComponentQualificationScope, DirectOperationSelector, SchemaQualificationDiagnostic} from './compiler/directOperation.js';
 import {prepareComponentSourceForOperation} from './compiler/directSourceCapsule.js';
 import {inspectComponentSourceService} from './compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from './compiler/directSourceCapsule.js';
@@ -69,6 +69,7 @@ export interface CheckedComponentOptions {
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
   readonly basePath?: string;
   readonly standardLibraries?: readonly string[];
+  readonly qualificationScope?: ComponentQualificationScope;
   readonly recordProjections?: readonly CheckedComponentRecordProjection[];
   readonly responseBranches?: readonly CheckedComponentResponseBranches[];
 }
@@ -202,7 +203,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile', 'httpResponseHeaders', 'httpResponseHeaderNames', 'httpResponseStatusHeaderName'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'qualificationScope', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile', 'httpResponseHeaders', 'httpResponseHeaderNames', 'httpResponseStatusHeaderName'],
     resolved ? ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'] : []);
   if (['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => Object.hasOwn(data, key) && data[key] === undefined))
     throw new TypeError('Explicit component choices must not be undefined');
@@ -214,6 +215,10 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
       ...(r.contentType === undefined ? {} : {contentType: text(r.contentType)})};});
   const sourceOrigins = data.sourceOrigins === undefined ? undefined : array(data.sourceOrigins).map(text);
   const standardLibraries = data.standardLibraries === undefined ? undefined : libraries(data.standardLibraries);
+  const qualificationScope = data.qualificationScope;
+  if (qualificationScope !== undefined && qualificationScope !== CLOSED_OPERATION_SCOPE) throw new TypeError('Unsupported checked qualificationScope');
+  if (qualificationScope && (data.sourceCorrectionsFile !== undefined || data.recordProjections !== undefined || data.responseBranches !== undefined))
+    throw new TypeError('Closed operation qualification requires original sources and no companion contracts');
   const recordProjections = data.recordProjections === undefined ? undefined : array(data.recordProjections).map<CheckedComponentRecordProjection>(input => {
     const r = record(input, ['selector', 'source', 'recordSelector', 'spec', 'scope', 'recordPath', 'standardLibraries'], ['selector', 'source', 'recordSelector']);
     const common = {selector: selector(r.selector), source: text(r.source), recordSelector: selector(r.recordSelector),
@@ -283,7 +288,8 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     ...(data.port === undefined ? {} : {port: text(data.port)}), ...(fileRoots ? {fileRoots} : {}),
     ...(sourceResources ? {sourceResources} : {}), ...(sourceOrigins ? {sourceOrigins} : {}),
     ...(data.sourceUri === undefined ? {} : {sourceUri: resolveResourceUri(text(data.sourceUri))}),
-    ...(standardLibraries ? {standardLibraries} : {}), ...(recordProjections ? {recordProjections} : {}), ...(responseBranches ? {responseBranches} : {}),
+    ...(standardLibraries ? {standardLibraries} : {}), ...(qualificationScope ? {qualificationScope} : {}),
+    ...(recordProjections ? {recordProjections} : {}), ...(responseBranches ? {responseBranches} : {}),
     ...(namespaceLocations ? {namespaceLocations} : {}), ...(basePath ? {basePath} : {}), ...(data.signal ? {signal: data.signal as AbortSignal} : {})};
 }
 
@@ -585,7 +591,9 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
   const prepared = acquired ? {source: resolveResourceUri(wsdl), loading: {...loading, offlineResources}}
     : await prepareSchemaSnapshotFiles(wsdl, config.sourceResources, {...loading, sourceUri: config.sourceUri});
   const selected = await selectComponentOperations(config.sourceUri ?? prepared.source, config.selectors, {loading: prepared.loading, signal: config.signal,
-    standardLibraries: config.standardLibraries?.map(acquireStandardSchemaLibrary)});
+    standardLibraries: config.standardLibraries?.map(acquireStandardSchemaLibrary), qualificationScope: config.qualificationScope});
+  const wholeSourceLegality = selected.map(result => result.kind === 'selected'
+    ? result.contract.qualification?.wholeSourceLegality : result.wholeSourceLegality).find(value => value !== undefined);
   const refusals: {selector: DirectOperationSelector; kind: string; rule: string; schemaDiagnostic?: SchemaQualificationDiagnostic;
     dimension: 'qualification-and-correspondence' | 'mapping-and-artifact'}[] = selected.flatMap((result, index) =>
     result.kind === 'selected' ? [] : [{selector: config.selectors[index]!, kind: result.kind, rule: result.rule,
@@ -711,7 +719,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       }
     }
   }
-  return {expected, projections, responseBranches, namespaces, refusals, layout, generatedClients, gateway, applicationGroups,
+  return {expected, projections, responseBranches, namespaces, refusals, layout, generatedClients, gateway, applicationGroups, wholeSourceLegality,
     ...(correctedSources ? {sourceCorrections: correctedSources.provenance} : {})};
 }
 
@@ -745,7 +753,7 @@ function componentInventory(config: CheckedComponentOptions, native: Awaited<Ret
   const operations = [...config.selectors.flatMap(selector => report.operations.filter(o => o.binding && JSON.stringify(o.portType) === JSON.stringify(selector.portType)
     && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
     .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
-  return {model: 'checked-components-v1', assurance: 'native-component-source-and-mapping', admitted: false,
+  return {model: 'checked-components-v1', assurance: config.qualificationScope ?? 'native-component-source-and-mapping', admitted: false,
     ...(native.applicationGroups ? {applicationGroups: native.applicationGroups} : {}),
     ...(Object.keys(wsdlDocumentation).length ? {wsdlDocumentation} : {}),
     selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};

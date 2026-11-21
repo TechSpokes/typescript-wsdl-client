@@ -6,6 +6,8 @@ import {pathToFileURL} from 'node:url';
 import {planCheckedComponents, runGenerationPipeline, writeCheckedPlanningFile, CheckedPlanningError} from '../../src/index.js';
 import type {CheckedComponentOptions, PipelineOptions} from '../../src/index.js';
 import * as componentOwner from '../../src/checkedPipeline.js';
+import {prepareSchemaSnapshotFiles} from '../../src/loader/schemaInput.js';
+import {reconstructComponentSourceCapsule} from '../../src/compiler/directSourceCapsule.js';
 
 const roots: string[] = [];
 const diagnosticsFixture = path.resolve('test/conformance/fixtures/assessment/checked-planner-diagnostics');
@@ -114,6 +116,120 @@ it('plans and generates the same SOAP 1.2 service with a disjoint wildcard', asy
   expect(result.planning).toMatchObject({ready: true, blockers: []});
   expect(result.checked?.operations).toMatchObject([
     {operation: 'Check', generated: true, executed: false}, {operation: 'Probe', generated: true, executed: false}]);
+});
+it('qualifies only the closed operation and preserves the disproved whole-source status', async () => {
+  const {opts, root} = setup();
+  const wsdl = path.join(root, 'service.wsdl');
+  for (const file of ['binding.wsdl', 'service.wsdl', 'types.xsd']) fs.copyFileSync(path.join(diagnosticsFixture, file), path.join(root, file));
+  const selector = (await planCheckedComponents(wsdl)).operations.find(operation => operation.operation === 'Probe')!;
+  const choices: Partial<CheckedComponentOptions> = {qualificationScope: 'closed-operation-v1',
+    selectors: [{operation: selector.operation, binding: selector.binding, portType: selector.portType}]};
+  const generated = await runGenerationPipeline({...opts, wsdl, checkedComponents: choices});
+  expect(generated.planning).toMatchObject({scope: 'closed-operation-v1', ready: true, dimensions: {
+    sourceLegality: 'disproved', correspondence: 'established', mapping: 'established', runtime: 'unassessed'}});
+  expect(generated.checked?.operations).toMatchObject([{operation: 'Probe', generated: true, executed: false},
+    {operation: 'Check', generated: false, status: 'unselected-not-assessed'}]);
+  const bytes = fs.readFileSync(path.join(opts.clientOutDir!, 'operations/0/contract.json'));
+  const artifact = JSON.parse(bytes.toString('utf8'));
+  expect(artifact.versions.scope).toBe('component-soap12-closed-operation-v1');
+  expect(artifact.sourceGraph).toMatch(/^[0-9a-f]{64}$/);
+  expect(artifact.resources).toHaveLength(3);
+  expect(artifact.resources.every((resource: {base64?: string}) => resource.base64 === undefined)).toBe(true);
+  const sources = ['binding.wsdl', 'types.xsd'].map(file => ({file: path.join(root, file), uri: pathToFileURL(path.join(root, file)).href}));
+  const snapshot = () => prepareSchemaSnapshotFiles(wsdl, sources, {policy: {fileRoots: [root], allowedOrigins: []}});
+  const prepared = await snapshot();
+  const runtime = await reconstructComponentSourceCapsule(bytes, wsdl, {loading: prepared.loading});
+  expect(runtime.kind, runtime.kind === 'reconstructed-component' ? undefined : runtime.rule).toBe('reconstructed-component');
+  expect(runtime).toMatchObject({contract: {qualification: {wholeSourceLegality: 'disproved'}}});
+  expect(await reconstructComponentSourceCapsule(bytes, wsdl, {loading: {policy: {fileRoots: [root]}}})).toMatchObject({
+    kind: 'missing-authority', rule: 'closed-operation-physical-snapshots-required'});
+
+  const binding = path.join(root, 'binding.wsdl');
+  const types = path.join(root, 'types.xsd');
+  fs.appendFileSync(types, '\n<!-- Change an excluded source without changing the message shape. -->');
+  expect(await reconstructComponentSourceCapsule(bytes, wsdl, {loading: (await snapshot()).loading})).toMatchObject({
+    kind: 'incompatible-artifact', rule: 'local-source-changed'});
+  fs.writeFileSync(binding, fs.readFileSync(binding, 'utf8').replace('types:RequestValue', 'types:ExtensionData'));
+  const reached = await planCheckedComponents(wsdl, choices);
+  expect(reached).toMatchObject({ready: false, blockers: [{reason: 'operation-source-qualification:cos-nonambig'}]});
+  fs.writeFileSync(types, fs.readFileSync(types, 'utf8').replace('namespace="##any"', 'namespace="##other"'));
+  fs.writeFileSync(types, fs.readFileSync(types, 'utf8').replace('</xs:schema>',
+    '<xs:complexType name="Unselected"><xs:sequence><xs:element name="n" type="xs:string" minOccurs="0"/><xs:any/></xs:sequence></xs:complexType></xs:schema>'));
+  expect(await planCheckedComponents(wsdl, choices)).toMatchObject({ready: false, dimensions: {sourceLegality: 'disproved'},
+    blockers: [{reason: 'operation-correspondence:operation-wildcard-dependency'}]});
+});
+it.each(['schema', 'import'])('refuses foreign interpretation controls on the selected schema %s', async target => {
+  const {root} = setup();
+  const wsdl = path.join(root, 'service.wsdl'), binding = path.join(root, 'binding.wsdl');
+  for (const file of ['binding.wsdl', 'service.wsdl', 'types.xsd']) fs.copyFileSync(path.join(diagnosticsFixture, file), path.join(root, file));
+  const attribute = 'xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"';
+  fs.writeFileSync(binding, fs.readFileSync(binding, 'utf8').replace(`<xs:${target} `, `<xs:${target} ${attribute} `));
+  const report = await planCheckedComponents(wsdl, {qualificationScope: 'closed-operation-v1'});
+  expect(report.ready).toBe(false);
+  expect(report.blockers.map(blocker => blocker.reason)).toContain('operation-correspondence:foreign-source-attribute');
+});
+it.each(['schema', 'include'])('refuses foreign interpretation controls on a declaration-free ancestor %s', async target => {
+  const {root} = setup();
+  const wsdl = path.join(root, 'service.wsdl'), binding = path.join(root, 'binding.wsdl');
+  for (const file of ['binding.wsdl', 'service.wsdl', 'types.xsd']) fs.copyFileSync(path.join(diagnosticsFixture, file), path.join(root, file));
+  const original = fs.readFileSync(binding, 'utf8');
+  const inline = /<xs:schema([^>]*)>([\s\S]*?)<\/xs:schema>/.exec(original)!;
+  fs.writeFileSync(path.join(root, 'body.xsd'), `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:types="urn:checked:planner-diagnostics:types"${inline[1]}>${inline[2]}</xs:schema>`);
+  const split = original.replace(inline[0], `<xs:schema${inline[1]}><xs:include schemaLocation="body.xsd"/></xs:schema>`);
+  const scoped = {qualificationScope: 'closed-operation-v1'} as const;
+  fs.writeFileSync(binding, split);
+  expect((await planCheckedComponents(wsdl, scoped)).ready).toBe(true);
+  const attribute = 'xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"';
+  fs.writeFileSync(binding, split.replace(`<xs:${target} `, `<xs:${target} ${attribute} `));
+  const report = await planCheckedComponents(wsdl, scoped);
+  expect(report.ready).toBe(false);
+  expect(report.blockers.map(item => item.reason)).toContain('operation-correspondence:foreign-source-attribute');
+});
+it('replays the effective resolution of redirected metadata from physical snapshots', async () => {
+  const {root, opts} = setup();
+  const origin = 'https://closed-operation.invalid';
+  const files = new Map(['binding.wsdl', 'service.wsdl', 'types.xsd'].map(file => [file, fs.readFileSync(path.join(diagnosticsFixture, file), 'utf8')]));
+  for (const [file, source] of files) fs.writeFileSync(path.join(root, file), source);
+  const serviceUri = `${origin}/contract/service.wsdl`;
+  const bindingUri = `${origin}/contract/binding.wsdl`;
+  const typesUri = `${origin}/contract/types.xsd`;
+  const start = `${origin}/start`;
+  const mock = vi.spyOn(globalThis, 'fetch').mockImplementation(async request => {
+    const uri = String(request);
+    if (uri === start) return new Response(null, {status: 302, headers: {Location: '/next'}});
+    if (uri === `${origin}/next`) return new Response(null, {status: 302, headers: {Location: serviceUri}});
+    if (uri === bindingUri) return new Response(null, {status: 302, headers: {Location: `${origin}/elsewhere`}});
+    if (uri === `${origin}/elsewhere`) return new Response(null, {status: 302, headers: {Location: '/contract/binding-final.wsdl'}});
+    const file = uri === `${origin}/contract/binding-final.wsdl` ? 'binding.wsdl' : uri.split('/').at(-1)!;
+    const source = files.get(file);
+    if (!source || !uri.startsWith(`${origin}/contract/`)) throw new Error('Unexpected metadata request');
+    return new Response(Buffer.from(source));
+  });
+  try {
+    await runGenerationPipeline({...opts, wsdl: start, checkedComponents: {qualificationScope: 'closed-operation-v1', sourceOrigins: [origin]}});
+    const capsule = fs.readFileSync(path.join(opts.clientOutDir!, 'operations/0/contract.json'));
+    mock.mockClear().mockRejectedValue(new Error('Runtime must resolve physical snapshots only'));
+    const wsdl = path.join(root, 'service.wsdl');
+    const home = (file: string) => path.join(root, file);
+    const prepared = await prepareSchemaSnapshotFiles(wsdl, [{uri: serviceUri, file: wsdl},
+      {uri: bindingUri, canonicalUri: `${origin}/contract/binding-final.wsdl`, file: home('binding.wsdl')},
+      {uri: typesUri, file: home('types.xsd')}], {policy: {fileRoots: [root], allowedOrigins: [origin]}, sourceUri: serviceUri});
+    const runtime = await reconstructComponentSourceCapsule(capsule, wsdl, {loading: prepared.loading});
+    expect(runtime.kind, runtime.kind === 'reconstructed-component' ? undefined : runtime.rule).toBe('reconstructed-component');
+    expect(mock).not.toHaveBeenCalled();
+  } finally {mock.mockRestore();}
+});
+it('requires a closed substitution universe at each selected element', async () => {
+  const {root} = setup();
+  const wsdl = path.join(root, 'service.wsdl'), types = path.join(root, 'types.xsd'), binding = path.join(root, 'binding.wsdl');
+  for (const file of ['binding.wsdl', 'service.wsdl', 'types.xsd']) fs.copyFileSync(path.join(diagnosticsFixture, file), path.join(root, file));
+  fs.writeFileSync(types, fs.readFileSync(types, 'utf8').replace('namespace="##any"', 'namespace="##other"'));
+  fs.writeFileSync(binding, fs.readFileSync(binding, 'utf8').replace('</xs:schema>',
+    '<xs:element name="Alternative" type="types:RequestValue" substitutionGroup="t:Request"/></xs:schema>'));
+  const report = await planCheckedComponents(wsdl, {qualificationScope: 'closed-operation-v1'});
+  expect(report.ready).toBe(false);
+  expect(report.blockers.map(blocker => blocker.reason)).toEqual(Array(2).fill('operation-correspondence:operation-substitution-dependency'));
 });
 it('refuses unknown/accessor choices before I/O and keeps permissions and cancellation distinct', async () => {
   const {root, wsdl} = setup(); let reads = 0;

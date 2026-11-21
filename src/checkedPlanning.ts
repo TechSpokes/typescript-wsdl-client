@@ -44,7 +44,7 @@ interface Candidate {
 export interface CheckedComponentPlan {
   readonly version: 'checked-component-plan-v1';
   readonly model: 'checked-components-v1';
-  readonly scope: 'native-component-source-and-mapping';
+  readonly scope: 'native-component-source-and-mapping' | 'closed-operation-v1';
   readonly ready: boolean;
   readonly executed: false;
   readonly runtime: 'not-assessed-operation-invocation-required';
@@ -173,6 +173,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     order(candidates); order(operations);
   };
   let native: Awaited<ReturnType<typeof prepareComponentStages>> | undefined;
+  let wholeSourceLegality: CheckedComponentPlan['dimensions']['sourceLegality'] | undefined;
   let correctedSources: PreparedCheckedSourceInputs | undefined;
   let branchInputs: Awaited<ReturnType<typeof acquireCheckedSourceInputs>> | undefined;
   let sourceInput: SchemaInput | undefined;
@@ -275,6 +276,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         preparingNative = true;
         native = await prepareComponentStages(source, config, correctedSources ? input : !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined,
           outputs, correctedSources, branchInputs);
+        wholeSourceLegality = native.wholeSourceLegality;
         if (native.expected.length) {
           const fresh = inspectDirectOperation(native.expected[0]!.contract).source;
           if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest && n.contentType === r.contentType))) {
@@ -358,9 +360,9 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     }
     native = undefined;
   }
-  const report: CheckedComponentPlan = {version: 'checked-component-plan-v1', model: 'checked-components-v1', scope: 'native-component-source-and-mapping',
+  const report: CheckedComponentPlan = {version: 'checked-component-plan-v1', model: 'checked-components-v1', scope: intake?.qualificationScope ?? 'native-component-source-and-mapping',
     ready: !!native && !blockers.length, executed: false, runtime: 'not-assessed-operation-invocation-required',
-    dimensions: {sourceLegality: native ? 'established' : blockers.some(b => b.category === 'invalid-source') ? 'disproved' : 'unassessed',
+    dimensions: {sourceLegality: wholeSourceLegality ?? (native ? 'established' : blockers.some(b => b.category === 'invalid-source') ? 'disproved' : 'unassessed'),
       correspondence: native ? 'established' : 'unassessed', mapping: native ? 'established' : 'unassessed', runtime: 'unassessed'},
     inventory: {complete, unassessed: complete ? [] : ['unloaded documents and their service/binding/operation identities; native whole-source prerequisites'], ...counts},
     candidates, resources: documents.map((d, i) => ({resource: `resource-${i + 1}`, digest: d.digest})), operations,

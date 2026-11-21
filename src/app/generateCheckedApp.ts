@@ -95,7 +95,7 @@ export async function generateCheckedApp(options: GenerateCheckedAppOptions): Pr
   };
   files['README.md'] = `# Checked component gateway
 
-This project uses native source qualification, structured mappings and SOAP 1.1 validation. Each operation has its own client and capsule; the service router keeps binding and operation identities separate. Scalar facets, ordered occurrences and wildcard declaration membership remain native runtime checks.
+This project uses native source qualification, structured mappings and SOAP validation. Each operation has its own client and capsule; the service router keeps binding and operation identities separate. Scalar facets, ordered occurrences and wildcard declaration membership remain native runtime checks.
 
 ## Install and run
 

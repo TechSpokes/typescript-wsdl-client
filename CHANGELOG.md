@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [1.12.1] - 2026-11-21
 
+- feat(checked): qualify closed document/literal operations using the complete pinned schema index.
 - fix(checked): explain missing WSDL ports and surface native schema diagnostics.
 - fix(checked): run generated apps and scaffold tests with literal URL delimiters in artifact directory names.
 

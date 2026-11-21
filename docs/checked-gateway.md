@@ -180,7 +180,15 @@ For a supported local WSDL or HTTP(S) root URL with one service/port/binding can
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source source.wsdl --client-dir .generated/service/client --openapi-file .generated/service/openapi.json --gateway-dir .generated/service/gateway --gateway-version-prefix v1 --gateway-service-name service --init-app --app-dir .generated/service --test-dir .generated/service/test --checked-report .generated/planning.json --checked-draft resolution.json
 ```
 
-Partial configuration may supply `service`, `port`, `selectors` or permissions. Only missing unambiguous facts are inferred. Multiple candidates require a choice, including unsupported bindings; conflicting choices refuse. Explicit `selectors` still request a subset, while shared whole-source prerequisites remain mandatory. Reports retain the complete discovered inventory and mark other operations unselected and unassessed.
+Partial configuration may supply `service`, `port`, `selectors` or permissions. Checked infers missing unambiguous facts. Multiple candidates require a choice, including unsupported bindings. Conflicting choices refuse. By default, explicit `selectors` request a subset under whole-source qualification. Reports retain the complete discovered inventory and mark other operations unselected and unassessed.
+
+### Closed operation qualification
+
+Set `"qualificationScope": "closed-operation-v1"` in the existing checked configuration when your integration needs a closed document/literal request-response operation from a broader source graph. Supply the same service, binding and operation selection when the WSDL presents choices. The loader resolves the complete source and its authorized snapshots. Native validation then follows the selected body, header and fault declarations, including inherited dependencies, and applies the binding's existing policy checks. Use original source files for this scope.
+
+The closed scope refuses when a selected declaration depends on an open wildcard, substitution, contextual values, or an unresolved source obligation. Generated payload validation applies the proved declaration types and refuses dynamic type overrides. The plan's `sourceLegality` continues to describe the whole schema. `correspondence` and `mapping` describe the selected scope. A plan can be ready for the selected scope while reporting the complete source as disproved.
+
+Regenerate the matched client, OpenAPI and gateway together when changing scope. The generated operation capsule pins every resource and the resolution graph. Runtime reconstructs the scoped proof from the independently authorized physical snapshots before dispatch. The full graph remains in the source snapshots, with the existing origin and file-root controls. Source corrections, companion record projections and application-error branches use the whole-source profiles.
 
 Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
 
