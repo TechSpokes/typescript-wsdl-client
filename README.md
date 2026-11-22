@@ -306,6 +306,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.14.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.14.0.md) | ONVIF Media reads and declared wildcard string attributes |
 | [v1.13.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.13.0.md) | Opt-in SOAP 1.2 lax wildcard qualification |
 | [v1.12.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.1.md) | Closed operation qualification, checked artifact paths and source diagnostics |
 | [v1.12.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.0.md) | Standalone checked OpenAPI, gateway, app and test generation |

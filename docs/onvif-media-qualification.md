@@ -55,6 +55,7 @@ npm run verify:onvif-media -- .generated/candidate.tgz \
 The published baseline refuses the declared attribute even with `image/png`. The candidate preserves the expanded name and lexical string on both the outbound SOAP request and the HTTP response. The test sends the same attribute local name in a second namespace and checks both values independently. Invalid `xmime:contentType="x"` yields HTTP 400 before any SOAP POST and HTTP 502 when supplied by the owned upstream.
 
 Both runs replay the whole-source and closed-operation refusals before generation. The verifier records per-case SOAP dispatches, applies endpoint and snapshot controls, and requires zero network metadata fetches.
+
 ## Five-read batch replay
 
 | Operation | Application input | Verified response |
@@ -69,16 +70,17 @@ Supply the profile token independently of the source tokens returned by `GetVide
 
 Encoder configurations contain the `token` attribute and keyed `$content`. Their optional fields can be omitted before the required `SessionTimeout` delimiter. The replay checks declared `RateControl` before the delimiter, a vendor element with the same local name after the delimiter, and lexical quality and timeout values. [Pinned encoder type](https://github.com/onvif/specs/blob/68ee1b540a40f848c9599eba2c55b87547c588d6/wsdl/ver10/schema/onvif.xsd#L681-L729)
 
-Prepare the pins as above. Pack the published archive and the reviewed checkout into separate directories, since both filenames can carry the same package version.
+Prepare the pins as above. Pack the published v1.13.0 archive and the reviewed checkout into separate directories.
 
 ```bash
 mkdir -p .generated/onvif-media/published .generated/onvif-media/candidate
 npm pack @techspokes/typescript-wsdl-client@1.13.0 --ignore-scripts --pack-destination .generated/onvif-media/published
 npm run build
+candidate_version=$(node -p 'require("./package.json").version')
 npm pack --ignore-scripts --pack-destination .generated/onvif-media/candidate
 npm run verify:onvif-media -- .generated/onvif-media/published/techspokes-typescript-wsdl-client-1.13.0.tgz \
   .generated/onvif-media/inputs .generated/onvif-media/published-evidence --baseline-batch
-npm run verify:onvif-media -- .generated/onvif-media/candidate/techspokes-typescript-wsdl-client-1.13.0.tgz \
+npm run verify:onvif-media -- ".generated/onvif-media/candidate/techspokes-typescript-wsdl-client-$candidate_version.tgz" \
   .generated/onvif-media/inputs .generated/onvif-media/candidate-evidence --candidate-batch \
   .generated/onvif-media/published-evidence "$(git rev-parse 'HEAD^{tree}')"
 ```
