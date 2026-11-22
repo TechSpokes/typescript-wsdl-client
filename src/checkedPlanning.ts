@@ -221,7 +221,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         if (intake.selectors && !intake.selectors.some(selected)) throw new TypeError('Inspection selector is not a configured operation');
         intake = {...intake, selectors: [inspectionSelector],
           ...(intake.recordProjections ? {recordProjections: intake.recordProjections.filter(entry => selected(entry.selector))} : {}),
-          ...(intake.responseBranches ? {responseBranches: intake.responseBranches.filter(entry => selected(entry.selector))} : {})};
+          ...(intake.responseBranches ? {responseBranches: intake.responseBranches.filter(entry => selected(entry.selector))} : {}),
+          ...(intake.streams ? {streams: intake.streams.filter(entry => selected(entry.selector))} : {})};
         explicit.selectors = [inspectionSelector];
       }
       complete = true;

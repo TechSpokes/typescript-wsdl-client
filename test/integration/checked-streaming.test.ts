@@ -9,7 +9,9 @@ import {expect, it, vi} from 'vitest';
 import {runGenerationPipeline} from '../../src/pipeline.js';
 import {verificationPath} from '../helpers/verificationPath.js';
 import {readWireElements} from '../helpers/streamWireXml.js';
-import {checkedComponentRuntimeV3, checkedComponentStreamRuntimeV1, generateCheckedClient, planCheckedComponents} from '../../src/index.js';
+import {checkedComponentRuntimeV3, checkedComponentStreamRuntimeV1, composeOpenApiDocuments, generateCheckedClient,
+  inspectCheckedResponse, planCheckedComponents} from '../../src/index.js';
+import type {JsonObject} from '../../src/openapi/composeOpenAPI.js';
 import {prepareCheckedComponentPlan} from '../../src/checkedPlanning.js';
 import {decodeComponentStream} from '../../src/compiler/componentStreamSoap.js';
 
@@ -58,9 +60,16 @@ it.each(['ndjson', 'json-array'] as const)('yields a checked %s item before the 
     const endpoint = url(soap.address(), '/owned?soap=1');
     const clientOutDir = join(directory, 'client');
     const gatewayDir = join(directory, 'gateway');
-    await runGenerationPipeline({model: 'checked-components-v1', wsdl: fixture, clientOutDir,
+    const {openapiDoc} = await runGenerationPipeline({model: 'checked-components-v1', wsdl: fixture, clientOutDir,
       checkedComponents: {streams: [{selector, path: [qualified('ReadResponse'), qualified('Record')], format}]},
       openapi: {outFile: join(directory, 'openapi.json')}, gateway: {outDir: gatewayDir, serviceSlug: 'mapping', versionSlug: 'v1'}});
+    const composed = composeOpenApiDocuments([{key: 'checked', document: openapiDoc}]);
+    const composedRead = composed.paths['/v1/mapping/Read']!.post as JsonObject;
+    const streamMetadata = composedRead['x-wsdl-tsc-stream'] as JsonObject;
+    const {allOf} = streamMetadata.itemSchema as {allOf: {$ref: string}[]};
+    const itemRef = allOf[0]!.$ref;
+    expect(streamMetadata).toMatchObject({format, scope: 'full-response'});
+    expect(composed.components.schemas![itemRef.split('/').at(-1)!]).toMatchObject({type: 'object', properties: {Count: {type: 'integer'}}});
     const capsule = await readFile(join(clientOutDir, 'operations/0/contract.json'));
     const options = {localSource: fixture, fileRoots: [resolve('test/fixtures/wsdl')], sourceResources: [], sourceOrigins: [],
       soap: {service: qualified('StreamMapping'), port: 'MappingPort', endpoint, allowEndpoint: (value: URL) => value.href === endpoint}};
@@ -149,6 +158,11 @@ it.each(['ndjson', 'json-array'] as const)('yields a checked %s item before the 
     await refuse(client.Read(input, {...options, capsule, soap: {...options.soap, upstream: {profile: 'basic'}}}), 'unsupported');
     for (const limits of [null, 1, []]) {
       await refuse(client.Read(input, {...options, capsule, soap: {...options.soap, limits}}), 'unsupported', 'invalid checked stream limits');
+    }
+    for (const limits of [{maxDepth: 2}, {maxNodes: 4}]) {
+      const bounded = client.Read(input, {...options, capsule, soap: {...options.soap, limits}});
+      await refuse(bounded, 'resource-limit');
+      expect(await bounded.completion).toMatchObject({phase: 'input', rule: expect.stringMatching(/^XML (syntax depth|node)/)});
     }
     const abandoned = call();
     abandoned.cancel();
@@ -255,6 +269,58 @@ it.each(['ndjson', 'json-array'] as const)('yields a checked %s item before the 
     release();
     app.server.closeAllConnections();
     await app.close();
+    soap.closeAllConnections();
+    await new Promise<void>(resolve => soap.close(() => resolve()));
+    await rm(directory, {recursive: true, force: true});
+  }
+}, 30_000);
+
+it('refuses a request whose QName union member changes in the SOAP envelope', async () => {
+  const directory = await mkdtemp(verificationPath('tmp/checked-stream-qname-'));
+  const source = join(directory, 'qname.wsdl');
+  const original = resolve('test/conformance/fixtures/xsd/standard-schema-element/records.wsdl');
+  const name = (local: string) => ({namespace: 'urn:owned:wrapper', local});
+  const selector = {portType: name('RecordPortType'), binding: name('RecordBinding'), operation: 'Fetch'};
+  const xml = (await readFile(original, 'utf8'))
+    .replace('<xs:element name="Code" type="xs:string"/>',
+      '<xs:element name="Code"><xs:simpleType><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType></xs:element>')
+    .replace('</xs:schema>', '<xs:element name="Failure" type="xs:int"/></xs:schema>')
+    .replace('<wsdl:portType name="RecordPortType">', '<wsdl:message name="Failure"><wsdl:part name="detail" element="tns:Failure"/></wsdl:message><wsdl:portType name="RecordPortType">')
+    .replace('<wsdl:output message="tns:Output"/>', '<wsdl:output message="tns:Output"/><wsdl:fault name="Failure" message="tns:Failure"/>')
+    .replace('</wsdl:output></wsdl:operation>', '</wsdl:output><wsdl:fault name="Failure"><soap:fault name="Failure" use="literal"/></wsdl:fault></wsdl:operation>');
+  await writeFile(source, xml);
+  let dispatches = 0;
+  const soap = createServer((req, res) => {
+    req.resume();
+    dispatches++;
+    res.writeHead(500, {'content-type': 'text/xml'}).end(
+      '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:f="urn:owned:wrapper"><s:Body>' +
+      '<s:Fault><faultcode>s:Server</faultcode><faultstring>owned failure</faultstring><detail><f:Failure>7</f:Failure></detail></s:Fault></s:Body></s:Envelope>');
+  });
+  try {
+    soap.listen(0, '127.0.0.1');
+    await once(soap, 'listening');
+    const address = soap.address();
+    if (!address || typeof address === 'string') throw new Error('Expected an owned TCP listener');
+    const endpoint = `http://127.0.0.1:${address.port}/fetch`;
+    const clientOutDir = join(directory, 'client');
+    await generateCheckedClient({wsdl: source, clientOutDir,
+      checkedComponents: {streams: [{selector, path: ['Envelope', 'Records', 'Record'], format: 'ndjson'}]}});
+    const capsule = await readFile(join(clientOutDir, 'operations/0/contract.json'));
+    const {createStreamClient} = await import(pathToFileURL(join(clientOutDir, 'client.ts')).href);
+    const client = createStreamClient(checkedComponentStreamRuntimeV1);
+    const options = {localSource: source, fileRoots: [directory], sourceResources: [], sourceOrigins: [], capsule,
+      soap: {service: name('RecordService'), port: 'RecordPort', endpoint, allowEndpoint: (url: URL) => url.href === endpoint}};
+    const refused = client.Fetch({Code: {$value: 's:Entry', $namespaces: {}}}, options);
+    await expect(refused.records[Symbol.asyncIterator]().next()).rejects.toThrow('qname-namespace-scope-changed');
+    expect(await refused.completion).toMatchObject({kind: 'value-invalid', phase: 'input'});
+    expect(dispatches).toBe(0);
+
+    const accepted = client.Fetch({Code: {$value: 's:Entry', $namespaces: {s: 'urn:owned:value'}}}, options);
+    await expect(accepted.records[Symbol.asyncIterator]().next()).rejects.toThrow('SOAP Fault');
+    expect(await accepted.completion).toMatchObject({kind: 'soap-fault', fault: {name: 'Failure', string: 'owned failure'}, value: 7});
+    expect(dispatches).toBe(1);
+  } finally {
     soap.closeAllConnections();
     await new Promise<void>(resolve => soap.close(() => resolve()));
     await rm(directory, {recursive: true, force: true});
@@ -403,6 +469,21 @@ it('preserves the checked record prefix at every byte split and pauses before th
   expect((await inclusive.stream.next()).done).toBe(true);
   const excessive = read([Buffer.from(lead + filled.replace('</r:Name>', 'x</r:Name>') + tail)], bounded);
   await expect(excessive.stream.next()).rejects.toMatchObject({outcome: {kind: 'resource-limit', rule: 'SOAP stream record byte limit'}});
+  const header = '<s:Header>' + '<r:Info/>'.repeat(24) + '</s:Header>';
+  const withHeader = (xml: string) => Buffer.from(xml.replace('<s:Body>', header + '<s:Body>'));
+  const headerLimit = {maxRetainedBytes: 200};
+  const withRecord = read([withHeader(lead + child + tail)], headerLimit).stream;
+  expect(await withRecord.next()).toEqual({done: false, value: first});
+  expect(await withRecord.next()).toMatchObject({done: true, value: {kind: 'complete', records: 1}});
+  const fault = complete.toString().replace(/<s:Body>.*<\/s:Body>/,
+    '<s:Body><s:Fault xmlns=""><faultcode>r:Server</faultcode><faultstring>owned failure</faultstring></s:Fault></s:Body>');
+  const faultWithHeader = read([withHeader(fault)], headerLimit).stream;
+  expect(await faultWithHeader.next()).toMatchObject({done: true, value: {kind: 'soap-fault',
+    fault: {version: '1.1', code: {namespace: 'urn:ignored', local: 'Server'}, string: 'owned failure'}}});
+  const oversizedFault = fault.replace('owned failure', 'x'.repeat(200));
+  await expect(read([withHeader(oversizedFault)], headerLimit).stream.next()).rejects.toMatchObject({
+    outcome: {kind: 'resource-limit', rule: 'SOAP stream retained XML byte limit'},
+  });
   const comment = '<!--' + 'x'.repeat(bounded.maxRetainedBytes - 7) + '-->';
   const retainedAtLimit = read([Buffer.from(lead + comment + child + tail)], bounded);
   expect((await retainedAtLimit.stream.next()).value).toEqual(first);
@@ -434,6 +515,9 @@ it('plans source-qualified paths and composes a buffered operation beside a stre
     const {createClient, createStreamClient} = await import(pathToFileURL(join(clientOutDir, 'client.ts')).href);
     expect(Object.keys(createClient(checkedComponentRuntimeV3)).sort()).toEqual(['Read', 'ReadBuffered']);
     expect(Object.keys(createStreamClient(checkedComponentStreamRuntimeV1))).toEqual(['Read']);
+    const inspection = await inspectCheckedResponse(wsdl, {checkedComponents: {streams: [stream]},
+      selector: {...selector, operation: 'ReadBuffered'}, responseBytes: Buffer.from(prefix + record + suffix)});
+    expect(inspection).toMatchObject({kind: 'conforming'});
   } finally {
     await rm(directory, {recursive: true, force: true});
   }

@@ -9,12 +9,12 @@ import {XML_NAMESPACE, resolveComponentXmlBase, SchemaLoadingError, syntaxAttrib
 import {CheckedStreamError, type CheckedStreamCompletion} from '../client/checkedStream.js';
 import type {DirectClientFailure} from '../client/directClientRuntime.js';
 import type {ElementNode} from './canonicalGraph.js';
-import {encodeComponentXml, type DirectXmlLimits} from './directCodec.js';
+import {decodeComponentXml, encodeComponentXml, type DirectCodecFailure, type DirectXmlLimits} from './directCodec.js';
 import {inspectDirectOperation} from './directOperation.js';
-import {selectedComponentSoapAddress, inspectComponentSoapResponse, type ComponentSoapOptions} from './directSoap.js';
+import {selectedComponentSoapAddress, assessComponentSoap11Fault, type ComponentSoapOptions} from './directSoap.js';
 import {matchDirectProjection} from './directStructure.js';
 import {createFlatProjectionCursor, createOrderedProjectionCursor} from './directStructurePlan.js';
-import {assessProjectionScalars} from './directValues.js';
+import {assessProjectionScalars, sameScopedQNameWords} from './directValues.js';
 import {assessComponentSoapHeader, assessReceiverWrapper} from './soapHeaders.js';
 import type {ComponentStreamPlan} from './componentStreamPlan.js';
 import {createComponentRecordWrapperCursor} from './componentRecordProjection.js';
@@ -76,12 +76,25 @@ export async function* exchangeComponentStream(plan: ComponentStreamPlan, inputM
     return stop('unsupported', 'endpoint authorization');
   const action = contract.binding.action;
   if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return stop('unsupported', 'unsafe SOAPAction');
+  const refuseInput = (failure: DirectCodecFailure): never => {
+    throw new CheckedStreamError({kind: failure.kind, rule: failure.rule, phase: 'input',
+      usage: failure.usage, ...(failure.diagnostic ? {diagnostic: failure.diagnostic} : {})});
+  };
   const encoded = encodeComponentXml(contract, inputMapping, value, {signal, limits});
-  if (!('bytes' in encoded)) throw new CheckedStreamError({kind: encoded.kind, rule: encoded.rule, phase: 'input',
-    usage: encoded.usage, ...(encoded.diagnostic ? {diagnostic: encoded.diagnostic} : {})});
-  const body = Buffer.concat([Buffer.from(`<s:Envelope xmlns:s="${SOAP}"><s:Body>`), encoded.bytes, Buffer.from('</s:Body></s:Envelope>')]);
+  if (!('bytes' in encoded)) return refuseInput(encoded);
   // @constraints Use a prefixed envelope to preserve the native encoder's no-namespace names.
-  if (body.length > (limits?.maxBytes ?? Infinity)) return stop('resource-limit', 'SOAP request byte limit', 'input');
+  const body = Buffer.concat([Buffer.from(`<s:Envelope xmlns:s="${SOAP}"><s:Body>`), encoded.bytes, Buffer.from('</s:Body></s:Envelope>')]);
+  if (body.length > (limits.maxBytes ?? Infinity)) return stop('resource-limit', 'SOAP request byte limit', 'input');
+  // @why The wire envelope adds XML nodes and can bind a prefix in a QName-bearing lexical value.
+  const observed = decodeComponentXml(contract, inputMapping, body, {signal, limits, selectPayload(root) {
+    const bodyNode = root.children[0] as SyntaxElement;
+    return {payload: bodyNode.children[0] as SyntaxElement, mapping: encoded.mapping};
+  }});
+  if (!('validated' in observed)) return refuseInput(observed);
+  const expectedValue = encoded.expanded.validated;
+  if ('operands' in expectedValue && (!('operands' in observed.validated)
+    || !sameScopedQNameWords(expectedValue.operands, observed.validated.operands, amount => {check(); context.budget.chargeWork(amount);})))
+    return stop('value-invalid', 'qname-namespace-scope-changed', 'input');
   check();
 
   const makeRequest = endpoint.protocol === 'https:' ? httpsRequest : httpRequest;
@@ -157,9 +170,9 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
   let commentEnding = false;
   let retained: {start: number; item: boolean} | undefined;
   let first = true, bodySeen = false, headerSeen = false, payloadSeen = false;
-  let fault = false, count = 0;
+  let faultEnvelope: SyntaxElement | undefined;
+  let count = 0;
   let ready: IteratorYieldResult<unknown> | undefined;
-  let faultBytes: Buffer[] | undefined = [];
   const outer = plan.outer && createComponentRecordWrapperCursor(plan.outer, check);
   const recordContext = inspectDirectOperation(plan.recordContract).context;
   type WrapperCursor = {push(name: SyntaxElement['name']): ElementNode | undefined; end(): boolean};
@@ -167,6 +180,7 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
     node: BuildingNode; role: 'envelope' | 'body' | 'header' | 'header-content' | 'outer' | 'wrapper' | 'capture' | 'fault';
     cursor?: WrapperCursor; wrapperIndex?: number; captureRoot?: {declaration: ElementNode; item: boolean};
     standard?: StandardSchemaElementDeclaration;
+    faultRoot?: true;
   };
   const reserveNode = () => {
     if (++nodes > (limits?.maxNodes ?? Infinity)) stop('resource-limit', 'XML node limit', 'response');
@@ -264,12 +278,14 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
         encoding = syntaxAttribute(entry, 'encodingStyle', SOAP) ?? encoding;
       if (!xmlWhitespace.test(encoding)) return stop('unsupported', 'SOAP 1.1 response encodingStyle', 'response');
       if (soapElement(node, 'Fault')) {
-        fault = true; stack.push({node, role: 'fault'});
+        retain(false);
+        // @constraints Header blocks have already been assessed in place. Only the Fault needs a retained tree.
+        faultEnvelope = {...stack[0]!.node, children: [{...parent.node, children: [node]}]};
+        stack.push({node, role: 'fault', faultRoot: true});
       } else {
         if (metadata.status !== 200) return stop('protocol', 'HTTP 500 requires SOAP Fault', 'response');
         if (!same(node.name, plan.outer?.root.element.name ?? plan.wrappers[0]!.element.name))
           return stop('mismatch', 'checked stream response wrapper', 'response');
-        faultBytes = undefined;
         if (outer) {
           if (node.attributes.length) return stop('mismatch', 'record-wrapper-attributes-or-text', 'response');
           stack.push({node, role: 'outer'});
@@ -294,18 +310,18 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
         stack.push({node, role: 'capture', captureRoot: {declaration, item}});
       }
     } else {
-      if (parent.role !== 'fault') parent.node.children.push(node);
+      parent.node.children.push(node);
       stack.push({node, role: parent.role === 'fault' ? 'fault' : 'capture'});
     }
   });
   const appendText = (text: string) => {
     check();
     const frame = stack.at(-1);
-    if (!frame || frame.role === 'fault') return;
+    if (!frame) return;
     if (textUnits + text.length > (limits?.maxText ?? Infinity)) stop('resource-limit', 'XML text limit', 'response');
     textUnits += text.length;
     reserveNode();
-    if (frame.role === 'capture') frame.node.children.push({kind: 'text', value: text, source: frame.node.source});
+    if (frame.role === 'capture' || frame.role === 'fault') frame.node.children.push({kind: 'text', value: text, source: frame.node.source});
     else if (frame.role !== 'header-content' && !xmlWhitespace.test(text)) stop('mismatch', 'unexpected text in SOAP or response wrapper', 'response');
   };
   parser.on('text', appendText);
@@ -314,6 +330,7 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
     check();
     lastEvent = totalBytes;
     const frame = stack.pop()!;
+    if (frame.faultRoot) retained = undefined;
     if (frame.role === 'envelope' && !bodySeen || frame.role === 'body' && !payloadSeen)
       return stop('protocol', 'missing SOAP Body or payload', 'response');
     if (frame.cursor && !frame.cursor.end()) return stop('mismatch', 'incomplete checked stream wrapper', 'response');
@@ -353,10 +370,9 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
       if (opener !== -1) lastTagStart = totalBytes + opener;
       totalBytes += piece.byteLength;
       if (totalBytes > (limits?.maxBytes ?? Infinity)) return stop('resource-limit', 'SOAP response byte limit', 'response');
-      if ((faultBytes && totalBytes > (maxRetainedBytes ?? Infinity)) || totalBytes - lastEvent > (maxRetainedBytes ?? Infinity))
+      if (totalBytes - lastEvent > (maxRetainedBytes ?? Infinity))
         return stop('resource-limit', 'SOAP stream retained XML byte limit', 'response');
       checkRetained();
-      faultBytes?.push(Buffer.from(piece));
       const decoded = decode(piece);
       if (first && decoded) {
         first = false;
@@ -373,18 +389,6 @@ export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMap
   }
   if (!framingComplete()) return stop('transport', 'incomplete SOAP HTTP framing', 'response');
   parser.write(decode()).close();
-  if (fault && faultBytes) {
-    const result = inspectComponentSoapResponse(contract, inputMapping, Buffer.concat(faultBytes), {limits: {
-      maxBytes: Number.MAX_SAFE_INTEGER, maxText: Number.MAX_SAFE_INTEGER, maxNodes: Number.MAX_SAFE_INTEGER,
-      maxDepth: Number.MAX_SAFE_INTEGER, ...limits}, signal, responseProjection: plan.outer,
-      responseMetadata: metadata});
-    if (result.kind === 'soap-fault' && result.fault) {
-      const {code, string, actor} = result.fault as {code: SyntaxElement['name']; string: string; actor?: string};
-      return {kind: 'soap-fault', fault: {version: '1.1', code, string, ...(actor === undefined ? {} : {actor}),
-        ...('name' in result.fault ? {name: result.fault.name} : {})}, ...(result.decoded ? {value: result.decoded.validated.value} : {})};
-    }
-    if ('rule' in result) return stop(result.kind, result.rule, 'response');
-    return stop('protocol', 'invalid SOAP Fault outcome', 'response');
-  }
+  if (faultEnvelope) return assessComponentSoap11Fault(contract, inputMapping, faultEnvelope, check, (kind, rule) => stop(kind, rule, 'response'), signal);
   return {kind: 'complete', scope: plan.spec.scope, records: count};
 }

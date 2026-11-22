@@ -14,8 +14,9 @@ import {Client} from 'soap/lib/client.js';
 import {HttpClient} from 'soap/lib/http.js';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
-import {createDirectValueMapping, inspectDirectValueMapping, createComponentDirectionalMapping, inspectComponentValueMapping, sameScopedQNameWords} from './directValues.js';
-import type {DirectValueMapping, ComponentValueMapping} from './directValues.js';
+import {assessProjectionScalars, createDirectValueMapping, inspectDirectValueMapping, createComponentDirectionalMapping, inspectComponentValueMapping, sameScopedQNameWords} from './directValues.js';
+import type {DirectApplicationValue, DirectValueMapping, ComponentValueMapping} from './directValues.js';
+import {matchDirectProjection} from './directStructure.js';
 import {decodeDirectXml, encodeDirectXml, decodeComponentXml, encodeComponentXml, DIRECT_XML_LIMITS} from './directCodec.js';
 import type {DirectCodecFailure, DirectDecodedXml, DirectEncodedXml, ComponentDecodedXml, ComponentEncodedXml, DirectXmlLimits} from './directCodec.js';
 import {prepareDirectSoapSource, prepareComponentSoapWsdl, DirectSoapSourceError, COMPONENT_SOAP_DISPATCH} from './directSoapSource.js';
@@ -690,7 +691,7 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
     const entityBase = typeof base === 'string' ? base : undefined;
     let headerObservation: {headerValues?: Readonly<Record<string, unknown>>; processedHeaders?: readonly string[]} = {};
     let headerFaults: Readonly<Record<string, unknown>> | undefined;
-    const {elements, shape, bodyRoot, ignoredHeaders, faultAttributeAllowed} = soapProtocolSelection(contract, profile.component, check, stop, entityBase, undefined,
+    const {elements, shape, bodyRoot, soap11Fault, ignoredHeaders, faultAttributeAllowed} = soapProtocolSelection(contract, profile.component, check, stop, entityBase, undefined,
       profile.component && options.headerMapping ? (root, header) => {
         const assessed = assessDeclaredComponentHeaders(contract, options.headerMapping!, root, header, options.headerProcessors, {signal, limits, entityBase});
         if (assessed.kind !== 'assessed-component-headers') return stop(assessed.kind, assessed.rule);
@@ -805,36 +806,13 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
           // @constraints Only protocol grammar was assessed; no fabricated application receipt is published.
           throw protocolFaultSignal;
         }
-        const children = shape(payload);
-        const names = children.map(n => n.name.namespace === '' ? n.name.local : '');
-        const hasDetail = names.at(-1) === 'detail';
-        if (!/^faultcode,faultstring(?:,faultactor)?(?:,detail)?$/.test(names.join(',')) || !hasDetail && !profile.soap11ProtocolFaults) {
-          stop('protocol', 'SOAP Fault children');
-        }
-        const text = (node: SyntaxElement) => {
-          if (node.attributes.some(a => !faultAttributeAllowed(a) && !(node.name.local === 'faultstring' && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')) || elements(node).length) stop('protocol', 'SOAP Fault scalar child');
-
-          return node.children.map(n => n.kind === 'text' ? n.value : '').join('');
-        };
-        let code: ExpandedName;
-        try {code = resolveLexicalQName(text(children[0]!), children[0]!);} catch (error) {
-          if (error instanceof SchemaLoadingError) return stop('protocol', 'SOAP Fault code QName');
-          throw error;
-        }
-        if (!code.namespace) stop('protocol', 'SOAP Fault code namespace required');
-        const string = text(children[1]!);
-        const actor = names[2] === 'faultactor' ? text(children[2]!) : undefined;
-        const detail = hasDetail ? shape(children.at(-1)!) : [];
-        if (!profile.soap11ProtocolFaults && detail.length !== 1) stop('protocol', 'one declared SOAP Fault detail required');
-        const matches = contract.faults.filter(f => detail.some(node => same(f.root.element.name, node.name)));
-        if (!matches.length && profile.soap11ProtocolFaults) {
-          protocolFault = directDataOwnership(budget).freeze({version: '1.1', code, string, ...(actor === undefined ? {} : {actor})});
+        const {metadata, declared} = soap11Fault(payload, profile.soap11ProtocolFaults === true);
+        if (!declared) {
+          protocolFault = directDataOwnership(budget).freeze({version: '1.1', ...metadata});
           throw protocolFaultSignal;
         }
-        if (detail.length !== 1 || matches.length !== 1) stop('protocol', 'unknown or ambiguous SOAP Fault detail');
-        faultInfo = {name: matches[0]!.name, code, codeNode: children[0]!, string, ...(actor === undefined ? {} : {actor})};
-       directDataOwnership(budget).freeze(faultInfo);
-        return {payload: detail[0]!, mapping: faults.get(faultInfo.name)!};
+        faultInfo = directDataOwnership(budget).freeze({...metadata, name: declared.name, codeNode: declared.codeNode});
+        return {payload: declared.payload, mapping: faults.get(declared.name)!};
       }});
     let decoded: D | DirectCodecFailure | undefined;
     try {decoded = decodeResponse();} catch (error) {
@@ -874,6 +852,34 @@ function assessSoapResponse<M extends DirectValueMapping | ComponentValueMapping
     if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML', 'response');
     throw error;
   }
+}
+
+/** Assess the retained SOAP 1.1 Fault subtree with the buffered protocol and native value rules.
+ * @param contract Selected document/literal operation.
+ * @param inputMapping Exact input mapping used to derive the declared fault mapping.
+ * @param envelope Observed Envelope and Body retaining their sole Fault payload. Incrementally assessed headers are omitted.
+ * @param check Invocation-owned work and cancellation checkpoint.
+ * @param stop Terminates assessment on a protocol or native validation failure.
+ * @param signal Optional caller cancellation.
+ * @returns Protocol fault metadata and the checked value of any declared detail.
+ * @throws Propagates the caller's refusal, cancellation and resource exceptions.
+ */
+export function assessComponentSoap11Fault(contract: DirectOperationContract, inputMapping: unknown, envelope: SyntaxElement,
+  check: () => void, stop: (kind: DirectSoapFailure['kind'], rule: string) => never, signal?: AbortSignal):
+  Readonly<{kind: 'soap-fault'; fault: Soap11FaultMetadata & {name?: string}; value?: DirectApplicationValue}> {
+  const {context} = inspectDirectOperation(contract);
+  const {bodyRoot, soap11Fault} = soapProtocolSelection(contract, true, check, stop);
+  const {metadata, declared} = soap11Fault(bodyRoot(envelope, true), true);
+  const fault = {version: '1.1' as const, ...metadata};
+  if (!declared) return {kind: 'soap-fault', fault};
+  const mapping = createComponentDirectionalMapping(contract, inputMapping, {kind: 'fault', name: declared.name}, {signal});
+  if (mapping.kind !== 'component-mapping') return stop(mapping.kind, mapping.rule);
+  if ('parts' in mapping.root) throw new TypeError('Document fault mapping required');
+  const structural = matchDirectProjection(context, mapping.root.element, declared.payload, {signal});
+  if (structural.kind !== 'projection-match') return stop(structural.kind, structural.rule);
+  const validated = assessProjectionScalars(context, structural, {signal}, mapping);
+  if (validated.kind !== 'projection-value') return stop(validated.kind, validated.rule);
+  return {kind: 'soap-fault', fault: {...fault, name: declared.name}, value: validated.value};
 }
 
 /** Select protocol-owned nodes without relabeling observed XML or granting value authority. */
@@ -949,7 +955,41 @@ function soapProtocolSelection(contract: DirectOperationContract, component: boo
       return body[0]!;
     };
 
-  return {elements, shape, bodyRoot, ignoredHeaders, faultAttributeAllowed};
+  function soap11Fault(payload: SyntaxElement, allowProtocolFault: boolean): {
+    metadata: Omit<Soap11FaultMetadata, 'version'>;
+    declared?: {name: string; codeNode: SyntaxElement; payload: SyntaxElement};
+  } {
+    const children = shape(payload);
+    const names = children.map(node => node.name.namespace === '' ? node.name.local : '');
+    const hasDetail = names.at(-1) === 'detail';
+    if (!/^faultcode,faultstring(?:,faultactor)?(?:,detail)?$/.test(names.join(',')) || !hasDetail && !allowProtocolFault)
+      return stop('protocol', 'SOAP Fault children');
+    const text = (node: SyntaxElement) => {
+      if (node.attributes.some(attribute => !faultAttributeAllowed(attribute) && !(node.name.local === 'faultstring'
+        && attribute.name.namespace === 'http://www.w3.org/XML/1998/namespace' && attribute.name.local === 'lang')) || elements(node).length)
+        return stop('protocol', 'SOAP Fault scalar child');
+      return node.children.map(child => child.kind === 'text' ? child.value : '').join('');
+    };
+    const codeNode = children[0]!;
+    let code: ExpandedName;
+    try {code = resolveLexicalQName(text(codeNode), codeNode);}
+    catch (error) {
+      if (error instanceof SchemaLoadingError) return stop('protocol', 'SOAP Fault code QName');
+      throw error;
+    }
+    if (!code.namespace) return stop('protocol', 'SOAP Fault code namespace required');
+    const string = text(children[1]!);
+    const actor = names[2] === 'faultactor' ? text(children[2]!) : undefined;
+    const metadata = {code, string, ...(actor === undefined ? {} : {actor})};
+    const detail = hasDetail ? shape(children.at(-1)!) : [];
+    if (!allowProtocolFault && detail.length !== 1) return stop('protocol', 'one declared SOAP Fault detail required');
+    const matches = contract.faults.filter(fault => detail.some(node => same(fault.root.element.name, node.name)));
+    if (!matches.length && allowProtocolFault) return {metadata};
+    if (detail.length !== 1 || matches.length !== 1) return stop('protocol', 'unknown or ambiguous SOAP Fault detail');
+    return {metadata, declared: {name: matches[0]!.name, codeNode, payload: detail[0]!}};
+  }
+
+  return {elements, shape, bodyRoot, soap11Fault, ignoredHeaders, faultAttributeAllowed};
 }
 
 /** Resolve the WSDL address from the selected component service, port and SOAP version. */
