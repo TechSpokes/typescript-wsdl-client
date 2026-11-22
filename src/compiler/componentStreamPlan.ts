@@ -25,6 +25,8 @@ export interface CheckedStreamSpec extends CheckedStreamSelection {
 }
 
 const artifactVersion = 'checked-component-stream-capsule-v1';
+// @why Leave ordinary buffered artifacts, including malformed ones, to the existing capsule reader.
+const artifactPrefix = Buffer.from(`{"version":${JSON.stringify(artifactVersion)},`);
 export const COMPONENT_STREAM_RUNTIME_VERSION = 'checked-component-stream-runtime-v1' as const;
 
 export interface ComponentStreamPlan {
@@ -99,7 +101,9 @@ export function streamArtifactCapsule(capsule: Uint8Array, plan: ComponentStream
 }
 
 export function readStreamArtifactCapsule(bytes: Uint8Array): {source: Uint8Array; stream: CheckedStreamSpec} | undefined {
-  const value = JSON.parse(Buffer.from(bytes).toString('utf8')) as {
+  const encoded = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (!encoded.subarray(0, artifactPrefix.length).equals(artifactPrefix)) return undefined;
+  const value = JSON.parse(encoded.toString('utf8')) as {
     version: string; runtime: string; stream: CheckedStreamSpec; source: string;
   };
   if (value.version !== artifactVersion || value.runtime !== COMPONENT_STREAM_RUNTIME_VERSION) return undefined;

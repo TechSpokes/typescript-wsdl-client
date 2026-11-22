@@ -141,7 +141,7 @@ export async function* exchangeComponentStream(plan: ComponentStreamPlan, inputM
 export async function* decodeComponentStream(plan: ComponentStreamPlan, inputMapping: unknown,
   metadata: {status: number; contentType: string; contentEncoding?: string; retrievalUri: string},
   controls: CheckedStreamXmlLimits & {signal?: AbortSignal},
-  read: () => Promise<IteratorResult<Buffer>>, framingComplete: () => boolean): AsyncGenerator<unknown, CheckedStreamCompletion> {
+  read: () => Promise<IteratorResult<Uint8Array>>, framingComplete: () => boolean): AsyncGenerator<unknown, CheckedStreamCompletion> {
   const {contract} = plan;
   const {context} = inspectDirectOperation(contract);
   const {signal, maxRecordBytes, maxRetainedBytes, ...limits} = controls;

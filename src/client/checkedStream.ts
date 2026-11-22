@@ -27,8 +27,10 @@ export class CheckedStreamError extends Error {
 
 const cancelled = (): DirectClientFailure => ({kind: 'cancelled', rule: 'cooperative-cancellation', usage: {nodes: 0, work: 0}});
 
-/** Serialize validated items. Clean EOF and the array terminator require successful completion. */
-export function checkedStreamResponse<T>(format: CheckedStreamSpec['format'], records: AsyncIterable<T>) {
+/** Serialize validated items as UTF-8 text chunks after the first item has passed validation.
+ * @constraints The Node stream is a runtime implementation detail of the gateway adapter.
+ */
+export function checkedStreamResponse<T>(format: CheckedStreamSpec['format'], records: AsyncIterable<T>): AsyncIterable<string> {
   return format === 'ndjson' ? toNdjson(records) : toJsonArray(records);
 }
 
