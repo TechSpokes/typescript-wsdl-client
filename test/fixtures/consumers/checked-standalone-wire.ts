@@ -2,22 +2,26 @@ import assert from 'node:assert/strict';
 import {once} from 'node:events';
 import {readFile, rename, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
-import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {SaxesParser} from 'saxes';
 import {checkedComponentRuntimeV3} from '@techspokes/typescript-wsdl-client';
-import {createClient, type Operation_0} from './.client/client.js';
+import type {Operation_0} from './.client/client.js';
 import {buildServer} from './server.js';
 
 await assert.rejects(readFile(process.argv[2]!), {code: 'ERR_ACCESS_DENIED'});
-const owner = new URL('../.client/', import.meta.url);
-const manifest = JSON.parse(await readFile(new URL('source-resources.json', owner), 'utf8')) as {
+const clientDir = process.argv[3] ?? '.client';
+const owner = path.resolve(clientDir);
+const clientUrl = pathToFileURL(path.join(import.meta.dirname, clientDir, 'client.js'));
+const {createClient} = await import(clientUrl.href) as typeof import('./.client/client.js');
+const manifest = JSON.parse(await readFile(path.join(owner, 'source-resources.json'), 'utf8')) as {
   version: string;
   runtime: {localSource: string; fileRoots: string[]; capsuleFiles: Record<string, string>;
     sourceResources: {uri: string; file: string}[]; sourceOrigins: string[]};
 };
 assert.equal(manifest.version, 'checked-source-resources-v2');
 const runtime = manifest.runtime;
-const localFile = (file: string) => fileURLToPath(new URL(file, owner));
+const localFile = (file: string) => path.resolve(owner, file);
 assert.equal(runtime.sourceResources.length, 1);
 const capsule = await readFile(localFile(runtime.capsuleFiles.GetForecast!));
 const foreignCapsule = await readFile('other-contract.json');
@@ -55,7 +59,8 @@ try {
   const options: Operation_0.Options = {
     localSource: localFile(runtime.localSource),
     fileRoots: runtime.fileRoots.map(localFile),
-    sourceResources: runtime.sourceResources.map(({file, uri}) => ({file: localFile(file), uri: new URL(uri, owner).href})),
+    sourceResources: runtime.sourceResources.map(({file, uri}) => ({file: localFile(file),
+      uri: /^[A-Za-z][A-Za-z0-9+.-]*:/.test(uri) ? uri : pathToFileURL(localFile(uri)).href})),
     sourceOrigins: runtime.sourceOrigins,
     capsule,
     soap: {service: {namespace: 'urn:checked:forecast', local: 'ForecastService'}, port: 'ForecastPort', endpoint,
@@ -117,6 +122,15 @@ try {
     assert.equal((await post({...input, days: 0})).status, 400);
     assert.equal(requests.length, 2);
     gatewayRefusals++;
+
+    const denied = await buildServer({endpoint, allowedEndpoints: []});
+    try {
+      const reply = await denied.inject({method: 'POST', url: '/v1/forecast/GetForecast', payload: input});
+      assert.equal(reply.statusCode, 502);
+      assert.match(reply.body, /endpoint authorization/);
+      assert.equal(requests.length, 2);
+      gatewayRefusals++;
+    } finally {await denied.close();}
 
     await rename(snapshot, snapshot + '.unavailable');
     try {await assert.rejects(buildServer({endpoint}), {code: 'ENOENT'});}

@@ -16,11 +16,17 @@ import type {ComponentSourceQualification} from './checkedComponentSource.js';
 import {prepareWsdlPolicyRequirements, assertWsdlPolicyRequirements} from './wsdlPolicyRequirements.js';
 import type {WsdlPolicyRequirements, BindingPolicyRequirements} from './wsdlPolicyRequirements.js';
 import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
+import type {ConstructionFailure} from './schemaConstructionAssessment.js';
+import {verifyOperationSchemaRoots, type FiniteRe01Frontier} from './finiteRe01Verification.js';
+import {checkScopedComponentCorrespondence} from './componentCorrespondence.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
 const SOAP12 = 'http://schemas.xmlsoap.org/wsdl/soap12/';
 const HTTP = 'http://schemas.xmlsoap.org/soap/http';
 const ADDRESSING_WSDL = 'http://www.w3.org/2006/05/addressing/wsdl';
+export const CLOSED_OPERATION_SCOPE = 'closed-operation-v1' as const;
+export type ComponentQualificationScope = typeof CLOSED_OPERATION_SCOPE;
+export type WholeSourceLegality = 'established' | 'disproved' | 'unassessed';
 export interface DirectOperationSelector {
   readonly portType: ExpandedName;
   readonly binding: ExpandedName;
@@ -68,6 +74,7 @@ interface OperationContractBase {
   readonly contextId: string;
   readonly basis: 'native-direct-premises-v1' | 'native-component-premises-v1';
   readonly correspondence: 'dated-XSD-2004-direct-v1' | 'dated-XSD-2004-components-v1';
+  readonly qualification?: Readonly<{scope: ComponentQualificationScope; wholeSourceLegality: WholeSourceLegality}>;
   readonly binding: Readonly<{version: '1.1' | '1.2'; style: 'document' | 'rpc'; use: 'literal' | 'encoded'; encoding?: string; transport: string; action: string; actionRequired?: boolean; source: SyntaxSource}>;
   readonly input: DirectMessageRoot | RpcMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
@@ -83,12 +90,20 @@ export type DirectOperationContract = OperationContractBase & (
   {readonly pattern: 'one-way'; readonly output?: never}
 );
 export type DirectOperationResult = Readonly<{kind: 'selected'; contract: DirectOperationContract; usage: ResolverUsage}> |
-  Readonly<{kind: 'invalid-schema' | 'inconclusive' | 'unsupported' | 'selection-refused' | 'loading-refused' | 'resource-limit' | 'cancelled'; rule: string; usage: ResolverUsage}>;
+  Readonly<{kind: 'invalid-schema' | 'inconclusive' | 'unsupported' | 'selection-refused' | 'loading-refused' | 'resource-limit' | 'cancelled';
+    rule: string; usage: ResolverUsage; schemaDiagnostic?: SchemaQualificationDiagnostic; wholeSourceLegality?: WholeSourceLegality}>;
+
+/** Internal evidence for one checked whole-source refusal.
+ * @since Unreleased
+ * @constraints The source carries a private URI. Public reports must resolve it to an opaque resource label.
+ */
+export type SchemaQualificationDiagnostic = Readonly<{profile: 'XSD 1.0'; rule: string; component?: ExpandedName; source?: SyntaxSource}>;
 export interface DirectOperationInspection {
   readonly contract: DirectOperationContract;
   readonly context: SemanticContext;
   readonly source: SchemaInput;
   readonly evidence: Extract<DirectSourceQualification, {kind: 'qualified-source'}> | ComponentSourceQualification;
+  readonly operationFrontier?: FiniteRe01Frontier;
   readonly operationSyntax: SyntaxElement;
   readonly policyOwner?: WsdlPolicyRequirements;
 }
@@ -128,6 +143,7 @@ export async function selectDirectOperationInRequest(source: string, selector: D
 export async function selectComponentOperation(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>): Promise<DirectOperationResult> {
   return selectComponentOperationInRequest(source, selector, options, createApplicationBudget(options.limits));
 }
@@ -136,6 +152,7 @@ export async function selectComponentOperation(source: string, selector: DirectO
 export async function selectComponentOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>, budget: SemanticBudget): Promise<DirectOperationResult> {
   return selectOperationInRequest(source, selector, {...options, standardLibraries: Object.freeze([...(options.standardLibraries ?? [])])}, budget, 'components');
 }
@@ -153,6 +170,7 @@ interface ComponentSelectionCache {
 export async function selectComponentOperations(source: string, selectors: readonly DirectOperationSelector[], options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>): Promise<readonly DirectOperationResult[]> {
   const budget = createApplicationBudget(options.limits), cache: ComponentSelectionCache = {};
   const owned = budget.snapshot(selectors);
@@ -166,12 +184,16 @@ export async function selectComponentOperations(source: string, selectors: reado
 async function selectOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
   standardLibraries?: readonly StandardSchemaLibrary[];
+  qualificationScope?: ComponentQualificationScope;
 }>, budget: SemanticBudget, profile: 'direct' | 'components', cache?: ComponentSelectionCache): Promise<DirectOperationResult> {
   const check = () => {if (options.signal?.aborted) throw new Cancelled(); budget.chargeWork();};
   const refuse = (kind: Refusal['kind'], rule: string): never => {throw new Refusal(kind, rule);};
-  const failure = (kind: Refusal['kind'], rule: string): DirectOperationResult => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
-  const sourceFailure = (kind: Refusal['kind'], rule: string): DirectOperationResult => {
-    const result = failure(kind, rule);
+  let wholeSourceLegality: WholeSourceLegality | undefined;
+  const failure = (kind: Refusal['kind'], rule: string, schemaDiagnostic?: SchemaQualificationDiagnostic): DirectOperationResult =>
+    Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()}), ...(schemaDiagnostic ? {schemaDiagnostic} : {}),
+      ...(wholeSourceLegality ? {wholeSourceLegality} : {})});
+  const sourceFailure = (kind: Refusal['kind'], rule: string, schemaDiagnostic?: SchemaQualificationDiagnostic): DirectOperationResult => {
+    const result = failure(kind, rule, schemaDiagnostic);
     if (cache && result.kind !== 'selected') cache.failure = result;
     return result;
   };
@@ -181,23 +203,59 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
     const ownedSelector = budget.freeze(budget.snapshot(selector));
     const name = (value: ExpandedName | undefined) => value && typeof value.namespace === 'string' && typeof value.local === 'string' && isXmlNCName(value.local);
     if (!name(ownedSelector.portType) || !name(ownedSelector.binding) || typeof ownedSelector.operation !== 'string' || !isXmlNCName(ownedSelector.operation)) return failure('selection-refused', 'explicit-selector');
-    if (cache?.failure) return failure(cache.failure.kind, cache.failure.rule);
+    if (cache?.failure) return failure(cache.failure.kind, cache.failure.rule, cache.failure.schemaDiagnostic);
     const input = cache?.input ?? await loadSemanticSchemaInput(source, {...options.loading, limits: directLoadingLimits(budget, options.loading.limits), signal: options.signal, chargeWork: amount => {check(); budget.chargeWork(amount);}});
     if (cache) cache.input = input;
     check();
     const result = budget.guard(() => {
       const qualificationOptions = {budget, maxNodes: options.limits?.maxNodes ?? directLimit(budget, DEFAULT_MAX_NODES), check};
+      let localInvalid: ConstructionFailure | undefined;
+      let localUnqualified: ConstructionFailure | undefined;
       const qualified = cache?.qualified ?? (profile === 'direct' ? qualifyDirectSource(input, qualificationOptions)
-        : qualifyComponentSource(input, {...qualificationOptions, standardLibraries: options.standardLibraries}));
+        : qualifyComponentSource(input, {...qualificationOptions, standardLibraries: options.standardLibraries,
+          onLocal: (_, outcome) => {
+            if (outcome.kind === 'invalid-schema') localInvalid ??= outcome;
+            else if (outcome.kind === 'unresolved' || outcome.kind === 'unsupported-capability') localUnqualified ??= outcome;
+          }}));
       if (qualified.kind === 'resource-limit') return sourceFailure('resource-limit', 'source-qualification');
       if (qualified.kind === 'source-preparation-failed' && qualified.category === 'resource-limit') return sourceFailure('resource-limit', 'source-preparation');
       if (qualified.kind !== 'qualified-source' && qualified.kind !== 'component-source') return sourceFailure(qualified.kind === 'source-preparation-failed' && qualified.category === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'source-preparation');
       if (qualified.kind === 'component-source') inspectComponentSourceQualification(qualified, input);
       const construction = qualified.kind === 'component-source' ? qualified.construction : qualified;
       const eligible = qualified.kind === 'component-source' ? qualified.schemaEligible : qualified.eligible;
-      if (!eligible) return sourceFailure(construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive',
-        qualified.kind === 'component-source' && qualified.correspondence.kind === 'inconclusive-correspondence'
-          ? `whole-source-qualification:${qualified.correspondence.rule}${qualified.correspondence.path ? ':' + qualified.correspondence.path : ''}` : 'whole-source-qualification');
+      if (options.qualificationScope === CLOSED_OPERATION_SCOPE && qualified.kind === 'component-source') {
+        wholeSourceLegality = qualified.construction.nativeEstablished ? 'established'
+          : construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'disproved' : 'unassessed';
+      }
+      if (!eligible && options.qualificationScope !== CLOSED_OPERATION_SCOPE) {
+        const {closure} = construction;
+        const kind = construction.localDisproved || closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive';
+        let rule = 'whole-source-qualification';
+        let schemaDiagnostic: SchemaQualificationDiagnostic | undefined;
+        if (qualified.kind === 'component-source' && qualified.correspondence.kind === 'inconclusive-correspondence') {
+          const {rule: correspondenceRule, path} = qualified.correspondence;
+          rule += `:${correspondenceRule}${path ? ':' + path : ''}`;
+          // @why #510 needs the original native failure behind the consequential correspondence refusal.
+          let cause = closure.kind === 'invalid-schema' ? closure : localInvalid;
+          if (!cause && correspondenceRule === 'native-construction-unestablished') {
+            cause = closure.kind === 'unsupported-capability' || closure.kind === 'unresolved' ? closure : localUnqualified;
+          }
+          if (cause) {
+            const context = construction.request.actual;
+            const node = cause.component === undefined ? undefined : context.sourceNode(cause.component);
+            let declaration = node;
+            // @why A particle can give the exact error location while its containing declaration supplies the name.
+            while (declaration?.identity.kind === 'scoped') {
+              check();
+              declaration = context.sourceNode(declaration.identity.owner);
+            }
+            schemaDiagnostic = Object.freeze({profile: 'XSD 1.0', rule: cause.rule,
+              ...(node ? {source: node.context.source} : {}),
+              ...(declaration?.identity.kind === 'global' ? {component: declaration.identity.name} : {})});
+          }
+        }
+        return sourceFailure(kind, rule, schemaDiagnostic);
+      }
       const {request} = construction;
       const context = request.actual;
       let policyOwner: WsdlPolicyRequirements | undefined;
@@ -472,10 +530,25 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
         return Object.freeze({name: faultName, root: root(f, matches[0]!, faultName)});
       });
       check();
+      let operationFrontier: FiniteRe01Frontier | undefined;
+      if (options.qualificationScope === CLOSED_OPERATION_SCOPE) {
+        if (qualified.kind !== 'component-source' || !responseRoot || isRpcMessageRoot(requestRoot) || isRpcMessageRoot(responseRoot))
+          return failure('unsupported', 'closed-operation-document-request-response');
+        const roots = [requestRoot, responseRoot, ...headers.map(header => header.root), ...faults.map(fault => fault.root)];
+        const verified = verifyOperationSchemaRoots(context, roots.map(item => item.element.id));
+        if (verified.kind !== 'inspected-frontier') {
+          if (verified.kind === 'resource-limit') return failure('resource-limit', 'operation-source-qualification');
+          return failure(verified.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', `operation-source-qualification:${verified.rule}`);
+        }
+        const outside = checkScopedComponentCorrespondence(input, context, verified, check);
+        if (outside) return failure('unsupported', `operation-correspondence:${outside.rule}`);
+        operationFrontier = verified;
+      }
       // Charge publication traversal before retaining authority. Roots stay exact context objects.
       const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId,
         basis: profile === 'direct' ? 'native-direct-premises-v1' : 'native-component-premises-v1',
         correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
+        ...(operationFrontier ? {qualification: {scope: CLOSED_OPERATION_SCOPE, wholeSourceLegality: wholeSourceLegality ?? 'unassessed'}} : {}),
         binding: {version: soapNamespace === SOAP12 ? '1.2' : '1.1', ...(soapNamespace === SOAP12 ? {actionRequired} : {}), style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
           ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
         input: requestRoot, ...(responseRoot ? {output: responseRoot} : {pattern: 'one-way' as const}), faults,
@@ -489,6 +562,7 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       budget.freeze(contract); check(); budget.chargeWork(256);
       const selected = Object.freeze({kind: 'selected' as const, contract, usage: Object.freeze({...budget.usage()})});
       issued.set(contract, Object.freeze({contract, context, source: input, evidence: qualified, operationSyntax: abstract,
+        ...(operationFrontier ? {operationFrontier} : {}),
         ...(policyOwner ? {policyOwner} : {})}));
       return selected;
     });

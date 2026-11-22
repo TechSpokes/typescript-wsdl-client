@@ -6,6 +6,15 @@ import {describe, expect, it} from 'vitest';
 import {planCheckedComponents} from '../../src/checkedPlanning.js';
 import {formatCheckedCliRefusal} from '../../src/util/checkedCliDiagnostics.js';
 
+function runPipeline(source: string, directory: string, report: string, debug = '') {
+  return spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'pipeline',
+    '--model', 'checked-components-v1', '--wsdl-source', source,
+    '--client-dir', path.join(directory, 'generated/client'), '--openapi-file', path.join(directory, 'generated/openapi.json'),
+    '--gateway-dir', path.join(directory, 'generated/gateway'), '--gateway-service-name', 'test',
+    '--gateway-version-prefix', 'v1', '--checked-report', path.join(directory, report)],
+  {encoding: 'utf8', timeout: 60_000, env: {...process.env, DEBUG: debug}});
+}
+
 describe('checked CLI refusals', () => {
   it('explains the Weather ambiguity using real candidates and existing configuration keys', async () => {
     const report = await planCheckedComponents('examples/minimal/weather.wsdl');
@@ -50,18 +59,37 @@ describe('checked CLI refusals', () => {
     expect(formatCheckedCliRefusal(report)).toContain('UnimplementedRequestedOperation');
   });
 
+  it.each([
+    ['binding.wsdl', 'missing-service-port', 'The WSDL declares a binding without a service port.', 'Schema qualification has not run'],
+    ['service.wsdl', 'whole-source-qualification:native-construction-unestablished',
+      'Schema: XSD 1.0 cos-nonambig for {urn:checked:planner-diagnostics:types}ExtensionData', 'at resource-3:6:'],
+  ])('reports the checked refusal for %s consistently across CLI and API', async (fixture, reason, diagnostic, context) => {
+    const source = path.resolve('test/conformance/fixtures/assessment/checked-planner-diagnostics', fixture);
+    mkdirSync(verificationPath('tmp/conformance/checked-cli'), {recursive: true});
+    const directory = mkdtempSync(path.resolve(verificationPath('tmp/conformance/checked-cli/source-refusal-')));
+    try {
+      const result = runPipeline(source, directory, 'plan.json');
+      expect(result.error).toBeUndefined();
+      expect(result.status).toBe(1);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toContain(diagnostic);
+      expect(result.stderr).toContain(context);
+      expect(result.stderr).not.toContain('Set service, port and selectors');
+      expect(result.stderr).not.toContain(path.dirname(source));
+      const report = JSON.parse(readFileSync(path.join(directory, 'plan.json'), 'utf8'));
+      expect(report).toEqual(await planCheckedComponents(source));
+      expect(report.blockers).toMatchObject([{reason}]);
+      expect(existsSync(path.join(directory, 'generated'))).toBe(false);
+    } finally {rmSync(directory, {recursive: true, force: true});}
+  }, 80_000);
+
   it('keeps structured reports and nonzero exits while requiring DEBUG for the raw error', async () => {
     mkdirSync(verificationPath('tmp/conformance/checked-cli'), {recursive: true});
     const directory = mkdtempSync(path.resolve(verificationPath('tmp/conformance/checked-cli/refusal-')));
     try {
-      const run = (debug: string, report: string) => spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'pipeline',
-        '--model', 'checked-components-v1', '--wsdl-source', 'examples/minimal/weather.wsdl',
-        '--client-dir', path.join(directory, 'generated/client'), '--openapi-file', path.join(directory, 'generated/openapi.json'),
-        '--gateway-dir', path.join(directory, 'generated/gateway'), '--gateway-service-name', 'weather',
-        '--gateway-version-prefix', 'v1', '--checked-report', path.join(directory, report)],
-      {encoding: 'utf8', timeout: 60_000, env: {...process.env, DEBUG: debug}});
-      const normal = run('', 'normal.json');
-      const debug = run('wsdl-tsc', 'debug.json');
+      const source = 'examples/minimal/weather.wsdl';
+      const normal = runPipeline(source, directory, 'normal.json');
+      const debug = runPipeline(source, directory, 'debug.json', 'wsdl-tsc');
       expect(normal.error).toBeUndefined();
       expect(debug.error).toBeUndefined();
       expect(normal.status).toBe(1);
@@ -73,7 +101,7 @@ describe('checked CLI refusals', () => {
       expect(debug.stderr).toContain('CheckedPlanningError');
       const bytes = readFileSync(path.join(directory, 'normal.json'), 'utf8');
       expect(bytes).toBe(readFileSync(path.join(directory, 'debug.json'), 'utf8'));
-      expect(JSON.parse(bytes)).toEqual(await planCheckedComponents('examples/minimal/weather.wsdl'));
+      expect(JSON.parse(bytes)).toEqual(await planCheckedComponents(source));
       expect(existsSync(path.join(directory, 'generated'))).toBe(false);
     } finally {rmSync(directory, {recursive: true, force: true});}
   }, 150_000);

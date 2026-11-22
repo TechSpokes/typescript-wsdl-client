@@ -5,6 +5,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import {checkedModuleLoad, checkedModulePath, hasModuleUrlDelimiters} from '../generation/checkedModulePath.js';
 import {writeGeneratedSource} from '../generation/writeGeneratedSource.js';
 import {loadRuntimeTemplate} from '../util/runtimeSource.js';
 import type {DirectOperationSelector} from '../compiler/directOperation.js';
@@ -30,11 +31,6 @@ export interface GenerateCheckedAppOptions {
   };
 }
 
-function relative(from: string, to: string): string {
-  const result = path.relative(from, to).split(path.sep).join('/');
-  return result.startsWith('../') ? result : './' + result;
-}
-
 /**
  * Writes missing consumer-owned project files, preserving customizations unless forced.
  * @param options - Explicit paths, all generated artifacts located below appDir.
@@ -51,25 +47,36 @@ export async function generateCheckedApp(options: GenerateCheckedAppOptions): Pr
       throw new Error('Checked app outputs must be contained in appDir');
     }
   }
-  const clientImport = relative(root, path.join(options.clientDir, 'client.js'));
-  const gatewayImport = relative(root, path.join(options.gatewayDir, 'plugin.js'));
-  const spec = relative(root, options.openapiFile);
+  const clientImport = checkedModulePath(root, path.join(options.clientDir, 'client.js'));
+  const gatewayImport = checkedModulePath(root, path.join(options.gatewayDir, 'plugin.js'));
+  const dynamicClient = hasModuleUrlDelimiters(clientImport);
+  const dynamicGateway = hasModuleUrlDelimiters(gatewayImport);
+  const spec = checkedModulePath(root, options.openapiFile);
   const ownPackage = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as {version: string};
-  const capsuleFiles = Object.fromEntries(Object.entries(component.capsules).map(([name, file]) => [name, relative(root, file)]));
+  const capsuleFiles = Object.fromEntries(Object.entries(component.capsules).map(([name, file]) => [name, checkedModulePath(root, file)]));
   const branched = !!component.branchSources?.length;
-  const server = loadRuntimeTemplate('checkedGatewayHost.tpl.txt')
-    .replaceAll('__CLIENT_IMPORT__', JSON.stringify(clientImport))
-    .replaceAll('__GATEWAY_IMPORT__', JSON.stringify(gatewayImport))
-    .replaceAll('__CAPSULE_FILES__', JSON.stringify(capsuleFiles))
-    .replaceAll('__SOURCE_RECORD__', JSON.stringify(relative(root, path.join(options.clientDir, 'source-resources.json'))))
-    .replaceAll('__OPENAPI_FILE__', JSON.stringify(spec))
-    .replaceAll('__DEFAULT_HOST__', JSON.stringify(options.host ?? '127.0.0.1'))
-    .replaceAll('__DEFAULT_PORT__', String(options.port ?? 3000))
-    .replaceAll('__BRANCH_CONFIG__', branched ? "\n  readonly branchSources?: Options['branchSources'];" : '')
-    .replaceAll('__BRANCH_KEY__', branched ? "'branchSources', " : '')
-    .replaceAll('__BRANCH_GENERATED__', branched ? '\n    ...(supplied.branchSources ? {branchSources: supplied.branchSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),' : '')
-    .replaceAll('__BRANCH_OPTIONS__', branched ? '\n    ...(config.branchSources ? {branchSources: config.branchSources} : {}),' : '')
-    .replaceAll('__BRANCH_EXPLICIT__', branched ? '\n    ...(supplied.branchSources ? {branchSources: supplied.branchSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),' : '');
+  const substitutions: Record<string, string> = {
+    HOST_IMPORTS: [
+      ...(dynamicGateway ? [] : [`import gateway, {expectedOpenApiJson} from ${JSON.stringify(gatewayImport)};`]),
+      dynamicClient ? `import type {Options} from ${JSON.stringify(clientImport)};`
+        : `import {selection, type Options} from ${JSON.stringify(clientImport)};`,
+    ].join('\n'),
+    HOST_CLIENT_LOAD: dynamicClient ? `\n  const {selection} = ${checkedModuleLoad(clientImport)};` : '',
+    HOST_GATEWAY_LOAD: dynamicGateway ? `\n    const {default: gateway, expectedOpenApiJson} = ${checkedModuleLoad(gatewayImport)};` : '',
+    CAPSULE_FILES: JSON.stringify(capsuleFiles),
+    SOURCE_RECORD: JSON.stringify(checkedModulePath(root, path.join(options.clientDir, 'source-resources.json'))),
+    OPENAPI_FILE: JSON.stringify(spec),
+    DEFAULT_HOST: JSON.stringify(options.host ?? '127.0.0.1'),
+    DEFAULT_PORT: String(options.port ?? 3000),
+    BRANCH_CONFIG: branched ? "\n  readonly branchSources?: Options['branchSources'];" : '',
+    BRANCH_KEY: branched ? "'branchSources', " : '',
+    BRANCH_GENERATED: branched ? '\n    ...(supplied.branchSources ? {branchSources: supplied.branchSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),' : '',
+    BRANCH_OPTIONS: branched ? '\n    ...(config.branchSources ? {branchSources: config.branchSources} : {}),' : '',
+    BRANCH_EXPLICIT: branched ? '\n    ...(supplied.branchSources ? {branchSources: supplied.branchSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),' : '',
+  };
+  // @constraints Filesystem names can contain marker text and replacement syntax.
+  const server = loadRuntimeTemplate('checkedGatewayHost.tpl.txt').replace(/__([A-Z]+(?:_[A-Z]+)*)__/g,
+    (marker, key: string) => substitutions[key] ?? marker);
   const manifest = {
     name: 'checked-component-gateway', version: '0.0.0', private: true, type: 'module',
     engines: {node: '>=24.0.0'},
@@ -83,12 +90,12 @@ export async function generateCheckedApp(options: GenerateCheckedAppOptions): Pr
       strict: true, esModuleInterop: true, skipLibCheck: true, rootDir: '.', outDir: 'dist', types: ['node']},
       include: ['**/*.ts'], exclude: ['dist', 'node_modules']}, null, 2) + '\n',
     'checked-gateway.example.json': JSON.stringify({host: options.host ?? '127.0.0.1', port: options.port ?? 3000}, null, 2) + '\n',
-    '.gitignore': 'node_modules/\ndist/\nchecked-gateway.local.json\n',
+    '.gitignore': 'node_modules/\ndist/\nchecked-gateway.local.json\n' + (dynamicClient || dynamicGateway ? '.checked-scaffold-*/\n' : ''),
     'README.md': '',
   };
   files['README.md'] = `# Checked component gateway
 
-This project uses native source qualification, structured mappings and SOAP 1.1 validation. Each operation has its own client and capsule; the service router keeps binding and operation identities separate. Scalar facets, ordered occurrences and wildcard declaration membership remain native runtime checks.
+This project uses native source qualification, structured mappings and SOAP validation. Each operation has its own client and capsule; the service router keeps binding and operation identities separate. Scalar facets, ordered occurrences and wildcard declaration membership remain native runtime checks.
 
 ## Install and run
 

@@ -101,7 +101,7 @@ export function assertFiniteRe01Frontier(context: SemanticContext, frontier: Fin
   if (inspectedFrontiers.get(frontier) !== context) throw new TypeError('Unauthenticated native frontier');
 }
 
-function createNativeFrontierOwner(actual: SemanticContext) {
+function createNativeFrontierOwner(actual: SemanticContext, operationRoots?: readonly NodeId[]) {
   const b = actual.budget, charge = b.chargeWork;
   const fail = (rule: string, message: string, kind: FiniteVerificationFailure['kind'] = 'invalid-evidence', context = actual, component?: NodeId): never => {
     charge(16 + rule.length + message.length + (component?.length ?? 0));
@@ -207,6 +207,7 @@ function createNativeFrontierOwner(actual: SemanticContext) {
   };
   const close = (context: SemanticContext, roots: readonly NodeId[], correspondence?: CorrespondenceReceipt): Closure => {
     charge(8);
+    const wholeSource = context.kind === 'actual' && operationRoots === undefined;
     const identityConstraints: IdentityConstraintReceipt[] = [], checkedICs = new Set<string>();
     const requireIdentityConstraints = (required: readonly IdentityConstraintDependency[]): void => {
       charge(3 + required.length); const pending = [...required];
@@ -223,19 +224,19 @@ function createNativeFrontierOwner(actual: SemanticContext) {
         pending.push(...receipt.identityConstraintDependencies);
       }
     };
-    if (context.kind === 'actual') {
+    if (wholeSource) {
       const registry = context.originalIdentityConstraints();
       charge(3 + registry.identities.length * 4);
       requireIdentityConstraints(registry.identities.map(identity => ({contextId: context.contextId, identity})));
     }
     if (context.scalarSlotMembership !== 'complete-original') return fail('scalar-slot-active-membership',
       'Finite evidence requires every original generated scalar slot', 'unresolved', context);
-    charge(12 + roots.length + (context.kind === 'actual' ? context.scalarSlots.length : 0));
+    charge(12 + roots.length + (wholeSource ? context.scalarSlots.length : 0));
     const queue = [...roots], byComponent = new Map<NodeId, ComponentConstructionReceipt>();
     // Availability is complete in H, but its legality roots are E, D′,
     // fresh components and consumed dependencies. Only Γ checks every
     // original scalar merely because it is part of the actual schema.
-    const slotQueue: OriginalGeneratedScalarReference[] = context.kind === 'actual' ? [...context.scalarSlots] : [];
+    const slotQueue: OriginalGeneratedScalarReference[] = wholeSource ? [...context.scalarSlots] : [];
     const byScalarSlot = new Map<NodeId, FiniteScalarSlotReceipt>(), scalarSlots: FiniteScalarSlotReceipt[] = [];
     const components: ComponentConstructionReceipt[] = [], requirements: Requirement[] = [];
     const requireTypes = (required: readonly SemanticTypeDependency[]): void => {
@@ -297,7 +298,7 @@ function createNativeFrontierOwner(actual: SemanticContext) {
       scalarSlots: Object.freeze(scalarSlots), byScalarSlot, identityConstraints: Object.freeze(identityConstraints)});
     charge(context.contextId.length + 1); closures.set(context.contextId, closure); return closure;
   };
-  const actualClosure = close(actual, actual.members);
+  const actualClosure = close(actual, operationRoots ?? actual.members);
   const primitiveFacts = new Map<SemanticContext, Set<NodeId>>();
   const primitive = (context: SemanticContext, requirement: Requirement): boolean => {
     if (!requirement.primitive) return false;
@@ -754,10 +755,44 @@ export function assertExtensionChainReceipt(actual: SemanticContext, receipt: Ex
   if (extensionChains.get(receipt) !== actual) throw new TypeError('Fresh matching extension-chain receipt required');
 }
 
+function extensionRequirements(actual: SemanticContext, owner: ReturnType<typeof createNativeFrontierOwner>) {
+  const {budget} = actual;
+  const extensionOnly: NodeId[] = [], unresolved: NodeId[] = [];
+  for (const requirement of owner.actualFrontier.requirements) {
+    budget.chargeWork(8);
+    if (requirement.primitive) continue;
+    let reference: SemanticTypeReference = {kind: 'local', target: requirement.target};
+    const seen = new Set<NodeId>();
+    let established = false;
+    while (true) {
+      budget.chargeWork(8);
+      const resolved = resolveSemanticType(actual, reference);
+      if (resolved.kind !== 'component' || resolved.node.kind !== 'complexType') break;
+      const node = resolved.node;
+      budget.chargeWork(4 + node.id.length);
+      if (seen.has(node.id)) break;
+      seen.add(node.id);
+      const next = immediateTypeBase(actual, reference);
+      if (next.kind === 'resource-limit') throw new VerificationAbort(next);
+      if (next.kind !== 'checked' || !next.value) break;
+      const base = resolveSemanticType(actual, next.value);
+      // @why The first derivation from anyType may be a restriction; every later edge must extend.
+      if (base.kind === 'builtin' && base.name.namespace === XSD_NAMESPACE && base.name.local === 'anyType') {
+        const designated = resolveSemanticType(actual, requirement.ancestor);
+        established = designated.kind === 'component' && designated.node === node;
+        break;
+      }
+      if (node.derivation?.kind !== 'extension') break;
+      reference = next.value;
+    }
+    budget.chargeWork(2 + requirement.target.length);
+    (established ? extensionOnly : unresolved).push(requirement.target);
+  }
+  return {extensionOnly, unresolved};
+}
+
 /** Close actual RE01 duties whose ancestry has no restriction after the designated ancestor.
  * @remarks The 2004 Structures cos-ct-extends.1.5 note identifies this sufficient case as trivial.
- *   All component premises and aggregate dependencies are still checked by the existing native owner.
- *   No candidate context, endpoint replacement or primitive relabelling is used. The existing direct preview is unchanged.
  * @returns Authenticated actual-only closure, an unresolved duty inventory, or the native failure.
  * @throws TypeError For a non-actual context. Explicit request exhaustion remains sticky.
  * @see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends
@@ -769,37 +804,7 @@ export function verifyExtensionChainActualSchema(actual: SemanticContext): Exten
   return budget.guard(() => {
     try {
       const owner = createNativeFrontierOwner(actual);
-      const extensionOnly: NodeId[] = [], unresolved: NodeId[] = [];
-      for (const requirement of owner.actualFrontier.requirements) {
-        budget.chargeWork(8);
-        if (requirement.primitive) continue;
-        let reference: SemanticTypeReference = {kind: 'local', target: requirement.target};
-        const seen = new Set<NodeId>();
-        let established = false;
-        while (true) {
-          budget.chargeWork(8);
-          const resolved = resolveSemanticType(actual, reference);
-          if (resolved.kind !== 'component' || resolved.node.kind !== 'complexType') break;
-          const node = resolved.node;
-          budget.chargeWork(4 + node.id.length);
-          if (seen.has(node.id)) break;
-          seen.add(node.id);
-          const next = immediateTypeBase(actual, reference);
-          if (next.kind === 'resource-limit') throw new VerificationAbort(next);
-          if (next.kind !== 'checked' || !next.value) break;
-          const base = resolveSemanticType(actual, next.value);
-          // @why The first derivation from anyType may be a restriction; every later edge must extend.
-          if (base.kind === 'builtin' && base.name.namespace === XSD_NAMESPACE && base.name.local === 'anyType') {
-            const designated = resolveSemanticType(actual, requirement.ancestor);
-            established = designated.kind === 'component' && designated.node === node;
-            break;
-          }
-          if (node.derivation?.kind !== 'extension') break;
-          reference = next.value;
-        }
-        budget.chargeWork(2 + requirement.target.length);
-        (established ? extensionOnly : unresolved).push(requirement.target);
-      }
+      const {extensionOnly, unresolved} = extensionRequirements(actual, owner);
       owner.validateAggregate([]);
       budget.chargeWork(64 + extensionOnly.length + unresolved.length);
       const result: ExtensionChainReceipt = Object.freeze({kind: unresolved.length ? 'inconclusive-extension-chain' : 'checked-extension-chain',
@@ -807,6 +812,26 @@ export function verifyExtensionChainActualSchema(actual: SemanticContext): Exten
         extensionOnly: Object.freeze(extensionOnly), unresolved: Object.freeze(unresolved)});
       extensionChains.set(result, actual);
       return result;
+    } catch (error) {
+      if (error instanceof VerificationAbort) return error.result;
+      throw error;
+    }
+  });
+}
+
+/** Collects and discharges only the selected native roots in the complete original context.
+ * @constraints A scoped proof carries no whole-schema legality or correspondence authority.
+ */
+export function verifyOperationSchemaRoots(actual: SemanticContext, roots: readonly NodeId[]):
+  FiniteRe01Frontier | FiniteVerificationFailure | ResourceLimitFailure {
+  return actual.budget.guard(() => {
+    try {
+      const owner = createNativeFrontierOwner(actual, roots);
+      const {unresolved} = extensionRequirements(actual, owner);
+      if (unresolved.length) return {kind: 'unresolved', rule: 'operation-extension-ancestry',
+        message: 'The selected native dependency has unresolved extension ancestry', component: unresolved[0]};
+      owner.validateAggregate([]);
+      return owner.actualFrontier;
     } catch (error) {
       if (error instanceof VerificationAbort) return error.result;
       throw error;
