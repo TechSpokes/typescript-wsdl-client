@@ -4,6 +4,9 @@ import type {CheckedPayloadDiagnostic} from '../compiler/payloadDiagnostics.js';
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {DataOwnershipLimitError} from '../compiler/dataOwnership.js';
 import {types} from 'node:util';
+import {COMPONENT_STREAM_RUNTIME_VERSION, planComponentStream, readStreamArtifactCapsule} from '../compiler/componentStreamPlan.js';
+import {exchangeComponentStream, type CheckedStreamXmlLimits} from '../compiler/componentStreamSoap.js';
+import {checkedStream, type CheckedStream, type CheckedStreamCompletion} from './checkedStream.js';
 import {normalizeHttpResponseHeaders} from '../compiler/httpResponseHeaders.js';
 import {snapshotUpstreamSecurity} from '../util/upstreamSecurity.js';
 import {snapshotComponentHeaderProcessors} from '../compiler/componentSoapHeaders.js';
@@ -127,8 +130,11 @@ function executeClient(expectedBase64: string, input: unknown, options: Componen
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.2', branches: true): Promise<ComponentBranchClientResult<Soap12FaultMetadata>>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.1', branches: false, oneWay: true): Promise<ComponentOneWayClientResult<Soap11FaultMetadata>>;
 function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.2', branches: false, oneWay: true): Promise<ComponentOneWayClientResult<Soap12FaultMetadata>>;
+function executeClient(expectedBase64: string, input: unknown, options: ComponentClientOptions, component: true, protocol: '1.1',
+  branches: false, oneWay: false, streamSignal: AbortSignal): Promise<DirectClientFailure | AsyncGenerator<unknown, CheckedStreamCompletion>>;
 async function executeClient(expectedBase64: string, input: unknown, options: DirectClientOptions | ComponentClientOptions,
-  component: boolean, protocol?: '1.1' | '1.2', branches = false, oneWay = false): Promise<ComponentBranchClientResult | ComponentOneWayClientResult> {
+  component: boolean, protocol?: '1.1' | '1.2', branches = false, oneWay = false, streamSignal?: AbortSignal):
+  Promise<ComponentBranchClientResult | ComponentOneWayClientResult | AsyncGenerator<unknown, CheckedStreamCompletion>> {
     // Constant-sized entry introspection precedes budget configuration and all reads.
     const entryFailure = (): DirectClientFailure => ({kind: 'unsupported', rule: 'data-only client options required', usage: {nodes: 0, work: 0}});
     if (!options || typeof options !== 'object' || types.isProxy(options)
@@ -162,11 +168,12 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
       if (optionRule) return fail('unsupported', optionRule);
       if (options.soap.signal !== undefined && !(options.soap.signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
-      const signal = options.soap.signal;
+      const signal = streamSignal ?? options.soap.signal;
       const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Error('cancelled');};
 
       const soap: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
       for (const key of Reflect.ownKeys(options.soap)) soap[key as string] = Object.getOwnPropertyDescriptor(options.soap, key)!.value;
+      if (streamSignal) soap.signal = streamSignal;
       if (component && soap.upstream !== undefined) {
         try {soap.upstream = snapshotUpstreamSecurity(soap.upstream);}
         catch {return fail('unsupported', 'runtime security configuration');}
@@ -196,6 +203,12 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
       const bytes = new Uint8Array(length);
       Uint8Array.prototype.set.call(bytes, options.capsule);
       if (Buffer.from(bytes).toString('base64') !== expectedBase64) return fail('incompatible-artifact', 'generated-capsule-mismatch');
+      let streamArtifact: ReturnType<typeof readStreamArtifactCapsule>;
+      if (component && protocol === '1.1' && !branches && !oneWay) {
+        try {streamArtifact = readStreamArtifactCapsule(bytes);}
+        catch {return fail('incompatible-artifact', 'invalid component capsule');}
+      }
+      if (streamSignal && !streamArtifact) return fail('incompatible-artifact', 'checked-stream-capsule-required');
       let result: Awaited<ReturnType<typeof exchangeDirectSoap>> | ComponentRecordSoapResult | ComponentResponseBranchesSoapResult;
       if (component) {
         if (typeof options.localSource !== 'string') return fail('unsupported', 'explicit local source required');
@@ -223,7 +236,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         const prepared = await prepareSchemaSnapshotFiles(options.localSource, sources.resources, {policy: {
           fileRoots: options.fileRoots, allowedOrigins: sources.origins}, limits: directLoadingLimits(budget), namespaceLocations, signal, sourceUri: supplied.sourceUri,
           chargeWork: amount => {check(); budget.chargeWork(amount);}});
-        const fresh = await reconstructComponentSourceCapsuleInRequest(bytes, prepared.source, {loading: prepared.loading, signal,
+        const fresh = await reconstructComponentSourceCapsuleInRequest(streamArtifact?.source ?? bytes, prepared.source, {loading: prepared.loading, signal,
           standardLibraries: sources.standards, recordSources: sources.records, branchSources: sources.branches, responseBranchMode: branches}, budget);
         if (fresh.kind !== 'reconstructed-component') return fresh;
         if (!protocol && fresh.contract.headers?.length) return fail('incompatible-artifact', 'declared-headers-runtime-binding');
@@ -232,6 +245,17 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         if (branches && fresh.contract.binding.version !== protocol) return fail('incompatible-artifact', 'Matching response branch protocol binding required');
         if (fresh.selection.port !== options.soap.port || fresh.selection.service.namespace !== options.soap.service.namespace
           || fresh.selection.service.local !== options.soap.service.local) return fail('incompatible-artifact', 'explicit source selection mismatch');
+        if (streamSignal && streamArtifact) {
+          let plan: ReturnType<typeof planComponentStream>;
+          try {plan = planComponentStream(fresh, streamArtifact.stream);}
+          catch (error) {
+            if (signal?.aborted || budget.exhausted()) throw error;
+            return fail('incompatible-artifact', error instanceof TypeError && error.message.startsWith('checked-stream:')
+              ? error.message : 'checked-stream-source-selection');
+          }
+          if (JSON.stringify(plan.spec) !== JSON.stringify(streamArtifact.stream)) return fail('incompatible-artifact', 'checked-stream-spec-mismatch');
+          return exchangeComponentStream(plan, fresh.mappings[0], input, options.soap as ComponentSoapOptions);
+        }
         result = fresh.responseBranches
           ? await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, options.soap as ComponentSoapOptions, fresh.responseProjection, protocol === '1.1', fresh.responseBranches)
           : await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, options.soap as ComponentSoapOptions, fresh.responseProjection, protocol === '1.1');
@@ -279,3 +303,24 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
       throw error;
     }
 }
+
+/** Additive runtime for the generated, source-bound checked streaming methods. */
+export const checkedComponentStreamRuntimeV1 = Object.freeze({
+  version: COMPONENT_STREAM_RUNTIME_VERSION,
+  open<T>(expectedBase64: string, input: unknown, options: ComponentClientOptions & {
+    soap: {limits?: CheckedStreamXmlLimits};
+  },
+    version: typeof COMPONENT_STREAM_RUNTIME_VERSION): CheckedStream<T> {
+    // Inspect data descriptors without calling a proxy, getter or caller-defined signal method.
+    const soap = options && typeof options === 'object' && !types.isProxy(options)
+      ? Object.getOwnPropertyDescriptor(options, 'soap')?.value as unknown : undefined;
+    const signal = soap && typeof soap === 'object' && !types.isProxy(soap)
+      ? Object.getOwnPropertyDescriptor(soap, 'signal')?.value as unknown : undefined;
+    return checkedStream<T>(async function* (ownedSignal) {
+      if (version !== COMPONENT_STREAM_RUNTIME_VERSION) return {kind: 'incompatible-artifact', rule: 'generated-runtime-version', usage: {nodes: 0, work: 0}};
+      const prepared = await executeClient(expectedBase64, input, options, true, '1.1', false, false, ownedSignal);
+      if ('kind' in prepared) return prepared;
+      return yield* prepared as AsyncGenerator<T, CheckedStreamCompletion>;
+    }, signal instanceof AbortSignal ? signal : undefined);
+  },
+});

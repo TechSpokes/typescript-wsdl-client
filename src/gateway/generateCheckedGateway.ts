@@ -18,8 +18,10 @@ import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from '..
 import {documentationComment, sourceDocumentation} from '../generation/sourceDocumentation.js';
 import {WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 import {checkedModuleLoad, checkedModulePath, hasModuleUrlDelimiters} from '../generation/checkedModulePath.js';
+import {streamArtifactCapsule, type ComponentStreamPlan} from '../compiler/componentStreamPlan.js';
 
 interface CheckedGatewayOptions {
+  readonly stream?: ComponentStreamPlan;
   readonly httpResponseHeaders?: readonly string[];
   readonly httpResponseHeaderNames?: Readonly<Record<string, string>>;
   readonly httpResponseStatusHeaderName?: string;
@@ -43,7 +45,9 @@ export async function generateComponentGateway(expected: ReconstructedComponentS
 async function generateGatewayFromReconstruction(expected: ReconstructedComponentSource, options: CheckedGatewayOptions) {
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
   inspectReconstructedComponentSource(expected);
-  const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
+  const nativeCapsule = componentSourceCapsuleBytes(expected, options.signal);
+  const stream = options.stream;
+  const capsule = {bytes: stream ? streamArtifactCapsule(nativeCapsule, stream) : nativeCapsule};
   const branched = !!expected.responseBranches;
   const oneWay = expected.contract.pattern === 'one-way';
   const selection = normalizeHttpResponseHeaders(options.httpResponseHeaders);
@@ -54,7 +58,7 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       description: 'Selected upstream values joined with comma and space after transport coalescing', schema: {type: 'string'},
     }])),
   }};
-  const runtime = oneWay ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV7' : 'checkedComponentRuntimeV6'
+  const runtime = stream ? 'checkedComponentStreamRuntimeV1' : oneWay ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV7' : 'checkedComponentRuntimeV6'
     : branched ? expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV5' : 'checkedComponentRuntimeV4'
     : expected.contract.binding.version === '1.2' ? 'checkedComponentRuntimeV2' : 'checkedComponentRuntimeV3';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
@@ -77,8 +81,13 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
       && !!inspectComponentValueMapping(mapping, expected.contract).applicationGroups, components, () => {
         budget.chargeWork(); check();
       });
-  const request = schema(input, 'Request'), response = oneWay ? {} : schema(output!, 'Response');
-  const documentation = {request: documented(request, input, 'Request'), response: oneWay ? {} : documented(response, output!, 'Response')};
+  const responseRole = stream ? 'StreamItem' : 'Response';
+  const request = schema(input, 'Request'), response = stream ? lowerComponentShape(stream.contract, output, responseRole, check, stream.item).schema
+    : oneWay ? {} : schema(output!, responseRole);
+  const documentation = {request: documented(request, input, 'Request'), response: oneWay ? {} : documented(response, output!, responseRole)};
+  const mediaType = stream?.spec.format === 'ndjson' ? 'application/x-ndjson' : 'application/json';
+  const responseSchema = stream?.spec.format === 'ndjson' ? {type: 'string'}
+    : stream ? {type: 'array', items: documentation.response} : documentation.response;
   const errors = expected.responseBranches ? inspectComponentResponseBranches(expected.responseBranches).errors.map((branch, index) => {
     const role = `ApplicationError_${index}`;
     const value = lowerComponentShape(branch.contract, branch.mapping, role, check).schema;
@@ -150,19 +159,22 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
     'x-checked-model': {model: 'checked-components-v1', scope: soap12 ? 'native-component-structured-soap12' : 'native-component-structured-soap11',
       ...(expected.contract.qualification ? {qualification: expected.contract.qualification} : {}),
       ...(expected.responseProjection
-        ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
+        ? {responseProjection: {spec: expected.responseProjection.spec, delivery: stream ? 'streamed' : 'buffered',
+          ...(stream ? {} : {retainedValue: 'complete-companion-payload'})}} : {}),
       ...(expected.responseBranches ? {responseBranches: {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
       documentationDialect: '2020-12', runtimeDialect: 'draft-07', jsonShapeComplete: false,
       supplementalValidation: ['native-source-compatibility', 'native-xml-scalar-and-particle'], admitted: false,
       selection: {selector: expected.contract.selector, ...expected.selection}},
     paths: {[options.routePath]: {post: {operationId: expected.contract.selector.operation,
+      ...(stream ? {'x-wsdl-tsc-stream': {...stream.spec, mediaType, itemSchema: documentation.response}} : {}),
       ...(description ? {summary, description} : {}),
       ...(expected.responseProjection
-        ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
+        ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: stream ? 'streamed' : 'buffered',
+          ...(stream ? {} : {retainedValue: 'complete-companion-payload'})}} : {}),
       ...(expected.responseBranches ? {'x-response-branches': {spec: expected.responseBranches.spec, delivery: 'buffered'}} : {}),
       requestBody: {required: true, content: {'application/json': {schema: documentation.request}}},
       responses: {...(oneWay ? {'202': {...observedHeaders, description: 'Complete transport acknowledgement; no application output or business-success assertion'}}
-        : {'200': {...observedHeaders, description: 'Independently validated SOAP response', content: {'application/json': {schema: documentation.response}}}}),
+        : {'200': {...observedHeaders, description: 'Independently validated SOAP response', content: {[mediaType]: {schema: responseSchema}}}}),
         '400': {description: 'Invalid HTTP request; no SOAP request is dispatched'},
         '502': {...observedHeaders, description: branched ? 'Validated application error, SOAP fault or refused upstream response' : 'SOAP fault or refused upstream response', content: {'application/json': {schema: {oneOf: [documentedFault,
           ...errors.map(error => error.documented), failureSchema]}}}},
@@ -171,14 +183,15 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   };
   const clientImport = checkedModulePath(options.gatewayDir, path.join(options.clientDir, 'client.js'));
   const dynamicClient = hasModuleUrlDelimiters(clientImport);
+  const createClient = stream ? 'createStreamClient' : 'createClient';
   const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   // language=TypeScript
   const body = `import type {FastifyPluginAsync} from 'fastify';
 import {Ajv} from 'ajv';
 import {types} from 'node:util';
-import {${runtime}} from '@techspokes/typescript-wsdl-client';
+import {${runtime}${stream ? ', checkedStreamResponse' : ''}} from '@techspokes/typescript-wsdl-client';
 ${dynamicClient ? `import type {Options, Request} from ${literal(clientImport)};`
-    : `import {createClient, expectedCapsuleBase64, type Options, type Request} from ${literal(clientImport)};`}
+    : `import {${createClient}, expectedCapsuleBase64, type Options, type Request} from ${literal(clientImport)};`}
 
 export interface CheckedGatewayOptions { readonly clientOptions: Options }
 // @constraints JSON parsing preserves XML names such as __proto__ as ordinary own data properties.
@@ -199,9 +212,9 @@ function dataCopy<T extends object>(value: T): T {
 }
 
 const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {${dynamicClient
-    ? `\n  const {createClient, expectedCapsuleBase64} = ${checkedModuleLoad(clientImport)};` : ''}
+    ? `\n  const {${createClient}, expectedCapsuleBase64} = ${checkedModuleLoad(clientImport)};` : ''}
   if (expectedCapsuleBase64 !== ${literal(Buffer.from(capsule.bytes).toString('base64'))}) throw new Error('incompatible-artifact: generated gateway/client mismatch; regenerate the complete project');
-  const client = createClient(${runtime});
+  const client = ${createClient}(${runtime});
   const ajv = new Ajv({coerceTypes: false, useDefaults: false, removeAdditional: false, ownProperties: true, strict: true, allErrors: true});
   const validateRequest = ajv.compile(schemas.request);
   const validateResponse = ajv.compile(schemas.response);
@@ -221,8 +234,36 @@ ${branched ? '  const validateApplicationError = ajv.compile(schemas.application
     if (request.raw.aborted || reply.raw.destroyed) controller.abort();
     try {
       const signal = soap.signal ? AbortSignal.any([soap.signal, controller.signal]) : controller.signal;
-      const result = await client[${literal(expected.contract.selector.operation)}](request.body as Request,
+      ${stream ? 'const stream = client' : 'const result = await client'}[${literal(expected.contract.selector.operation)}](request.body as Request,
         {...base, soap: {...soap, signal${selection === undefined ? '' : `, httpResponseHeaders: ${literal(selection)}`}}});
+${stream ? `      const iterator = stream.records[Symbol.asyncIterator]();
+      const first = await iterator.next().catch(() => undefined);
+      if (first) {
+        if (!first.done && !validateResponse(first.value)) {
+          stream.cancel();
+          return reply.code(502).send({kind: 'value-invalid', rule: 'http-stream-item-shape'});
+        }
+        const records = (async function* () {
+          try {
+            if (first.done) return;
+            yield first.value;
+            while (true) {
+              const next = await iterator.next();
+              if (next.done) return;
+              if (!validateResponse(next.value)) throw new Error('http-stream-item-shape');
+              yield next.value;
+            }
+          } finally {
+            stream.cancel();
+          }
+        })();
+        reply.type(${literal(mediaType)}).send(checkedStreamResponse(${literal(stream.spec.format)}, records));
+        try { await reply; } finally { stream.cancel(); }
+        return reply;
+      }
+      const result = await stream.completion;
+      if (result.kind === 'complete') throw new Error('Missing checked stream outcome');
+` : ''}
 ${selection === undefined ? '' : `      if (result.http) {
         // @constraints Node's header store preserves __proto__ as data; Fastify's ordinary header dictionary does not.
         reply.raw.setHeader(${literal(publication.status)}, String(result.http.status));
@@ -231,11 +272,11 @@ ${selection === undefined ? '' : `      if (result.http) {
           if (values) reply.raw.setHeader(destination, values.join(', '));
         }
       }
-`}      ${oneWay ? `if (result.kind === 'soap-acknowledgement') return reply.code(202).send();` : `if (result.kind === 'soap-response') {
+`}      ${stream ? '' : oneWay ? `if (result.kind === 'soap-acknowledgement') return reply.code(202).send();` : `if (result.kind === 'soap-response') {
         if (!validateResponse(result.value)) return reply.code(502).send({kind: 'value-invalid', rule: 'http-response-shape'});
         return reply.type('application/json').serializer(value => JSON.stringify(value)).send(result.value);
       }`}
-      if (result.kind === 'soap-header-fault') return reply.code(502).send({kind: 'soap-header-fault', rule: 'upstream declared SOAP header fault'});
+      ${stream ? '' : "if (result.kind === 'soap-header-fault') return reply.code(502).send({kind: 'soap-header-fault', rule: 'upstream declared SOAP header fault'});"}
       if (result.kind === 'soap-fault') {
         ${soap12 ? `const fault = {version: result.fault.version, code: result.fault.code, string: result.fault.string,
           subcodes: result.fault.subcodes, reasons: result.fault.reasons,
@@ -285,6 +326,7 @@ export default plugin;
 export async function generateComponentServiceGateway(expected: readonly ReconstructedComponentSource[], options: {
   clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean; httpResponseHeaders?: readonly string[];
   httpResponseHeaderNames?: Readonly<Record<string, string>>; httpResponseStatusHeaderName?: string;
+  streams?: ReadonlyMap<ReconstructedComponentSource, ComponentStreamPlan>;
 }) {
   const operations = inspectComponentSourceService(expected), routes: Record<string, string> = Object.create(null) as Record<string, string>;
   const paths: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
@@ -297,7 +339,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   for (const [index, operation] of operations.entries()) {
     tick(); const name = operation.contract.selector.operation, routePath = `${options.basePath}/${encodeURIComponent(name)}`;
     const result = await generateComponentGateway(operation, {clientDir: path.join(options.clientDir, 'operations', String(index)),
-      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, httpResponseHeaders: options.httpResponseHeaders, httpResponseHeaderNames: options.httpResponseHeaderNames, httpResponseStatusHeaderName: options.httpResponseStatusHeaderName, signal: options.signal, emit: false});
+      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, httpResponseHeaders: options.httpResponseHeaders, httpResponseHeaderNames: options.httpResponseHeaderNames, httpResponseStatusHeaderName: options.httpResponseStatusHeaderName, stream: options.streams?.get(operation), signal: options.signal, emit: false});
     emissions.push(result.emit);
     const doc = result.doc as Record<string, unknown>;
     documents.push(doc); routes[name] = routePath;

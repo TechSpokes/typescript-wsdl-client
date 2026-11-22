@@ -52,6 +52,8 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "!dist/runtime/**",
+    "dist/runtime/jsonArray.js",
+    "dist/runtime/ndjson.js",
     "docs/start-here.md",
     "docs/cli-reference.md",
     "docs/configuration.md",

@@ -50,6 +50,10 @@ Checked buffered execution reuses the established runtime credential schema for 
 
 Metadata HTTP charset context survives original-byte snapshots, capsule comparisons and relocated reconstruction. A private transport descriptor supports otherwise-qualified legal names and metadata cycles without dependency prototype exposure. See the [buffered contract](checked-gateway.md#buffered-transport-and-runtime-credentials) for the concrete combination table, decoding policy and remaining exclusions. This does not qualify general attachments, streaming, incoming cryptographic security or richer policy families.
 
+## Checked streaming
+
+The [checked streaming profile](checked-gateway.md#checked-streaming) qualifies explicit SOAP 1.1 record paths for native client iteration and gateway NDJSON or JSON arrays. The checked Read fixture and synthetic Fetch controls distinguish record validation from completion of the declared scope.
+
 ## Checked one-way document literal
 
 The checked-components profile supports WSDL 1.1 input-only document/literal operations over SOAP 1.1 and SOAP 1.2 HTTP(S). Complete empty 200/202/204 responses produce transport acknowledgements and an empty downstream 202; nonempty acknowledgement bodies, other statuses and contradictory source patterns refuse. Native protocol-fault, source/security, cancellation and body limits remain authoritative. RPC and multipart one-way forms remain unsupported; legacy defaults do not adopt the new contract.
@@ -89,6 +93,7 @@ Candidate interpretations and test-only prototypes do not certify production ass
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `checked-streaming` | partial | Explicit stream selection yields native records and verifies full-response or authenticated companion scope at completion. |
 | `checked-atomic-union-lists` | partial | Checked document/literal lists of qualified non-contextual atomic unions use ordered lexical string arrays or existing whole-list pattern witnesses. |
 | `checked-atomic-unions` | partial | Checked document/literal unions of qualified non-contextual atomic members or lists of atomic values use complete lexical strings. |
 | `checked-qnames` | partial | Checked document/literal QName scalars expose expanded names and QName-bearing unions carry lexical strings with namespace bindings. |

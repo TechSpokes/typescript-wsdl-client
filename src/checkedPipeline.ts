@@ -43,6 +43,7 @@ import {normalizeHttpResponseHeaders, normalizeHttpResponseHeaderNames} from './
 import {inspectComponentValueMapping} from './compiler/directValues.js';
 import {wsdlSourceDocumentation} from './generation/sourceDocumentation.js';
 import type {CheckedWsdlDocumentation} from './generation/sourceDocumentation.js';
+import {planComponentStream, type CheckedStreamSelection, type ComponentStreamPlan} from './compiler/componentStreamPlan.js';
 
 function publicationChoices(data: Record<string, unknown>): Pick<CheckedComponentOptions, 'httpResponseHeaderNames' | 'httpResponseStatusHeaderName'> {
   const names = normalizeHttpResponseHeaderNames(normalizeHttpResponseHeaders(data.httpResponseHeaders), data.httpResponseHeaderNames, data.httpResponseStatusHeaderName);
@@ -73,6 +74,7 @@ export interface CheckedComponentOptions {
   readonly qualificationScope?: ComponentQualificationScope;
   readonly recordProjections?: readonly CheckedComponentRecordProjection[];
   readonly responseBranches?: readonly CheckedComponentResponseBranches[];
+  readonly streams?: readonly CheckedStreamSelection[];
 }
 
 /** Explicit pinned full-output grammars for the bounded response-branch family.
@@ -204,12 +206,27 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'qualificationScope', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile', 'httpResponseHeaders', 'httpResponseHeaderNames', 'httpResponseStatusHeaderName'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'qualificationScope', 'recordProjections', 'responseBranches', 'applicationGroups', 'sourceCorrectionsFile', 'httpResponseHeaders', 'httpResponseHeaderNames', 'httpResponseStatusHeaderName', 'streams'],
     resolved ? ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'] : []);
   if (['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => Object.hasOwn(data, key) && data[key] === undefined))
     throw new TypeError('Explicit component choices must not be undefined');
   const selectors = data.selectors === undefined ? undefined : array(data.selectors).map(selector);
   if (selectors && (!selectors.length || new Set(selectors.map(selector => JSON.stringify(selector))).size !== selectors.length)) throw new TypeError('Nonempty unique component selectors required');
+  const streams = data.streams === undefined ? undefined : array(data.streams).map((input): CheckedStreamSelection => {
+    const entry = record(input, ['selector', 'path', 'format', 'recordType'], ['selector', 'path', 'format']);
+    if (entry.format !== 'ndjson' && entry.format !== 'json-array') throw new TypeError('Checked stream format must be ndjson or json-array');
+    const path = array(entry.path).map(step => typeof step === 'string' ? text(step) : name(step));
+    if (path.length < 2 || path.length > 32 || path.some(step => !isXmlNCName(typeof step === 'string' ? step : step.local)))
+      throw new TypeError('Checked stream path requires a wrapper and record declaration');
+    return {selector: selector(entry.selector), path, format: entry.format,
+      ...(entry.recordType === undefined ? {} : {recordType: name(entry.recordType)})};
+  });
+  if (streams) {
+    const keys = streams.map(stream => JSON.stringify(stream.selector));
+    if (new Set(keys).size !== keys.length || selectors && keys.some(key => !selectors.some(selector => JSON.stringify(selector) === key)))
+      throw new TypeError('Streams require unique requested operation selectors');
+    if (streams.length && data.httpResponseHeaders !== undefined) throw new TypeError('Checked streaming does not support upstream HTTP header publication');
+  }
   const fileRoots = data.fileRoots === undefined ? undefined : array(data.fileRoots).map(text);
   const sourceResources = data.sourceResources === undefined ? undefined : array(data.sourceResources).map(input => {const r = record(input, ['uri', 'file', 'canonicalUri', 'contentType'], ['uri', 'file']);
     return {uri: text(r.uri), file: text(r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: resolveResourceUri(text(r.canonicalUri))}),
@@ -291,7 +308,7 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
     ...(sourceResources ? {sourceResources} : {}), ...(sourceOrigins ? {sourceOrigins} : {}),
     ...(data.sourceUri === undefined ? {} : {sourceUri: resolveResourceUri(text(data.sourceUri))}),
     ...(standardLibraries ? {standardLibraries} : {}), ...(qualificationScope ? {qualificationScope} : {}),
-    ...(recordProjections ? {recordProjections} : {}), ...(responseBranches ? {responseBranches} : {}),
+    ...(recordProjections ? {recordProjections} : {}), ...(responseBranches ? {responseBranches} : {}), ...(streams ? {streams} : {}),
     ...(namespaceLocations ? {namespaceLocations} : {}), ...(basePath ? {basePath} : {}), ...(data.signal ? {signal: data.signal as AbortSignal} : {})};
 }
 
@@ -518,7 +535,7 @@ export async function scaffoldCheckedApp(opts: CheckedAppOptions): Promise<Check
   const {config, native, report, gateway} = await prepareCheckedHttpStages(opts, paths);
   gateway.emit(verifyCheckedArtifact);
   const {inventory, component} = await emitComponentClient(config, paths.clientDir, native, report, verifyCheckedArtifact);
-  await generateCheckedApp({...paths, appDir, component, force: opts.force, host: opts.host, port: opts.port});
+  await generateCheckedApp({...paths, appDir, component, streaming: native.streams.size > 0, force: opts.force, host: opts.host, port: opts.port});
   if (testDir) {
     const routePaths = Object.values(gateway.routes);
     await generateCheckedTests({clientDir: paths.clientDir, gatewayDir: paths.gatewayDir, appDir, testDir, force: opts.test?.force,
@@ -565,7 +582,7 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
   const {inventory, component} = await emitComponentClient(config, clientDir, native, report);
   const {doc, routes} = native.gateway;
   native.gateway.emit();
-  if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
+  if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component, streaming: native.streams.size > 0});
   if (opts.test && opts.app) await generateCheckedTests({clientDir, gatewayDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
     ...opts.test, routePaths: Object.values(routes), sourceFile: component.source});
   return {compiled: undefined, openapiDoc: doc, checked: inventory, planning: report};
@@ -603,6 +620,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
   const expected: ReconstructedComponentSource[] = [];
   const projections = new Map<string, ComponentRecordProjection>();
   const responseBranches = new Map<string, ComponentResponseBranches>();
+  const streams = new Map<ReconstructedComponentSource, ComponentStreamPlan>();
   const groups = new Map<string, NonNullable<CheckedComponentOptions['recordProjections']>[number][]>();
   for (const projection of config.recordProjections ?? []) {
     const key = JSON.stringify([resolveResourceUri(projection.source), projection.standardLibraries ?? []]);
@@ -677,6 +695,15 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     if (!branches && config.responseBranches?.some(entry => JSON.stringify(entry.selector) === JSON.stringify(result.contract.selector))) continue;
     const native = await prepareComponentSourceForOperation(result.contract, {service: config.service, port: config.port}, preparation, config.signal, projection, config.applicationGroups, branches);
     if (native.kind !== 'reconstructed-component') {refusals.push({selector: result.contract.selector, kind: native.kind, rule: native.rule, dimension: 'mapping-and-artifact'}); continue;}
+    const stream = config.streams?.find(stream => JSON.stringify(stream.selector) === JSON.stringify(result.contract.selector));
+    if (stream) {
+      try {streams.set(native, planComponentStream(native, stream));}
+      catch (error) {
+        if (!(error instanceof TypeError) || !error.message.startsWith('checked-stream:')) throw error;
+        refusals.push({selector: stream.selector, kind: 'unsupported', rule: error.message, dimension: 'mapping-and-artifact'});
+        continue;
+      }
+    }
     expected.push(native);
   }
   const groupTargets = new Map<string, ApplicationGroupTarget>(), groupRecords = new Map<string, ApplicationGroupRecord>();
@@ -706,13 +733,13 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
     catch (error) {refusals.push({selector: config.selectors[0]!, kind: config.signal?.aborted ? 'cancelled' : 'unsupported',
       rule: error instanceof Error ? error.message : 'source-relocation', dimension: 'mapping-and-artifact'});}
     for (const operation of inspectComponentSourceService(expected)) {
-      tick(); const generated = await generateComponentClient(operation, config.signal);
+      tick(); const generated = await generateComponentClient(operation, config.signal, streams.get(operation));
       if (generated.kind !== 'generated-component-client') refusals.push({selector: operation.contract.selector, kind: generated.kind, rule: generated.rule, dimension: 'mapping-and-artifact'});
       else generatedClients.push(generated);
     }
     if (!refusals.length && 'openapiFile' in outputs) {
       try {gateway = await generateComponentServiceGateway(expected, {...outputs, clientDir: outputs.clientDir ?? 'client',
-        gatewayDir: outputs.gatewayDir ?? 'gateway', basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, httpResponseHeaderNames: config.httpResponseHeaderNames, httpResponseStatusHeaderName: config.httpResponseStatusHeaderName, signal: config.signal, emit: false});}
+        gatewayDir: outputs.gatewayDir ?? 'gateway', basePath: config.basePath ?? outputs.basePath, httpResponseHeaders: config.httpResponseHeaders, httpResponseHeaderNames: config.httpResponseHeaderNames, httpResponseStatusHeaderName: config.httpResponseStatusHeaderName, streams, signal: config.signal, emit: false});}
       catch (error) {
         const exhausted = expected.some(operation => inspectDirectOperation(operation.contract).context.budget.exhausted());
         if (!config.signal?.aborted && !exhausted) throw error;
@@ -721,7 +748,7 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
       }
     }
   }
-  return {expected, projections, responseBranches, namespaces, refusals, layout, generatedClients, gateway, applicationGroups, wholeSourceLegality,
+  return {expected, projections, responseBranches, streams, namespaces, refusals, layout, generatedClients, gateway, applicationGroups, wholeSourceLegality,
     ...(correctedSources ? {sourceCorrections: correctedSources.provenance} : {})};
 }
 
@@ -795,7 +822,7 @@ async function emitComponentClient(config: CheckedComponentOptions, clientDir: s
   const namespaceLocations = [...namespaces].map(([namespace, location]) => ({namespace,
     location: relocated(resolveResourceUri(location))}));
   tick();
-  const contracts = await writeComponentServiceClient(expected, clientDir, config.signal, native.generatedClients, write);
+  const contracts = await writeComponentServiceClient(expected, clientDir, config.signal, native.generatedClients, write, native.streams);
   for (const resource of allResources) {
     tick();
     write(copied.get(resource.uri)!, copyOriginalSchemaResource(resources.get(resource.uri)!.input, resource.uri, amount => inspection.context.budget.chargeWork(amount)));

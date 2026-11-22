@@ -33,6 +33,8 @@ describe('installed package documentation', () => {
     expect(() => validatePackageFiles([], () => '')).toThrow('Required package file is missing: dist/cli.js');
     expect(() => validatePackageFiles([], () => '')).toThrow('Required package file is missing: src/runtime/checkedGatewayHost.tpl.txt');
     expect(() => validatePackageFiles([], () => '')).toThrow('Required package file is missing: src/runtime/streamXml.ts');
+    expect(() => validatePackageFiles([], () => '')).toThrow('Required package file is missing: dist/runtime/ndjson.js');
+    expect(() => validatePackageFiles([], () => '')).toThrow('Required package file is missing: dist/runtime/jsonArray.js');
     expect(() => validatePackageFiles([], () => '')).toThrow('Required package file is missing: src/generation/preambles/direct-client/typescript.preamble');
   });
 

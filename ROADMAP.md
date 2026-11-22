@@ -14,7 +14,7 @@ Product changes do not wait for unrelated universal research completion. Each ch
 
 ## Published baseline
 
-Version [1.7.0](docs/releases/v1.7.0.md) is published on GitHub and completes the agreed buffered SOAP work: queried endpoints, bounded compression, observed response bases, configured credentials, declared literal headers and portable metadata/bootstrap. Checked composition, checked streaming and the documented richer security/binding families remain incomplete; this release does not establish universal provider or standards coverage.
+Version [1.14.0](docs/releases/v1.14.0.md) is published on [GitHub](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.14.0) and [npm](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client/v/1.14.0). The checked stack supports standalone generation and buffered SOAP. ONVIF Media qualification exercised five reads in one relocated gateway and a separate declared-attribute exchange. The evidence identifies the qualification archives, the combined release tree and the published archive individually. [Release verification and wire evidence](https://github.com/TechSpokes/typescript-wsdl-client/issues/207#issuecomment-7081782202)
 
 ### Release availability and upgrade impact
 
@@ -35,13 +35,22 @@ Version 1.7.0 was published on [GitHub](https://github.com/TechSpokes/typescript
 | Published on GitHub in 1.7.0 | Buffered transport, credentials, typed literal headers and metadata/source fidelity |
 | Published in 1.8.0 | Lexical string, decimal and Boolean unions and lists of those unions |
 | Published in 1.8.1 | Reviewed release and compatibility verification sequence |
-| Deferred | Checked composition, checked incremental decoding and broader protocol/security coverage |
+| Published in 1.9.0 | Part A source, scalar and artifact coverage for the agreed checked profile |
+| Published in 1.10.0 through 1.12.0 | Standalone checked client, OpenAPI, gateway and app generation and installed qualification |
+| Published in 1.12.1 through 1.14.0 | Closed-operation selection, scoped lax wildcards and checked ONVIF Media reads |
+| Planned | Checked incremental delivery, remaining composition and broader protocol/security coverage |
 
 Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values when crossing 1.2.0. The [migration guide](docs/migration.md) retains those impacts and describes the separately adopted SOAP 1.2 runtime in 1.3.0.
 
 One-way acknowledgement confirms a complete allowed HTTP exchange, not business processing. Adopt matching V6/V7 generated artifacts deliberately; existing request-response bindings and defaults remain unchanged. Version 1.7.0 adds configured authentication, typed literal SOAP headers and private bootstrap for supported legal names/cycles; wider source, policy and incoming cryptographic duties retain their owners.
 
 ## Next deliveries
+
+### Checked streaming
+
+Implement a checked consumer that receives its first validated record while the owned SOAP response is still open. Start with the generated client and gateway for one known wrapper. Qualify completion, cancellation and both HTTP formats, then exercise the companion-scoped contract used by existing consumers. The [execution plan](docs/roadmap/checked-streaming-execution.md) connects the [streaming issues](https://github.com/TechSpokes/typescript-wsdl-client/issues/159) to source, installed tests and issue closure criteria.
+
+Use the published v1.14.0 npm archive as the baseline for the next ONVIF Media qualification. Retain the 79-operation comparison and five-route qualification under their original archive identities. [Media receipt](https://github.com/TechSpokes/typescript-wsdl-client/issues/207#issuecomment-7081782202)
 
 ### Buffered completion checkpoint, November 17, 2026
 
@@ -65,9 +74,9 @@ The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/
 
 | Order | Outcome | Existing owners |
 |---|---|---|
-| Published baseline | Reuse bounded transport, accepted Escapia and lexical union evidence | #488/#489/#491/#493 |
-| Part A | Close supported source, value, artifact and buffered SOAP coverage through the existing pipeline | [#495](https://github.com/TechSpokes/typescript-wsdl-client/issues/495), #397/#207/#401 |
-| Part B | Carry standalone workflows, composition and streaming through checked execution | #192-#194/#201-#203/#164 |
+| Published baseline | Reuse buffered transport, Escapia, standalone and pinned provider evidence through v1.14.0 | #397/#207/#401 |
+| Part A delivered | Retain the agreed v1.9.0 source, value, artifact and buffered SOAP coverage | [#495](https://github.com/TechSpokes/typescript-wsdl-client/issues/495) |
+| Part B in progress | Deliver checked streaming, then qualify remaining workflow and composition gaps against consumer use | #159/#192-#194/#201-#203/#164 |
 | Retirement | Prove migration and decide activation separately | #204/#205/#207/#208 |
 
 Use [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [#207](https://github.com/TechSpokes/typescript-wsdl-client/issues/207) for a paired legacy/checked capability register. Each row identifies its source/profile, legacy promise, checked behavior, independently expected wire/HTTP result, remaining gap and owner. Distinguish working execution, valid unsupported input, unresolved qualification, invalid input and deliberate policy denial; refusal coverage does not prove replacement parity.
@@ -155,7 +164,7 @@ Use representative corpus exchanges alongside independent native checks, install
 
 Checked generation supports explicit nil with attributes, native facets and primitive-string unions, keyed mixed/namespaced/open values, and opt-in application groups with configured names in their documented domains. The [checked gateway guide](docs/checked-gateway.md) and [mapping contract](docs/mapping-contract.md) describe their actual public representation and limits.
 
-The development tree builds on tagged 1.7.0 and includes the reviewed atomic-union and union-list implementations. [Release notes](docs/releases/README.md) describe each version's scope, and [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability.
+The v1.14.0 baseline includes the reviewed native scalar and scoped wildcard implementations. [Release notes](docs/releases/v1.14.0.md) describe the latest delivered scope, and [npm registry metadata](https://registry.npmjs.org/@techspokes%2Ftypescript-wsdl-client) establishes package availability.
 
 Provider evidence remains narrower than implementation coverage. All 12 NOAA operations have owned-server qualification, while the retained live retest has ten successes and two non-SOAP GML failures; Escapia evidence covers selected Test reads. These limitations remain explicit in the [NOAA qualification](docs/noaa-ndfd-qualification.md) and [composition status](docs/roadmap/multi-service-gateway.md), without closing the broader coverage work.
 

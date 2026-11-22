@@ -18,6 +18,7 @@ export interface GenerateCheckedAppOptions {
   readonly force?: boolean;
   readonly host?: string;
   readonly port?: number;
+  readonly streaming?: boolean;
   readonly component: {
     readonly source: string;
     readonly capsules: Readonly<Record<string, string>>;
@@ -125,13 +126,18 @@ Complete advanced source configurations remain supported: supply \`localSource\`
 
 The runtime reads physical sources independently and validates native requests, responses and declared faults. The selected address supplies routing intent on invocation; startup and generated tests make no business SOAP calls. HTTPS policies require verified TLS; \`caFile\` can supply a test CA without disabling certificate or hostname checks. Unsupported security requirements and capabilities refuse before dispatch. Optional \`timeoutMs\` and XML \`limits\` are caller controls; there is no implicit execution deadline or diagnostic work quota. Programmatic hosts can supply an \`AbortSignal\`.
 
-Generated defaults retain the acquired standard-library and explicit companion-source decisions. Advanced callers may provide \`standardLibraries\` and \`recordSources\` explicitly; the latter pairs each outer selector with its independent physical companion WSDL. These contexts remain separate; the companion service is never invoked. Scoped responses retain the complete companion payload and validate required schema metadata before omitting it from JSON. OpenAPI records explicit exclusions and buffered scope. Missing schema metadata is not defaulted, and no streaming behavior is implied.
+Generated defaults retain the acquired standard-library and explicit companion-source decisions. Advanced callers may provide \`standardLibraries\` and \`recordSources\` explicitly; the latter pairs each outer selector with its independent physical companion WSDL. These contexts remain separate; the companion service is never invoked. OpenAPI records delivery and validation scope, including any declared companion exclusions.
 
 ## Ownership and evidence
 
 Clients, per-operation capsules, copied source bytes, gateway files and OpenAPI are generator-owned. Server, package/configuration, this README and generated tests are consumer-owned scaffolds and are preserved unless force is selected. Optional \`capsuleFiles\` explicitly overrides per-operation artifact locations. Unknown controls and mismatched artifacts refuse.
 
 Generated tests cover health, documentation and invalid-input refusal. They do not establish independent wire behavior, record interpretation or provider/business acceptance. WSDL supplies neither credentials nor business-value oracles; use separately specified owned-service fixtures for those checks.
+`;
+  if (options.streaming) files['README.md'] += `
+## Checked streaming
+
+Set \`allowedEndpoints\` to include the exact SOAP URL, including its query if present. A stream route uses the output format declared in OpenAPI. Read to clean EOF for NDJSON or to a complete JSON array. A transport abort indicates failed delivery.
 `;
   if (component.branchSources?.length) files['README.md'] += `
 ## Application-error branches

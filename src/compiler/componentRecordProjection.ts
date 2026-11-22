@@ -212,6 +212,33 @@ export function inspectComponentRecordProjection(projection: ComponentRecordProj
   inspectDirectOperation(owned.outer); inspectDirectOperation(owned.companion);
   return owned;
 }
+
+/** Advance the exact outer wrapper grammar without retaining companion payloads. */
+export function createComponentRecordWrapperCursor(projection: ComponentRecordProjection, check: () => void) {
+  const owned = inspectComponentRecordProjection(projection);
+  const {budget} = inspectDirectOperation(owned.outer).context;
+  let index = 0;
+  return {
+    push(name: ExpandedName): Leaf | Readonly<{kind: 'mismatch'; rule: string}> {
+      check();
+      while (index < owned.leaves.length) {
+        const leaf = owned.leaves[index++]!;
+        if (leaf.kind === 'boundary') {
+          if (!same(name, projection.spec.payloadPath[0]!) || !namespaceAllows(leaf.namespace, name.namespace, budget.chargeWork))
+            return {kind: 'mismatch', rule: 'record-wrapper-companion-boundary'};
+          return leaf;
+        }
+        if (same(name, leaf.declaration.name)) return leaf;
+        if (!leaf.optional) return {kind: 'mismatch', rule: 'record-wrapper-standard-order'};
+        check();
+      }
+      return {kind: 'mismatch', rule: 'record-wrapper-child-count'};
+    },
+    end(): boolean {
+      return owned.leaves.slice(index).every(leaf => leaf.kind === 'standard' && leaf.optional);
+    },
+  };
+}
 export function inspectComponentRecordValue(value: ComponentRecordValue, projection: ComponentRecordProjection): ComponentRecordValue {
   inspectComponentRecordProjection(projection);
   if (values.get(value) !== projection) throw new TypeError('Native matching component record value required');
@@ -288,24 +315,19 @@ export function assessObservedComponentRecordPayload(outer: DirectOperationContr
       const required = owned.leaves.filter(leaf => leaf.kind === 'boundary' || !leaf.optional).length;
       if (children.length < required || children.length > owned.leaves.length) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
       let payload: SyntaxElement | undefined;
-      let cursor = 0;
-      for (let index = 0; index < owned.leaves.length; index++) {
-        check(); const leaf = owned.leaves[index]!, child = children[cursor];
-        if (leaf.kind === 'standard' && leaf.optional && (!child || !same(child.name, leaf.declaration.name))) continue;
-        if (!child) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
-        cursor++;
+      const cursor = createComponentRecordWrapperCursor(projection, check);
+      for (const child of children) {
+        const leaf = cursor.push(child.name);
+        if (leaf.kind === 'mismatch') throw new ScopeStop(leaf.kind, leaf.rule);
         if (leaf.kind === 'standard') {
-          if (!same(child.name, leaf.declaration.name)) throw new ScopeStop('mismatch', 'record-wrapper-standard-order');
           const assessed = assessStandardSchemaElement(leaf.declaration, child, budget, {signal: options.signal, check});
           if (assessed.kind !== 'schema-element-instance') return failure(assessed.kind, assessed.kind === 'resource-limit' ? 'record-standard-budget' : assessed.rule);
           if (assessed.remaining.length) throw new ScopeStop('unsupported', 'record-standard-instance-obligations');
         } else {
-          if (!same(child.name, projection.spec.payloadPath[0]!) || !namespaceAllows(leaf.namespace, child.name.namespace, budget.chargeWork))
-            throw new ScopeStop('mismatch', 'record-wrapper-companion-boundary');
           payload = child;
         }
       }
-      if (cursor !== children.length) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
+      if (!cursor.end()) throw new ScopeStop('mismatch', 'record-wrapper-child-count');
       if (!payload) throw new TypeError('Native record boundary unavailable');
       const decoded = assessObservedComponentPayload(owned.companion, owned.mapping, observation, payload, options);
       if (decoded.kind !== 'component-decoded') return decoded;

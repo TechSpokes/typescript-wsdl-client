@@ -150,6 +150,12 @@ export function composeOpenApiDocuments(entries: readonly OpenApiCompositionEntr
       if (kind === "schema" && typeof value === "boolean") return value;
       const node = record(value, kind);
       const out: JsonObject = {...node};
+      if ((kind === "operation" || kind === "mediaType") && node["x-wsdl-tsc-stream"] !== undefined) {
+        // @why Stream item schemas participate in composition at both generated extension locations.
+        const stream = record(node["x-wsdl-tsc-stream"], "stream metadata");
+        out["x-wsdl-tsc-stream"] = {...stream,
+          ...(stream.itemSchema === undefined ? {} : {itemSchema: walk(stream.itemSchema, "schema", scan)})};
+      }
       if (kind === "operation" && scan) {
         operationNodes.add(node);
         if (node.operationId !== undefined) {
@@ -190,12 +196,6 @@ export function composeOpenApiDocuments(entries: readonly OpenApiCompositionEntr
         }
       } else if (kind === "parameter" || kind === "header" || kind === "mediaType") {
         child("schema", "schema"); keyed("examples", "example"); keyed("content", "mediaType"); keyed("encoding", "encoding");
-        if (kind === "mediaType" && node["x-wsdl-tsc-stream"] !== undefined) {
-          // @why Generated stream consumers discover record schemas here; unrelated extension payloads may contain literal $ref data.
-          const stream = record(node["x-wsdl-tsc-stream"], "stream metadata");
-          out["x-wsdl-tsc-stream"] = {...stream,
-            ...(stream.itemSchema === undefined ? {} : {itemSchema: walk(stream.itemSchema, "schema", scan)})};
-        }
       } else if (kind === "encoding") keyed("headers", "header");
       else if (kind === "requestBody") keyed("content", "mediaType");
       else if (kind === "response") {keyed("headers", "header"); keyed("content", "mediaType"); keyed("links", "link");}

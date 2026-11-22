@@ -19,6 +19,7 @@ import {COMPONENT_SOAP11_BRANCH_CLIENT_RUNTIME_VERSION, COMPONENT_SOAP12_BRANCH_
 import {componentServiceHeaderRouting} from '../generation/componentServiceHeaders.js';
 import {documentationComment, sourceDocumentation} from '../generation/sourceDocumentation.js';
 import {WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
+import {COMPONENT_STREAM_RUNTIME_VERSION, streamArtifactCapsule, type ComponentStreamPlan} from '../compiler/componentStreamPlan.js';
 
 const MAX_SOURCE_BYTES = 512 * 1024;
 const generatedArtifacts = new WeakMap<object, SemanticBudget>();
@@ -149,14 +150,16 @@ export interface GeneratedComponentClient {
  * @returns An authentic writable artifact, or explicit refusal. No legacy catalog or saved report is consumed.
  * @throws TypeError For copied/foreign reconstruction handles. Caller cancellation returns a refusal.
  */
-export async function generateComponentClient(expected: ReconstructedComponentSource, signal?: AbortSignal): Promise<GeneratedComponentClient | DirectCapsuleFailure> {
+export async function generateComponentClient(expected: ReconstructedComponentSource, signal?: AbortSignal, stream?: ComponentStreamPlan): Promise<GeneratedComponentClient | DirectCapsuleFailure> {
   inspectReconstructedComponentSource(expected);
   const {context: {budget}, operationSyntax} = inspectDirectOperation(expected.contract);
   const failure = (kind: DirectCapsuleFailure['kind'], rule: string): DirectCapsuleFailure => ({kind, rule,
     repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({...budget.usage()})});
   const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Error('cancelled');};
   try {
-    check(); const capsule = {bytes: componentSourceCapsuleBytes(expected, signal)};
+    check();
+    const nativeCapsule = componentSourceCapsuleBytes(expected, signal);
+    const capsule = {bytes: stream ? streamArtifactCapsule(nativeCapsule, stream) : nativeCapsule};
     const operationDoc = sourceDocumentation([operationSyntax], WSDL_NAMESPACE, amount => {check(); budget.chargeWork(amount);});
     const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const mappings = expected.mappings;
@@ -246,6 +249,25 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
       `      return await runtime.execute(expectedCapsuleBase64, input, options, ${literal(runtimeVersion)}) as Result;`,
       '    },', '  });', '}', '',
     ];
+    if (stream) {
+      const item = lowerComponentShape(stream.contract, output, 'StreamItem', check, stream.item);
+      const operation = literal(expected.contract.selector.operation);
+      lines.push(...item.declarations, `export type StreamItem = ${item.type};`,
+        `export const streamSelection = ${literal(stream.spec)} as const;`,
+        'type StreamRuntime = typeof import("@techspokes/typescript-wsdl-client").checkedComponentStreamRuntimeV1;',
+        'export type StreamOptions = Omit<Options, "soap"> & {readonly soap: Options["soap"] & {readonly limits?: import("@techspokes/typescript-wsdl-client").CheckedStreamXmlLimits}};',
+        'export function createStreamClient(runtime: StreamRuntime) {',
+        '  return Object.freeze({',
+        `    [${operation}]: (input: Request, options: StreamOptions): import("@techspokes/typescript-wsdl-client").CheckedStream<StreamItem> => {`,
+        `      if (!runtime || runtime.version !== ${literal(COMPONENT_STREAM_RUNTIME_VERSION)} || typeof runtime.open !== "function") {`,
+        '        const rule = "generated-stream-runtime-version";',
+        '        return {records: {async *[Symbol.asyncIterator]() {throw new TypeError(rule);}},',
+        '          completion: Promise.resolve({kind: "incompatible-artifact", rule, usage: {nodes: 0, work: 0}}), cancel() {}};',
+        '      }',
+        `      return runtime.open<StreamItem>(expectedCapsuleBase64, input, options, ${literal(COMPONENT_STREAM_RUNTIME_VERSION)});`,
+        '    },',
+        '  });', '}', '');
+    }
     const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client'));
     if (Buffer.byteLength(source) > directLimit(budget, MAX_SOURCE_BYTES)) return failure('resource-limit', 'generated-source-byte-limit');
     check();
@@ -265,13 +287,14 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
  * @throws For foreign/mixed native operations, refused generation, cancellation or filesystem failure.
  */
 export async function writeComponentServiceClient(expected: readonly ReconstructedComponentSource[], directory: string, signal?: AbortSignal,
-  prepared?: readonly GeneratedComponentClient[], write: CheckedArtifactWriter = writeCheckedArtifact):
+  prepared?: readonly GeneratedComponentClient[], write: CheckedArtifactWriter = writeCheckedArtifact,
+  streams?: ReadonlyMap<ReconstructedComponentSource, ComponentStreamPlan>):
   Promise<Readonly<Record<string, string>>> {
   const operations = inspectComponentSourceService(expected);
   const generated: GeneratedComponentClient[] = [];
   if (prepared && prepared.length !== operations.length) throw new TypeError('Prepared operation artifacts must match the service');
   for (const [index, operation] of operations.entries()) {
-    const artifact = prepared?.[index] ?? await generateComponentClient(operation, signal);
+    const artifact = prepared?.[index] ?? await generateComponentClient(operation, signal, streams?.get(operation));
     if (artifact.kind !== 'generated-component-client') throw new Error(`Checked client refused: ${artifact.kind}: ${artifact.rule}`);
     if (componentArtifactOwners.get(artifact) !== operation) throw new TypeError('Prepared client belongs to another native operation');
     generated.push(artifact);
@@ -281,6 +304,12 @@ export async function writeComponentServiceClient(expected: readonly Reconstruct
     `import {createClient as operation_${index}} from './operations/${index}/client.js';`,
     `export * as Operation_${index} from './operations/${index}/client.js';`,
   ]);
+  if (streams?.size) {
+    const selected = operations.flatMap((operation, index) => streams.has(operation) ? [index] : []);
+    lines.push(...selected.map(index => `import {createStreamClient as stream_${index}} from './operations/${index}/client.js';`),
+      'export function createStreamClient(runtime: typeof import("@techspokes/typescript-wsdl-client").checkedComponentStreamRuntimeV1) {',
+      '  return Object.freeze({', ...selected.map(index => `    ...stream_${index}(runtime),`), '  });', '}');
+  }
   const branched = operations.some(operation => operation.responseBranches || operation.contract.pattern === 'one-way');
   const binding = (operation: ReconstructedComponentSource) => `${operation.contract.binding.version}:${operation.contract.pattern ?? 'request-response'}:${!!operation.responseBranches}`;
   const mixed = branched && operations.some(operation => binding(operation) !== binding(operations[0]!));

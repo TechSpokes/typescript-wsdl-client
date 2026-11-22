@@ -47,6 +47,23 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const checkedCapabilities: readonly CheckedCapabilityCase[] = [
   {
+    id: "checked-streaming",
+    title: "Checked incremental SOAP 1.1 records",
+    status: "partial",
+    featureTags: ["checked", "soap11", "streaming", "ndjson", "json-array"],
+    fixture: "xsd/standard-schema-element/records.wsdl",
+    docsAnchor: "checked-streaming",
+    publicContract: "Explicit stream selection yields native records and verifies full-response or authenticated companion scope at completion.",
+    decision: "partial-support",
+    decisionReason: "Read proves the installed socket handshake in both formats. Native Fetch controls exercise zero records, wrapper attributes, required footers and explicit companion scope.",
+    authority: "WSDL 1.1 SOAP document/literal, XML 1.0 and native XSD 1.0 record validation with explicit checked completion scope",
+    provenance: "Repository Read and Fetch fixtures with independent SOAP requests, response values, dispatch counts and socket observations.",
+    license: "MIT",
+    fixtureKind: "interop-profile",
+    profile: "checked-components-v1",
+    evidence: {native: "integration/checked-streaming.test.ts", installed: ["integration/checked-streaming-installed.test.ts"]},
+  },
+  {
     id: "checked-atomic-union-lists",
     title: "Checked lists of lexical atomic unions",
     status: "partial",

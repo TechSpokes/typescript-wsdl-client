@@ -25,6 +25,8 @@ See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
 Legacy generation is the default. Opt into native validation of supported SOAP contracts with `--model checked-components-v1`. Generate the whole stack with `pipeline` or run [`client`, `openapi`, `gateway`, and `app` separately](docs/checked-generation.md#generate-the-checked-stack-in-separate-commands).
 
+Enable [checked streaming](docs/checked-gateway.md#checked-streaming) per operation for supported SOAP 1.1 responses. The generated client yields typed records and reports terminal validation separately.
+
 Unambiguous sources select their service and operations automatically; ambiguous sources need an explicit `--checked-config`. Checked mode refuses unsupported or unresolved constructs rather than silently dropping their rules; the [checked gateway guide](docs/checked-gateway.md) explains configuration and scope.
 
 Generated source snapshots support offline runtime use, and calls use the selected WSDL address or an explicit endpoint override with optional restrictions. Existing [direct-runtime clients](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remain compatible; the [product corpus](docs/corpus.md) records representative evidence without claiming universal WSDL/XSD or live-provider support.
@@ -325,6 +327,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
 | [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
 | [Checked Part A Coverage](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-part-a-coverage.md) | Paired legacy and checked contracts, verification and open scope decisions |
+| [Checked Streaming Execution Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-streaming-execution.md) | Implementation sequence, installed wire proof and issue acceptance for incremental checked responses |
 | [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
 | [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Completed v1.7.0 adapter checklist, verification and continuing scope exclusions |
 | [Published-Package Consumer Acceptance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) | Accepted Escapia npm upgrade, exact evidence and unexecuted alternative boundaries |

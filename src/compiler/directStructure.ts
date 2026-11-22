@@ -3,7 +3,7 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
 import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, selectOpaqueWildcardAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand, inspectProjectionConstraintNamespaces} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection, createFlatProjectionCursor, selectProjectionAttribute, selectOpaqueWildcardAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand, inspectProjectionConstraintNamespaces} from './directStructurePlan.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
@@ -105,7 +105,7 @@ class Stop extends Error {
  * @returns A context-owned structural match or a mismatch, unsupported, cancellation or resource failure.
  */
 export function matchDirectProjection(context: SemanticContext, root: ElementNode, payload: SyntaxElement,
-  options: Readonly<{signal?: AbortSignal; flatOnly?: boolean}> = {}): ProjectionStructuralResult {
+  options: Readonly<{signal?: AbortSignal; flatOnly?: boolean; wrapperAttributesOnly?: boolean}> = {}): ProjectionStructuralResult {
   assertSemanticContext(context);
   const {budget} = context;
   const check = () => {budget.chargeWork(); if (options.signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
@@ -371,6 +371,12 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             ...(record.contextual ? {namespaces: node.namespaces} : {})});
           continue;
         }
+        if (options.wrapperAttributesOnly) {
+          // @constraints The stream cursor independently owns the child particle language; this receipt supplies only scalar attribute duties.
+          if (node.children.length || record.content !== 'element-only') throw new TypeError('Expected an element-only wrapper start');
+          frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes, openAttributes});
+          continue;
+        }
         if (record.content === 'simple') {
           if (!record.text) throw new TypeError('Missing native simple content plan');
           const path = `${parentPath}/text`, index = occurrences.length;
@@ -434,7 +440,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
           openAttributes,
           ...(record.contextual ? {namespaces: node.namespaces} : {})});
         const children: Frame[] = [];
-        let cursor = 0, count = 0;
+        const cursor = createFlatProjectionCursor(slots, check);
         for (let index = 0; index < node.children.length; index++) {
           check(); const child = node.children[index]!;
           budget.chargeWork(64);
@@ -444,21 +450,15 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             if (/[^\t\r\n ]/.test(child.value)) return mismatch('complex-text', declaration, path);
             continue;
           }
-          while (cursor < slots.length && !same(child.name, slots[cursor]!.element.name)) {
-            check(); const slot = slots[cursor]!;
-            if (slot.particle.occurs.min === '1' && count === 0) return mismatch('missing-required', slot.element, path);
-            cursor++; count = 0;
-          }
-          const slot = slots[cursor];
-          if (!slot) return mismatch('unexpected-child', declaration, path);
-          if (slot.particle.occurs.max === '1' && count === 1) return mismatch('duplicate-singleton', slot.element, path);
-          children.push({node: child, declaration: slot.element, value: slot.value, path, into: matchedSlots[cursor]!.items,
-            location: appendDiagnosticLocation(currentLocation, diagnosticName(slot.element.name, count + 1))}); count++;
+          const selected = cursor.push(child.name);
+          if (selected.kind === 'unexpected-child') return mismatch(selected.kind, declaration, path);
+          if (selected.kind !== 'selected') return mismatch(selected.kind, selected.slot.element, path);
+          const {slot} = selected;
+          children.push({node: child, declaration: slot.element, value: slot.value, path, into: matchedSlots[selected.index]!.items,
+            location: appendDiagnosticLocation(currentLocation, diagnosticName(slot.element.name, Number(selected.occurrence)))});
         }
-        for (; cursor < slots.length; cursor++, count = 0) {
-          check(); const slot = slots[cursor]!;
-          if (slot.particle.occurs.min === '1' && count === 0) return mismatch('missing-required', slot.element, `${parentPath}/end`);
-        }
+        const missing = cursor.end();
+        if (missing) return mismatch('missing-required', missing.element, `${parentPath}/end`);
         // @why Preserve document order and record boundaries without recursive JS calls.
         for (let i = children.length - 1; i >= 0; i--) {check(); frames.push(children[i]!);}
       }
