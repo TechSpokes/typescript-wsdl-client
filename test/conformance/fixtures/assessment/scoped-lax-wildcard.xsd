@@ -4,6 +4,16 @@
   <xs:element name="Count" type="xs:int"/>
   <xs:element name="ExtraCount" type="xs:int"/>
   <xs:attribute name="verified" type="xs:boolean"/>
+  <xs:attribute name="label">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:minLength value="3"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="unionLabel">
+    <xs:simpleType><xs:union memberTypes="xs:string xs:int"/></xs:simpleType>
+  </xs:attribute>
   <xs:element name="Content">
     <xs:complexType>
       <xs:sequence>

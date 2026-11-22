@@ -40,3 +40,18 @@ npm run verify:onvif-media -- .generated/techspokes-typescript-wsdl-client-1.13.
 The verifier checks the qualified token in the emitted SOAP POST with an independent namespace-aware parser. The owned response supplies a URI, two Booleans, a duration, a known integer-valued extension and an unknown element and attribute. It checks an HTTP 200 with preserved namespace identity, order and lexical content. Invalid REST input, denied endpoints, and missing or stale snapshots refuse without a SOAP request. Invalid SOAP values and a SOAP 1.2 Receiver fault produce HTTP 502.
 
 The synthetic [lax wildcard fixture](../test/conformance/fixtures/assessment/scoped-lax-wildcard.wsdl) separately exercises declared element and attribute validation and inverse projection. The installed replay uses a test-owned endpoint and provides no live device acceptance.
+
+## DeleteOSD declared attribute replay
+
+The same source pins and owned binding can select `MediaBinding/DeleteOSD`. In the original WSDL, the request has a required `OSDToken` before the lax wildcard and the response contains a lax wildcard. The test-owned extension is an unknown element with a declared `xmime:contentType` attribute from the pinned XML MIME import. The attribute's string restriction requires at least three characters. [Pinned DeleteOSD declarations](https://github.com/onvif/specs/blob/68ee1b540a40f848c9599eba2c55b87547c588d6/wsdl/ver10/media/wsdl/media.wsdl#L1909-L1927) · [XML MIME schema](https://www.w3.org/2005/05/xmlmime)
+
+```bash
+npm run verify:onvif-media -- .generated/npm-v1.13.0.tgz \
+  .generated/onvif-media/inputs .generated/onvif-media/osd-baseline DeleteOSD --baseline
+npm run verify:onvif-media -- .generated/candidate.tgz \
+  .generated/onvif-media/inputs .generated/onvif-media/osd-candidate DeleteOSD
+```
+
+The published baseline refuses the declared attribute even with `image/png`. The candidate preserves the expanded name and lexical string on both the outbound SOAP request and the HTTP response. The test sends the same attribute local name in a second namespace and checks both values independently. Invalid `xmime:contentType="x"` yields HTTP 400 before any SOAP POST and HTTP 502 when supplied by the owned upstream.
+
+Both runs replay the whole-source and closed-operation refusals before generation. The verifier records per-case SOAP dispatches, applies endpoint and snapshot controls, and requires zero network metadata fetches.

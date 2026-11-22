@@ -20,10 +20,14 @@ interface Pin {
   readonly canonicalUri?: string;
 }
 
-const [archiveArgument, pinsArgument, evidenceArgument] = process.argv.slice(2);
+const [archiveArgument, pinsArgument, evidenceArgument, operation = 'GetSnapshotUri', baselineFlag] = process.argv.slice(2);
 const npm = process.env.npm_execpath;
 assert.ok(npm && archiveArgument && pinsArgument && evidenceArgument,
-  'Usage: npm run verify:onvif-media -- <tarball> <original-files-directory> <evidence-directory>');
+  'Usage: npm run verify:onvif-media -- <tarball> <original-files-directory> <evidence-directory> [GetSnapshotUri|DeleteOSD] [--baseline]');
+assert.ok(operation === 'GetSnapshotUri' || operation === 'DeleteOSD');
+assert.ok(baselineFlag === undefined || (operation === 'DeleteOSD' && baselineFlag === '--baseline'));
+const baseline = baselineFlag === '--baseline';
+const deleteOSD = operation === 'DeleteOSD';
 const archive = path.resolve(archiveArgument);
 const pinDirectory = path.resolve(pinsArgument);
 const evidence = path.resolve(evidenceArgument);
@@ -44,19 +48,29 @@ const media = 'http://www.onvif.org/ver10/media/wsdl';
 const schema = 'http://www.onvif.org/ver10/schema';
 const soap = 'http://www.w3.org/2003/05/soap-envelope';
 const vendor = 'urn:owned:media-extension';
-const operation = 'GetSnapshotUri';
+const mime = 'http://www.w3.org/2005/05/xmlmime';
 const action = `${media}/${operation}`;
 const token = '00017 & camera';
 const uri = 'https://example.invalid/frame?value=1&size=2';
 const envelope = (body: string) => `<s:Envelope xmlns:s="${soap}" xmlns:m="${media}" xmlns:t="${schema}"
-  xmlns:v="${vendor}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><s:Body>${body}</s:Body></s:Envelope>`;
+  xmlns:v="${vendor}" xmlns:xmime="${mime}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><s:Body>${body}</s:Body></s:Envelope>`;
 const fields = `<t:Uri>${uri.replaceAll('&', '&amp;')}</t:Uri><t:InvalidAfterConnect>false</t:InvalidAfterConnect>
   <t:InvalidAfterReboot>false</t:InvalidAfterReboot><t:Timeout>PT0S</t:Timeout>`;
 const known = '<m:GetGuaranteedNumberOfVideoEncoderInstancesResponse><m:TotalNumber>3</m:TotalNumber></m:GetGuaranteedNumberOfVideoEncoderInstancesResponse>';
 const unknown = '<v:Uri v:mode="007"> 04 &amp; <v:Flag/> </v:Uri>';
 const responseBody = (payload: string) => `<m:GetSnapshotUriResponse><m:MediaUri v:hint="008">${payload}</m:MediaUri></m:GetSnapshotUriResponse>`;
+const osdReply = (extension: string) => `<m:DeleteOSDResponse>${extension}</m:DeleteOSDResponse>`;
+const xmlOverlay = (type: string) => `<v:Overlay xmime:contentType="${type}" v:contentType="x"/>`;
+const vendorAttribute = {contentType: {$namespace: vendor, $value: 'x'}};
+const mimeAttribute = ($value: string) => ({contentType: {$namespace: mime, $value}});
+const osdInput = ($attributes: object[]) => ({
+  $namespaces: {m: media, v: vendor, xmime: mime},
+  $content: [{OSDToken: token}, {Overlay: {$namespace: vendor, $attributes, $content: []}}],
+});
+const vendorOnly = osdInput([vendorAttribute]);
+const payload = deleteOSD ? osdInput([mimeAttribute('image/png'), vendorAttribute]) : {ProfileToken: token};
 const calls: {method?: string; url?: string; xml: string; contentType?: string; soapAction?: string | string[]}[] = [];
-let response = responseBody(fields + known + unknown), upstreamStatus = 200;
+let response = deleteOSD ? osdReply(xmlOverlay('image/png')) : responseBody(fields + known + unknown), upstreamStatus = 200;
 const upstream = createServer(async (request, reply) => {
   const chunks: Buffer[] = [];
   for await (const chunk of request) chunks.push(chunk as Buffer);
@@ -155,39 +169,72 @@ try {
   const route = '/v1/onvif/' + operation;
   const fetchBefore = globalThis.fetch;
   let metadataFetches = 0;
+  const dispatches: Record<string, number> = {};
   globalThis.fetch = async () => {metadataFetches++; throw new Error('unexpected metadata fetch');};
   try {
-    const post = (payload: object = {ProfileToken: token}) => app.inject({method: 'POST', url: route, payload});
+    const post = (input: object = payload) => app.inject({method: 'POST', url: route, payload: input});
     assert.equal((await post({})).statusCode, 400);
     assert.equal(calls.length, 0);
-    const result = await post();
-    assert.equal(result.statusCode, 200, result.body);
-    const {MediaUri} = result.json();
-    assert.deepEqual(MediaUri.$attributes, [{hint: {$namespace: vendor, $value: '008'}}]);
-    assert.deepEqual(MediaUri.$content.slice(0, 5), [{Uri: uri}, {InvalidAfterConnect: false}, {InvalidAfterReboot: false}, {Timeout: 'PT0S'},
-      {GetGuaranteedNumberOfVideoEncoderInstancesResponse: {$namespace: media, TotalNumber: 3}}]);
-    const extension = MediaUri.$content[5].Uri;
-    assert.equal(extension.$namespace, vendor);
-    assert.deepEqual(extension.$attributes, [{mode: {$namespace: vendor, $value: '007'}}]);
-    assert.deepEqual(extension.$content, [{$value: ' 04 & '}, {Flag: {$namespace: vendor, $content: []}}, {$value: ' '}]);
-    for (const invalid of [
-      fields.replace('<t:Timeout>PT0S</t:Timeout>', ''),
-      fields + known.replace('>3<', '>invalid<'),
-      fields + '<v:Uri xsi:type="m:Unknown"/>',
-      fields + '<v:Uri><m:GetGuaranteedNumberOfVideoEncoderInstancesResponse/></v:Uri>',
-    ]) {
-      response = responseBody(invalid);
+    dispatches.invalidShape = 0;
+    if (deleteOSD) {
+      const refused = await post(baseline ? payload : osdInput([mimeAttribute('x')]));
+      assert.equal(refused.statusCode, 400, refused.body);
+      assert.match(refused.body, baseline ? /opaque-wildcard-declaration/ : /cvc-minLength-valid/);
+      assert.equal(calls.length, 0);
+      dispatches.invalidInput = 0;
+      if (!baseline) {
+        const success = await post();
+        assert.equal(success.statusCode, 200, success.body);
+        assert.equal(calls.length, 1);
+        dispatches.success = 1;
+        const content = success.json().$content;
+        assert.equal(content.length, 1);
+        const {Overlay} = content[0];
+        assert.equal(Overlay.$namespace, vendor);
+        assert.deepEqual(Overlay.$attributes, [mimeAttribute('image/png'), vendorAttribute]);
+        assert.deepEqual(Overlay.$content, []);
+        response = osdReply(xmlOverlay('x'));
+      }
+      const upstream = await post(baseline ? vendorOnly : payload);
+      assert.equal(upstream.statusCode, 502, upstream.body);
+      assert.match(upstream.body, baseline ? /opaque-wildcard-declaration/ : /cvc-minLength-valid/);
+      assert.ok(!Object.hasOwn(upstream.json(), '$content'));
+      assert.equal(calls.length, baseline ? 1 : 2);
+      dispatches.invalidUpstream = 1;
+    } else {
       const result = await post();
-      assert.equal(result.statusCode, 502, result.body);
-      assert.ok(!Object.hasOwn(result.json(), 'MediaUri'));
+      assert.equal(result.statusCode, 200, result.body);
+      const {MediaUri} = result.json();
+      assert.deepEqual(MediaUri.$attributes, [{hint: {$namespace: vendor, $value: '008'}}]);
+      assert.deepEqual(MediaUri.$content.slice(0, 5), [{Uri: uri}, {InvalidAfterConnect: false}, {InvalidAfterReboot: false}, {Timeout: 'PT0S'},
+        {GetGuaranteedNumberOfVideoEncoderInstancesResponse: {$namespace: media, TotalNumber: 3}}]);
+      const extension = MediaUri.$content[5].Uri;
+      assert.equal(extension.$namespace, vendor);
+      assert.deepEqual(extension.$attributes, [{mode: {$namespace: vendor, $value: '007'}}]);
+      assert.deepEqual(extension.$content, [{$value: ' 04 & '}, {Flag: {$namespace: vendor, $content: []}}, {$value: ' '}]);
+      for (const invalid of [
+        fields.replace('<t:Timeout>PT0S</t:Timeout>', ''),
+        fields + known.replace('>3<', '>invalid<'),
+        fields + '<v:Uri xsi:type="m:Unknown"/>',
+        fields + '<v:Uri><m:GetGuaranteedNumberOfVideoEncoderInstancesResponse/></v:Uri>',
+      ]) {
+        response = responseBody(invalid);
+        const result = await post();
+        assert.equal(result.statusCode, 502, result.body);
+        assert.ok(!Object.hasOwn(result.json(), 'MediaUri'));
+      }
+      dispatches.success = 1;
+      dispatches.invalidUpstream = 4;
     }
     response = '<s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang="en">Owned media fault</s:Text></s:Reason></s:Fault>';
     upstreamStatus = 500;
-    const fault = await post();
+    const fault = await post(baseline ? vendorOnly : payload);
     assert.equal(fault.statusCode, 502);
     assert.deepEqual(fault.json().fault.code, {namespace: soap, local: 'Receiver'});
     assert.equal(fault.json().fault.string, 'Owned media fault');
-    assert.equal(calls.length, 6);
+    dispatches.fault = 1;
+    const expectedCount = deleteOSD ? baseline ? 2 : 3 : 6;
+    assert.equal(calls.length, expectedCount);
     for (const call of calls) {
       assert.equal(call.method, 'POST');
       assert.equal(call.url, '/media');
@@ -195,44 +242,65 @@ try {
       assert.equal(type.essence, 'application/soap+xml');
       assert.equal(type.params.get('action'), action);
       assert.equal(call.soapAction, undefined);
-      const names: string[] = [], lexical: string[] = [];
+      const names: string[] = [], lexical: string[] = [], overlayAttributes = new Map<string, string>();
       const parser = new SaxesParser({xmlns: true});
-      parser.on('opentag', node => names.push(`{${node.uri}}${node.local}`));
+      parser.on('opentag', node => {
+        names.push(`{${node.uri}}${node.local}`);
+        if (node.uri === vendor && node.local === 'Overlay') {
+          for (const attr of Object.values(node.attributes)) {
+            if (attr.uri !== 'http://www.w3.org/2000/xmlns/') overlayAttributes.set(`{${attr.uri}}${attr.local}`, attr.value);
+          }
+        }
+      });
       parser.on('text', value => {if (value.trim()) lexical.push(value);});
       parser.write(call.xml).close();
-      assert.deepEqual(names, [`{${soap}}Envelope`, `{${soap}}Body`, `{${media}}${operation}`, `{${media}}ProfileToken`]);
+      assert.deepEqual(names, [`{${soap}}Envelope`, `{${soap}}Body`, `{${media}}${operation}`,
+        ...(deleteOSD ? [`{${media}}OSDToken`, `{${vendor}}Overlay`] : [`{${media}}ProfileToken`])]);
       assert.deepEqual(lexical, [token]);
+      if (deleteOSD) {
+        assert.equal(overlayAttributes.size, baseline ? 1 : 2);
+        assert.equal(overlayAttributes.get(`{${vendor}}contentType`), 'x');
+        if (!baseline) assert.equal(overlayAttributes.get(`{${mime}}contentType`), 'image/png');
+      }
     }
     const denied = await buildServer({allowedEndpoints: []});
     try {
-      const result = await denied.inject({method: 'POST', url: route, payload: {ProfileToken: token}});
+      const result = await denied.inject({method: 'POST', url: route, payload: baseline ? vendorOnly : payload});
       assert.equal(result.statusCode, 502);
       assert.match(result.body, /endpoint authorization/);
     } finally {await denied.close();}
+    assert.equal(calls.length, expectedCount);
+    dispatches.deniedEndpoint = 0;
     const snapshots = JSON.parse(await readFile(path.join(relocated, 'client/source-resources.json'), 'utf8')) as {
       resources: {digest: string; file: string}[];
     };
-    const missing = snapshots.resources.find(resource => resource.digest === pins.find(pin => pin.file === 'bf-2.xsd')!.sha256);
+    const missing = snapshots.resources.find(resource => resource.digest === pins.find(pin => pin.file === (deleteOSD ? 'xmlmime.xsd' : 'bf-2.xsd'))!.sha256);
     assert.ok(missing);
     const snapshot = path.join(relocated, 'client', missing.file);
     const bytes = await readFile(snapshot);
     await rename(snapshot, snapshot + '.unavailable');
-    assert.equal((await post()).statusCode, 500);
+    assert.equal((await post(baseline ? vendorOnly : payload)).statusCode, 500);
+    assert.equal(calls.length, expectedCount);
+    dispatches.missingSnapshot = 0;
     await writeFile(snapshot, Buffer.concat([bytes, Buffer.from('\n<!-- changed snapshot -->')]));
-    const stale = await post();
+    const stale = await post(baseline ? vendorOnly : payload);
     assert.equal(stale.statusCode, 500);
     assert.match(stale.body, /local-source-changed|source-graph-changed/);
-    assert.equal(calls.length, 6);
+    assert.equal(calls.length, expectedCount);
+    dispatches.staleSnapshot = 0;
     assert.equal(metadataFetches, 0);
   } finally {
     globalThis.fetch = fetchBefore;
     await app.close();
   }
   const installedManifest = JSON.parse(await readFile(path.join(work, 'node_modules/@techspokes/typescript-wsdl-client/package.json'), 'utf8')) as {version: string};
+  if (baseline) assert.equal(installedManifest.version, '1.13.0');
   const receipt = {version: installedManifest.version, archiveSha256: hash(await readFile(archive)), operation,
     pins: pins.length, discovered: plan.inventory.operations, generated: 1, wholeSourceLegality: plan.dimensions.sourceLegality,
-    deterministic: true, scaffoldTestsBeforeBuild: true, strictBuild: true, relocated: true, successStatus: 200,
-    invalidInputStatus: 400, invalidUpstreamStatus: 502, faultStatus: 502, metadataFetches, soapDispatches: calls.length};
+    deterministic: true, scaffoldTestsBeforeBuild: true, strictBuild: true, relocated: true,
+    ...(baseline ? {baselineAttributeRefusal: 'opaque-wildcard-declaration'} : {successStatus: 200}),
+    invalidInputStatus: 400, invalidUpstreamStatus: 502, faultStatus: 502, metadataFetches, soapDispatches: calls.length, dispatches,
+    wholeSourceRefusal: 'cos-nonambig', closedOperationRefusal: 'operation-wildcard-dependency'};
   await writeFile(path.join(evidence, 'wire.json'), JSON.stringify(receipt, null, 2) + '\n');
   console.log(JSON.stringify(receipt, null, 2));
 } finally {

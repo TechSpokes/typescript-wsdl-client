@@ -257,16 +257,43 @@ export function selectProjectionAttribute(context: SemanticContext, record: Dire
   if (policy.processContents === 'skip') return {};
   const found = context.lookup(globalId('attribute', name));
   if (found.kind !== 'found' || found.node.kind !== 'attribute' || found.node.identity.kind !== 'global') return policy.processContents === 'lax' ? {} : undefined;
-  const declaration = found.node;
-  if (!qualifyScopedWildcardDeclaration(context, declaration.id, check)) return undefined;
+  if (!qualifyScopedWildcardDeclaration(context, found.node.id, check)) return undefined;
+  const attribute = planWildcardAttribute(context, found.node, check);
+  return attribute ? {attribute} : unsupported();
+}
+
+/** Select scalar duties for an attribute on the immediate opaque element matched by a lax wildcard.
+ * @param context Exact source context already qualified for the selected operation.
+ * @param name Expanded attribute name on the matched element.
+ * @param check Budget and cancellation checkpoint that propagates interruption.
+ * @returns An empty selection for lexical preservation, a declared scalar duty, or undefined on refusal.
+ * @why #179 establishes string restrictions at this boundary without expanding opaque descendant semantics.
+ */
+export function selectOpaqueWildcardAttribute(context: SemanticContext, name: ExpandedName, check: () => void):
+  Readonly<{attribute?: DirectProjectionAttribute}> | undefined {
+  if (!hasScopedLaxWildcards(context)) return {};
+  check();
+  context.budget.chargeWork(64 + (name.namespace.length + name.local.length) * 8);
+  if (name.namespace === 'http://www.w3.org/2001/XMLSchema-instance') return undefined;
+  const found = context.lookup(globalId('attribute', name));
+  if (found.kind === 'missing') return {};
+  if (found.kind !== 'found' || found.node.kind !== 'attribute' || found.node.identity.kind !== 'global'
+    || name.namespace === XML_NAMESPACE || !qualifyScopedWildcardDeclaration(context, found.node.id, check)) return undefined;
+  const attribute = planWildcardAttribute(context, found.node, check, true);
+  return attribute ? {attribute} : undefined;
+}
+
+function planWildcardAttribute(context: SemanticContext, declaration: AttributeNode, check: () => void,
+  atomicStringOnly = false): DirectProjectionAttribute | undefined {
   const scalar = describeProjectionScalar(context, declaration, check);
-  if (scalar.kind !== 'projection-scalar-type' || !projectionScalarRepresentation(scalar.builtin)) return unsupported();
+  if (scalar.kind !== 'projection-scalar-type' || !projectionScalarRepresentation(scalar.builtin)
+    || (atomicStringOnly && !scalar.atomicString)) return undefined;
   const constraint = declaration.value ? assessProjectionScalarOperand(context, declaration, declaration.value.lexical, check) : undefined;
-  if (constraint && constraint.kind !== 'projection-scalar-operand') return unsupported();
-  return {attribute: Object.freeze({declaration, required: false, bag: true, builtin: scalar.builtin,
+  if (constraint && constraint.kind !== 'projection-scalar-operand') return undefined;
+  return Object.freeze({declaration, required: false, bag: true, builtin: scalar.builtin,
     ...(scalar.retainLexical ? {retainLexical: true as const} : {}), ...(scalar.list ? {list: scalar.list} : {}),
     ...(declaration.value && constraint?.kind === 'projection-scalar-operand' ? {constraint: projectionConstraint(context, declaration.value.kind,
-      declaration.value.lexical, constraint.operand)} : {})})};
+      declaration.value.lexical, constraint.operand)} : {})});
 }
 
 /**

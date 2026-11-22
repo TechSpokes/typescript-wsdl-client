@@ -60,4 +60,31 @@ describe('scoped SOAP 1.2 lax wildcards', () => {
     }
     expect(decode(content('<u:Extra/><t:Count>1</t:Count>'))).toMatchObject({kind: 'mismatch', rule: 'ordered-particle-language'});
   });
+
+  it('assesses declared atomic string attributes on the wildcard element and preserves expanded names', async () => {
+    const {contract, mapping, decode} = await operation();
+    const prefix = '<t:Count>1</t:Count>';
+    const result = decode(content(prefix + '<u:Count t:label="  abc  " u:label="x"><u:Nested u:label="y"/></u:Count>'));
+    if (result.kind !== 'component-decoded') throw new Error(result.rule);
+    expect(result.validated.value).toMatchObject({
+      $content: [{Count: 1}, {Count: {$namespace: 'urn:unknown', $attributes: [
+        {label: {$namespace: namespace, $value: '  abc  '}},
+        {label: {$namespace: 'urn:unknown', $value: 'x'}},
+      ], $content: [{Nested: {$namespace: 'urn:unknown', $attributes: [{label: {$namespace: 'urn:unknown', $value: 'y'}}]}}]}}],
+    });
+    const value = JSON.parse(JSON.stringify(result.validated.value));
+    const encoded = encodeComponentXml(contract, mapping, value);
+    if (encoded.kind !== 'component-encoded') throw new Error(encoded.rule);
+    expect(decode(encoded.bytes)).toMatchObject({kind: 'component-decoded', validated: {value}});
+    value.$content[1].Count.$attributes[0].label.$value = 'x';
+    expect(encodeComponentXml(contract, mapping, value)).toMatchObject({kind: 'scalar-invalid', rule: 'cvc-minLength-valid'});
+    expect(decode(content(prefix + '<u:Count t:label="x"/>'))).toMatchObject({kind: 'scalar-invalid', rule: 'cvc-minLength-valid'});
+    for (const extension of ['<u:Count t:unionLabel="abc"/>', '<u:Count><u:Nested t:label="abc"/></u:Count>']) {
+      expect(decode(content(prefix + extension))).toMatchObject({kind: 'mismatch', rule: 'opaque-wildcard-declaration'});
+    }
+    const extension = value.$content[1].Count;
+    extension.$attributes = [];
+    extension.$content[0].Nested.$attributes = [{label: {$namespace: namespace, $value: 'abc'}}];
+    expect(encodeComponentXml(contract, mapping, value)).toMatchObject({kind: 'value-invalid', rule: 'opaque-wildcard-declaration'});
+  });
 });
