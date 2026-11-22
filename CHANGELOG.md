@@ -9,7 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-11-22
+
 - feat(checked): validate declared string attributes on elements matched directly by scoped lax wildcards.
+- feat(checked): qualify inherited lax wildcard tails.
 
 ## [1.13.0] - 2026-11-22
 

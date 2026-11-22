@@ -11,7 +11,7 @@ import type {DirectOperationContract, DirectMessageRoot, RpcMessageRoot} from '.
 import {inspectDirectStructuralMatch, matchDirectOperation, inspectDirectFixedOperand} from './directStructure.js';
 import type {DirectDirection, DirectScalarDuty, DirectStructuralMatch} from './directStructure.js';
 import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintNamespaces, inspectProjectionConstraintOperand} from './directStructurePlan.js';
-import type {DirectRootPlan, DirectProjectionPlan, DirectProjectionValue} from './directStructurePlan.js';
+import type {DirectRootPlan, DirectProjectionPlan, DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import type {ElementNode} from './canonicalGraph.js';
@@ -1008,7 +1008,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
           if (own.length !== fields.length || own.some(key => {check(); return typeof key !== 'string' || !fields.includes(key);})) return invalid('ordered-entry-shape', at, element);
           return input;
         };
-        let fixedIndex = 0;
+        let prefixIndex = 0, fixedIndex = 0;
         for (let index = 0; index < length; index++) {
           check(); const at = `${path}/${index}`;
           if (record.keyed) {
@@ -1026,12 +1026,27 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
               pending.push({kind: 'text', text, xmlPath: `${xmlPath}/children/${index}`, into: children});
               continue;
             }
-            const slots = record.trailingLaxWildcard ? [] : record.slots.filter(slot => slot.element.name.local === key);
+            let prefixSlot: DirectProjectionSlot | undefined;
+            if (record.trailingLaxWildcard && prefixIndex < record.slots.length) {
+              const namespace = member && typeof member === 'object' && !types.isProxy(member) && !Array.isArray(member)
+                && Object.hasOwn(member, '$namespace') ? data(member, '$namespace', at, element) : undefined;
+              // @why Omitted optional fields consume no application entry. Only the required delimiter can open the tail.
+              while (prefixIndex < record.slots.length) {
+                check(); budget.chargeWork(32);
+                const candidate = record.slots[prefixIndex++]!;
+                if (candidate.element.name.local === key && (namespace === undefined || namespace === candidate.element.name.namespace)) {
+                  prefixSlot = candidate;
+                  break;
+                }
+                if (candidate.particle.occurs.min === '1') return invalid('ordered-particle-language', at, element);
+              }
+            }
+            if (prefixSlot) budget.chargeWork(16 * record.slots.length);
+            const slots = !record.trailingLaxWildcard || prefixSlot ? record.slots.filter(slot => slot.element.name.local === key) : [];
             let selectedValue = member;
             let selectedIdentity: string | undefined;
-            const prefix = record.trailingLaxWildcard && index < record.slots.length;
-            let slot = prefix ? record.slots[index] : record.fixedOrder ? record.slots[fixedIndex++] : slots.length === 1 ? slots[0] : undefined;
-            if ((prefix || record.fixedOrder) && slot?.element.name.local !== key) return invalid('ordered-particle-language', at, element);
+            let slot = record.trailingLaxWildcard ? prefixSlot : record.fixedOrder ? record.slots[fixedIndex++] : slots.length === 1 ? slots[0] : undefined;
+            if (record.fixedOrder && slot?.element.name.local !== key) return invalid('ordered-particle-language', at, element);
             if (!record.fixedOrder && slot && member && typeof member === 'object' && !types.isProxy(member) && !Array.isArray(member) && Object.hasOwn(member, '$namespace')
               && data(member, '$namespace', at, element) !== slot.element.name.namespace) slot = undefined;
             if (!record.fixedOrder && slots.length > 1) {
@@ -1089,6 +1104,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
           if (!selected) return invalid('unknown-ordered-element', at, element);
           schedule(pending, selected, slot?.value ?? wildcardValue(selected), data(entry, 'value', at + '/value', element), `${xmlPath}/children/${index}`, at + '/value', children, scope);
         }
+        if (record.trailingLaxWildcard && prefixIndex < record.slots.length) return invalid('ordered-particle-language', path, element);
       } else for (const slot of record.slots) {
        check();
         const key = slot.element.name.local;

@@ -194,7 +194,7 @@ Each operation retains its own client and capsule; the service index and gateway
 
 ### Scoped lax wildcards
 
-Set `"qualificationScope": "lax-wildcard-operation-v1"` for a SOAP 1.2 document/literal request-response operation that uses supported `processContents="lax"` wildcards. This scope covers disjoint wildcard grammars and a single trailing element wildcard after a fixed sequence of required elements. It also covers lax attribute wildcards. Pass the original source snapshots and the usual binding and endpoint permissions.
+Set `"qualificationScope": "lax-wildcard-operation-v1"` for a SOAP 1.2 document/literal request-response operation that uses supported `processContents="lax"` wildcards. This scope covers disjoint wildcard grammars, lax attribute wildcards, and a single trailing lax element wildcard after a sequence of distinct named elements. Before the wildcard, the sequence can include inherited fields and optional singletons when its final named element is required. Pass the original source snapshots and the usual binding and endpoint permissions.
 
 Native validation checks a known wildcard declaration and its dependencies against the original graph before accepting its value. An unqualified known declaration causes refusal. Unknown elements retain their lexical content, expanded names and namespace context in the ordered `$content` form.
 
