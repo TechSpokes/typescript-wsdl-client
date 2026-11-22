@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-11-22
+
 - fix(checked): preserve streamed SOAP request scope, response limits, OpenAPI references and operation inspection.
 - feat(checked): stream natively validated SOAP 1.1 records through typed clients and NDJSON or JSON-array gateway routes.
 - docs(roadmap): prepare checked streaming implementation and installed qualification.
