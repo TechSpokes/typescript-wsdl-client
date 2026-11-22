@@ -18,6 +18,7 @@ const requiredFiles = [
   'dist/gateway/generateCheckedGateway.js', 'dist/app/generateCheckedApp.js',
   'dist/test/generateCheckedTests.js', 'dist/generation/preamble.js',
   'dist/generation/writeGeneratedSource.js', 'docs/checked-gateway.md',
+  'dist/runtime/jsonArray.js', 'dist/runtime/ndjson.js',
   'docs/examples/checked-forecast.wsdl', 'docs/agent-skill.md',
   'src/generation/preambles/typescript.preamble',
   'src/generation/preambles/app/typescript.preamble',
@@ -30,7 +31,7 @@ const requiredFiles = [
   'src/util/upstreamSecurityTypes.ts',
   'README.md', 'LICENSE', 'package.json', 'llms.txt',
 ];
-const forbidden = /^(?:agent-skill|scripts|test|research|tmp|\.github|\.idea|node_modules)\/|^dist\/(?:assets|agent-skill|runtime)\/|\.d\.ts\.map$|^src\/runtime\/(?:jsonArray|ndjson)\.ts$|^docs\/(?:content-model-|roadmap\/|releases\/|decisions\/|architecture\.md|reference-validation\.md|checked-consolidation-acceptance\.md|noaa-ndfd-qualification\.md)/;
+const forbidden = /^(?:agent-skill|scripts|test|research|tmp|\.github|\.idea|node_modules)\/|^dist\/(?:assets|agent-skill)\/|^dist\/runtime\/(?!(?:jsonArray|ndjson)\.js$)|\.d\.ts\.map$|^src\/runtime\/(?:jsonArray|ndjson)\.ts$|^docs\/(?:content-model-|roadmap\/|releases\/|decisions\/|architecture\.md|reference-validation\.md|checked-consolidation-acceptance\.md|noaa-ndfd-qualification\.md)/;
 
 /**
  * Rejects missing runtime resources, development material and broken consumer navigation.

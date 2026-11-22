@@ -196,3 +196,44 @@ If a blocker appears, preserve the exact evidence and continue independent cases
 Three reviewers approved this handoff for standalone implementation on November 22, 2026. The schema and compatibility review separated known-wrapper matching from companion projection and added mixed buffered/streamed client checks. The transport review added HTTP framing, credential isolation, fault timing and explicit caller resource policy.
 
 The installed-consumer review corrected the fixture occurrence bounds and strengthened the first-record assertion to a complete item at the HTTP consumer. Implementation review and installed wire qualification belong to the future candidate.
+
+## Candidate qualification
+
+The checked reader uses the native request encoder, ordered child cursor and scalar matcher. The adapter owns the SOAP 1.1 envelope and HTTP framing. The public configuration and cancellation contract are in [Checked streaming](../checked-gateway.md#checked-streaming).
+
+Run the focused source, legacy and installed checks from the implementation worktree. On Windows use system certificate trust and loopback access as described in [Testing](../testing.md#windows-and-certificates).
+
+```bash
+npm test -- test/integration/checked-streaming.test.ts test/unit/component-record-projection.test.ts
+npm test -- test/integration/stream-mapped-transport.test.ts test/integration/stream-request-wire-parity.test.ts test/integration/stream-transport-lifecycle.test.ts test/integration/stream-gateway-cancellation.test.ts
+npm run build
+npm test -- test/integration/checked-streaming-installed.test.ts
+```
+
+Set `WSDL_CHECKED_STREAM_BASELINE_ARCHIVE` to the absolute path of the checksum-pinned v1.14.0 tarball to include the frozen published client check. The installed lane emits `[checked streaming receipt]` with the Git tree, clean-worktree indicator, archive SHA-256, pinned Read SHA-256, platform, independent requests and socket outcomes. Set `WSDL_CHECKED_STREAM_EVIDENCE_DIR` to a fresh evidence directory to retain the receipt and the exact archive. The final `npm run ci` supplies the shared validated tarball, runs installed qualification and includes the pipeline smoke check.
+
+### Legacy selection inventory
+
+| Legacy promise | Checked configuration or current disposition |
+| --- | --- |
+| Operation name and stream mode | Full binding, port-type and operation selector in `checkedComponents.streams` |
+| NDJSON and JSON array | Explicit `format` with fixed media types for each format |
+| Custom `mediaType` | Pending a checked HTTP representation contract |
+| Local-name `recordPath` | Resolve each `path` step to one declaration and retain repeated segments |
+| Catalog `recordType` | Derive the source declaration and optionally assert its expanded type |
+| Companion `wsdlSource` | Authorize the physical WSDL with `recordProjections` and its exact selector |
+| Companion `catalogFile` | Requires the original companion WSDL and its source closure |
+| Legacy primitive and flattening configuration | Checked stream uses native checked values |
+| `UnitDescriptiveInfoStream` | Authentic owned-service checked streaming and installed replacement remain pending |
+| `UnitCalendarAvailBatch` | Synthetic repeated wrapper path exercised with Fetch. Authentic calendar parity remains pending |
+
+### Issue exits
+
+| Issue | Candidate evidence | Open acceptance |
+| --- | --- | --- |
+| [#159](https://github.com/TechSpokes/typescript-wsdl-client/issues/159) | Read socket handshake for client and both HTTP formats, synthetic Fetch scope and retained legacy controls | Verified replacement or retirement for every documented legacy promise |
+| [#192](https://github.com/TechSpokes/typescript-wsdl-client/issues/192) | Shared request encoder, independent expanded-name/order assertions, qualified path, UTF-8 splits and zero dispatch controls | Full protocol and security matrix, legacy request serialization retirement |
+| [#193](https://github.com/TechSpokes/typescript-wsdl-client/issues/193) | Required Read record, valid empty Fetch, wrapper and footer checks, late failures, cancellation, exact size/depth limits, and an owned producer stalled by demand | Broader transport coverage and process-wide heap measurements under the full D09 profile |
+| [#194](https://github.com/TechSpokes/typescript-wsdl-client/issues/194) | Buffered versus streamed Read values and requests, synthetic Fetch known and companion grammar, malformed suffix invariance | Broader approved parity corpus, authentic companion services and full platform matrix |
+
+The positive transport profile is credential-free SOAP 1.1 document/literal, UTF-8, identity encoding and an explicitly approved endpoint. The tests exercise HTTP status, mandatory headers, redirects, early and late faults, reset after a complete XML envelope with incomplete HTTP framing, and cancellation before and during demand. Published legacy values can differ from native checked values. Read canonicalizes decimals, uses the checked nil object, and supplies empty repeated fields.

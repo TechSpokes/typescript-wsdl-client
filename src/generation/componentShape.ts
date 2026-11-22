@@ -2,7 +2,7 @@
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import type {DirectOperationContract} from '../compiler/directOperation.js';
 import {inspectComponentValueMapping} from '../compiler/directValues.js';
-import {projectionScalarRepresentation, inspectOrderedProjectionWildcards, inspectUnassessedProjectionWildcards} from '../compiler/directStructurePlan.js';
+import {planDirectProjection, projectionScalarRepresentation, inspectOrderedProjectionWildcards, inspectUnassessedProjectionWildcards} from '../compiler/directStructurePlan.js';
 import type {DirectProjectionValue, DirectProjectionAttribute} from '../compiler/directStructurePlan.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -22,14 +22,14 @@ const literal = (value: unknown): string => JSON.stringify(value).replace(/\u202
  * @returns Role-scoped definitions and root descriptions; no native handles or retrieval paths are emitted.
  * @throws TypeError For foreign mappings or unsupported scalar representation. Caller cancellation propagates.
  */
-export function lowerComponentShape(contract: DirectOperationContract, supplied: unknown, role: string, check: () => void):
+export function lowerComponentShape(contract: DirectOperationContract, supplied: unknown, role: string, check: () => void, item?: ElementNode):
   {type: string; declarations: readonly string[]; schema: Schema} {
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(role)) throw new TypeError('TypeScript role identifier required');
   if (isComponentRecordProjection(supplied)) {
     const owned = inspectComponentRecordProjection(supplied, contract);
-    return lowerComponentShape(owned.companion, owned.mapping, role, check);
+    return lowerComponentShape(owned.companion, owned.mapping, role, check, item);
   }
-  const {mapping, projection, applicationGroups, rpcParts} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
+  const {mapping, projection: mappedProjection, applicationGroups, rpcParts} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
   const valueDocumentation = (node: GraphNode): string | undefined => node.annotations.length
     ? sourceDocumentation(node.annotations, XSD_NAMESPACE, amount => {check(); context.budget.chargeWork(amount);}) : undefined;
   const described = (schema: Schema, text?: string): Schema => text ? {...schema, description: text} : schema;
@@ -54,6 +54,8 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     }
     return {type: `{${members.join('; ')}}`, declarations: [], schema: {type: 'object', additionalProperties: false, properties, required}};
   }
+  const rootElement = item ?? mapping.root.element;
+  const projection = item ? planDirectProjection(context, item, check, () => {throw new TypeError('Native stream item projection required');}) : mappedProjection;
   if (!projection) throw new TypeError('Native document projection required');
   const names = new Map(projection.records.map((record, index) => [record.type.id, applicationGroups
     ? applicationRecordName(record.type.id) : `${role}_Record_${index}`]));
@@ -277,10 +279,10 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     declarations.push(`${doc ? documentationComment(doc) + '\n' : ''}export type ${name} = ${members.length ? '{\n' + members.join('\n') + '\n}' : 'Readonly<Record<string, never>>'};`);
     definitions[name] = described({type: 'object', properties, required, additionalProperties: false}, doc);
   }
-  const root = shape(projection.root, mapping.root.element);
+  const root = shape(projection.root, rootElement);
   const id = 'urn:checked-component:shape:' + createHash('sha256').update(JSON.stringify({selector: contract.selector, role})).digest('hex');
   // @why Nested identified fault schemas must not expose a root-only $ref that recurses during Ajv resource resolution.
   const rootSchema = root.schema.$ref ? {allOf: [root.schema]} : root.schema;
-  const rootDoc = valueDocumentation(mapping.root.element);
+  const rootDoc = valueDocumentation(rootElement);
   return {type: root.type, declarations, schema: {$id: id, ...described(rootSchema, rootDoc), definitions}};
 }

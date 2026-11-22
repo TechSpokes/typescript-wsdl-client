@@ -105,47 +105,73 @@ const nameKey = (name: ExpandedName, charge: (amount: number) => void): string =
  * @throws TypeError For an unauthenticated record or foreign context.
  */
 export function matchOrderedProjection(context: SemanticContext, record: DirectProjectionRecord, names: readonly ExpandedName[], check: () => void): readonly DirectProjectionSelection[] | undefined {
+  const cursor = createOrderedProjectionCursor(context, record, check);
+  const result: DirectProjectionSelection[] = [];
+  context.budget.chargeWork(64 + names.length * 8);
+  for (const name of names) {
+    const slot = cursor.push(name);
+    if (!slot) return undefined;
+    result.push(slot);
+  }
+  return cursor.end() ? result : undefined;
+}
+
+/** Advance an authenticated particle language one expanded name at a time. */
+export function createOrderedProjectionCursor(context: SemanticContext, record: DirectProjectionRecord, check: () => void) {
+  const cursor = orderedProjectionTransitions(context, record, check);
+  cursor.next();
+  return {
+    push(name: ExpandedName): DirectProjectionSelection | undefined {
+      const step = cursor.next(name);
+      return step.done ? undefined : step.value!;
+    },
+    end(): boolean {return cursor.next(undefined).value === true;},
+  };
+}
+
+function* orderedProjectionTransitions(context: SemanticContext, record: DirectProjectionRecord, check: () => void):
+  Generator<DirectProjectionSelection | undefined, boolean, ExpandedName | undefined> {
   const grammar = orderedGrammars.get(record);
   if (!grammar || grammar.context !== context) throw new TypeError('Unauthenticated ordered projection record');
   assertSemanticParticleView(context, grammar.view);
-  const algebra = occurrenceAlgebra(check), result: DirectProjectionSelection[] = [];
-  context.budget.chargeWork(64 + names.length * 8);
-  const inputKeys = names.map(name => {check(); return nameKey(name, context.budget.chargeWork);});
+  const algebra = occurrenceAlgebra(check);
+  let name = yield undefined;
+  const inputKey = () => name === undefined ? undefined : nameKey(name, context.budget.chargeWork);
+  let key = inputKey();
   const starts = (p: SemanticParticle): boolean => {
-    check(); const key = inputKeys[cursor];
+    check();
     if (key === undefined) return false;
     if (grammar.first.get(p)!.has(key)) return true;
-    return grammar.firstWildcards.get(p)!.some(wildcard => {check(); return namespaceAllows(wildcard.namespace, names[cursor]!.namespace, context.budget.chargeWork);});
+    return grammar.firstWildcards.get(p)!.some(wildcard => {check(); return namespaceAllows(wildcard.namespace, name!.namespace, context.budget.chargeWork);});
   };
-  let cursor = 0;
-  type Task = {kind: 'repeat'; particle: SemanticParticle; count: number} | {kind: 'body'; particle: SemanticParticle};
-  const tasks: Task[] = [{kind: 'repeat', particle: grammar.view.root, count: 0}];
+  type Task = {kind: 'repeat'; particle: SemanticParticle; count: bigint} | {kind: 'body'; particle: SemanticParticle};
+  const tasks: Task[] = [{kind: 'repeat', particle: grammar.view.root, count: 0n}];
   while (tasks.length) {
     check(); context.budget.chargeWork(64);
     const task = tasks.pop()!, p = task.particle;
-    const key = inputKeys[cursor];
     if (task.kind === 'repeat') {
       if (algebra.compare(String(task.count), p.occurs.max) < 0 && starts(p)) {
-        tasks.push({kind: 'repeat', particle: p, count: task.count + 1}, {kind: 'body', particle: p});
-      } else if (algebra.compare(String(task.count), p.occurs.min) < 0 && !grammar.bodyNullable.get(p)) return undefined;
+        tasks.push({kind: 'repeat', particle: p, count: task.count + 1n}, {kind: 'body', particle: p});
+      } else if (algebra.compare(String(task.count), p.occurs.min) < 0 && !grammar.bodyNullable.get(p)) return false;
       continue;
     }
     if (p.kind === 'element') {
-      if (key === undefined || grammar.leafKeys.get(p) !== key) return undefined;
-      result.push(grammar.slots.get(key)!); cursor++; continue;
+      if (key === undefined || grammar.leafKeys.get(p) !== key) return false;
+      name = yield grammar.slots.get(key)!; key = inputKey(); continue;
     }
     if (p.kind === 'any') {
       const leaf = grammar.wildcardLeaves.get(p)!;
-      const selected = selectProjectionWildcard(context, record, names[cursor]!, check);
-      if (!selected) return undefined;
-      result.push({kind: 'wildcard', ...(selected.element ? {element: selected.element} : {}), particle: leaf.particle}); cursor++; continue;
+      const selected = name && selectProjectionWildcard(context, record, name, check);
+      if (!selected) return false;
+      name = yield {kind: 'wildcard', ...(selected.element ? {element: selected.element} : {}), particle: leaf.particle};
+      key = inputKey(); continue;
     }
     if (p.kind === 'choice') {
       const selected = p.children.find(child => starts(child));
-      if (selected) tasks.push({kind: 'repeat', particle: selected, count: 0});
-      else if (!grammar.bodyNullable.get(p)) return undefined;
+      if (selected) tasks.push({kind: 'repeat', particle: selected, count: 0n});
+      else if (!grammar.bodyNullable.get(p)) return false;
     } else if (p.kind === 'sequence') {
-      for (let i = p.children.length - 1; i >= 0; i--) {check(); tasks.push({kind: 'repeat', particle: p.children[i]!, count: 0});}
+      for (let i = p.children.length - 1; i >= 0; i--) {check(); tasks.push({kind: 'repeat', particle: p.children[i]!, count: 0n});}
     } else if (p.kind === 'all') {
       // @why Each all-child occurs at most once in this subset; choose by disjoint native FIRST sets without enumerating permutations.
       const remaining = new Map<string, SemanticParticle>();
@@ -154,16 +180,47 @@ export function matchOrderedProjection(context: SemanticContext, record: DirectP
         if (child.kind !== 'element') throw new TypeError('Unsupported all child escaped planning');
         remaining.set(grammar.leafKeys.get(child)!, child);
       }
-      while (cursor < names.length) {
-        check(); const next = inputKeys[cursor]!;
-        const child = remaining.get(next);
+      while (key !== undefined) {
+        check();
+        const child = remaining.get(key);
         if (!child) break;
-        result.push(grammar.slots.get(next)!); cursor++; remaining.delete(next);
+        remaining.delete(key);
+        name = yield grammar.slots.get(key)!; key = inputKey();
       }
-      for (const child of remaining.values()) {check(); if (!child.summary.nullable) return undefined;}
+      for (const child of remaining.values()) {check(); if (!child.summary.nullable) return false;}
     } else throw new TypeError('Wildcard escaped ordered projection planning');
   }
-  return cursor === names.length ? result : undefined;
+  return name === undefined;
+}
+
+/** Advance the native flat sequence while retaining only its current occurrence. */
+export function createFlatProjectionCursor(slots: readonly DirectProjectionSlot[], check: () => void) {
+  let index = 0, count = 0n;
+  const advance = () => {index++; count = 0n;};
+  const missing = () => slots[index]?.particle.occurs.min === '1' && count === 0n;
+  return {
+    push(name: ExpandedName) {
+      while (index < slots.length) {
+        check();
+        const slot = slots[index]!;
+        if (name.local === slot.element.name.local && name.namespace === slot.element.name.namespace) {
+          if (slot.particle.occurs.max === '1' && count === 1n) return {kind: 'duplicate-singleton' as const, slot};
+          return {kind: 'selected' as const, slot, index, occurrence: ++count};
+        }
+        if (missing()) return {kind: 'missing-required' as const, slot};
+        advance();
+      }
+      return {kind: 'unexpected-child' as const};
+    },
+    end() {
+      while (index < slots.length) {
+        check();
+        if (missing()) return slots[index]!;
+        advance();
+      }
+      return undefined;
+    },
+  };
 }
 
 /** Resolve a policy-assessed wildcard declaration, never from a caller-supplied type or companion-name guess.

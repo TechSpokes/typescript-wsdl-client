@@ -68,7 +68,7 @@ function loadStreamConfigOrExit(filePath: string | undefined): StreamConfig | un
 }
 
 const checkedPlanningOptions = {
-  'checked-config': {type: 'string', desc: 'Optional component choices, qualification scope or metadata permissions and snapshots'},
+  'checked-config': {type: 'string', desc: 'Optional component choices, stream selections, qualification scope or metadata permissions and snapshots'},
   'checked-report': {type: 'string', desc: 'Write checked component readiness or refusal as JSON'},
   'checked-draft': {type: 'string', desc: 'Write an available missing-schema recovery draft'},
   'force-checked-files': {type: 'boolean', default: false, desc: 'Replace requested checked report or draft files'},

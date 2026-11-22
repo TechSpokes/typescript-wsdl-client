@@ -61,6 +61,7 @@ export interface CheckedComponentPlan {
   readonly responseBranches?: readonly {readonly selector: DirectOperationSelector;
     readonly spec: import('./compiler/componentResponseBranches.js').ComponentResponseBranchesSpec;
     readonly delivery: 'buffered'; readonly retainedValue: 'complete-selected-error-response'}[];
+  readonly streams?: readonly import('./compiler/componentStreamPlan.js').CheckedStreamSpec[];
   readonly operations: readonly {readonly portType: ExpandedName; readonly binding?: ExpandedName; readonly operation: string;
     readonly requested: boolean; readonly selected: boolean; readonly generated: false; readonly executed: false}[];
   readonly blockers: readonly ComponentPlanBlocker[];
@@ -328,7 +329,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
             continue;
           }
           add(category, 'native-preparation', refusal.rule, 'Resolve the native rule or extend the qualified capability; no validity override is available.',
-            'checkedComponents.selectors', [refusal.selector], undefined, refusal.dimension);
+            refusal.rule.startsWith('checked-stream:') ? 'checkedComponents.streams' : 'checkedComponents.selectors', [refusal.selector], undefined, refusal.dimension);
         }
         if (blockers.length) native = undefined;
       }
@@ -372,6 +373,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     ...(native && native.responseBranches.size ? {responseBranches: native.expected.flatMap(operation => operation.responseBranches
       ? [{selector: operation.contract.selector, spec: operation.responseBranches.spec, delivery: 'buffered' as const,
         retainedValue: 'complete-selected-error-response' as const}] : [])} : {}),
+    ...(native?.streams.size ? {streams: [...native.streams.values()].map(plan => plan.spec)} : {}),
     ...(config && selectors.length ? {selection: {service: config.service, port: config.port, selectors}} : {}), blockers: order(blockers),
     ...(intake && blockers.some(b => b.category === 'missing-dependency' && b.reason.startsWith('locationless-import:')) ? {resolution: {
       instructions: 'Save configuration as checked JSON. Replace REQUIRED_SCHEMA_LOCATION with an authorized schema path; paths resolve from the invocation working directory. Rerun the generation command with --checked-config. Reports never authorize generation.',

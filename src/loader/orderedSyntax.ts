@@ -185,6 +185,18 @@ export interface OrderedSyntaxOptions {
   chargeWork?: (amount: number) => void;
   reserveNode?: () => void;
 }
+
+/** Resolve lexically valid SOAP XML Base without granting retrieval authority. */
+export function resolveComponentXmlBase(base: string, inherited: string, charge: (amount: number) => void): string {
+  const reference = escapeReceiverAnyUri(base, amount => charge(amount ?? 1));
+  if (typeof reference !== 'string') throw new SchemaLoadingError('invalid-schema', reference.rule);
+  try {return new URL(reference, inherited).href;}
+  catch {
+    // @why Opaque diagnostic locators and valid URI authorities can fall outside WHATWG URL resolution.
+    return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) ? reference : inherited;
+  }
+}
+
 export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: OrderedSyntaxOptions = {}): SyntaxDocument {
   const maxDepth = options.maxDepth ?? DEFAULT_SYNTAX_DEPTH;
   if (!Number.isSafeInteger(maxDepth) || maxDepth < 1) throw new RangeError("maxDepth must be a positive safe integer");
@@ -249,13 +261,10 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: Orde
     if (base !== undefined) charge(512 + (base.length + (parent?.baseUri ?? uri).length) * 16);
     const inheritedBase = parent?.baseUri ?? options.componentResponseEncoding?.baseUri ?? uri;
     if (options.componentResponseEncoding && base !== undefined) {
-      const reference = escapeReceiverAnyUri(base, amount => charge(amount ?? 1));
-      if (typeof reference !== 'string') return fail('invalid-schema', reference.rule);
-      try {baseUri = new URL(reference, inheritedBase).href;}
-      catch {
-        // @why A diagnostic locator can be opaque, and URL rejects some valid URI authorities.
-        //   Routing resolves retained raw ancestry later; no unresolved reference gains base authority here.
-        baseUri = /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) ? reference : inheritedBase;
+      try {baseUri = resolveComponentXmlBase(base, inheritedBase, charge);}
+      catch (error) {
+        if (error instanceof SchemaLoadingError) return fail(error.category, error.message);
+        throw error;
       }
     } else {
       try {baseUri = base === undefined ? inheritedBase : new URL(base, inheritedBase).href;}

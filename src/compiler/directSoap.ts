@@ -318,15 +318,8 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     check();
     let selectedEndpoint = options.endpoint ?? (upstream?.endpointEnv ? process.env[upstream.endpointEnv] : undefined);
     if (profile.component && selectedEndpoint === undefined) {
-      const {source} = inspectDirectOperation(contract);
-      const services = source.documents.flatMap(d => syntaxElements(d.root, WSDL_NAMESPACE, 'service').filter(n =>
-        syntaxAttribute(d.root, 'targetNamespace') === options.service?.namespace && syntaxAttribute(n, 'name') === options.service?.local));
-      const ports = services.flatMap(n => syntaxElements(n, WSDL_NAMESPACE, 'port').filter(p => syntaxAttribute(p, 'name') === options.port));
-      const addresses = ports.flatMap(p => syntaxElements(p, soap12 ? 'http://schemas.xmlsoap.org/wsdl/soap12/' : 'http://schemas.xmlsoap.org/wsdl/soap/', 'address'));
-      if (services.length !== 1 || ports.length !== 1 || addresses.length !== 1 || !syntaxAttribute(addresses[0]!, 'location')) {
-        return fail('unsupported', 'Select one SOAP service/port address or supply an endpoint override');
-      }
-      selectedEndpoint = syntaxAttribute(addresses[0]!, 'location');
+      selectedEndpoint = selectedComponentSoapAddress(contract, options);
+      if (!selectedEndpoint) return fail('unsupported', 'Select one SOAP service/port address or supply an endpoint override');
     }
     const config = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot({service: options.service, port: options.port, endpoint: selectedEndpoint,
       timeoutMs: options.timeoutMs ?? (profile.component || isApplicationUnmetered(budget) ? 0 : 15_000), limits: options.limits ?? {},
@@ -957,4 +950,16 @@ function soapProtocolSelection(contract: DirectOperationContract, component: boo
     };
 
   return {elements, shape, bodyRoot, ignoredHeaders, faultAttributeAllowed};
+}
+
+/** Resolve the WSDL address from the selected component service, port and SOAP version. */
+export function selectedComponentSoapAddress(contract: DirectOperationContract, options: Pick<ComponentSoapOptions, 'service' | 'port'>): string | undefined {
+  const {source} = inspectDirectOperation(contract);
+  const services = source.documents.flatMap(document => syntaxElements(document.root, WSDL_NAMESPACE, 'service').filter(node =>
+    syntaxAttribute(document.root, 'targetNamespace') === options.service?.namespace && syntaxAttribute(node, 'name') === options.service?.local));
+  const ports = services.flatMap(service => syntaxElements(service, WSDL_NAMESPACE, 'port').filter(port => syntaxAttribute(port, 'name') === options.port));
+  const namespace = contract.binding.version === '1.2' ? 'http://schemas.xmlsoap.org/wsdl/soap12/' : 'http://schemas.xmlsoap.org/wsdl/soap/';
+  const addresses = ports.flatMap(port => syntaxElements(port, namespace, 'address'));
+  if (services.length === 1 && ports.length === 1 && addresses.length === 1) return syntaxAttribute(addresses[0]!, 'location');
+  return undefined;
 }

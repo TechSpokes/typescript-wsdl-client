@@ -45,6 +45,11 @@ export {generateCheckedClient, generateCheckedOpenAPI, generateCheckedGateway, s
 export type {CheckedClientOptions, CheckedClientResult, CheckedOpenAPIOptions, CheckedOpenAPIResult,
   CheckedGatewayOptions, CheckedAppOptions} from './checkedPipeline.js';
 export type {CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
+export type {CheckedStreamSelection, CheckedStreamSpec} from './compiler/componentStreamPlan.js';
+export type {CheckedStreamXmlLimits} from './compiler/componentStreamSoap.js';
+export type {CheckedStream, CheckedStreamCompletion} from './client/checkedStream.js';
+export {checkedStreamResponse} from './client/checkedStream.js';
+export {checkedComponentStreamRuntimeV1} from './client/directClientRuntime.js';
 export type {CheckedComponentResponseBranches} from './checkedPipeline.js';
 export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';
 export type {CheckedComponentPlan, ComponentPlanBlocker} from './checkedPlanning.js';
