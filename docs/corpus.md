@@ -25,7 +25,7 @@ Installed variant evidence uses independently checked source-derived variants wh
 
 ## Separately pinned provider qualification
 
-ONVIF Media `GetSnapshotUri` has installed SOAP 1.2 and HTTP evidence under `lax-wildcard-operation-v1`. Its replay uses the original 11 external pins and an owned service wrapper. The whole-source and closed-operation refusals are exercised alongside its successful scoped execution. [ONVIF Media qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md)
+ONVIF Media has an opt-in installed replay for video sources, stream and snapshot URIs, encoder configurations, and compatible encoder configurations under `lax-wildcard-operation-v1`. The batch uses 11 original external pins, an owned service wrapper, and a 79-operation planner comparison against published v1.13.0. It exercises whole-source and closed-operation refusals. [ONVIF Media qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md)
 
 ## Maintain the index
 

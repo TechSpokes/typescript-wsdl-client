@@ -100,7 +100,7 @@ const nameKey = (name: ExpandedName, charge: (amount: number) => void): string =
 };
 
 /** Match ordered children using authenticated native particles, without granting source or operation admission.
- * @constraints Leaf alphabets must be disjoint unless a scoped lax wildcard follows a fixed required prefix.
+ * @constraints Leaf alphabets must be disjoint unless a scoped lax wildcard follows a bounded sequence ending in a required element.
  * @returns Source-owned slots in document order, or undefined when the child sequence is outside the particle language.
  * @throws TypeError For an unauthenticated record or foreign context.
  */
@@ -525,13 +525,23 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
       if (wildcards.length && context.membership !== 'complete-actual-plus-additions') return unavailable(type, 'ordered-wildcard-incomplete-universe');
       const scopedLax = hasScopedLaxWildcards(context);
       const rootParticle = prepared.view.root;
-      // @why A fixed prefix has already consumed its names when the tail is matched. Native UPA still owns the source proof.
-      if (scopedLax && wildcards.length === 1 && record.content === 'element-only' && rootParticle.kind === 'sequence'
-        && rootParticle.occurs.min === '1' && rootParticle.occurs.max === '1'
-        && rootParticle.children.at(-1)?.kind === 'any'
-        && rootParticle.children.slice(0, -1).every(child => {
-          check(); return child.kind === 'element' && child.occurs.min === '1' && child.occurs.max === '1';
-        })) record.trailingLaxWildcard = true;
+      if (scopedLax && wildcards.length === 1 && record.content === 'element-only' && rootParticle.kind === 'sequence') {
+        const pending = [rootParticle], leaves: SemanticParticle[] = [];
+        while (pending.length) {
+          check(); budget.chargeWork(32);
+          const particle = pending.pop()!;
+          if (particle.kind === 'sequence' && particle.occurs.min === '1' && particle.occurs.max === '1') {
+            for (let index = particle.children.length - 1; index >= 0; index--) {
+              check(); pending.push(particle.children[index]!);
+            }
+          } else leaves.push(particle);
+        }
+        // @why The final required element separates omitted optional fields from the wildcard. Native UPA still owns source proof.
+        if (leaves.at(-1)?.kind === 'any' && (leaves.length === 1 || leaves.at(-2)?.occurs.min === '1')
+          && leaves.slice(0, -1).every(leaf => {
+            check(); return leaf.kind === 'element' && leaf.occurs.max === '1' && ['0', '1'].includes(leaf.occurs.min);
+          })) record.trailingLaxWildcard = true;
+      }
       for (let index = 0; index < wildcards.length; index++) {
         check(); const wildcard = wildcards[index]!.wildcard;
         if (scopedLax && wildcard.processContents !== 'lax') return unavailable(type, 'scoped-element-wildcard-policy');
