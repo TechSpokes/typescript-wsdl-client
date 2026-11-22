@@ -13,6 +13,7 @@ import {constants as bufferConstants} from 'node:buffer';
 import {resolveResourceUri} from './loader/schemaResources.js';
 import type {PipelineOptions} from './pipeline.js';
 import {selectComponentOperations, selectComponentOperationInRequest, inspectDirectOperation, CLOSED_OPERATION_SCOPE} from './compiler/directOperation.js';
+import {LAX_WILDCARD_OPERATION_SCOPE} from './compiler/scopedLaxWildcards.js';
 import type {ComponentQualificationScope, DirectOperationSelector, SchemaQualificationDiagnostic} from './compiler/directOperation.js';
 import {prepareComponentSourceForOperation} from './compiler/directSourceCapsule.js';
 import {inspectComponentSourceService} from './compiler/directSourceCapsule.js';
@@ -216,7 +217,8 @@ function parseComponentOptions(value: unknown, resolved: boolean): Partial<Check
   const sourceOrigins = data.sourceOrigins === undefined ? undefined : array(data.sourceOrigins).map(text);
   const standardLibraries = data.standardLibraries === undefined ? undefined : libraries(data.standardLibraries);
   const qualificationScope = data.qualificationScope;
-  if (qualificationScope !== undefined && qualificationScope !== CLOSED_OPERATION_SCOPE) throw new TypeError('Unsupported checked qualificationScope');
+  if (qualificationScope !== undefined && qualificationScope !== CLOSED_OPERATION_SCOPE && qualificationScope !== LAX_WILDCARD_OPERATION_SCOPE)
+    throw new TypeError('Unsupported checked qualificationScope');
   if (qualificationScope && (data.sourceCorrectionsFile !== undefined || data.recordProjections !== undefined || data.responseBranches !== undefined))
     throw new TypeError('Closed operation qualification requires original sources and no companion contracts');
   const recordProjections = data.recordProjections === undefined ? undefined : array(data.recordProjections).map<CheckedComponentRecordProjection>(input => {

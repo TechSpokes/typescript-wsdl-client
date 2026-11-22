@@ -44,7 +44,7 @@ interface Candidate {
 export interface CheckedComponentPlan {
   readonly version: 'checked-component-plan-v1';
   readonly model: 'checked-components-v1';
-  readonly scope: 'native-component-source-and-mapping' | 'closed-operation-v1';
+  readonly scope: 'native-component-source-and-mapping' | NonNullable<CheckedComponentOptions['qualificationScope']>;
   readonly ready: boolean;
   readonly executed: false;
   readonly runtime: 'not-assessed-operation-invocation-required';

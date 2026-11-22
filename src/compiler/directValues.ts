@@ -24,6 +24,7 @@ import {assessProjectionScalarOperand} from './projectionScalar.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
 import {isXmlNCName, XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {permitsOpaqueWildcardName} from './scopedLaxWildcards.js';
 import {planApplicationGroups, mapApplicationGroups, parseApplicationGroups, ApplicationGroupValueError} from './applicationGroups.js';
 import type {ApplicationGroupsOptions, ApplicationGroupPlan} from './applicationGroups.js';
 import {planRpcParts} from './rpcTypedValues.js';
@@ -468,6 +469,8 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
     if (node.text) children.push({node: node.text, set: value => {record.$value = value;}});
     if (node.content) {
       const content: DirectApplicationValue[] = []; record.$content = content;
+      budget.chargeWork(32 + (node.dynamicOccurrences?.length ?? 0) * 32);
+      const dynamicOccurrences = new Set(node.dynamicOccurrences);
       for (const item of node.content) {
         check(); budget.chargeWork(128 + item.declaration.name.local.length * 4 + item.declaration.name.namespace.length * 4);
         children.push({node: item, scope: node.namespaces ?? scope, set: value => {
@@ -481,7 +484,7 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
           } else if (node.keyed) {
             const entry = Object.create(null) as Record<string, DirectApplicationValue>;
             if (item.kind === 'unassessed') {entry[item.payload.name.local] = value; content.push(entry); return;}
-            if (node.namespaceChoices?.includes(item.declaration.name.local) || node.dynamicDeclarations?.includes(item.declaration)) {
+            if (node.namespaceChoices?.includes(item.declaration.name.local) || dynamicOccurrences.has(item.payloadPath)) {
               if (item.kind === 'scalar') value = {$namespace: item.declaration.name.namespace, $value: value};
               // @why Records publish their owned container before child frames fill it; preserve that reference.
               else (value as Record<string, DirectApplicationValue>).$namespace = item.declaration.name.namespace;
@@ -789,6 +792,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         const holder = object(value, 4);
         if (holder.keys.some(key => !['$namespace', '$namespaces', '$attributes', '$content'].includes(key))) return invalid('unknown-key', valuePath, element);
         if (!isXmlNCName(name.local) || !isXmlCharacters(name.namespace) || name.namespace === 'http://www.w3.org/2000/xmlns/') return invalid('expanded-name-required', valuePath, element);
+        if (!permitsOpaqueWildcardName(context, 'element', name)) return invalid('opaque-wildcard-declaration', valuePath, element);
         if (data(holder.value, '$namespace', valuePath, element) !== name.namespace) return invalid('element-namespace-required', valuePath, element);
         if (active.has(holder.value)) return invalid('cyclic-value', valuePath, element);
         active.add(holder.value);
@@ -819,6 +823,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
             }
             const identity = JSON.stringify([namespace, key]);
             if (!namespace && key === 'xmlns') return invalid('attribute-name', valuePath, element);
+            if (!permitsOpaqueWildcardName(context, 'attribute', {namespace, local: key})) return invalid('opaque-wildcard-declaration', valuePath, element);
             if (seen.has(identity)) return invalid('duplicate-attribute', valuePath, element);
             seen.add(identity);
             attributes.push({name: {namespace, local: key}, lexicalName: key, value: lexical(member, valuePath, element)});
@@ -861,7 +866,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       if (proto !== Object.prototype && proto !== null) return invalid('plain-record-required', valuePath, element);
       if (active.has(value)) return invalid('cyclic-value', valuePath, element);
       active.add(value);
-      const record = shape.kind === 'record' ? records.get(shape.type) : {attributes: [], slots: [], text: undefined, ordered: undefined, keyed: undefined, fixedOrder: undefined, contextual: undefined, attributeWildcard: undefined, content: 'empty'};
+      const record = shape.kind === 'record' ? records.get(shape.type) : {attributes: [], slots: [], text: undefined, ordered: undefined, keyed: undefined, fixedOrder: undefined, trailingLaxWildcard: undefined, contextual: undefined, attributeWildcard: undefined, content: 'empty'};
       if (!record) throw new TypeError('Missing native projection record');
 
       const declared = new Set<string>();
@@ -1022,11 +1027,12 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
               pending.push({kind: 'text', text, xmlPath: `${xmlPath}/children/${index}`, into: children});
               continue;
             }
-            const slots = record.slots.filter(slot => slot.element.name.local === key);
+            const slots = record.trailingLaxWildcard ? [] : record.slots.filter(slot => slot.element.name.local === key);
             let selectedValue = member;
             let selectedIdentity: string | undefined;
-            let slot = record.fixedOrder ? record.slots[fixedIndex++] : slots.length === 1 ? slots[0] : undefined;
-            if (record.fixedOrder && slot?.element.name.local !== key) return invalid('ordered-particle-language', at, element);
+            const prefix = record.trailingLaxWildcard && index < record.slots.length;
+            let slot = prefix ? record.slots[index] : record.fixedOrder ? record.slots[fixedIndex++] : slots.length === 1 ? slots[0] : undefined;
+            if ((prefix || record.fixedOrder) && slot?.element.name.local !== key) return invalid('ordered-particle-language', at, element);
             if (!record.fixedOrder && slot && member && typeof member === 'object' && !types.isProxy(member) && !Array.isArray(member) && Object.hasOwn(member, '$namespace')
               && data(member, '$namespace', at, element) !== slot.element.name.namespace) slot = undefined;
             if (!record.fixedOrder && slots.length > 1) {

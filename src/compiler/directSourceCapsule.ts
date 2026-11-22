@@ -10,6 +10,7 @@ import {canonicalJson, parseCatalogJson, CatalogError} from './catalogErrors.js'
 import {createApplicationBudget} from './semanticBudget.js';
 import type {SemanticBudget, SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
 import {CLOSED_OPERATION_SCOPE, inspectDirectOperation, selectDirectOperationInRequest, selectComponentOperationInRequest, type ComponentQualificationScope} from './directOperation.js';
+import {LAX_WILDCARD_OPERATION_SCOPE} from './scopedLaxWildcards.js';
 import type {DirectOperationContract, DirectOperationSelector} from './directOperation.js';
 import {createDirectValueMapping, createComponentValueMapping, inspectComponentValueMapping, DIRECT_VALUE_VERSION, DIRECT_SCALAR_POLICY} from './directValues.js';
 import type {DirectValueMapping, ComponentValueMapping} from './directValues.js';
@@ -256,6 +257,7 @@ const scopedComponentVersions = Object.freeze({...componentVersions, scope: 'com
 const soap12ComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap12-document-literal-v1'} as const);
 const closedOperationVersions = Object.freeze({...componentVersions, scope: 'component-soap11-closed-operation-v1'} as const);
 const closedOperationSoap12Versions = Object.freeze({...soap12ComponentVersions, scope: 'component-soap12-closed-operation-v1'} as const);
+const laxWildcardOperationVersions = Object.freeze({...soap12ComponentVersions, scope: 'component-soap12-lax-wildcard-operation-v1'} as const);
 const scopedSoap12ComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap12-document-literal-record-v1'} as const);
 const branchComponentVersions = Object.freeze({...scopedComponentVersions, scope: 'component-soap11-response-branches-v1', mapping: 'component-response-branches-v1'} as const);
 const branchSoap12ComponentVersions = Object.freeze({...branchComponentVersions, scope: 'component-soap12-response-branches-v1'} as const);
@@ -286,7 +288,7 @@ type ComponentCompatibility = ComponentCompatibilityBase & (
   {readonly output: ComponentRoot; readonly pattern?: never} | {readonly pattern: 'one-way'; readonly output?: never}
 );
 interface ComponentCapsule {
-  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions | typeof branchComponentVersions | typeof branchSoap12ComponentVersions | typeof oneWayComponentVersions | typeof oneWaySoap12ComponentVersions | typeof closedOperationVersions | typeof closedOperationSoap12Versions;
+  readonly versions: typeof componentVersions | typeof scopedComponentVersions | typeof rpcComponentVersions | typeof typedRpcComponentVersions | typeof soap12ComponentVersions | typeof scopedSoap12ComponentVersions | typeof branchComponentVersions | typeof branchSoap12ComponentVersions | typeof oneWayComponentVersions | typeof oneWaySoap12ComponentVersions | typeof closedOperationVersions | typeof closedOperationSoap12Versions | typeof laxWildcardOperationVersions;
   readonly resources: readonly ComponentResource[];
   readonly libraries?: readonly string[]; readonly projection?: ComponentProjectionData | null;
   readonly compatibility: ComponentCompatibility; readonly fingerprint: string;
@@ -402,7 +404,7 @@ async function componentDescriptor(contract: DirectOperationContract, selection:
     targets:[...new Map(groupPlans.flatMap(plan=>plan.targets.map(target=>[target.target,target] as const))).values()].sort((a,b)=>a.target.localeCompare(b.target,'en')),
     records:[...new Map(groupPlans.flatMap(plan=>plan.dispositions.map(record=>[record.source,record] as const))).values()].sort((a,b)=>a.source.localeCompare(b.source,'en'))},budget)) : undefined;
   tick(); return {compatibility, resources: componentResources(contract, signal), mappings, libraries: inspectDirectOperation(contract).context.standardLibraryIds(), projection,
-    ...(contract.qualification ? {sourceGraph: componentGraphDigest(source, budget, tick)} : {}),
+    ...(contract.qualification ? {sourceGraph: componentGraphDigest(source, budget, tick), qualificationScope: contract.qualification.scope} : {}),
     ...(branchData ? {responseBranches: branchData} : {}),
     ...(groups ? {applicationGroups: groups.names === undefined ? {} : {names:groups.names.filter(item=>targets.has(item.target))}, applicationGroupIdentity} : {})};
 }
@@ -426,14 +428,15 @@ export async function createComponentSourceCapsule(contract: DirectOperationCont
     return componentFailure(error, budget);
   }
 }
-function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescriptor>>, 'compatibility' | 'resources' | 'libraries' | 'projection' | 'applicationGroups' | 'applicationGroupIdentity' | 'responseBranches' | 'sourceGraph'>,
+function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescriptor>>, 'compatibility' | 'resources' | 'libraries' | 'projection' | 'applicationGroups' | 'applicationGroupIdentity' | 'responseBranches' | 'sourceGraph' | 'qualificationScope'>,
   budget: SemanticBudget): ComponentCapsule {
   const {compatibility, resources, libraries, projection} = derived;
   const extended = libraries.length > 0 || projection !== null;
   const rpc = 'kind' in compatibility.input && compatibility.input.kind === 'rpc-typed-parts-v1';
   const typedRpc = rpc && compatibility.input.parts.some(part => part.type.namespace !== 'http://www.w3.org/2001/XMLSchema' || part.type.local !== 'string');
   if (rpc && (extended || derived.applicationGroups)) throw new Stop('unsupported', 'rpc-artifact-extension');
-  const value = {versions: derived.sourceGraph ? compatibility.binding?.version === '1.2' ? closedOperationSoap12Versions : closedOperationVersions
+  const value = {versions: derived.qualificationScope === LAX_WILDCARD_OPERATION_SCOPE ? laxWildcardOperationVersions
+    : derived.sourceGraph ? compatibility.binding?.version === '1.2' ? closedOperationSoap12Versions : closedOperationVersions
       : compatibility.pattern === 'one-way' ? compatibility.binding?.version === '1.2' ? oneWaySoap12ComponentVersions : oneWayComponentVersions
       : derived.responseBranches ? compatibility.binding?.version === '1.2' ? branchSoap12ComponentVersions : branchComponentVersions
       : compatibility.binding?.version === '1.2' ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions, resources, compatibility,
@@ -441,6 +444,11 @@ function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescr
     ...(derived.applicationGroups ? {applicationGroups: derived.applicationGroups,applicationGroupIdentity:derived.applicationGroupIdentity} : {}),
     ...(derived.responseBranches ? {responseBranches: derived.responseBranches} : {})};
   return {...value, fingerprint: hash(json(value, budget))};
+}
+
+function capsuleQualificationScope(capsule: ComponentCapsule): ComponentQualificationScope | undefined {
+  if (capsule.versions.scope === laxWildcardOperationVersions.scope) return LAX_WILDCARD_OPERATION_SCOPE;
+  return capsule.sourceGraph ? CLOSED_OPERATION_SCOPE : undefined;
 }
 
 /** Prepare a generator-owned operation once through the same native descriptor used by runtime reconstruction.
@@ -504,8 +512,9 @@ function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: Abort
   const scope = parsed.versions && typeof parsed.versions === 'object' ? (parsed.versions as Record<string, unknown>).scope : undefined;
   const oneWay = scope === oneWayComponentVersions.scope || scope === oneWaySoap12ComponentVersions.scope;
   if (oneWay && (rpc || branched || parsed.projection)) reject('one-way-output-configuration');
-  const soap12 = !!parsed.versions && typeof parsed.versions === 'object' && ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1', 'component-soap12-response-branches-v1', oneWaySoap12ComponentVersions.scope, closedOperationSoap12Versions.scope].includes((parsed.versions as Record<string, unknown>).scope as string);
-  const expectedVersions = scoped ? soap12 ? closedOperationSoap12Versions : closedOperationVersions
+  const laxWildcardOperation = scope === laxWildcardOperationVersions.scope;
+  const soap12 = laxWildcardOperation || ['component-soap12-document-literal-v1', 'component-soap12-document-literal-record-v1', 'component-soap12-response-branches-v1', oneWaySoap12ComponentVersions.scope, closedOperationSoap12Versions.scope].includes(scope as string);
+  const expectedVersions = scoped ? laxWildcardOperation ? laxWildcardOperationVersions : soap12 ? closedOperationSoap12Versions : closedOperationVersions
     : oneWay ? soap12 ? oneWaySoap12ComponentVersions : oneWayComponentVersions
     : branched ? soap12 ? branchSoap12ComponentVersions : branchComponentVersions
     : soap12 ? extended ? scopedSoap12ComponentVersions : soap12ComponentVersions : typedRpc ? typedRpcComponentVersions : rpc ? rpcComponentVersions : extended ? scopedComponentVersions : componentVersions;
@@ -673,7 +682,7 @@ export async function reconstructComponentSourceCapsuleInRequest(bytes: Uint8Arr
     }
     if (capsule.projection && !recordSource) throw new Stop('missing-authority', 'explicit-companion-source-required');
     const contract = await selectPinnedComponentSource(capsule.resources, capsule.compatibility.selector, capsule.libraries ?? [], localSource,
-      options, budget, allowed, capsule.sourceGraph ? CLOSED_OPERATION_SCOPE : undefined);
+      options, budget, allowed, capsuleQualificationScope(capsule));
     let responseProjection: ComponentRecordProjection | undefined;
     if (capsule.projection) {
       const source = capsule.projection.source;
@@ -766,6 +775,7 @@ async function reconstructComponentAgainst(capsule: ComponentCapsule, contract: 
   if (json(derived.applicationGroups ?? null,budget)!==json(capsule.applicationGroups ?? null,budget)) reject('source-application-groups-changed');
   if (derived.applicationGroupIdentity!==capsule.applicationGroupIdentity) reject('source-application-groups-changed');
   if (json(derived.resources, budget) !== json(capsule.resources, budget)) reject('local-source-changed');
+  if (derived.qualificationScope !== capsuleQualificationScope(capsule)) reject('source-qualification-scope-changed');
   if (derived.sourceGraph !== capsule.sourceGraph) reject('source-graph-changed');
   if (json(derived.compatibility, budget) !== json(capsule.compatibility, budget)) reject('source-contract-changed');
   if (json(derived.libraries, budget) !== json(capsule.libraries ?? [], budget) || json(derived.projection, budget) !== json(capsule.projection ?? null, budget)) reject('source-projection-changed');

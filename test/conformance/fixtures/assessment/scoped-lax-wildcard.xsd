@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:scoped-lax"
+  targetNamespace="urn:checked:scoped-lax" elementFormDefault="qualified">
+  <xs:element name="Count" type="xs:int"/>
+  <xs:element name="ExtraCount" type="xs:int"/>
+  <xs:attribute name="verified" type="xs:boolean"/>
+  <xs:element name="Content">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="t:Count"/>
+        <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:anyAttribute namespace="##any" processContents="lax"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OperationError" type="xs:string"/>
+  <xs:element name="Unqualified">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="t:Count" minOccurs="0"/>
+        <xs:any namespace="##any" processContents="lax" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

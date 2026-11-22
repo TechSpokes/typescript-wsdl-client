@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-11-22
+
+- feat(checked): qualify SOAP 1.2 operations with scoped lax wildcards.
+
 ## [1.12.1] - 2026-11-21
 
 - feat(checked): qualify closed document/literal operations using the complete pinned schema index.

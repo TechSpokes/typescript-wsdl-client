@@ -1,0 +1,94 @@
+{
+  "onvifRevision": "68ee1b540a40f848c9599eba2c55b87547c588d6",
+  "resources": [
+    {
+      "file": "media.wsdl",
+      "bytes": 171458,
+      "sha256": "09ee51ef000d58c4c52ed33f30eea6331a14e53355c0d7dcfb129deb7e40e63e",
+      "uri": "https://www.onvif.org/ver10/media/wsdl/media.wsdl",
+      "retrievalUrl": "https://raw.githubusercontent.com/onvif/specs/68ee1b540a40f848c9599eba2c55b87547c588d6/wsdl/ver10/media/wsdl/media.wsdl",
+      "notice": "ONVIF"
+    },
+    {
+      "file": "onvif.xsd",
+      "bytes": 422488,
+      "sha256": "4ae8673bb71ac5c31a3cad83f83e4c6092b998d4b40072acd3107d62bf36abb6",
+      "uri": "https://www.onvif.org/ver10/schema/onvif.xsd",
+      "retrievalUrl": "https://raw.githubusercontent.com/onvif/specs/68ee1b540a40f848c9599eba2c55b87547c588d6/wsdl/ver10/schema/onvif.xsd",
+      "notice": "ONVIF"
+    },
+    {
+      "file": "common.xsd",
+      "bytes": 19097,
+      "sha256": "95082958627179a712f7aa4152b8230528d4e4f14e6e8c9ce143705263434adc",
+      "uri": "https://www.onvif.org/ver10/schema/common.xsd",
+      "retrievalUrl": "https://raw.githubusercontent.com/onvif/specs/68ee1b540a40f848c9599eba2c55b87547c588d6/wsdl/ver10/schema/common.xsd",
+      "notice": "ONVIF"
+    },
+    {
+      "file": "xmlmime.xsd",
+      "bytes": 1639,
+      "sha256": "330ab79ecdd3a8628f12ef4cbe34351e448f9b9231bacad339881ce1a61237a2",
+      "uri": "https://www.w3.org/2005/05/xmlmime",
+      "retrievalUrl": "https://www.w3.org/2005/05/xmlmime",
+      "notice": "W3C-2002"
+    },
+    {
+      "file": "soap-envelope.xsd",
+      "bytes": 5839,
+      "sha256": "3ae8caa9a74e83528cc0e1a59fc12784435e8e0086e890d0e1b04d881c079bec",
+      "uri": "https://www.w3.org/2003/05/soap-envelope",
+      "retrievalUrl": "https://www.w3.org/2003/05/soap-envelope/",
+      "canonicalUri": "https://www.w3.org/2003/05/soap-envelope/",
+      "notice": "W3C-1998"
+    },
+    {
+      "file": "xop-include.xsd",
+      "bytes": 511,
+      "sha256": "dff9100efce4afb21de0cf673fb7fad103672a169862ab0f12e34c312b20e60d",
+      "uri": "https://www.w3.org/2004/08/xop/include",
+      "retrievalUrl": "https://www.w3.org/2004/08/xop/include",
+      "notice": "W3C-documents"
+    },
+    {
+      "file": "ws-addr.xsd",
+      "bytes": 5849,
+      "sha256": "af806cc9af2514e9b0b07efe4e4dc42a32dad8ac08473dc025136207779d5ee9",
+      "uri": "http://www.w3.org/2005/08/addressing/ws-addr.xsd",
+      "retrievalUrl": "https://www.w3.org/2005/08/addressing/ws-addr.xsd",
+      "notice": "W3C-2002"
+    },
+    {
+      "file": "xml.xsd",
+      "bytes": 8836,
+      "sha256": "61960fb3131e38022caad5360e2f33a3382578ab3c80cd58bd74320ede61b20c",
+      "uri": "http://www.w3.org/2001/xml.xsd",
+      "retrievalUrl": "https://www.w3.org/2001/xml.xsd",
+      "notice": "W3C-documents"
+    },
+    {
+      "file": "b-2.xsd",
+      "bytes": 23378,
+      "sha256": "26f0c7aa9a3719412e2e3275bc80320edb4b2dc9783bf2bb08c6378f4ca681fe",
+      "uri": "http://docs.oasis-open.org/wsn/b-2.xsd",
+      "retrievalUrl": "https://docs.oasis-open.org/wsn/b-2.xsd",
+      "notice": "OASIS"
+    },
+    {
+      "file": "bf-2.xsd",
+      "bytes": 5195,
+      "sha256": "7863ccf5b21105c374a405968266fa18ecd0ebe0f7b9b19cd9378656229ff468",
+      "uri": "http://docs.oasis-open.org/wsrf/bf-2.xsd",
+      "retrievalUrl": "https://docs.oasis-open.org/wsrf/bf-2.xsd",
+      "notice": "OASIS"
+    },
+    {
+      "file": "t-1.xsd",
+      "bytes": 8960,
+      "sha256": "ad5db0432a3885d1c8a574ba6b4058193af29bc971232c4bb6b31f8295fe3329",
+      "uri": "http://docs.oasis-open.org/wsn/t-1.xsd",
+      "retrievalUrl": "https://docs.oasis-open.org/wsn/t-1.xsd",
+      "notice": "OASIS"
+    }
+  ]
+}

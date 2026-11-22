@@ -43,6 +43,8 @@ const markdown = '# Product Corpus Evidence\n\nRepresentative inputs and their m
   + table.join('\n') + '\n\n## Run the corpus\n\n```bash\nnpm run test:corpus\n```\n\n'
   + 'The command selects the existing tests once and delegates installed-package checks to their existing script. Refused rows prove their named failure and dispatch boundary; they do not count as successfully generated services.\n\n'
   + 'Installed variant evidence uses independently checked source-derived variants where named; it does not assert an unchanged production-provider contract. Private service evidence remains separate and is not required by this public corpus command.\n\n'
+  + '## Separately pinned provider qualification\n\n'
+  + 'ONVIF Media `GetSnapshotUri` has installed SOAP 1.2 and HTTP evidence under `lax-wildcard-operation-v1`. Its replay uses the original 11 external pins and an owned service wrapper. The whole-source and closed-operation refusals are exercised alongside its successful scoped execution. [ONVIF Media qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md)\n\n'
   + '## Maintain the index\n\nAdd rights-cleared inputs and independent expected exchanges to the existing conformance framework. Preserve supported behavior, invalid-input checks, compatibility and security requirements alongside corpus growth.\n\n```bash\nnpm run docs:corpus\nnpm run docs:corpus:check\n```\n';
 const args = process.argv.slice(2);
 if (args.length > 1 || args.some(arg => !['--check', '--test'].includes(arg))) throw new Error('Expected --check or --test');
