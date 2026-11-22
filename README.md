@@ -325,6 +325,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
 | [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
 | [Checked Part A Coverage](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-part-a-coverage.md) | Paired legacy and checked contracts, verification and open scope decisions |
+| [Checked Streaming Execution Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-streaming-execution.md) | Implementation sequence, installed wire proof and issue acceptance for incremental checked responses |
 | [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
 | [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Completed v1.7.0 adapter checklist, verification and continuing scope exclusions |
 | [Published-Package Consumer Acceptance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) | Accepted Escapia npm upgrade, exact evidence and unexecuted alternative boundaries |
