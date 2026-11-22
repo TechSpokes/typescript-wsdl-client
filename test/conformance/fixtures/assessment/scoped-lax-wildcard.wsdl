@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:checked:scoped-lax" targetNamespace="urn:checked:scoped-lax">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:checked:scoped-lax">
+      <xs:include schemaLocation="scoped-lax-wildcard.xsd"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ContentMessage">
+    <wsdl:part name="body" element="t:Content"/>
+  </wsdl:message>
+  <wsdl:message name="ErrorMessage">
+    <wsdl:part name="detail" element="t:OperationError"/>
+  </wsdl:message>
+  <wsdl:portType name="ContentPortType">
+    <wsdl:operation name="RoundTrip">
+      <wsdl:input message="t:ContentMessage"/>
+      <wsdl:output message="t:ContentMessage"/>
+      <wsdl:fault name="OperationError" message="t:ErrorMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ContentBinding" type="t:ContentPortType">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="RoundTrip">
+      <soap12:operation soapAction="urn:checked:scoped-lax:RoundTrip"/>
+      <wsdl:input><soap12:body use="literal"/></wsdl:input>
+      <wsdl:output><soap12:body use="literal"/></wsdl:output>
+      <wsdl:fault name="OperationError"><soap12:fault name="OperationError" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ContentService">
+    <wsdl:port name="ContentPort" binding="t:ContentBinding">
+      <soap12:address location="http://127.0.0.1:1/scoped"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -297,6 +297,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Architecture](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/architecture.md) | Internal pipeline for contributors |
 | [Reference Validation](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/reference-validation.md) | Internal evidence contract and Node tooling migration inventory |
 | [NOAA NDFD Qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) | All-12 owned RPC execution, ten live successes and two live GML refusals |
+| [ONVIF Media Qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md) | Installed SOAP 1.2 snapshot URI exchange with lax extensions |
 | [File Naming And Path Organization](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/file-naming-and-path-organization.md) | Contributor convention for taxonomy paths and fixture retrieval |
 
 ### Decisions and research
@@ -305,6 +306,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |---|---|
 | [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
 | [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.13.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.13.0.md) | Opt-in SOAP 1.2 lax wildcard qualification |
 | [v1.12.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.1.md) | Closed operation qualification, checked artifact paths and source diagnostics |
 | [v1.12.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.0.md) | Standalone checked OpenAPI, gateway, app and test generation |
 | [v1.11.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.11.1.md) | Exact npm archive delivery and faster Windows smoke verification |

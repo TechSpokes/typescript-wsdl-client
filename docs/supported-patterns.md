@@ -6,6 +6,8 @@ The matrix describes the existing legacy generator except where a row explicitly
 
 The qualified checked domain includes [keyed mixed, namespace-collision and source-permitted open values](checked-gateway.md#mixed-namespaced-and-open-values), with production conformance and installed request/response/fault evidence. Native strict/lax/skip checks remain distinct from schema-source wildcard checks and from the legacy rows below.
 
+The opt-in [scoped lax wildcard profile](checked-gateway.md#scoped-lax-wildcards) qualifies supported SOAP 1.2 document/literal operations from pinned graphs. Installed evidence covers ONVIF Media `GetSnapshotUri` and refuses the same operation under `closed-operation-v1`.
+
 ## Checked atomic unions
 
 Checked document/literal unions represent qualified atomic values and list-valued members as complete lexical strings. Unions with a QName member carry the namespace bindings alongside that string. Native validation preserves member order, whitespace and typed fixed/default equality. The dual SOAP 1.1/1.2 `assessment/atomic-unions.wsdl` fixture and independent generated and installed tests cover requests, success and faults. Literal headers use the same scalar rules. See the [lexical union contract](checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).

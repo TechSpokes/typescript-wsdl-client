@@ -19,6 +19,7 @@ import {namespaceAllows, namespaceIntersection} from './wildcardAlgebra.js';
 import {globalId} from './canonicalGraph.js';
 import type {SelectedParticleWildcard} from './schemaParticleWildcardProperties.js';
 import type {AttributeWildcard} from './schemaAttributeUses.js';
+import {hasScopedLaxWildcards, qualifyScopedWildcardDeclaration} from './scopedLaxWildcards.js';
 export interface DirectSlot {readonly element: ElementNode; readonly particle: ParticleNode; readonly builtin: ExpandedName}
 export interface DirectRootPlan {readonly rootBuiltin?: ExpandedName; readonly slots: readonly DirectSlot[]}
 type ProjectionConstraint = Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
@@ -70,6 +71,7 @@ export interface DirectProjectionRecord {
   readonly content: 'empty' | 'element-only' | 'simple' | 'mixed'; readonly text?: Extract<DirectProjectionValue, {kind: 'scalar'}>;
   readonly keyed?: true;
   readonly fixedOrder?: true;
+  readonly trailingLaxWildcard?: true;
   readonly contextual?: true;
   readonly attributeWildcard?: AttributeWildcard;
   readonly ordered?: true;
@@ -98,7 +100,7 @@ const nameKey = (name: ExpandedName, charge: (amount: number) => void): string =
 };
 
 /** Match ordered children using authenticated native particles, without granting source or operation admission.
- * @constraints Leaf alphabets must be disjoint; native strict/lax/skip policy selects declaration assessment or unassessed preservation.
+ * @constraints Leaf alphabets must be disjoint unless a scoped lax wildcard follows a fixed required prefix.
  * @returns Source-owned slots in document order, or undefined when the child sequence is outside the particle language.
  * @throws TypeError For an unauthenticated record or foreign context.
  */
@@ -195,7 +197,8 @@ export function selectProjectionWildcard(context: SemanticContext, record: Direc
   if (policy === 'skip') return {};
   context.budget.chargeWork(128 + (name.namespace.length + name.local.length) * 8);
   const declaration = context.lookup(globalId('element', name));
-  if (declaration.kind === 'found' && declaration.node.kind === 'element' && declaration.node.identity.kind === 'global') return {element: declaration.node};
+  if (declaration.kind === 'found' && declaration.node.kind === 'element' && declaration.node.identity.kind === 'global')
+    return qualifyScopedWildcardDeclaration(context, declaration.node.id, check) ? {element: declaration.node} : undefined;
   return policy === 'lax' ? {} : undefined;
 }
 export interface DirectProjectionPlan {readonly root: DirectProjectionValue; readonly records: readonly DirectProjectionRecord[]}
@@ -249,11 +252,13 @@ export function selectProjectionAttribute(context: SemanticContext, record: Dire
   const policy = record.attributeWildcard;
   check();
   if (!policy || !namespaceAllows(policy.namespace, name.namespace, context.budget.chargeWork)) return undefined;
-  if (name.namespace === 'http://www.w3.org/2001/XMLSchema-instance' && ['type', 'nil'].includes(name.local)) return unsupported();
+  if (name.namespace === 'http://www.w3.org/2001/XMLSchema-instance'
+    && (hasScopedLaxWildcards(context) || ['type', 'nil'].includes(name.local))) return unsupported();
   if (policy.processContents === 'skip') return {};
   const found = context.lookup(globalId('attribute', name));
   if (found.kind !== 'found' || found.node.kind !== 'attribute' || found.node.identity.kind !== 'global') return policy.processContents === 'lax' ? {} : undefined;
   const declaration = found.node;
+  if (!qualifyScopedWildcardDeclaration(context, declaration.id, check)) return undefined;
   const scalar = describeProjectionScalar(context, declaration, check);
   if (scalar.kind !== 'projection-scalar-type' || !projectionScalarRepresentation(scalar.builtin)) return unsupported();
   const constraint = declaration.value ? assessProjectionScalarOperand(context, declaration, declaration.value.lexical, check) : undefined;
@@ -271,7 +276,7 @@ export function selectProjectionAttribute(context: SemanticContext, record: Dire
  *   Exact numeric families and temporal/binary values use strings. Atomic QName values carry expanded names.
  *   ID/ENTITY and other document-wide duties are outside this plan.
  *   Inheritance is read from native content and attribute owners; only unit sequence groups flatten into peer properties.
- *   Other represented particles retain ordered children in $content; disjoint element/wildcard alphabets are required.
+ *   Other represented particles retain ordered children in $content under the selected wildcard scope.
  *   Source-selected keyed content and attribute fallback preserve mixed text and local-name collisions.
  *   Native wildcard policies select known declaration duties or lexical preservation; retained scopes propagate through known intermediates.
  *   Native default/fixed values are explicit XML-assessment augmentation, never a missing required application field.
@@ -311,7 +316,8 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
   };
   if (lookup(owner.id) !== owner) return unsupported();
   const records = new Map<NodeId, {type: ComplexTypeNode; declaration: GraphNode; reference: Reference; slots: DirectProjectionSlot[]; attributes: DirectProjectionAttribute[];
-    content: 'empty' | 'element-only' | 'simple' | 'mixed'; keyed?: true; fixedOrder?: true; contextual?: true; attributeWildcard?: AttributeWildcard; text?: Extract<DirectProjectionValue, {kind: 'scalar'}>; ordered?: true; grammar?: OrderedGrammar} >();
+    content: 'empty' | 'element-only' | 'simple' | 'mixed'; keyed?: true; fixedOrder?: true; trailingLaxWildcard?: true;
+    contextual?: true; attributeWildcard?: AttributeWildcard; text?: Extract<DirectProjectionValue, {kind: 'scalar'}>; ordered?: true; grammar?: OrderedGrammar} >();
   const pending: ComplexTypeNode[] = [];
   const value = (element: ElementNode): DirectProjectionValue => {
     if (lookup(element.id) !== element) return unsupported();
@@ -361,6 +367,8 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
       if (assessed.kind !== 'checked') return unavailable(type, 'native-attribute-properties');
       if (assessed.value.wildcard) {
         record.attributeWildcard = assessed.value.wildcard;
+        if (hasScopedLaxWildcards(context) && record.attributeWildcard.processContents !== 'lax')
+          return unavailable(type, 'scoped-attribute-wildcard-policy');
         if (record.attributeWildcard.processContents !== 'strict') record.contextual = true;
       }
       for (const presence of assessed.value.attributes) {
@@ -488,9 +496,19 @@ function planProjection(context: SemanticContext, owner: GraphNode, reference: R
       const wildcards = [...wildcardLeaves.values()];
       budget.chargeWork(64 + wildcards.length * 8);
       if (wildcards.length && context.membership !== 'complete-actual-plus-additions') return unavailable(type, 'ordered-wildcard-incomplete-universe');
+      const scopedLax = hasScopedLaxWildcards(context);
+      const rootParticle = prepared.view.root;
+      // @why A fixed prefix has already consumed its names when the tail is matched. Native UPA still owns the source proof.
+      if (scopedLax && wildcards.length === 1 && record.content === 'element-only' && rootParticle.kind === 'sequence'
+        && rootParticle.occurs.min === '1' && rootParticle.occurs.max === '1'
+        && rootParticle.children.at(-1)?.kind === 'any'
+        && rootParticle.children.slice(0, -1).every(child => {
+          check(); return child.kind === 'element' && child.occurs.min === '1' && child.occurs.max === '1';
+        })) record.trailingLaxWildcard = true;
       for (let index = 0; index < wildcards.length; index++) {
         check(); const wildcard = wildcards[index]!.wildcard;
-        for (const slot of leafSlots.values()) {
+        if (scopedLax && wildcard.processContents !== 'lax') return unavailable(type, 'scoped-element-wildcard-policy');
+        for (const slot of record.trailingLaxWildcard ? [] : leafSlots.values()) {
           check();
           if (namespaceAllows(wildcard.namespace, slot.element.name.namespace, budget.chargeWork)) return unavailable(type, 'ordered-wildcard-element-overlap');
         }

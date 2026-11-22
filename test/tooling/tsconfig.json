@@ -14,6 +14,7 @@
     "../../scripts/readiness-inventory.ts",
     "../../scripts/validate-npm-package.ts",
     "../../scripts/qualify-release-tarball.ts",
+    "../../scripts/qualify-onvif-media.ts",
     "../../scripts/product-corpus.ts",
     "../../scripts/run-verification.ts",
     "../../scripts/smoke-pipeline.ts",

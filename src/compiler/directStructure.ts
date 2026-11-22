@@ -13,6 +13,7 @@ import type {ProjectionScalarList} from './projectionScalar.js';
 import {isXmlNCName} from '../loader/orderedSyntax.js';
 import {createPayloadDiagnostic, diagnosticName, appendDiagnosticLocation} from './payloadDiagnostics.js';
 import type {CheckedPayloadDiagnostic} from './payloadDiagnostics.js';
+import {permitsOpaqueWildcardName} from './scopedLaxWildcards.js';
 
 export type DirectDirection = Readonly<{kind: 'input' | 'output'} | {kind: 'fault'; name: string}>;
 export interface DirectScalarDuty {
@@ -51,7 +52,7 @@ export type DirectMatchedNode = Readonly<{
   kind: 'record'; declaration: ElementNode; payloadPath: string; nil?: true;
   keyed?: true;
   namespaceChoices?: readonly string[];
-  dynamicDeclarations?: readonly ElementNode[];
+  dynamicOccurrences?: readonly string[];
   namespaces?: Readonly<Record<string, string>>;
   openAttributes?: readonly import('../loader/orderedSyntax.js').SyntaxAttribute[];
   attributes: readonly Readonly<{declaration: AttributeNode; operand: number; payloadPath: string; bag?: true; namespaceChoice?: true; origin: 'present' | 'schema-default' | 'schema-fixed'}>[];
@@ -260,12 +261,14 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
               continue;
             }
             if (!isXmlNCName(value.name.local) || !isXmlCharacters(value.name.namespace) || value.name.namespace === 'http://www.w3.org/2000/xmlns/') return mismatch('expanded-name-required', declaration, value.source.path);
+            if (!permitsOpaqueWildcardName(context, 'element', value.name)) return mismatch('opaque-wildcard-declaration', declaration, value.source.path);
             for (const prefix in value.namespaces) {check(); if (!isXmlNamespaceBinding(prefix, value.namespaces[prefix]!)) return mismatch('namespace-binding', declaration, value.source.path);}
             const identities = new Set<string>();
             for (const attribute of value.attributes) {
               check(); const key = JSON.stringify([attribute.name.namespace, attribute.name.local]); budget.chargeWork(64 + key.length * 4 + attribute.value.length);
               if (!isXmlNCName(attribute.name.local) || attribute.name.local === 'xmlns' && attribute.name.namespace === '' || attribute.name.namespace === 'http://www.w3.org/2000/xmlns/' || !isXmlCharacters(attribute.name.namespace)) return mismatch('attribute-name', declaration, value.source.path);
               if (!isXmlCharacters(attribute.value)) return mismatch('xml-characters', declaration, value.source.path);
+              if (!permitsOpaqueWildcardName(context, 'attribute', attribute.name)) return mismatch('opaque-wildcard-declaration', declaration, value.source.path);
               if (identities.has(key)) return mismatch('duplicate-attribute', declaration, value.source.path);
               identities.add(key);
             }
@@ -386,7 +389,10 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             openAttributes,
             ...(record.contextual ? {namespaces: node.namespaces} : {}),
             namespaceChoices: slots.filter(slot => !record.fixedOrder && slots.some(other => other !== slot && other.element.name.local === slot.element.name.local)).map(slot => slot.element.name.local),
-            dynamicDeclarations: selected.filter(slot => !('value' in slot) && slot.element).map(slot => slot.element!),
+            dynamicOccurrences: selected.flatMap((slot, index) => {
+              check();
+              return !('value' in slot) && slot.element ? [elements[index]!.path] : [];
+            }),
             ...(record.keyed ? {keyed: true} : {})});
           let selectedIndex = elements.length - 1;
           const occurrenceIndexes = new Map<string, number>();

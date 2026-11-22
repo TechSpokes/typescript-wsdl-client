@@ -19,13 +19,14 @@ import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
 import type {ConstructionFailure} from './schemaConstructionAssessment.js';
 import {verifyOperationSchemaRoots, type FiniteRe01Frontier} from './finiteRe01Verification.js';
 import {checkScopedComponentCorrespondence} from './componentCorrespondence.js';
+import {LAX_WILDCARD_OPERATION_SCOPE, retainScopedLaxWildcardProof} from './scopedLaxWildcards.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
 const SOAP12 = 'http://schemas.xmlsoap.org/wsdl/soap12/';
 const HTTP = 'http://schemas.xmlsoap.org/soap/http';
 const ADDRESSING_WSDL = 'http://www.w3.org/2006/05/addressing/wsdl';
 export const CLOSED_OPERATION_SCOPE = 'closed-operation-v1' as const;
-export type ComponentQualificationScope = typeof CLOSED_OPERATION_SCOPE;
+export type ComponentQualificationScope = typeof CLOSED_OPERATION_SCOPE | typeof LAX_WILDCARD_OPERATION_SCOPE;
 export type WholeSourceLegality = 'established' | 'disproved' | 'unassessed';
 export interface DirectOperationSelector {
   readonly portType: ExpandedName;
@@ -223,11 +224,11 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       if (qualified.kind === 'component-source') inspectComponentSourceQualification(qualified, input);
       const construction = qualified.kind === 'component-source' ? qualified.construction : qualified;
       const eligible = qualified.kind === 'component-source' ? qualified.schemaEligible : qualified.eligible;
-      if (options.qualificationScope === CLOSED_OPERATION_SCOPE && qualified.kind === 'component-source') {
+      if (options.qualificationScope && qualified.kind === 'component-source') {
         wholeSourceLegality = qualified.construction.nativeEstablished ? 'established'
           : construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'disproved' : 'unassessed';
       }
-      if (!eligible && options.qualificationScope !== CLOSED_OPERATION_SCOPE) {
+      if (!eligible && !options.qualificationScope) {
         const {closure} = construction;
         const kind = construction.localDisproved || closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive';
         let rule = 'whole-source-qualification';
@@ -531,24 +532,29 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       });
       check();
       let operationFrontier: FiniteRe01Frontier | undefined;
-      if (options.qualificationScope === CLOSED_OPERATION_SCOPE) {
+      if (options.qualificationScope) {
         if (qualified.kind !== 'component-source' || !responseRoot || isRpcMessageRoot(requestRoot) || isRpcMessageRoot(responseRoot))
           return failure('unsupported', 'closed-operation-document-request-response');
+        const laxWildcards = options.qualificationScope === LAX_WILDCARD_OPERATION_SCOPE;
+        if (laxWildcards && soapNamespace !== SOAP12) return failure('unsupported', 'lax-wildcard-operation-soap12');
         const roots = [requestRoot, responseRoot, ...headers.map(header => header.root), ...faults.map(fault => fault.root)];
         const verified = verifyOperationSchemaRoots(context, roots.map(item => item.element.id));
         if (verified.kind !== 'inspected-frontier') {
           if (verified.kind === 'resource-limit') return failure('resource-limit', 'operation-source-qualification');
           return failure(verified.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', `operation-source-qualification:${verified.rule}`);
         }
-        const outside = checkScopedComponentCorrespondence(input, context, verified, check);
+        const outside = checkScopedComponentCorrespondence(input, context, verified, check, laxWildcards);
         if (outside) return failure('unsupported', `operation-correspondence:${outside.rule}`);
+        if (laxWildcards) retainScopedLaxWildcardProof(context, input, verified, check);
         operationFrontier = verified;
       }
       // Charge publication traversal before retaining authority. Roots stay exact context objects.
       const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId,
         basis: profile === 'direct' ? 'native-direct-premises-v1' : 'native-component-premises-v1',
         correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
-        ...(operationFrontier ? {qualification: {scope: CLOSED_OPERATION_SCOPE, wholeSourceLegality: wholeSourceLegality ?? 'unassessed'}} : {}),
+        ...(operationFrontier && options.qualificationScope ? {
+          qualification: {scope: options.qualificationScope, wholeSourceLegality: wholeSourceLegality ?? 'unassessed'},
+        } : {}),
         binding: {version: soapNamespace === SOAP12 ? '1.2' : '1.1', ...(soapNamespace === SOAP12 ? {actionRequired} : {}), style: style as 'document' | 'rpc', use: style === 'rpc' ? 'encoded' : 'literal',
           ...(style === 'rpc' ? {encoding: 'http://schemas.xmlsoap.org/soap/encoding/'} : {}), transport: HTTP, action, source: binding.context.source},
         input: requestRoot, ...(responseRoot ? {output: responseRoot} : {pattern: 'one-way' as const}), faults,

@@ -192,6 +192,14 @@ Regenerate the matched client, OpenAPI and gateway together when changing scope.
 
 Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
 
+### Scoped lax wildcards
+
+Set `"qualificationScope": "lax-wildcard-operation-v1"` for a SOAP 1.2 document/literal request-response operation that uses supported `processContents="lax"` wildcards. This scope covers disjoint wildcard grammars and a single trailing element wildcard after a fixed sequence of required elements. It also covers lax attribute wildcards. Pass the original source snapshots and the usual binding and endpoint permissions.
+
+Native validation checks a known wildcard declaration and its dependencies against the original graph before accepting its value. An unqualified known declaration causes refusal. Unknown elements retain their lexical content, expanded names and namespace context in the ordered `$content` form. Unknown attributes use `$attributes`. Opaque subtrees must use unknown element and attribute names throughout. Schema-instance assertions within opaque subtrees and dynamic type overrides refuse.
+
+The capsule identifies the qualification scope and pins the complete source graph. Regenerate the matched artifacts when selecting this scope. Default qualification still reports whole-source legality, and `closed-operation-v1` retains its wildcard refusal. [Installed ONVIF Media qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md)
+
 ### Application groups and configured names
 
 Add `{"applicationGroups":{}}` to the existing `--checked-config` file, or set `checkedComponents: {applicationGroups: {}}` through the package-root API. This opts the generated contract into [source-derived groups](concepts.md#choice-groups-and-named-alternatives); leaving the option absent preserves existing component output and the frozen direct/legacy contracts.

@@ -37,7 +37,7 @@ const forms = new Set(['schema', 'import', 'include', 'annotation', 'complexType
 const contextual = new Set(['NOTATION', 'ID', 'IDREF', 'IDREFS', 'ENTITY', 'ENTITIES', 'anyType', 'anySimpleType']);
 
 function ordinarySyntax(root: SyntaxElement, step: () => void, charge: (amount: number) => void,
-  scope: 'whole' | 'closed-declaration' | 'closed-schema-shell' = 'whole') {
+  scope: 'whole' | 'closed-declaration' | 'closed-schema-shell' = 'whole', laxWildcards = false) {
   const closed = scope !== 'whole';
   const stack: {node: SyntaxElement; parent?: SyntaxElement}[] = [{node: root}];
   while (stack.length) {
@@ -46,7 +46,8 @@ function ordinarySyntax(root: SyntaxElement, step: () => void, charge: (amount: 
     const refuse = (rule: string) => ({rule, path: node.source.path});
     if (node.name.namespace !== XSD_NAMESPACE || !forms.has(node.name.local)) return refuse('source-form-' + node.name.local);
     if (node.name.local === 'annotation') continue;
-    if (closed && ['any', 'anyAttribute'].includes(node.name.local)) return refuse('operation-wildcard-dependency');
+    if (closed && ['any', 'anyAttribute'].includes(node.name.local)
+      && (!laxWildcards || syntaxAttribute(node, 'processContents') !== 'lax')) return refuse('operation-wildcard-dependency');
     if (node.name.local === 'restriction' && parent?.name.local !== 'simpleType') return refuse('source-complex-restriction');
     for (const attribute of node.attributes) {
       step(); charge(64 + attribute.value.length * 4);
@@ -70,9 +71,9 @@ function ordinarySyntax(root: SyntaxElement, step: () => void, charge: (amount: 
   }
 }
 
-/** Assesses the original declaration syntax reached by a closed native operation proof. */
+/** Assesses the original declaration syntax reached by a scoped native operation proof. */
 export function checkScopedComponentCorrespondence(input: SchemaInput, actual: SemanticContext,
-  frontier: FiniteRe01Frontier, check: () => void): {rule: string; path?: string} | undefined {
+  frontier: FiniteRe01Frontier, check: () => void, laxWildcards = false): {rule: string; path?: string} | undefined {
   assertFiniteRe01Frontier(actual, frontier);
   const charge = actual.budget.chargeWork;
   if (frontier.identityConstraints.length || frontier.scalarSlots.length) return {rule: 'operation-contextual-dependencies'};
@@ -85,7 +86,8 @@ export function checkScopedComponentCorrespondence(input: SchemaInput, actual: S
     if (node.context.chameleon) return {rule: 'chameleon-interpretation', path: node.context.source.path};
     if (node.context.effectiveNamespace === XSD_NAMESPACE || node.context.effectiveNamespace === 'http://www.w3.org/2000/xmlns/')
       return {rule: 'system-namespace-unqualified', path: node.context.source.path};
-    if (node.kind === 'attributeWildcard' || node.kind === 'particle' && node.term.kind === 'any') return {rule: 'operation-wildcard-dependency'};
+    if (!laxWildcards && (node.kind === 'attributeWildcard' || node.kind === 'particle' && node.term.kind === 'any'))
+      return {rule: 'operation-wildcard-dependency'};
     if (node.kind === 'element' && actual.incomingAffiliates(node.id).length) return {rule: 'operation-substitution-dependency'};
     while (node.identity.kind === 'scoped') {
       check(); const parent = actual.sourceNode(node.identity.owner);
@@ -104,7 +106,7 @@ export function checkScopedComponentCorrespondence(input: SchemaInput, actual: S
       if (!original.has(identity)) continue;
       matched.add(identity);
       shells.add(schema.key);
-      const refusal = ordinarySyntax(declaration, check, charge, 'closed-declaration');
+      const refusal = ordinarySyntax(declaration, check, charge, 'closed-declaration', laxWildcards);
       if (refusal) return refusal;
     }
   }

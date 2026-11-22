@@ -23,6 +23,10 @@ The command selects the existing tests once and delegates installed-package chec
 
 Installed variant evidence uses independently checked source-derived variants where named; it does not assert an unchanged production-provider contract. Private service evidence remains separate and is not required by this public corpus command.
 
+## Separately pinned provider qualification
+
+ONVIF Media `GetSnapshotUri` has installed SOAP 1.2 and HTTP evidence under `lax-wildcard-operation-v1`. Its replay uses the original 11 external pins and an owned service wrapper. The whole-source and closed-operation refusals are exercised alongside its successful scoped execution. [ONVIF Media qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md)
+
 ## Maintain the index
 
 Add rights-cleared inputs and independent expected exchanges to the existing conformance framework. Preserve supported behavior, invalid-input checks, compatibility and security requirements alongside corpus growth.
