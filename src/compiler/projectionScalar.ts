@@ -20,7 +20,7 @@ export type ProjectionScalarFailure = Readonly<{kind: 'unavailable' | 'scalar-in
 export interface ProjectionScalarList {
   readonly builtin: ExpandedName; readonly whitespace: 'preserve' | 'replace' | 'collapse'; readonly retainLexical?: true;
 }
-export type ProjectionScalarDescription = Readonly<{kind: 'projection-scalar-type'; builtin: ExpandedName; retainLexical?: true; list?: ProjectionScalarList}>;
+export type ProjectionScalarDescription = Readonly<{kind: 'projection-scalar-type'; builtin: ExpandedName; atomicString?: true; retainLexical?: true; list?: ProjectionScalarList}>;
 type DescriptionResult = ProjectionScalarDescription | ProjectionScalarFailure | ResourceLimitFailure;
 type OperandResult = Readonly<{kind: 'projection-scalar-operand'; operand: DatatypeOperand}> | ProjectionScalarFailure | ResourceLimitFailure;
 const kernels = new WeakMap<SemanticContext, ReturnType<typeof kernel>>();
@@ -125,6 +125,7 @@ function kernel(context: SemanticContext) {
     if (local === 'QName' && !scoped && (retainLexical || item?.retainLexical))
       return Object.freeze({kind: 'unavailable', rule: 'qname-lexical-facet-representation'});
     const result: ProjectionScalarDescription = Object.freeze({kind: 'projection-scalar-type', builtin: Object.freeze({namespace: XSD_NAMESPACE, local}),
+      ...(plan.variety === 'atomic' && plan.primitive === 'string' ? {atomicString: true as const} : {}),
       ...(retainLexical ? {retainLexical: true as const} : {}), ...(item && !scoped ? {list: item} : {})});
     descriptions.set(key, result);
     references.set(key, reference);

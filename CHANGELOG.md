@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(checked): validate declared string attributes on elements matched directly by scoped lax wildcards.
+
 ## [1.13.0] - 2026-11-22
 
 - feat(checked): qualify SOAP 1.2 operations with scoped lax wildcards.

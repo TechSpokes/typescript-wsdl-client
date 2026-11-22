@@ -3,7 +3,7 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
 import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand, inspectProjectionConstraintNamespaces} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, selectOpaqueWildcardAttribute, isXmlCharacters, isXmlNamespaceBinding, inspectProjectionConstraintOperand, inspectProjectionConstraintNamespaces} from './directStructurePlan.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
@@ -264,13 +264,22 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             if (!permitsOpaqueWildcardName(context, 'element', value.name)) return mismatch('opaque-wildcard-declaration', declaration, value.source.path);
             for (const prefix in value.namespaces) {check(); if (!isXmlNamespaceBinding(prefix, value.namespaces[prefix]!)) return mismatch('namespace-binding', declaration, value.source.path);}
             const identities = new Set<string>();
-            for (const attribute of value.attributes) {
-              check(); const key = JSON.stringify([attribute.name.namespace, attribute.name.local]); budget.chargeWork(64 + key.length * 4 + attribute.value.length);
+            for (let index = 0; index < value.attributes.length; index++) {
+              check(); const attribute = value.attributes[index]!;
+              const key = JSON.stringify([attribute.name.namespace, attribute.name.local]); budget.chargeWork(64 + key.length * 4 + attribute.value.length);
               if (!isXmlNCName(attribute.name.local) || attribute.name.local === 'xmlns' && attribute.name.namespace === '' || attribute.name.namespace === 'http://www.w3.org/2000/xmlns/' || !isXmlCharacters(attribute.name.namespace)) return mismatch('attribute-name', declaration, value.source.path);
               if (!isXmlCharacters(attribute.value)) return mismatch('xml-characters', declaration, value.source.path);
-              if (!permitsOpaqueWildcardName(context, 'attribute', attribute.name)) return mismatch('opaque-wildcard-declaration', declaration, value.source.path);
               if (identities.has(key)) return mismatch('duplicate-attribute', declaration, value.source.path);
               identities.add(key);
+              if (value === node) {
+                const path = `${value.source.path}/attributes/${index}`;
+                const selection = selectOpaqueWildcardAttribute(context, attribute.name, check);
+                if (!selection) return mismatch('opaque-wildcard-declaration', declaration, path);
+                const expected = selection.attribute;
+                if (expected) operand(value, expected.declaration, expected.builtin, attribute.value, path, expected.constraint, expected.retainLexical);
+              } else if (!permitsOpaqueWildcardName(context, 'attribute', attribute.name)) {
+                return mismatch('opaque-wildcard-declaration', declaration, value.source.path);
+              }
             }
             for (const child of value.children) {check(); pending.push(child);}
           }

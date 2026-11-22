@@ -823,7 +823,6 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
             }
             const identity = JSON.stringify([namespace, key]);
             if (!namespace && key === 'xmlns') return invalid('attribute-name', valuePath, element);
-            if (!permitsOpaqueWildcardName(context, 'attribute', {namespace, local: key})) return invalid('opaque-wildcard-declaration', valuePath, element);
             if (seen.has(identity)) return invalid('duplicate-attribute', valuePath, element);
             seen.add(identity);
             attributes.push({name: {namespace, local: key}, lexicalName: key, value: lexical(member, valuePath, element)});
@@ -1166,7 +1165,9 @@ export function expandProjectionValue(context: SemanticContext, root: ElementNod
     const structural = matchDirectProjection(context, root, payload, options);
     if (structural.kind !== 'projection-match') {
       if (structural.kind === 'mismatch') {
-        if (structural.rule === 'ordered-particle-language') throw new Stop('value-invalid', structural.rule, structural.schemaPath, structural.payloadPath, structural.diagnostic);
+        // @why The native matcher locates the immediate wildcard element after inverse XML construction.
+        if (structural.rule === 'ordered-particle-language' || structural.rule === 'opaque-wildcard-declaration')
+          throw new Stop('value-invalid', structural.rule, structural.schemaPath, structural.payloadPath, structural.diagnostic);
         throw new Error('Internal projection expansion violated its source mapping');
       }
       throw new Stop(structural.kind, structural.rule, structural.schemaPath, structural.payloadPath, structural.diagnostic);
