@@ -72,6 +72,19 @@ The first pull starts the exchange. Consume the iterator before awaiting `comple
 
 HTTP returns the gateway error envelope before any record bytes. A late failure aborts the response, which can expose valid prior NDJSON lines or a JSON array without its closing bracket. Successful empty output requires a grammar that permits zero records. Read requires at least one. The Fetch fixture permits zero.
 
+## Escapia fixture acceptance
+
+An isolated, strict-built consumer on Windows with Node 24.21.0 installed the published v1.16.0 package and generated checked streams from saved Escapia Content WSDL and XSD files with an explicit EVRN Main companion. The client and both gateway formats received their first typed, validated record before the certificate-verified loopback HTTPS server sent the rest of the response. The two-record fixtures deliberately paused for 850 ms after the first record.
+
+| Operation | Selected item type | Direct client | NDJSON | JSON array |
+| --- | --- | ---: | ---: | ---: |
+| `UnitDescriptiveInfoStream` | `UnitDescriptiveContentType` | 600 ms | 803 ms | 809 ms |
+| `UnitCalendarAvailBatch` | `UnitCalendarAvailType` | 842 ms | 836 ms | 837 ms |
+
+The times show how far ahead of the remaining SOAP response the first record arrived in those fixture runs. For both operations, the direct client completed with two records and `records-with-declared-wrapper-scope`. Both gateway formats delivered two records and ended cleanly. The calendar path retained both `EVRN_UnitCalendarAvailBatchRS` steps and validated the nested availability segment. [Description results](https://github.com/TechSpokes/typescript-wsdl-client/issues/517#issuecomment-7110209240) · [Calendar results](https://github.com/TechSpokes/typescript-wsdl-client/issues/517#issuecomment-7110405287)
+
+Truncation after the first item preserved that item and aborted delivery. Cancellation closed the upstream socket. Denying endpoint authorization prevented SOAP dispatch. Live Escapia testing is a separate step once credentials are available.
+
 ## Supported transport and limits
 
 The stream transport supports credential-free SOAP 1.1 document/literal over HTTP(S), UTF-8 and identity content encoding. It authorizes the selected endpoint, preserves the SOAP action and request body, and verifies HTTPS certificates. Redirects, compression, SOAP 1.2, declared header bindings, request-time security and application-error response branches are outside the streaming profile. SOAP 1.1 Faults use the checked fault grammar.

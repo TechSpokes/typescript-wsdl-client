@@ -41,7 +41,8 @@ Verify the exact npm version when qualifying a consumer. Package-wide metadata a
 | Published in 1.10.0 through 1.12.0 | Standalone checked client, OpenAPI, gateway and app generation and installed qualification |
 | Published in 1.12.1 through 1.14.0 | Closed-operation selection, scoped lax wildcards and checked ONVIF Media reads |
 | Published in 1.15.0 | Opt-in checked SOAP 1.1 streaming, typed completion, and NDJSON or JSON-array delivery |
-| Planned | Authentic provider stream parity, remaining workflow and composition gaps, and broader protocol/security coverage |
+| Qualified against 1.16.0 | Local Escapia Content streaming fixtures for description and calendar |
+| Planned | Live provider stream parity, remaining workflow and composition gaps, and broader protocol/security coverage |
 
 Existing projects retain legacy generation unless they deliberately select a new profile. Regeneration can change colliding DTO/schema names, stream record shapes and corrected scalar/simple-content values when crossing 1.2.0. The [migration guide](docs/migration.md) retains those impacts and describes the separately adopted SOAP 1.2 runtime in 1.3.0.
 
@@ -51,7 +52,7 @@ One-way acknowledgement confirms a complete allowed HTTP exchange, not business 
 
 ### Checked streaming parity
 
-Qualify an authentic Escapia `UnitDescriptiveInfoStream` operation in an isolated v1.15.0 npm consumer using authorized service and companion WSDLs and an owned SOAP endpoint. Record the first unsupported requirement if the checked planner refuses. Follow with the repeated-wrapper `UnitCalendarAvailBatch` case after the first disposition. [Escapia qualification](https://github.com/TechSpokes/typescript-wsdl-client/issues/517)
+An isolated v1.16.0 npm consumer streamed typed records from local fixtures for Escapia `UnitDescriptiveInfoStream` and the repeated-wrapper `UnitCalendarAvailBatch`. Live Escapia testing remains separate pending credentials. [Escapia fixture results](docs/checked-streaming.md#escapia-fixture-acceptance)
 
 The [streaming delivery record](docs/roadmap/checked-streaming-execution.md#issue-exits) tracks each remaining legacy option, broader transport and security, independent parity, and heap measurements. Earlier ONVIF evidence belongs to its pinned buffered baseline. Future ONVIF qualifications should record the exact npm version used.
 
@@ -77,9 +78,9 @@ The combined [#425](https://github.com/TechSpokes/typescript-wsdl-client/issues/
 
 | Order | Outcome | Existing owners |
 |---|---|---|
-| Published baseline | Reuse buffered, standalone, pinned provider and installed checked-stream evidence through v1.15.0 | #397/#207/#401 |
+| Published baseline | Reuse buffered, standalone, pinned provider and installed checked-stream evidence through v1.16.0 | #397/#207/#401 |
 | Part A delivered | Retain the agreed v1.9.0 source, value, artifact and buffered SOAP coverage | [#495](https://github.com/TechSpokes/typescript-wsdl-client/issues/495) |
-| Part B in progress | Qualify authentic streams and assess remaining workflow and composition gaps against consumer use | #517/#159/#192-#194/#201-#203/#164 |
+| Part B in progress | Qualify live streams and assess remaining workflow and composition gaps against consumer use | #159/#192-#194/#201-#203/#164 |
 | Retirement | Prove migration and decide activation separately | #204/#205/#207/#208 |
 
 Use [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397) and [#207](https://github.com/TechSpokes/typescript-wsdl-client/issues/207) for a paired legacy/checked capability register. Each row identifies its source/profile, legacy promise, checked behavior, independently expected wire/HTTP result, remaining gap and owner. Distinguish working execution, valid unsupported input, unresolved qualification, invalid input and deliberate policy denial; refusal coverage does not prove replacement parity.
