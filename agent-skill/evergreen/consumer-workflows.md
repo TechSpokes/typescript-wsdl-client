@@ -20,7 +20,8 @@ Read the installed package version first. The canonical paths below are relative
 | Adopt checked generation | `docs/checked-generation.md` | `references/checked-generation.md` |
 | Match checked bindings and HTTP metadata | `docs/checked-gateway.md` and `docs/api-reference.md` | Follow version-matched source links |
 | Compose legacy services | `docs/gateway-guide.md` | `references/composition.md` |
-| Configure streams | `docs/configuration.md` | `references/streaming.md` |
+| Configure legacy streams | `docs/configuration.md#stream-configuration` | `references/streaming.md` |
+| Configure and consume checked streams | `docs/checked-streaming.md` | `references/checked-streaming.md` |
 | Set up consumer tests | `docs/testing.md` consumer sections | `references/testing.md` |
 | Diagnose failures | `docs/troubleshooting.md` | `references/troubleshooting.md` |
 

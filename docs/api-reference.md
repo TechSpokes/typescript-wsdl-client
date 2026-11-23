@@ -346,7 +346,7 @@ interface PipelineOptions {
 
 `streamConfigFile` and `streamConfig` are threaded through the compile step and into every downstream emitter via `catalog.json`. Relative paths in `shapeCatalogs` resolve against the stream-config file's directory when `streamConfigFile` is used, otherwise against the WSDL's directory.
 
-Legacy calls require `catalogOut` at runtime. Checked component calls use `model: "checked-components-v1"` and optional `checkedComponents`; they return checked inventory/planning instead of a legacy catalog contract. See [the complete programmatic checked example](checked-generation.md#programmatic-planning-and-generation) for source policy and planning before generation. Checked RPC outputs remain opaque strings and buffered checked values; legacy stream configuration does not activate checked streaming.
+Legacy calls require `catalogOut` at runtime. Checked component calls use `model: "checked-components-v1"` and optional `checkedComponents`, and return checked inventory and planning. Checked RPC outputs remain buffered opaque strings. Use `checkedComponents.streams` for selected checked SOAP 1.1 document/literal operations. [Programmatic checked example](checked-generation.md#programmatic-planning-and-generation) · [Checked streaming](checked-streaming.md)
 
 Component runtime options accept `soap.httpResponseHeaders?: readonly string[]` for bounded observation, yielding optional `http: {status: number, headers: Readonly<Record<string, readonly string[]>>}` on successes, faults, application errors and post-capture failures. Generation configuration `checkedComponents.httpResponseHeaders` separately pins gateway publication; client observation alone never publishes. See [selected upstream HTTP response headers](checked-gateway.md#selected-upstream-http-response-headers) for normalization, bounds, lifecycle, failure semantics and OpenAPI serialization.
 
@@ -425,7 +425,7 @@ Literal examples and unrelated extension payloads remain data. Duplicate paths, 
 
 ## Stream Configuration Helpers
 
-These exports back the `--stream-config` CLI flag and are also usable directly in programmatic flows.
+These legacy exports back `--stream-config` and can be used directly in programmatic flows. Checked selections use `checkedComponents.streams`. [Checked configuration and client runtime](checked-streaming.md)
 
 ### loadStreamConfigFile
 

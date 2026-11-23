@@ -286,7 +286,7 @@ Examples:
 
 Choose one release-ready PR for a change approved to ship immediately when the combined scope can be reviewed and qualified together. Use separate qualification or release PRs when review, hosted controls or release sequencing require them. Follow the [candidate publication procedure](../docs/releases/README.md#candidate-publication) on either path.
 
-Prepare the complete release candidate, including `docs/releases/vX.Y.Z.md`, package versions, changelog, and root documentation index, before pushing the release PR. Complete the PR template checklist. Commit the preflight-validated tree, push the PR, and require Node 24 and Node 26 checks on its exact head before merging. Verify that merged main has the same tree and successful CI, then tag that merged commit. A different merged tree requires a newly validated candidate before tagging.
+Prepare the complete release candidate, including `docs/releases/vX.Y.Z.md`, package versions, changelog, and the documentation index, before pushing the release PR. Complete the PR template checklist. Commit the preflight-validated tree, push the PR, and require Node 24 and Node 26 checks on its exact head before merging. Verify that merged main has the same tree and successful CI, then tag that merged commit. A different merged tree requires a newly validated candidate before tagging.
 
 Agent delivery ends after the tag-triggered workflow creates and verifies the draft and its artifacts, followed by task-owned local and remote cleanup. Agents must never access GitHub through a browser, publish releases, or dispatch package publication. The maintainer signs in through their own browser and clicks Publish; that event triggers npm publication. Preserve unrelated work, contributor-owned branches, release tags, and abandonment markers during cleanup.
 
@@ -420,8 +420,8 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Use `docs/concepts.md#mapping-terminology-and-naming` for shared mapping terminology and its reserved-key inventory for JSON spellings.
 - Keep internal names, generated types, JSON keys, OpenAPI descriptions and independent examples aligned; provisional names are not aliases.
 - Prefer pointers to the authoritative source over duplicating indexes across files.
-- The root README.md Documentation table is the single source of truth for the docs/ directory listing.
-- When adding, removing, or renaming documentation files, update only the root README.md Documentation table; other files should reference it rather than maintaining their own copies.
+- `docs/README.md` is the canonical documentation index. Keep the root README focused on project orientation, a first command and links to key guides.
+- When adding, removing, or renaming documentation, update `docs/README.md` and repair affected links. Link to the canonical index from other guides.
 - Store 1.0 implementation plans under `docs/roadmap/` as `v1.0-<topic>.md`; never create `docs/superpowers/`.
 - Docs updates to sections listed in `agent-skill/reference-manifest.json` automatically affect packaged fluid skill references during validation and release packaging.
 - Update evergreen files under `agent-skill/` only when stable agent workflow, architecture guidance, dependency rules, or generated-output safety rules change.

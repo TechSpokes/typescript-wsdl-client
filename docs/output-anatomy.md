@@ -2,7 +2,7 @@
 
 This document describes each file produced by the generator, what it contains, and how to work with it. For CLI flags that control output, see [CLI Reference](cli-reference.md).
 
-See the root [README](../README.md) for the documentation index. This catalog-based flow describes legacy output; [checked generation](checked-generation.md) emits source-backed artifacts with a separate value/validation contract.
+See the [documentation index](README.md) for related guides. This catalog-based flow describes legacy output; [checked generation](checked-generation.md) emits source-backed artifacts with a separate value/validation contract.
 
 Checked input-only operations contain no application output mapping. Matching operation clients/capsules use the V6/V7 one-way bindings; the gateway and OpenAPI describe an empty 202 acknowledgement with optional observation headers and no body schema. Generated app/tests remain consumer-owned offline scaffolds; see [one-way behavior](checked-gateway.md#one-way-operations) before adding independent business-operation tests.
 

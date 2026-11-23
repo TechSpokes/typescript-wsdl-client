@@ -1,6 +1,6 @@
 # Agent Skill Artifact
 
-Standalone agent skill artifact for consumer projects using `@techspokes/typescript-wsdl-client`. See the root [README.md](../README.md) for the authoritative documentation index.
+Standalone agent skill artifact for consumer projects using `@techspokes/typescript-wsdl-client`. See the [documentation index](README.md) for consumer guides.
 
 ## Purpose
 

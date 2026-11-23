@@ -1,389 +1,50 @@
 # TypeScript WSDL Client
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![CI](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml/badge.svg)](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@techspokes%2Ftypescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
-[![npm downloads](https://img.shields.io/npm/dm/@techspokes%2Ftypescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
+[![CI](https://github.com/TechSpokes/typescript-wsdl-client/actions/workflows/ci.yml/badge.svg)](https://github.com/TechSpokes/typescript-wsdl-client/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Turn legacy WSDL/SOAP services into typed TypeScript clients and optional REST APIs without hand-maintaining XML mappings.
+Generate a typed SOAP client from a WSDL. Use it directly in Node.js or generate an OpenAPI 3.1 specification and a Fastify REST gateway from the same contract.
 
-Created from production integration work at [TechSpokes](https://www.techspokes.com); built for teams modernizing real enterprise SOAP integrations.
+The generated operations interface lets you test your integration with a mock client. Deterministic output makes regeneration diffs reviewable when the WSDL changes.
 
-## Pick Your Path
+## Quick start
 
-| Goal | Command | What you get |
-|------|---------|-------------|
-| Typed SOAP client | `npx wsdl-tsc client` | TypeScript types, typed operations, mockable interface |
-| OpenAPI 3.1 spec | `npx wsdl-tsc openapi` | OpenAPI JSON/YAML generated from WSDL |
-| Full SOAP-to-REST bridge | `npx wsdl-tsc pipeline --init-app` | Client + OpenAPI + Fastify gateway + runnable app |
-| Several SOAP sources behind one API | `npx wsdl-tsc pipeline --services-config services.json` | Separate legacy clients, one gateway plugin and combined OpenAPI |
-| Checked document/literal or bounded RPC | `npx wsdl-tsc pipeline --model checked-components-v1` | Source-backed validation and buffered checked values |
-
-See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
-
-## Two generation modes
-
-Legacy generation is the default. Opt into native validation of supported SOAP contracts with `--model checked-components-v1`. Generate the whole stack with `pipeline` or run [`client`, `openapi`, `gateway`, and `app` separately](docs/checked-generation.md#generate-the-checked-stack-in-separate-commands).
-
-Enable [checked streaming](docs/checked-gateway.md#checked-streaming) per operation for supported SOAP 1.1 responses. The generated client yields typed records and reports terminal validation separately.
-
-Unambiguous sources select their service and operations automatically; ambiguous sources need an explicit `--checked-config`. Checked mode refuses unsupported or unresolved constructs rather than silently dropping their rules; the [checked gateway guide](docs/checked-gateway.md) explains configuration and scope.
-
-Generated source snapshots support offline runtime use, and calls use the selected WSDL address or an explicit endpoint override with optional restrictions. Existing [direct-runtime clients](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remain compatible; the [product corpus](docs/corpus.md) records representative evidence without claiming universal WSDL/XSD or live-provider support.
-
-Checked document/literal unions use complete XML lexical strings such as `"+01.00"` or `"1 02"` for a list-valued member. Ordinary lists of atomic unions use ordered arrays of string tokens. The native validator selects the first matching member and checks fixed values by type. See the [checked value contract](docs/checked-gateway.md#native-facets-lists-and-lexical-atomic-unions).
-
-Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
-
-Checked clients can observe selected upstream HTTP response headers through `soap.httpResponseHeaders`. Publishing them from a generated gateway separately requires `httpResponseHeaders` in `--checked-config` or `checkedComponents`; existing JSON bodies and REST status codes stay unchanged. See [bounded HTTP observation and publication](docs/checked-gateway.md#selected-upstream-http-response-headers).
-
-Checked input-only document/literal operations use SOAP 1.1 or SOAP 1.2 bindings and return a [transport acknowledgement](docs/checked-gateway.md#one-way-operations). Their gateway response is HTTP 202 with no body; acknowledgement does not establish business success. Optional full downstream header names use the existing checked configuration:
-
-```json
-{
-  "httpResponseHeaders": ["X-RateLimit-Limit"],
-  "httpResponseHeaderNames": {"x-ratelimit-limit": "RateLimit-Limit"},
-  "httpResponseStatusHeaderName": "X-Provider-Status"
-}
-```
-
-Omit naming options to retain namespaced defaults. Names normalize to lowercase identities; unsafe framing, cookie, authentication, caching and browser-policy destinations refuse before generation.
-
-## Why Choose This
-
-Most tools in this space stop at one layer: a SOAP runtime, type generation, or spec conversion. This package generates the full stack from a WSDL source and can compose independent legacy sources into one REST gateway.
-
-- Typed client, OpenAPI spec, REST gateway, and runnable app from one command
-- Deterministic output safe for CI regeneration and version control
-- Handles complex inheritance, `xs:attribute`, namespace collisions, nested XSD imports, and configurable `xs:choice` modeling
-- Generated `operations.ts` interface enables testing without importing `soap` or calling a live service
-- OpenAPI is a first-class output, not an afterthought; types, schemas, and descriptions stay aligned
-- Opt-in streaming for large SOAP responses: client emits `AsyncIterable<RecordType>`, gateway flushes NDJSON or JSON array records incrementally, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
-- Optional agent skill ZIP for consumer-project AI agents that need package-specific generation guidance
-- MIT licensed; generated code is yours with no attribution required
-
-## Installation
+In a Node.js 24+ project, save your WSDL as `service.wsdl` and keep its imports accessible. Install the generator as a development dependency and `soap` as a runtime dependency for the default client.
 
 ```bash
 npm install --save-dev @techspokes/typescript-wsdl-client
 npm install soap
+npx wsdl-tsc client --wsdl-source ./service.wsdl --client-dir ./.generated/client
 ```
 
-Requirements: Node.js 24+ and the `soap` package as a runtime dependency.
+The client, types, and mockable operations interface are now in `.generated/client/`. [Use the generated client](docs/generated-code.md#client-construction)
 
-## Quick Start
+## Choose what to generate
 
-The CLI requires explicit output paths. These examples use the git-ignored `.generated/` directory for disposable consumer output; repository automation uses `tmp/` separately.
+| Goal | Command | Guide |
+| --- | --- | --- |
+| Call SOAP from TypeScript | `wsdl-tsc client` | [Client setup](docs/start-here.md#i-need-a-typed-soap-client) |
+| Describe the REST contract | `wsdl-tsc openapi` | [OpenAPI generation](docs/start-here.md#i-need-an-openapi-spec-from-a-wsdl) |
+| Run a REST API over SOAP | `wsdl-tsc pipeline --init-app` | [Generate the full stack](docs/start-here.md#i-need-a-rest-gateway-over-soap) |
+| Combine independent SOAP services | `wsdl-tsc pipeline --services-config ./services.json` | [Legacy multi-service gateway](docs/gateway-guide.md#multi-service-setup) |
 
-### Generate a typed client
-
-```bash
-npx wsdl-tsc client \
-  --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir ./.generated/client
-```
-
-This produces `types.ts`, `client.ts`, `operations.ts`, and `utils.ts` in the output directory.
-
-To generate a standalone checked client, start from the original WSDL, specify `--model checked-components-v1`, and keep the generated operation capsules and source snapshots with the client. See [standalone checked client setup](docs/checked-generation.md#standalone-checked-client).
-
-Generated TypeScript includes an ESLint suppression preamble. See [generated-code linting guidance](docs/generated-code.md#generated-preambles-and-eslint) for strict policies, path exclusions, and editable scaffold ownership.
-
-### Generate an OpenAPI spec
-
-```bash
-npx wsdl-tsc openapi \
-  --wsdl-source examples/minimal/weather.wsdl \
-  --openapi-file ./.generated/openapi.json
-```
-
-### Generate the full stack
-
-```bash
-npx wsdl-tsc pipeline \
-  --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir ./.generated/client \
-  --openapi-file ./.generated/openapi.json \
-  --gateway-dir ./.generated/gateway \
-  --gateway-service-name weather \
-  --gateway-version-prefix v1 \
-  --init-app
-```
-
-### Run and test
-
-```bash
-cd .generated/app && npm install && cp .env.example .env && npm start
-```
-
-```bash
-curl http://localhost:3000/health
-curl http://localhost:3000/openapi.json | jq .
-curl -X POST http://localhost:3000/get-weather-information \
-  -H "Content-Type: application/json" -d '{}'
-```
-
-### Compose several SOAP services
-
-Use `pipeline --services-config ./services.json` to generate each source into separate client, catalog, OpenAPI and gateway paths, then emit one aggregate plugin and API document. The [multi-service guide](docs/gateway-guide.md#multi-service-setup) shows the configuration and generated `createClients` helper; each runtime client keeps its own WSDL source, endpoint and security settings. Native composition currently supports legacy generation; checked composition remains deferred.
-
-## Upgrading
-
-Read the [migration guide](docs/migration.md) before updating and regenerating. Existing generation defaults remain legacy; adopting one-way checked operations requires matched V6/V7 clients, capsules and gateways. Keep consumer-owned scaffolds under their existing skip/force rules and run consumer checks.
-
-When crossing 1.2.0, regeneration can change DTO names, stream records and corrected scalar/simple-content values. Preserve the working lockfile and deployment for rollback; the [1.1.x migration guidance](docs/migration.md#from-11x-to-120) explains these compatibility impacts.
-
-## What Gets Generated
-
-| Output | Files | Purpose |
-|--------|-------|---------|
-| TypeScript Client | client.ts, types.ts, utils.ts, operations.ts | Typed SOAP operations and mockable interface |
-| OpenAPI 3.1 Spec | openapi.json or .yaml | REST API documentation aligned with TypeScript types |
-| Fastify Gateway | plugin.ts, routes/, schemas/ | Production REST handlers with request/response transform |
-| Catalog | catalog.json | Compiled WSDL metadata, debuggable and cacheable |
-
-See [Output Anatomy](docs/output-anatomy.md) for a detailed walkthrough of each file.
-
-## When to Use This
-
-- You have a WSDL and need typed TypeScript access to its operations
-- You are building a REST API in front of a SOAP backend
-- You want OpenAPI documentation that stays in sync with WSDL changes
-- You need deterministic codegen output safe for CI/CD regeneration
-- You are modernizing a legacy SOAP integration incrementally
-- You have SOAP operations that return large payloads and need to stream records incrementally instead of buffering
-
-## When NOT to Use This
-
-- You need a generic SOAP server implementation: use `soap` directly
-- You need multi-language SDK generation: use a platform like APIMatic
-- You need API management, rate limiting, or policy enforcement: use an API gateway platform
-- Your SOAP service relies on WS-* standards beyond WS-Security hints (partial support)
-
-## Compared to Alternatives
-
-### Why not just use soap (node-soap) directly?
-
-`soap` is a runtime SOAP client. It gives you dynamic access to WSDL operations but no generated types, no compile-time safety, and no path to REST or OpenAPI. This package generates typed artifacts you can commit, review, and test; then optionally bridges to REST.
-
-### Why not use wsdl-tsclient?
-
-wsdl-tsclient generates a typed SOAP client. If that is all you need, it is a solid choice. This package goes further: OpenAPI generation, Fastify gateway scaffolding, deterministic CI-friendly output, and a mockable operations interface. Choose wsdl-tsclient for simplicity; choose this package for modernization projects.
-
-### Why not use a commercial API gateway?
-
-Platform API gateways solve governance, policy, and multi-language SDK generation. This package solves a different problem: developer-owned, code-first modernization of a specific SOAP backend into typed TypeScript and REST. Lower complexity, lower cost, full code ownership.
-
-### Comparison matrix
-
-| Capability | soap | wsdl-tsclient | wsdl-to-ts | this package |
-|---|---|---|---|---|
-| Actively maintained | yes | stalled | abandoned | yes |
-| Call SOAP from Node | yes | yes | indirect | yes |
-| Generated TypeScript types | limited | yes | yes | yes |
-| Deterministic CI-safe output | no | partial | partial | yes |
-| WSDL to OpenAPI 3.1 | no | no | no | yes |
-| REST gateway generation | no | no | no | yes |
-| Runnable app scaffolding | no | no | no | yes |
-| Mockable operations interface | no | no | no | yes |
-| Streaming large responses (NDJSON or JSON array) | no | no | no | yes |
-
-Data as of April 2026.
-
-## Built for Messy WSDLs
-
-Real-world WSDL/XSD files are rarely clean. This generator handles patterns that simpler tools skip.
-
-- Complex type inheritance with `<xs:extension>` and `<xs:restriction>`, including proper attribute and element merging
-- `xs:attribute` on complex types, flattened into peer properties alongside elements
-- Namespace collisions across multiple XSD imports, resolved deterministically
-- Deep import chains across multiple schema files
-- `<xs:choice>` groups modeled as default all-optional fields or opt-in exclusive unions with `--client-choice-mode union`
-- Correct optionality for nillable fields in both TypeScript and OpenAPI output
-- The `$value` pattern for simple content with attributes, preserving text content alongside attribute properties
-- `ArrayOf*` wrapper types, unwrapped automatically in OpenAPI with runtime bridging
-- `xs:any` wildcard payloads mapped to concrete record shapes from a companion WSDL, enabling streaming over responses that the primary WSDL describes only as opaque wrappers
-
-See [Core Concepts](docs/concepts.md) and [Supported Patterns](docs/supported-patterns.md) for details.
-
-## Testing With Generated Code
-
-The generated `operations.ts` provides a typed interface for mocking the SOAP client without importing the concrete class or the `soap` package:
-
-```typescript
-import type { WeatherOperations } from "./.generated/client/operations.js";
-
-const mockClient: WeatherOperations = {
-  GetCityWeatherByZIP: async (args) => ({
-    response: { GetCityWeatherByZIPResult: { Success: true, WeatherID: 0, City: "Test" } },
-    headers: {},
-  }),
-  GetCityForecastByZIP: async () => ({ response: {}, headers: {} }),
-  GetWeatherInformation: async () => ({ response: {}, headers: {} }),
-};
-
-import Fastify from "fastify";
-import weatherGateway from "./.generated/gateway/plugin.js";
-
-const app = Fastify();
-await app.register(weatherGateway, { client: mockClient, prefix: "/v1/weather" });
-```
-
-See [consumer testing guidance](docs/testing.md#for-consumer-projects) for legacy and checked setup, generated tests and mock examples.
-
-## Commands
-
-| Command | Purpose |
-|---------|---------|
-| `pipeline` | Full stack generation (recommended) |
-| `client` | TypeScript SOAP client only |
-| `openapi` | OpenAPI 3.1 spec only |
-| `gateway` | Fastify REST gateway from OpenAPI |
-| `app` | Runnable Fastify application |
-| `compile` | Parse WSDL to catalog.json (advanced) |
-
-See [CLI Reference](docs/cli-reference.md) for all flags and examples.
+Legacy generation is the default. Use `--model checked-components-v1` to validate requests and responses against supported WSDL and XSD contracts. Checked responses are buffered by default. Since v1.15.0, selected credential-free SOAP 1.1 document/literal operations can yield validated records before the response ends, with NDJSON or JSON-array output through the gateway. [Try checked generation](docs/checked-generation.md) · [Configure checked streaming](docs/checked-streaming.md)
 
 ## Documentation
 
-### Using the package
+| Task | Where to start |
+| --- | --- |
+| Evaluate your WSDL | [Start here](docs/start-here.md) · [Supported patterns](docs/supported-patterns.md) |
+| Generate and configure | [CLI](docs/cli-reference.md) · [TypeScript API](docs/api-reference.md) · [Configuration](docs/configuration.md) |
+| Run and test your integration | [Gateway](docs/gateway-guide.md) · [Consumer testing](docs/testing.md#for-consumer-projects) · [Production](docs/production.md) · [Troubleshooting](docs/troubleshooting.md) |
+| Upgrade or migrate | [Version migration](docs/migration.md) · [Migration playbook](docs/migration-playbook.md) |
+| Browse all guides | [Documentation index](docs/README.md) |
 
-| Guide | Description |
-|---|---|
-| [Start Here](docs/start-here.md) | What this is, who it is for, choose your path |
-| [Supported Patterns](docs/supported-patterns.md) | WSDL/XSD features handled and current limitations |
-| [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
-| [Direct Scalar Values](docs/direct-values.md) | Internal scalar mapping, fresh inverse and bounded bare-root XML codec |
-| [Try Opt-in Checked Generation](docs/checked-generation.md) | Installed component trial, URL intake, endpoint setup, scope, direction and feedback |
-| [Checked Gateway Reference](docs/checked-gateway.md) | Component/direct configuration, project commands, compatibility and bounded HTTP/SOAP evidence |
-| [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
-| [Working With Generated Code](docs/generated-code.md) | Using clients, types, and operations |
-| [Configuration](docs/configuration.md) | Gateway security, upstream SOAP security, tags, operation overrides |
-| [Migration Playbook](docs/migration-playbook.md) | End-to-end SOAP modernization guide |
-| [Gateway Guide](docs/gateway-guide.md) | Fastify integration, inbound enforcement, and error handling |
-| [Multi-Service Gateway Status](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/multi-service-gateway.md) | Implemented legacy composition, mapping boundaries, and deferred checked composition |
-| [Testing Guide](docs/testing.md) | Consumer tests and separate maintainer verification guidance |
-| [Production Guide](docs/production.md) | CI/CD, validation, logging |
-| [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
-| [Programmatic API](docs/api-reference.md) | TypeScript functions for build tools |
-| [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
-| [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
-| [Version Migration](docs/migration.md) | Upgrading between package versions |
-| [1.5.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.5.0.md) | Scoped diagnostics and explicit declared-type corrections |
-| [1.2.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.2.0.md) | Composition, consumer compatibility and bounded RPC qualification |
-| [1.4.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.1.md) | Composable checked OpenAPI documentation |
-| [1.4.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.4.0.md) | Contract corrections, offline inspection and SOAP 1.1 protocol faults |
-| [1.3.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.3.0.md) | Checked SOAP 1.2 execution and preserved SOAP 1.1 compatibility |
-| [XML/JSON Mapping Contract](docs/mapping-contract.md) | Checked keyed, namespace, nil and group representations |
-| [Protocol Fault Compatibility](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/005-checked-protocol-fault-compatibility.md) | Runtime adoption and complete-source inspection decisions |
-| [Product Corpus](docs/corpus.md) | Representative public inputs and their executable evidence |
+## Releases and support
 
-### Contributing
+[v1.15.0 release](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.15.0) · [Changelog](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CHANGELOG.md) · [Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md)
 
-| Guide | Description |
-|---|---|
-| [Content Model Baseline](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-baseline.md) | Reproducible S01 reference evidence and current semantic limits |
-| [Shipped Fix Reconciliation](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-shipped-fix.md) | Contributor attribution, delivered occurrence behavior and S02 handoff |
-| [Content Model Decision Register](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-decisions.md) | Stable S02 decisions, evidence, owners and prerequisite gates |
-| [SOAP Feasibility Evidence](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-soap-feasibility.md) | Local ordered SOAP exchanges, raw transport seams and capability limits |
-| [Gateway Feasibility Evidence](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-gateway-feasibility.md) | Non-mutating route validation, dialect boundaries and serialized HTTP bytes |
-| [Ordered Schema Loading](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-loading.md) | Internal ordered syntax, provenance and controlled resolution contracts |
-| [Canonical Schema Graph](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-graph.md) | Immutable declarations, use-site particles, references and lexical context |
-| [Canonical Reference Resolution](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-resolution.md) | Namespace visibility, complete targets, legal recursion and component-cycle diagnostics |
-| [Canonical Derivation Composition](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
-| [Structural Companion Catalogs](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-companions.md) | Required closures, actual structural equality, provenance and shared semantic dispatch |
-| [Exact Particle Analysis](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
-| [Semantic Catalog Format 2](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
-| [Checked WSDL readiness](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-readiness.md) | Measured assessment corpus and bounded P3 implementation packet |
-| [Direct Structural Matching](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
-| [Architecture](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/architecture.md) | Internal pipeline for contributors |
-| [Reference Validation](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/reference-validation.md) | Internal evidence contract and Node tooling migration inventory |
-| [NOAA NDFD Qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md) | All-12 owned RPC execution, ten live successes and two live GML refusals |
-| [ONVIF Media Qualification](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/onvif-media-qualification.md) | Installed SOAP 1.2 snapshot URI exchange with lax extensions |
-| [File Naming And Path Organization](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/file-naming-and-path-organization.md) | Contributor convention for taxonomy paths and fixture retrieval |
+Built and maintained by TechSpokes. Created by Serge Liatko.
 
-### Decisions and research
-
-| Guide | Description |
-|---|---|
-| [Content Model Contracts (ADR-003)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
-| [Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
-| [v1.15.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.15.0.md) | Opt-in checked SOAP streaming for TypeScript clients and gateways |
-| [v1.14.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.14.0.md) | ONVIF Media reads and declared wildcard string attributes |
-| [v1.13.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.13.0.md) | Opt-in SOAP 1.2 lax wildcard qualification |
-| [v1.12.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.1.md) | Closed operation qualification, checked artifact paths and source diagnostics |
-| [v1.12.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.12.0.md) | Standalone checked OpenAPI, gateway, app and test generation |
-| [v1.11.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.11.1.md) | Exact npm archive delivery and faster Windows smoke verification |
-| [v1.11.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.11.0.md) | Release verification, dependency freshness and package handoff controls |
-| [v1.10.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.10.0.md) | Standalone checked SOAP clients through the CLI and package-root API |
-| [v1.9.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.9.0.md) | Checked scalar extensions, wider unions, expanded QNames and source annotations |
-| [v1.8.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.8.1.md) | Faster verification and a reviewed release delivery sequence |
-| [v1.8.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.8.0.md) | Exact lexical values for checked SOAP unions and lists |
-| [v1.7.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.7.0.md) | Checked buffered credentials, declared headers and source fidelity |
-| [v1.6.5 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.5.md) | Strict ASCII and explicitly labelled UTF-16 checked SOAP responses |
-| [v1.6.1 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.1.md) | Accurate empty-extension assessment and typed syntax refusals |
-| [v1.6.3 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/v1.6.3/docs/releases/v1.6.3.md) | One-way SOAP acknowledgements and exact safe downstream HTTP names |
-| [v1.6.2 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.2.md) | Bounded upstream HTTP observation and explicit gateway publication |
-| [v1.6.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.6.0.md) | Independently validated application-error branches and upgrade guidance |
-| [v1.1.8 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.1.8.md) | Checked generation preview, supported values and upgrade guidance |
-| [Current Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
-| [Checked Part A Coverage](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-part-a-coverage.md) | Paired legacy and checked contracts, verification and open scope decisions |
-| [Checked Streaming Execution Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/checked-streaming-execution.md) | Implementation sequence, installed wire proof and issue acceptance for incremental checked responses |
-| [Version 1.0 Roadmap Plan](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/README.md) | Historical completed implementation slices and qualification gates for 1.0 |
-| [Checked Buffered SOAP Completion](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-buffered-soap-completion.md) | Completed v1.7.0 adapter checklist, verification and continuing scope exclusions |
-| [Published-Package Consumer Acceptance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-published-consumer-acceptance.md) | Accepted Escapia npm upgrade, exact evidence and unexecuted alternative boundaries |
-| [Checked Lexical Atomic Unions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-checked-atomic-unions.md) | Reviewed implementation candidate, bounded contract and typed fixed equality |
-| [Checked Lists of Atomic Unions](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/roadmap/v1.0-checked-atomic-union-lists.md) | Implemented lexical token arrays, whole-list witnesses and typed sequence equality |
-| [Streamable Responses (ADR-002)](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
-| [Product and Research Boundary](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/004-product-research-boundary.md) | Package, validation and delivery responsibilities |
-| [Research Program](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/research/README.md) | Optional experiments, commands and historical investigation records |
-
-## Why This Exists
-
-This package was created while modernizing production SOAP integrations at [TechSpokes](https://www.techspokes.com). The existing options were: hand-write hundreds of TypeScript DTOs and XML mappings, use untyped runtime SOAP calls, or adopt an enterprise platform we did not need.
-
-We built a generator that reads the WSDL contract and produces everything needed to go from legacy SOAP to typed TypeScript and REST, with deterministic output safe for version control and CI.
-
-If you are wrapping a vendor SOAP API in a modern service layer, this is the tool we wished existed when we started.
-
-## Contributing
-
-See [CONTRIBUTING.md](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) for development setup, project structure, and guidelines.
-
-## License
-
-MIT. See [LICENSE](LICENSE) for full text. Generated artifacts are fully yours with no restrictions or attribution required.
-
-Unmodified NOAA/NWS qualification fixtures are public-domain provider material with separate [attribution and provenance](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/noaa-ndfd-qualification.md#provenance-and-permission).
-
-## Links
-
-- [npm](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
-- [Changelog](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CHANGELOG.md)
-- [Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md)
-- [Security](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/SECURITY.md)
-- [Sponsor](https://github.com/sponsors/TechSpokes)
-
-Built and maintained by [TechSpokes](https://www.techspokes.com). Created by [Serge Liatko](https://github.com/sergeliatko).
-
-- Community help: [GitHub Discussions](https://github.com/techspokes/typescript-wsdl-client/discussions)
-- Bug reports: [GitHub Issues](https://github.com/techspokes/typescript-wsdl-client/issues)
-- Commercial support and integration consulting: [techspokes.com/contact](https://www.techspokes.com/contact/)
-
-## Schema assessment diagnostics
-
-For saved SOAP responses, use `wsdl-tsc inspect-response` to assess a checked contract offline and optionally produce a source correction draft. XML-only reports leave HTTP checks unassessed. Checked generation accepts consumer-owned external JSON corrections through `sourceCorrectionsFile`; generated runtime artifacts use the effective metadata without needing the recipe. See [source corrections and response inspection](docs/checked-gateway.md#consumer-owned-source-corrections) for configuration, limits and the update workflow.
-
-`assess` is an additive diagnostic command. It writes a versioned JSON report without generating artifacts or dispatching SOAP.
-
-```bash
-npx wsdl-tsc assess --wsdl-source examples/minimal/weather.wsdl --report .generated/assessment.json
-```
-
-Create the report directory first. Local loading defaults to the source directory; use repeated `--schema-root` values for additional authorized roots and `--schema-origin` for exact HTTP(S) origins. Network access has no implicit authorization. `--assessment-max-work` and `--assessment-max-nodes` configure the inclusive shared request limits.
-
-The programmatic `assessSchemaSource(source, {loading: {policy: {fileRoots: [...]}}})` entry returns the same report; `serializeAssessmentReport` publishes its precharged JSON. `parseAssessmentReport` checks diagnostic compatibility and consistency, but does not authenticate proof. Reports expose opaque source/context identifiers and exact resource digests rather than source URLs or payloads.
-
-The report separates native schema premises, dated-XSD correspondence, execution and per-operation runtime capabilities. Exit 0 requires established native scope and qualified correspondence; 2 means inconclusive, 3 native scope disproved, 4 resource-limit, 5 cancelled and 1 operational failure. Execution failure takes precedence over retained schema facts. An assessment never admits structured generation; legacy defaults and existing commands are unchanged.
-
-See the [checked-product assurance contract](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) for the sufficient direct correspondence route and remaining downstream obligations.
+[Contributing](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) · [Discussions](https://github.com/TechSpokes/typescript-wsdl-client/discussions) · [Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues) · [Security](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/SECURITY.md) · [Commercial support](https://www.techspokes.com/contact/) · [Sponsor](https://github.com/sponsors/TechSpokes)

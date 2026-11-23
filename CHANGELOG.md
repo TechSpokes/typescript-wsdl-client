@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(repo): refocus the README and reconcile checked streaming guidance.
+
 ## [1.15.0] - 2026-11-23
 
 - test(checked): reuse cached npm dependencies during installed streaming qualification.

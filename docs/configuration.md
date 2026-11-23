@@ -101,6 +101,8 @@ Per-operation overrides for method, summary, description, and deprecation.
 
 ## Stream Configuration
 
+This section defines legacy `--stream-config`. For checked operations, put `streams` in `--checked-config` or `checkedComponents` and select the operation and source-qualified record path. [Checked stream configuration](checked-streaming.md)
+
 The `--stream-config <file>` flag (available on `compile`, `client`, `pipeline`)
 opts selected WSDL operations into streaming. Unlisted operations retain their buffered API selection; 1.2.0 can still change generated mapper and metadata output.
 

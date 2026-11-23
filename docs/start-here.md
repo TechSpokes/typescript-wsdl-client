@@ -2,11 +2,11 @@
 
 This page helps you understand what this package does, decide if it fits your needs, and find the fastest path to your first result.
 
-See the root [README](../README.md) for installation and the documentation index.
+See the [README](../README.md#quick-start) for installation and the first client-generation command.
 
 ## Upgrade an existing project
 
-Read the [migration guide for the intended version](migration.md) before regenerating an existing gateway. The [1.3.0 upgrade](migration.md#from-12x-to-130) adds checked SOAP 1.2; earlier generation changes retain their historical migration guidance. Installing the package does not itself rewrite generated code, but consumer build/install scripts can run generation. Legacy remains the default.
+Read the [migration guide for the intended version](migration.md) before regenerating an existing gateway. The [v1.15.0 upgrade](migration.md#from-114x-to-1150) explains how to adopt checked streaming. Installing the package does not itself rewrite generated code, but consumer build/install scripts can run generation. Legacy remains the default.
 
 Use the existing generation command and preserve app/test customizations first. Adopt native composition or checked generation separately; successful representative release tests do not certify migration of every consumer project.
 
@@ -25,7 +25,7 @@ The generated output is deterministic: re-running the same command produces iden
 
 ## Choose Your Path
 
-Choose legacy single-source generation for existing DTO/envelope integrations. For multiple independent legacy sources, use [native composition](gateway-guide.md#multi-service-setup) with `pipeline --services-config`. For source-backed validation and the bounded SOAP 1.1 RPC/encoded profile, choose [checked generation](checked-generation.md); checked replies remain buffered values, without the legacy success envelope. Neither profile claims universal SOAP support.
+Use legacy generation for existing DTO and envelope integrations. Use `pipeline --services-config` to combine independent legacy SOAP services. Choose the checked model for source-backed validation, including supported document/literal operations and the bounded SOAP 1.1 RPC/encoded string profile. [Multi-service setup](gateway-guide.md#multi-service-setup) · [Try checked generation](checked-generation.md)
 
 ### I need a typed SOAP client
 
@@ -72,17 +72,21 @@ npx wsdl-tsc pipeline \
 
 The gateway transforms JSON HTTP requests into SOAP calls and returns JSON responses. Each WSDL operation becomes a POST endpoint.
 
-Next: [Gateway Guide](gateway-guide.md) for integration details, then [Migration Playbook](migration-playbook.md) for the full modernization workflow
+[Run the generated app](cli-reference.md#quick-start) · [Gateway integration](gateway-guide.md) · [Migration playbook](migration-playbook.md)
 
 ### I want to try source-backed checked generation
 
-The checked component preview shipped in npm version 1.1.8 after the unpublished 1.1.6/1.1.7 candidates. `pipeline --model checked-components-v1` derives unambiguous selections and supported structured mappings from a WSDL file or URL, acquires declared dependencies, and emits a client, OpenAPI, gateway, app and tests. The existing pipeline remains the default when `--model` is omitted.
+Run `pipeline --model checked-components-v1` to generate from the original WSDL and its declared dependencies. Supported contracts receive native request, response and fault checks. The checked planner reports unsupported and unresolved capabilities.
 
-Start with [Try Opt-in Checked Generation](checked-generation.md) for a bundled installed trial, endpoint configuration, missing-schema recovery and feedback instructions. Supported contracts get native request/response/fault checks; unsupported capabilities refuse rather than bypassing validation. This preview is buffered and separate from the legacy streaming workflow below.
+Try the bundled contract and learn how to set endpoints and resolve missing schemas. [Checked generation walkthrough](checked-generation.md)
 
 ### I need to stream large SOAP responses
 
-Some SOAP services return large responses. Opt selected legacy operations into streaming with `--stream-config`. Unlisted operations retain their buffered API selection; generated mapper and metadata output can change in 1.2.0. Stream bodies bypass the legacy success envelope.
+Checked generation supports source-backed validation for supported contracts. It is buffered by default. Since v1.15.0, eligible SOAP 1.1 document/literal operations can opt into streaming through `checkedComponents.streams`. [Checked streaming](checked-streaming.md)
+
+For a checked stream, consume typed records and observe terminal completion separately. Gateways can emit NDJSON or JSON arrays.
+
+For legacy streams, select operations with `--stream-config`. The stream returns mapped DTO records directly. Unselected operations use the buffered contract.
 
 ```bash
 npx wsdl-tsc pipeline \
@@ -124,7 +128,7 @@ Next: [Agent Skill Artifact](agent-skill.md) for package contents, installation,
 
 This package does not replace a full API management platform. It does not provide rate limiting, policy enforcement, or multi-language SDK generation. It generates code; it does not run a proxy or manage deployments.
 
-For more on scope boundaries, see the "When NOT to Use This" section of the [README](../README.md).
+Check the coverage of your WSDL and transport before adopting the generated integration. [Supported patterns](supported-patterns.md)
 
 ## Next Steps
 
@@ -136,5 +140,5 @@ For more on scope boundaries, see the "When NOT to Use This" section of the [REA
 | Plan a full SOAP-to-REST migration | [Migration Playbook](migration-playbook.md) |
 | Set up testing for generated code | [Testing Guide](testing.md) |
 | Review all CLI flags | [CLI Reference](cli-reference.md) |
-| Opt specific operations into response streaming | [ADR-002](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/decisions/002-streamable-responses.md) and [Stream Configuration](configuration.md#stream-configuration) |
+| Opt specific operations into response streaming | [Checked streaming](checked-streaming.md) or [Legacy stream configuration](configuration.md#stream-configuration) |
 | Install package-specific agent guidance | [Agent Skill Artifact](agent-skill.md) |

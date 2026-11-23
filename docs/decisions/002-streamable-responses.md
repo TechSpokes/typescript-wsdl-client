@@ -2,7 +2,7 @@
 
 Proposal for opt-in streamable SOAP response support, with Escapia EVRN Content Service as the concrete driver.
 
-See the root [README](../../README.md) for the authoritative documentation index and [Architecture](../architecture.md) for the current generator pipeline.
+See the [documentation index](../README.md) and [Architecture](../architecture.md) for the current generator pipeline.
 
 ## Status
 

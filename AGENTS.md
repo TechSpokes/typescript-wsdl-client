@@ -8,7 +8,7 @@ For routine tasks such as bug fixes and small feature additions, the summary and
 
 ## Summary
 
-This is a TypeScript code generator that transforms WSDL/XSD SOAP service definitions into typed SOAP clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. The `pipeline` command runs the full generation stack in one pass. Source is in `src/` with modules for loading, compiling, client generation, OpenAPI generation, gateway generation, app scaffolding, and utilities. The pipeline orchestrator is `src/pipeline.ts`. Opt-in per-operation NDJSON streaming is available for large responses via `--stream-config` (ADR-002).
+This is a TypeScript code generator that transforms WSDL/XSD SOAP service definitions into typed SOAP clients, OpenAPI 3.1 specs, and Fastify REST gateways. The `pipeline` command runs the full generation stack in one pass. Source is in `src/` with modules for loading, compiling, client generation, OpenAPI generation, gateway generation, app scaffolding, and utilities. The pipeline orchestrator is `src/pipeline.ts`. Select operations for NDJSON or JSON-array delivery using legacy `--stream-config` or the [checked stream configuration](docs/checked-streaming.md).
 
 ## Must-follow rules
 
@@ -74,6 +74,6 @@ Allow at least six minutes for full conformance on Windows. Use the narrowest ca
 
 ## References
 
-- `docs/README.md`: documentation index (points to root README.md Documentation table)
+- `docs/README.md`: canonical documentation index
 - `examples/minimal/weather.wsdl`: test fixture used by all smoke tests and Vitest suites
 - `CHANGELOG.md`: version history and breaking change entries

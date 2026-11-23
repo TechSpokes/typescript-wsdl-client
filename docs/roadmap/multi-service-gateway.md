@@ -62,7 +62,7 @@ The local reports remain under `tmp/conformance/escapia-live-2026-11-09/native-p
 
 A future checked composition owner must coordinate independently qualified operation capsules without merging source, service, port or binding identity. The existing `inspectComponentSourceService` checks remain intact.
 
-Checked component responses currently document buffered delivery. Incremental checked decoding requires its own runtime design and qualification; legacy streaming success does not establish that capability.
+Single-service checked streaming shipped in v1.15.0 for selected SOAP 1.1 document/literal operations. Each checked stream retains its source, service, binding and operation identity. One-command checked multi-service generation remains deferred. [Checked streaming profile](../checked-streaming.md)
 
 ## Compatibility and service isolation
 
