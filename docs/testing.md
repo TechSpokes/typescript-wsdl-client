@@ -65,7 +65,7 @@ When a check needs hosted infrastructure, record which local checks passed and w
 
 Ordinary verification prints its unique directory under `tmp/verification/`. Conformance, generated-test, smoke and package scratch stay in that workspace. The runner allocates and records a separate operating-system temporary directory for installs so Node cannot resolve checkout dependencies through their ancestors.
 
-The runner waits for its command to finish, removes its workspace after success or ordinary failure, and restores the pre-existing `dist/` after a delivery build. npm and CI cache `tmp/cache/npm/` across runs. Release examples, explicit reference reports, consumer `.generated/` output, and existing evidence have their own lifecycles.
+The runner waits for its command to finish, removes its workspace after success or ordinary failure, and restores the pre-existing `dist/` after a delivery build. Reuse `tmp/cache/npm/` between checks while work is active. The [release cleanup procedure](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md#release-cleanup) defines when local preflight output and release copies are disposable.
 
 Use Ctrl+C for ordinary cancellation and wait for cleanup. If the runner is forcibly stopped, find the exact printed `run-*` directory, check its recorded `owner` and `child` PIDs, and confirm that their descendants have stopped. Recover from the same checkout with the same temporary-directory environment.
 
@@ -75,7 +75,16 @@ When installed smoke cannot confirm that a child process tree stopped, its `exte
 npm run clean:verification -- run-ABC123
 ```
 
-Recovery reports a live PID or unexpected path and leaves the workspace available for inspection. It only cleans the named run and restores the build it owned. Keep manual builds, unrelated files, and links outside that cleanup. Use console output for the failing check, timing, and relevant diagnostics. CI retains the job log.
+Recovery reports a live PID or unexpected path and leaves the workspace available for inspection. It only cleans the named run and restores the build it owned. Keep manual builds, unrelated files, and links outside that cleanup.
+
+#### Task closeout
+
+1. Let task-owned verification and helper processes exit. Complete recovery for any interrupted run before removing its files.
+2. Preserve requested consumer output at its designated destination. Record durable results in tracked documentation or the relevant hosted issue, PR, or workflow when authorized. Commit reviewed reusable fixtures under `test/conformance/fixtures/`. Keep private or restricted inputs in their authorized storage.
+3. Remove disposable verification projects, logs, package copies, manual probes, and task-owned scratch in the checkout, OS temporary directories, and WSL. Remove disposable worktrees and the checkout-local npm cache once the last run using it has exited. Preserve unrelated work, active runs, and shared system caches.
+4. Verify that `tmp/` still exists. Its expected contents are zero entries. Report the exact path and reason for any entry kept for an active run, recovery, or unrelated work.
+
+Routine tests recreate their temporary output and checkout-local cache. Use console output and hosted CI logs for command details that can be regenerated.
 
 ### Windows and certificates
 

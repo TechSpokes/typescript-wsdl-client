@@ -18,7 +18,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Keep current consumer contracts in `docs/` and exploratory or historical handoff material in `research/docs/`.
 - Keep package contents explicit, retain generation resources, and review actual package-size changes by consumer value.
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
-- Keep routine verification scratch in its owned `tmp/verification/run-*` directory. Preserve the npm cache and release artifacts.
+- Keep verification scratch in the owned `tmp/verification/run-*` directory. At task closeout, remove task-owned scratch, disposable verification output and checkouts, and local caches that no active run needs. Preserve requested deliverables and durable evidence at their designated locations. Verify that `tmp/` remains present and empty when no retained paths are needed. Follow [temporary output and recovery](docs/testing.md#temporary-output-and-recovery).
 - Keep consumer output paths explicit and use the git-ignored `.generated/` convention in public examples.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
@@ -28,7 +28,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
 - Prepare release notes and metadata before pushing the release PR; tag the validated merged state of main.
-- Agents stop after draft/artifact verification and task-owned cleanup; the maintainer publishes manually.
+- Verify the GitHub draft and uploaded artifacts, then complete [release cleanup](docs/releases/README.md#release-cleanup) before handing off. The maintainer publishes manually.
 - Agents never access GitHub through a browser or publish releases or packages.
 - Node.js >= 24.0.0, ESM-only (`type: "module"`), strict TypeScript.
 - Repository-owned new implementation, tests, research and automation use strict TypeScript; run `npm run check:toolchain`.

@@ -56,7 +56,7 @@ Owned replay verified the Main success response and two captured Content records
 
 Six live read calls using the environment-provided `Test` target passed through the same native composition. These covered booking channels, companies `7007` (ABC Rentals) and `1273` (A Perfect Vacation Rental), two ABC unit descriptions, an 18-unit calendar batch and the `1273-214474` description; streamed records validated against the advertised schemas.
 
-The local reports remain under `tmp/conformance/escapia-live-2026-11-09/native-proof/`. Credentials were consumed only inside the request script, TLS verification used system trust, and array-wrapper flattening was explicitly disabled for these vendor requests. This sample qualification does not establish production availability or every operation's compatibility; deterministic repository regressions and private provider evidence remain separate.
+Credentials were consumed only inside the request script, TLS verification used system trust, and array-wrapper flattening was explicitly disabled for these vendor requests. The results above cover the sampled operations. The repository's deterministic composition regressions use owned SOAP fixtures.
 
 ## Deferred checked composition
 

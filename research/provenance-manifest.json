@@ -1061,7 +1061,7 @@
         {
           "path": "src/loader/orderedSyntax.ts",
           "role": "semantic-source",
-          "sha256": "a691b60c882ee46bb33b41d8e30b5c4cd67f48b7bf528dc3182d5fa63dc3a8f6",
+          "sha256": "0a9319ef502c709d0ea21f73cc8b99a6dbbdda66eb3d4a43ccbc819f759daf72",
           "historical": {
             "path": "src/loader/orderedSyntax.ts",
             "sha256": "df111418be47d54403c08b684b2b710eb253d1488b3725f45da98d4c30c8d6c9",
@@ -1071,7 +1071,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "7785dab335b0d6bfc720ea0362aab7c3f07ec21325354ae2d03a3e994fdce48f",
+          "sha256": "7c9d0e6258869cb9e0e56cbbbbffc98fb314206c1a2a00c0af432cf49bc52dd6",
           "historical": {
             "path": "src/loader/schemaInput.ts",
             "sha256": "315f7cdefd31b50807a71dde740069fb5c0198d7f22b50a94349bbf77b3a7e2c",
@@ -1091,12 +1091,12 @@
         {
           "path": "src/compiler/complexTypeContent.ts",
           "role": "semantic-source",
-          "sha256": "c63cf5712788a95b851bd0a5e4d49c97a95019b1b24d452d7f17a95cd2a4af80"
+          "sha256": "18916cfe1dfd40f081a9fb312aa3983f0528ef3c14dd65d3cd450c47c707b35e"
         },
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "b55580ff1f36f7adc8a3dd33a155e181f615be6cd5ac485bee4fb56d5fe754f6"
+          "sha256": "77d0ae34b0c0680fb73abfe4907b85efdb75f54787fd8877a9021f69882e290d"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -1151,7 +1151,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "532993d17ba6357f525abeafb9a902e7b27aa87f80fd1b21abc548f639f4f706"
+          "sha256": "1e90f4cc88a0aa8c3e42989050cbca72639741a32ae2e5a35144374f3348a91a"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1186,7 +1186,7 @@
         {
           "path": "src/compiler/schemaDeclarationPrimitives.ts",
           "role": "semantic-source",
-          "sha256": "c9b3d635d13a8cb307322075f0bfd0ba962595d3b00cf97bd44217048598d8ea"
+          "sha256": "751c38674391f3dab5d2d8abd224405d2889280a58f1b836dd112dae6e365948"
         },
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
@@ -1311,7 +1311,7 @@
         {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-primitives.xsd",
           "role": "fixture",
-          "sha256": "33f47a6762b9b3ef55cfde23cf6b0bbb6e7166b8fb17769a4b869807b316fcbf"
+          "sha256": "2be6d70d82780bc59b3379937b0a580acee4ccdf13c8e1810fb37161ac5a10e8"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/upa-independent.xsd",
@@ -1496,7 +1496,7 @@
         {
           "path": "test/unit/schema-scalar-independent.test.ts",
           "role": "expectations",
-          "sha256": "f7c9a8124681630d75bd9ae3c936a3e326d45177516d0a64da45775c8aa28dc8"
+          "sha256": "1f42366bdbdfd82a057c2ed518369537d028091f2a0b8ecbf510821e00b1fc66"
         },
         {
           "path": "test/unit/schema-syntax-assessment.test.ts",
@@ -1551,7 +1551,7 @@
         {
           "path": "src/loader/wsdlLoader.ts",
           "role": "semantic-source",
-          "sha256": "7f152bb88efbb078e7f6af15569898523422d6490521a8c6564cd1ce6dd1df9a"
+          "sha256": "85be4c00da3a4550d273699483d34b52514f2e3dfa5cde364a01473822d971d7"
         },
         {
           "path": "src/compiler/schemaCompiler.ts",
@@ -1586,7 +1586,7 @@
         {
           "path": "src/loader/schemaResources.ts",
           "role": "semantic-source",
-          "sha256": "e7039183fa5cf9f85ce6a0be63b53d1ab9950c56ed84425de6c4c32b1301cc58"
+          "sha256": "5172a17ddb4af2c8a54ebd0a6baea2bffcea936ace89e65f3a91bd483327a250"
         },
         {
           "path": "src/loader/resolutionDepth.ts",
@@ -1621,7 +1621,7 @@
         {
           "path": "src/loader/fetch.ts",
           "role": "semantic-source",
-          "sha256": "d6c2e8c73374da5ae534ed6a78f5fe64028670c03ce9f3be5423617eeba69370"
+          "sha256": "884ec10780c88a7d2080a1fe36c7840f47c8944523a311458872c2b5cbbdf4e7"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/component-equality-independent.xsd",
@@ -1916,7 +1916,7 @@
         {
           "path": "src/compiler/schemaGeneratedScalarShape.ts",
           "role": "semantic-source",
-          "sha256": "10deb42d7f1f5fd912905102b653353c13df1342b7cceb88ebe1977aaa22793d"
+          "sha256": "41ffdd526891b4415614f9cb153472956163037eaf1385a32e59430ab3940ba4"
         },
         {
           "path": "src/compiler/schemaTypeIdentity.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "test/unit/hypothetical-scoped-identity-independent.test.ts",
           "role": "prototype",
-          "sha256": "8e30a802101837ac2852ecd943f67d51dde511213b540586675de11054639cdb"
+          "sha256": "1769308ccb27403fa376dc7c4b87d8ce728615047ef9ad7aa5463813802a593f"
         },
         {
           "path": "research/tests/re01/frozen-prefix-transport.test.ts",

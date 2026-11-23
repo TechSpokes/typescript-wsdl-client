@@ -90,7 +90,7 @@ The initial GML calls returned HTTP 200 with bare OGC exception XML under `appli
 
 The gateway correctly refused those non-SOAP responses at its Content-Type boundary. Relaxing that check would not turn an exception document or plain text into a valid RPC SOAP response. The observations suggest an upstream GML backend availability problem after input validation; they do not establish its internal cause. No provider-specific schema patch or permissive decoder was added.
 
-The retained local evidence is under `tmp/conformance/noaa-live-20261109/all-operations/`, including the initial result inventory, diagnostic GML results and upstream response captures. Live requests used small geographic queries, one forecast point, one daily-summary day and all 73 Boolean flags explicitly supplied. XML payloads remain opaque public string results; no geographic accuracy or complete DWML/GML domain validation is claimed.
+Live requests used small geographic queries, one forecast point, one daily-summary day and all 73 Boolean flags explicitly supplied. XML payloads remain opaque public string results; no geographic accuracy or complete DWML/GML domain validation is claimed.
 
 Release qualification therefore distinguishes all-12 owned-server RPC execution from ten successful live operations and two live GML failures. Ordinary tests remain offline.
 

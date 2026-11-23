@@ -2,7 +2,7 @@
 
 ## Current mapping checkpoint, November 7, 2026
 
-[#422](https://github.com/TechSpokes/typescript-wsdl-client/issues/422) extends the native source/scalar and HTTP owners with bounded facets, restricted lists and primitive-string atomic unions. [Checked scalar mappings](../../docs/checked-gateway.md#native-facets-lists-and-primitive-string-unions) and [ADR-003](../../docs/decisions/003-content-model-contracts.md#xsd-10-profile-and-enforcement-s02-d04) specify the lexical union specialization. Whole-source construction, correspondence and payload membership remain distinct gates. The implementation PR records final-candidate checks, installed evidence and independent review; broader #179/#184/#410/#397/#401/#379 remain open.
+[#422](https://github.com/TechSpokes/typescript-wsdl-client/issues/422) extends the native source/scalar and HTTP owners with bounded facets, restricted lists and primitive-string atomic unions. [Checked scalar mappings](../../docs/checked-gateway.md#native-facets-lists-and-lexical-atomic-unions) and [ADR-003](../../docs/decisions/003-content-model-contracts.md#xsd-10-profile-and-enforcement-s02-d04) specify the lexical union specialization. Whole-source construction, correspondence and payload membership remain distinct gates. The implementation PR records final-candidate checks, installed evidence and independent review; broader #179/#184/#410/#397/#401/#379 remain open.
 
 [#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) implements the selected keyed mixed/namespace/open slice through the existing native planner, matcher, scalar/inverse, XML codec and generated HTTP owners. It follows merged nil PR #434 at main `b337f04`. [Checked mapping behavior](../../docs/checked-gateway.md#mixed-namespaced-and-open-values) and committed production conformance/installed controls describe the scoped guarantee, including native wildcard policy and retained lexical contexts.
 
@@ -54,9 +54,9 @@ The reviewed implementation passed full native Windows CI: 4,573 broad cases wit
 
 The same nonauthor reviewer verified the 405-file implementation snapshot and then the 559-file final evidence snapshot before and after inspection, with no unresolved actionable findings. The closing review verified all 117 preserved example files against consumer originals. This is scoped static review and evidence consistency checking, not independent execution, full-profile acceptance or provider approval.
 
-Detailed logs, exact install/generate/typecheck/test/build/start arguments, archived harnesses, the operation ledger, original inputs/provenance and runnable projects remain locally under `tmp/conformance/escapia-2026-10-31/`. The final candidate package SHA-256 is `6b24044e4085d433117e0b7cd4725a34c0feefe78b713b98bfbafd0a2920d81a`; its installation evidence is `candidate/component-installs/run-F97NA9`, and final wire evidence is `candidate/component-wire-runs/run-pLnNR2` and `candidate/component-wire-runs/run-Fx2dPI`.
+The final candidate package SHA-256 was `6b24044e4085d433117e0b7cd4725a34c0feefe78b713b98bfbafd0a2920d81a`.
 
-Ignored archives, dependencies, machine-specific logs and vendor/example XML are not added to Git by this checkpoint. The original bytes remain preserved locally; inclusion in a future portable regression corpus needs explicit fixture/provenance review. Generic engine regression fixtures and tests are committed. A fresh clone can run repository tests; reproducing the vendor-specific trial additionally requires the retained or independently supplied original contracts and explicit configuration.
+Generic engine regression fixtures and tests are committed and run from a fresh clone. Reproducing the vendor-specific trial requires independently supplied original contracts and explicit configuration. Adding vendor material to a portable regression corpus requires fixture and provenance review.
 
 ## Distance to broad WSDL coverage
 

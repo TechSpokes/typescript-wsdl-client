@@ -72,7 +72,7 @@ Both paths follow the same release gates.
 5. Verify the merged main tree matches the validated tree and require CI on the merged commit.
 6. Tag the validated merged main commit and push the tag to start the draft workflow.
 7. Verify the draft, release notes, uploaded skill ZIP, checksum manifest, and artifact verification results.
-8. Clean up task-owned merged branches and temporary outputs, then hand the draft to the maintainer.
+8. Complete [release cleanup](#release-cleanup) and hand the draft to the maintainer.
 9. The maintainer reviews the draft in their own browser and clicks Publish.
 10. The guarded package workflow publishes to npmjs with provenance.
 
@@ -81,6 +81,14 @@ The agent stops after draft verification and cleanup. Agents must never access G
 If the merged tree differs from the preflight-validated tree, stop before tagging and prepare a newly validated candidate. Do not rerun preflight for an unchanged validated tree.
 
 Manual package dispatch is a recovery path after the GitHub Release is published. It enforces the same tag, marker, reachability, draft, and prerelease checks.
+
+### Release cleanup
+
+Keep the local preflight ZIP, checksum manifest, and any evidence still needed to verify the exact candidate through draft verification. Start final cleanup after the tag-triggered draft workflow succeeds and the draft, uploaded ZIP, checksum manifest, and uploaded-artifact install and smoke results have been verified. The hosted npm workflow builds its tarball from the released commit after the maintainer publishes.
+
+Record the verified tag, draft URL, and workflow result in the handoff. Remove task-owned preflight examples, disposable verification projects and builds, local copies of the verified ZIP and checksum manifest, test tarballs, logs, checkout-local caches, and OS or WSL scratch. Remove disposable release worktrees and task-owned merged branches. Keep published and verified draft assets on GitHub, release tags, abandonment markers, and unrelated work.
+
+Check the remaining checkout's `tmp/` with hidden entries included. Leave the directory present and follow the [task closeout verification](../testing.md#task-closeout). Complete these checks before handing the draft to the maintainer.
 
 ### npm tarball delivery
 
@@ -97,6 +105,8 @@ The normal path uses GitHub UI publication because a workflow publishing with it
 Run the `Abandon Release Candidate` workflow before publishing a rejected draft. Supply the final-form tag, a permanent reason, and optional failed-validation evidence.
 
 The workflow creates annotated marker `abandoned/vX.Y.Z` on the same commit as `vX.Y.Z`, verifies the remote marker, and then deletes only the draft release and its candidate assets. The marker preserves the durable reason and release identity. The operation is idempotent when the marker already matches and the draft is absent. A marker on another commit fails for maintainer review.
+
+Once the marker is verified and the draft is absent, remove the abandoned candidate's task-owned local outputs and verify `tmp/` using the same checks as release cleanup.
 
 Drafting, abandonment, and package publication are serialized per release tag so abandonment cannot race package delivery.
 
