@@ -84,13 +84,13 @@ Important for reasoning about paths:
 - `openapi`: defaults to `{dir-of-openapi-file}/catalog.json`.
 - `pipeline`: cascade lookup: `{client-dir}` / `{openapi-dir}` / `{gateway-dir}` / `tmp/`.
 
-Scratchpads: non-project notes may live under ad-hoc folders; treat them as scratchpads only, not as source of truth for behavior or docs.
+Use ignored scratchpads for disposable notes. Link tracked documents, tests, and comments to committed inputs or authorized hosted records for evidence and handoffs. Check local link targets with `git ls-files -- <path>` before delivery. Documented commands may create temporary output in ignored directories.
 
 ### Temporary workspace layout
 
 Place ordinary verification scratch in the current `tmp/verification/run-*` workspace. Use `tmp/cache/npm/` for the checkout's npm cache and `tmp/preflight/examples/` for release example regeneration while work is active. Keep manual probes in a named task-owned directory.
 
-Before finishing a task, follow the [temporary output and recovery procedure](../docs/testing.md#temporary-output-and-recovery). Remove disposable verification output and idle checkout-local caches after their last use. Preserve requested deliverables and record durable evidence at their designated locations. Verify that `tmp/` exists and that only reported paths remain for active runs, recovery, or unrelated work.
+Before finishing a task, follow the [temporary output and recovery procedure](../docs/testing.md#temporary-output-and-recovery). Remove disposable verification output, completed handoffs kept only in scratch, and idle checkout-local caches after their last use. Preserve requested deliverables and record durable evidence at their designated locations. Verify that `tmp/` exists and that only reported paths remain for active runs, recovery, or unrelated work.
 
 Do not add implicit public CLI defaults only to satisfy this internal layout. Public examples use explicit `.generated/...` paths, while repository automation alone uses `tmp/`.
 

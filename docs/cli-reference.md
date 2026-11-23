@@ -211,7 +211,7 @@ Configured client methods return records through `AsyncIterable<RecordType>`; ga
 
 `--stream-config` is accepted on the `compile`, `client`, and `pipeline` commands. It is not accepted on `openapi`, `gateway`, or `app` because those consume a pre-compiled `catalog.json` that already carries the normalized stream metadata.
 
-Stream-config file shape (see `docs/decisions/002-streamable-responses.md`):
+The [stream configuration reference](configuration.md#stream-configuration) defines the fields in this example.
 
 ```json
 {

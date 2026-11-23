@@ -19,6 +19,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Keep package contents explicit, retain generation resources, and review actual package-size changes by consumer value.
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
 - Keep verification scratch in the owned `tmp/verification/run-*` directory. At task closeout, remove task-owned scratch, disposable verification output and checkouts, and local caches that no active run needs. Preserve requested deliverables and durable evidence at their designated locations. Verify that `tmp/` remains present and empty when no retained paths are needed. Follow [temporary output and recovery](docs/testing.md#temporary-output-and-recovery).
+- Keep evidence and handoffs referenced from tracked files accessible from a clean checkout. Use tracked files or authorized hosted records for material future sessions need.
 - Keep consumer output paths explicit and use the git-ignored `.generated/` convention in public examples.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.

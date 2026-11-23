@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(streaming): update ADR-002 and retire its checkout-only plan references.
 - docs(workflow): require cleanup at task closeout and after release draft verification.
 - docs(qualification): remove references to discarded local verification output.
 - docs(streaming): record Escapia v1.16.0 fixture acceptance.

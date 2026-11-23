@@ -14,8 +14,7 @@ import {buildProbeWsdl, startChunkedSoapServer} from "../../test/helpers/chunked
 // flush time. If node-soap buffers the entire response before parsing, the
 // callback fires at or after the server-close time.
 //
-// The research output (printed to stdout; not used as a gate) drives the
-// transport decision recorded in scratches/plans/v017/streamable-responses.plan.yaml.
+// @see docs/decisions/002-streamable-responses.md for the transport decision informed by this probe.
 
 describe("research: node-soap response delivery mode", () => {
   it("measures time-to-callback against server first-chunk and close timings", async () => {
@@ -89,8 +88,7 @@ describe("research: node-soap response delivery mode", () => {
       const buffers = tCallback >= tFirstChunk + totalEmitMs / 2;
       const verdict = streams && !buffers ? "STREAMS" : buffers && !streams ? "BUFFERS" : "AMBIGUOUS";
 
-      // Intentional console output: this is a research probe, not a pass/fail
-      // gate. The plan YAML records the human-read outcome.
+      // @why The timing classification is research telemetry. The assertion above checks that the fixture actually chunked.
       // eslint-disable-next-line no-console
       console.log(JSON.stringify({
         kind: "node-soap-streaming-probe",

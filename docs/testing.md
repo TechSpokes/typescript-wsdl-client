@@ -80,8 +80,8 @@ Recovery reports a live PID or unexpected path and leaves the workspace availabl
 #### Task closeout
 
 1. Let task-owned verification and helper processes exit. Complete recovery for any interrupted run before removing its files.
-2. Preserve requested consumer output at its designated destination. Record durable results in tracked documentation or the relevant hosted issue, PR, or workflow when authorized. Commit reviewed reusable fixtures under `test/conformance/fixtures/`. Keep private or restricted inputs in their authorized storage.
-3. Remove disposable verification projects, logs, package copies, manual probes, and task-owned scratch in the checkout, OS temporary directories, and WSL. Remove disposable worktrees and the checkout-local npm cache once the last run using it has exited. Preserve unrelated work, active runs, and shared system caches.
+2. Preserve requested consumer output at its designated destination. Record durable results and any handoff needed for a planned next session in tracked documentation or the relevant hosted issue, PR, or workflow when authorized. Commit reviewed reusable fixtures under `test/conformance/fixtures/`. Keep private or restricted inputs in their authorized storage.
+3. Remove completed handoffs kept only in scratch, disposable verification projects, logs, package copies, manual probes, and task-owned scratch in the checkout, OS temporary directories, and WSL. Remove disposable worktrees and the checkout-local npm cache once the last run using it has exited. Preserve unrelated work, active runs, and shared system caches.
 4. Verify that `tmp/` still exists. Its expected contents are zero entries. Report the exact path and reason for any entry kept for an active run, recovery, or unrelated work.
 
 Routine tests recreate their temporary output and checkout-local cache. Use console output and hosted CI logs for command details that can be regenerated.
