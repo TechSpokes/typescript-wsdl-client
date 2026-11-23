@@ -88,7 +88,9 @@ Scratchpads: non-project notes may live under ad-hoc folders; treat them as scra
 
 ### Temporary workspace layout
 
-Place ordinary verification scratch in the current `tmp/verification/run-*` workspace. Keep the npm cache under `tmp/cache/npm/` and release example regeneration under `tmp/preflight/examples/`. Preserve explicit reference reports and release assets.
+Place ordinary verification scratch in the current `tmp/verification/run-*` workspace. Use `tmp/cache/npm/` for the checkout's npm cache and `tmp/preflight/examples/` for release example regeneration while work is active. Keep manual probes in a named task-owned directory.
+
+Before finishing a task, follow the [temporary output and recovery procedure](../docs/testing.md#temporary-output-and-recovery). Remove owned output and idle checkout-local caches after their last use. Record durable evidence in its appropriate home before cleanup. Verify that `tmp/` exists and is empty in an idle checkout. Report any retained path and its active dependency or recovery reason.
 
 Do not add implicit public CLI defaults only to satisfy this internal layout. Public examples use explicit `.generated/...` paths, while repository automation alone uses `tmp/`.
 
@@ -288,7 +290,7 @@ Choose one release-ready PR for a change approved to ship immediately when the c
 
 Prepare the complete release candidate, including `docs/releases/vX.Y.Z.md`, package versions, changelog, and the documentation index, before pushing the release PR. Complete the PR template checklist. Commit the preflight-validated tree, push the PR, and require Node 24 and Node 26 checks on its exact head before merging. Verify that merged main has the same tree and successful CI, then tag that merged commit. A different merged tree requires a newly validated candidate before tagging.
 
-Agent delivery ends after the tag-triggered workflow creates and verifies the draft and its artifacts, followed by task-owned local and remote cleanup. Agents must never access GitHub through a browser, publish releases, or dispatch package publication. The maintainer signs in through their own browser and clicks Publish; that event triggers npm publication. Preserve unrelated work, contributor-owned branches, release tags, and abandonment markers during cleanup.
+Agent delivery ends after the tag-triggered workflow verifies the draft and its uploaded artifacts and the agent completes [release cleanup](../docs/releases/README.md#release-cleanup). Hand the verified draft to the maintainer with cleanup complete. The maintainer signs in through their own browser and clicks Publish, which triggers npm publication. Agents must never access GitHub through a browser, publish releases, or dispatch package publication.
 
 1. Read current package version from `package.json` and the latest dated release section in `CHANGELOG.md`.
 2. Determine the target semver bump based on `Unreleased` changes or the user's explicit target.
@@ -306,6 +308,7 @@ Agent delivery ends after the tag-triggered workflow creates and verifies the dr
 14. If preflight fails or a separate command changes tracked release files afterward, finish the fixes and rerun preflight on the new final candidate. Preflight itself fails if it changes tracked content.
 15. After preflight passes, commit the exact validated release tree without changing tracked files.
 16. Push and merge the release PR after its required checks, then tag the validated merged main commit without rerunning local preflight, CI, package validation, or skill packaging for an unchanged tree.
+17. Verify the GitHub draft and uploaded artifacts, complete release cleanup, and hand the draft to the maintainer.
 
 ### Abandoned release candidates
 
