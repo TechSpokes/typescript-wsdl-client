@@ -21,9 +21,9 @@ npx wsdl-tsc client --wsdl-source ./service.wsdl --client-dir ./.generated/clien
 
 Set `--wsdl-source` to a local file or an HTTP(S) WSDL URL such as `"https://provider.example/Service.svc?wsdl"`. Keep any imported WSDL and XSD files accessible.
 
-The generated client, types, and operations interface are in `.generated/client/`. [Use the generated client](docs/generated-code.md#client-construction)
+For hosted WSDLs, the generator resolves relative XSD imports against the document URL on all supported platforms.
 
-On Windows, default generation can fail on relative XSD imports from a hosted WSDL. Use a local copy that preserves the import paths, or try checked generation for a supported contract. [Checked URL setup](docs/checked-generation.md#try-your-wsdl-file-or-url)
+The generated client, types, and operations interface are in `.generated/client/`. [Use the generated client](docs/generated-code.md#client-construction)
 
 ## Choose what to generate
 

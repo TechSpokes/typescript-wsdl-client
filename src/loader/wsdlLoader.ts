@@ -11,7 +11,7 @@
  * for the compiler stage.
  */
 import {XMLParser} from "fast-xml-parser";
-import {fetchText} from "./fetch.js";
+import {fetchText, isHttpUrl} from "./fetch.js";
 import path from "node:path";
 import {getChildrenWithLocalName} from "../util/tools.js";
 import {WsdlCompilationError} from "../util/errors.js";
@@ -67,11 +67,11 @@ const parser = new XMLParser({ignoreAttributes: false, attributeNamePrefix: "@_"
  */
 export async function loadWsdl(wsdlUrlOrPath: string): Promise<WsdlCatalog> {
   // Fetch and parse the WSDL document
-  let wsdlUri: string;
+  let documentUri: string;
   let text: string;
   try {
     const fetched = await fetchText(wsdlUrlOrPath);
-    wsdlUri = fetched.uri;
+    documentUri = fetched.uri;
     text = fetched.text;
   } catch (err) {
     throw new WsdlCompilationError(
@@ -125,16 +125,16 @@ export async function loadWsdl(wsdlUrlOrPath: string): Promise<WsdlCatalog> {
   if (types) {
     // Find any <xsd:schema> (prefix-agnostic) directly under wsdl:types
     const rawSchemas = getChildrenWithLocalName(types, "schema");
-    const baseDir = path.dirname(wsdlUri);
 
     // Process each schema node, resolving imports and includes
     for (const s of rawSchemas) {
-      const discovered = await resolveSchema(s, baseDir, visited);
+      const discovered = await resolveSchema(s, documentUri, visited);
       schemas.push(...discovered);
     }
   }
 
-  return {wsdlUri, wsdlXml, schemas, prefixMap: {...prefixMap, tns}};
+  // @why Keep the supplied source URI for catalog provenance and generated names after redirects.
+  return {wsdlUri: wsdlUrlOrPath, wsdlXml, schemas, prefixMap: {...prefixMap, tns}};
 }
 
 /**
@@ -144,11 +144,12 @@ export async function loadWsdl(wsdlUrlOrPath: string): Promise<WsdlCatalog> {
  * and recursively fetches and resolves any imported or included schemas.
  *
  * @param {any} schemaNode - The XML schema node to process
- * @param {string} baseDir - Base directory/URL for resolving relative paths
+ * @param {string} documentUri - URL or file path of the document containing this schema
  * @param {Set<string>} visited - Set of already processed schema URIs to prevent cycles
  * @returns {Promise<SchemaDoc[]>} - Array of resolved schema documents
+ * @throws {Error} - If loading or parsing a schema dependency fails
  */
-async function resolveSchema(schemaNode: any, baseDir: string, visited: Set<string>): Promise<SchemaDoc[]> {
+async function resolveSchema(schemaNode: any, documentUri: string, visited: Set<string>): Promise<SchemaDoc[]> {
   const out: SchemaDoc[] = [];
 
   // Extract target namespace and prefix declarations
@@ -158,14 +159,14 @@ async function resolveSchema(schemaNode: any, baseDir: string, visited: Set<stri
     if (k.startsWith("@_xmlns:")) prefixes[k.slice(8)] = String(v);
   }
 
-  // Add this schema to the output collection
-  out.push({uri: baseDir, xml: schemaNode, targetNS, prefixes});
+  const directory = isHttpUrl(documentUri) ? new URL(".", documentUri).href : path.dirname(documentUri);
+  out.push({uri: directory, xml: schemaNode, targetNS, prefixes});
 
   // Process <include> elements (schemas from same namespace)
   for (const inc of getChildrenWithLocalName(schemaNode, "include")) {
     const loc = inc?.["@_schemaLocation"];
     if (!loc) continue;
-    const more = await fetchAndResolveSchemaDoc(loc, baseDir, visited);
+    const more = await fetchAndResolveSchemaDoc(loc, documentUri, visited);
     out.push(...more);
   }
 
@@ -173,7 +174,7 @@ async function resolveSchema(schemaNode: any, baseDir: string, visited: Set<stri
   for (const imp of getChildrenWithLocalName(schemaNode, "import")) {
     const loc = imp?.["@_schemaLocation"];
     if (!loc) continue;
-    const more = await fetchAndResolveSchemaDoc(loc, baseDir, visited);
+    const more = await fetchAndResolveSchemaDoc(loc, documentUri, visited);
     out.push(...more);
   }
 
@@ -187,13 +188,14 @@ async function resolveSchema(schemaNode: any, baseDir: string, visited: Set<stri
  * parses it, and recursively resolves any imports or includes it contains.
  *
  * @param {string} schemaLocation - URL or file path to the schema document
- * @param {string} baseDir - Base directory/URL for resolving relative paths
+ * @param {string} documentUri - URL or file path of the document that references this schema
  * @param {Set<string>} visited - Set of already processed schema URIs to prevent cycles
  * @returns {Promise<SchemaDoc[]>} - Array of resolved schema documents
+ * @throws {Error} - If loading or parsing this schema or a dependency fails
  */
-async function fetchAndResolveSchemaDoc(schemaLocation: string, baseDir: string, visited: Set<string>): Promise<SchemaDoc[]> {
+async function fetchAndResolveSchemaDoc(schemaLocation: string, documentUri: string, visited: Set<string>): Promise<SchemaDoc[]> {
   // Fetch and parse the schema document
-  const {uri, text} = await fetchText(schemaLocation, baseDir);
+  const {uri, text} = await fetchText(schemaLocation, documentUri);
   const docKey = uri;
 
   // Skip if already processed to prevent infinite recursion
@@ -206,32 +208,9 @@ async function fetchAndResolveSchemaDoc(schemaLocation: string, baseDir: string,
   const roots = getChildrenWithLocalName(sx, "schema");
   const docs: SchemaDoc[] = [];
 
-  // Process each schema node in the document
   for (const sn of roots) {
-    // Extract target namespace and prefix declarations
-    const tns = sn["@_targetNamespace"] || "";
-    const prefixes: Record<string, string> = {};
-    for (const [k, v] of Object.entries(sn)) {
-      if (k.startsWith("@_xmlns:")) prefixes[k.slice(8)] = String(v);
-    }
-
-    // Add this schema to the output collection
-    const thisDir = path.dirname(uri);
-    docs.push({uri: thisDir, xml: sn, targetNS: tns, prefixes});
-
-    // Recursively process any imports and includes
-    for (const inc of getChildrenWithLocalName(sn, "include")) {
-      const loc = inc?.["@_schemaLocation"];
-      if (!loc) continue;
-      const more = await fetchAndResolveSchemaDoc(loc, thisDir, visited);
-      docs.push(...more);
-    }
-    for (const imp of getChildrenWithLocalName(sn, "import")) {
-      const loc = imp?.["@_schemaLocation"];
-      if (!loc) continue;
-      const more = await fetchAndResolveSchemaDoc(loc, thisDir, visited);
-      docs.push(...more);
-    }
+    const discovered = await resolveSchema(sn, uri, visited);
+    docs.push(...discovered);
   }
   return docs;
 }

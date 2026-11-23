@@ -3,7 +3,7 @@
  *
  * This module provides utilities for fetching WSDL and XSD documents from either
  * HTTP/HTTPS URLs or local file paths. It handles relative paths intelligently by
- * resolving them against a base directory, which is crucial for processing XSD
+ * resolving them against the referring document, which is crucial for processing XSD
  * imports and includes with relative paths.
  *
  * The fetcher supports:
@@ -14,6 +14,10 @@
 
 import fs from "node:fs";
 import path from "node:path";
+
+export function isHttpUrl(source: string): boolean {
+  return /^https?:/i.test(source);
+}
 
 /**
  * Fetches text content from a URL or file path
@@ -29,20 +33,25 @@ import path from "node:path";
  * use relative paths to reference other schema documents.
  *
  * @param {string} urlOrPath - URL or file path to fetch
- * @param {string} [base] - Optional base directory/URL for resolving relative paths
- * @returns {Promise<{uri: string, text: string}>} - Object containing resolved URI and text content
- * @throws {Error} - If HTTP request fails or file cannot be read
+ * @param {string} [base] - URL or file path of the document that references this resource
+ * @returns {Promise<{uri: string, text: string}>} - Effective HTTP URL or resolved file path and text content
+ * @throws {Error} - If a remote reference is invalid, the HTTP request fails, or the file cannot be read
  */
 export async function fetchText(urlOrPath: string, base?: string): Promise<{ uri: string; text: string }> {
   let uri = urlOrPath;
-  if (base && !/^https?:/i.test(urlOrPath) && !path.isAbsolute(urlOrPath)) {
-    uri = path.resolve(base, urlOrPath);
+  if (base && !isHttpUrl(uri)) {
+    if (isHttpUrl(base)) {
+      uri = new URL(uri, base).href;
+      if (!isHttpUrl(uri)) throw new Error(`Expected an HTTP(S) reference from ${base}: ${urlOrPath}`);
+    } else if (!path.isAbsolute(uri)) {
+      uri = path.resolve(path.dirname(base), uri);
+    }
   }
-  if (/^https?:/i.test(uri)) {
+  if (isHttpUrl(uri)) {
     const res = await fetch(uri, {headers: {Accept: "application/xml,text/xml,*/*"}});
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${uri}`);
     const text = await res.text();
-    return {uri, text};
+    return {uri: res.url || uri, text};
   } else {
     const text = fs.readFileSync(uri, "utf8");
     return {uri, text};
