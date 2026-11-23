@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(streaming): record Escapia v1.16.0 fixture acceptance.
+
 ## [1.16.0] - 2026-11-23
 
 - fix(loader): resolve hosted relative XSD imports on Windows.

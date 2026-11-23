@@ -6,9 +6,9 @@ The initial checked client and gateway delivery shipped in [v1.15.0](../releases
 
 The credential-free SOAP 1.1 document/literal path qualifies Read with full-response completion and synthetic Fetch with declared companion scope. The installed consumer proves first-record delivery before upstream EOF in both HTTP formats, late abort, incomplete HTTP framing, cancellation, and frozen v1.14.0 buffered-client compatibility. The release-tree CI ran the installed stream case on Linux and Windows with Node 24 and 26. Full delivery ran on Linux Node 24 in CI and Windows Node 24 in release preflight. [Release-tree CI](https://github.com/TechSpokes/typescript-wsdl-client/actions/runs/45160350084) · [Preflight record](https://github.com/TechSpokes/typescript-wsdl-client/pull/516)
 
-## Remaining acceptance
+## Escapia fixture checkpoint
 
-The next selected operation is `UnitDescriptiveInfoStream`, followed by `UnitCalendarAvailBatch`. Begin from the published npm package and use permitted source and companion schemas with independently expected exchanges on an owned endpoint. [Escapia qualification](https://github.com/TechSpokes/typescript-wsdl-client/issues/517)
+The published v1.16.0 consumer passed local fixture acceptance for `UnitDescriptiveInfoStream` and `UnitCalendarAvailBatch` over loopback HTTPS. The fixture verified the outgoing SOAP 1.1 envelope, request QName, action, target and version independently of the generated client. Live Escapia testing remains separate pending credentials. [Fixture results](../checked-streaming.md#escapia-fixture-acceptance) · [Issue #517](https://github.com/TechSpokes/typescript-wsdl-client/issues/517)
 
 ### Issue exits
 
@@ -17,7 +17,7 @@ The next selected operation is `UnitDescriptiveInfoStream`, followed by `UnitCal
 | [#159](https://github.com/TechSpokes/typescript-wsdl-client/issues/159) | Read socket handshake for client and both HTTP formats, synthetic Fetch scope and retained legacy controls | Verified replacement or retirement for every documented legacy promise |
 | [#192](https://github.com/TechSpokes/typescript-wsdl-client/issues/192) | Shared request encoder, independent expanded-name/order assertions, qualified path, UTF-8 splits and zero dispatch controls | Full protocol and security matrix, legacy request serialization retirement |
 | [#193](https://github.com/TechSpokes/typescript-wsdl-client/issues/193) | Required Read record, valid empty Fetch, wrapper and footer checks, late failures, cancellation, exact size/depth limits, and an owned producer stalled by demand | Broader transport coverage and process-wide heap measurements under the full D09 profile |
-| [#194](https://github.com/TechSpokes/typescript-wsdl-client/issues/194) | Buffered versus streamed Read values and requests, synthetic Fetch known and companion grammar, malformed suffix invariance | Broader approved parity corpus and authentic companion services. The installed stream case passed all four hosted jobs. |
+| [#194](https://github.com/TechSpokes/typescript-wsdl-client/issues/194) | Buffered versus streamed Read values and requests, synthetic Fetch known and companion grammar, malformed suffix invariance, and both Escapia companion fixtures | Broader approved parity corpus and live companion services |
 
 The remaining [legacy inventory](#legacy-selection-inventory) includes distinct configuration and value-shape dispositions.
 
@@ -247,8 +247,8 @@ Set `WSDL_CHECKED_STREAM_BASELINE_ARCHIVE` to the absolute path of the checksum-
 | Companion `wsdlSource` | Authorize the physical WSDL with `recordProjections` and its exact selector |
 | Companion `catalogFile` | Requires the original companion WSDL and its source closure |
 | Legacy primitive and flattening configuration | Checked stream uses native checked values |
-| `UnitDescriptiveInfoStream` | Authentic owned-service checked streaming and installed replacement remain pending |
-| `UnitCalendarAvailBatch` | Synthetic repeated wrapper path exercised with Fetch. Authentic calendar parity remains pending |
+| `UnitDescriptiveInfoStream` | Installed v1.16.0 fixture verified the Main companion selection and typed `UnitDescriptiveContentType` records |
+| `UnitCalendarAvailBatch` | Installed v1.16.0 fixture verified the repeated response wrapper and typed `UnitCalendarAvailType` records |
 
 ### Qualified transport summary
 
