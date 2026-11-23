@@ -44,6 +44,7 @@ Find the guide for your stage of a SOAP integration. See the [repository README]
 | [Version Migration](migration.md) | Upgrade the package and decide when to regenerate |
 | [Migration Playbook](migration-playbook.md) | Plan a SOAP-to-REST migration |
 | [Changelog](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CHANGELOG.md) | Read the version history |
+| [v1.16.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.16.0.md) | Generate from hosted WSDLs with relative XSD imports on Windows |
 | [v1.15.0 Release Notes](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/v1.15.0.md) | Adopt checked SOAP streaming |
 | [All Published Releases](https://github.com/TechSpokes/typescript-wsdl-client/releases) | Find release notes and assets by version |
 
