@@ -54,9 +54,9 @@ The reviewed implementation passed full native Windows CI: 4,573 broad cases wit
 
 The same nonauthor reviewer verified the 405-file implementation snapshot and then the 559-file final evidence snapshot before and after inspection, with no unresolved actionable findings. The closing review verified all 117 preserved example files against consumer originals. This is scoped static review and evidence consistency checking, not independent execution, full-profile acceptance or provider approval.
 
-Detailed logs, exact install/generate/typecheck/test/build/start arguments, archived harnesses, the operation ledger, original inputs/provenance and runnable projects remain locally under `tmp/conformance/escapia-2026-10-31/`. The final candidate package SHA-256 is `6b24044e4085d433117e0b7cd4725a34c0feefe78b713b98bfbafd0a2920d81a`; its installation evidence is `candidate/component-installs/run-F97NA9`, and final wire evidence is `candidate/component-wire-runs/run-pLnNR2` and `candidate/component-wire-runs/run-Fx2dPI`.
+The final candidate package SHA-256 was `6b24044e4085d433117e0b7cd4725a34c0feefe78b713b98bfbafd0a2920d81a`.
 
-Ignored archives, dependencies, machine-specific logs and vendor/example XML are not added to Git by this checkpoint. The original bytes remain preserved locally; inclusion in a future portable regression corpus needs explicit fixture/provenance review. Generic engine regression fixtures and tests are committed. A fresh clone can run repository tests; reproducing the vendor-specific trial additionally requires the retained or independently supplied original contracts and explicit configuration.
+Generic engine regression fixtures and tests are committed and run from a fresh clone. Reproducing the vendor-specific trial requires independently supplied original contracts and explicit configuration. Adding vendor material to a portable regression corpus requires fixture and provenance review.
 
 ## Distance to broad WSDL coverage
 
