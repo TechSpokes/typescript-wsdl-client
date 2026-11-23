@@ -65,7 +65,7 @@ When a check needs hosted infrastructure, record which local checks passed and w
 
 Ordinary verification prints its unique directory under `tmp/verification/`. Conformance, generated-test, smoke and package scratch stay in that workspace. The runner allocates and records a separate operating-system temporary directory for installs so Node cannot resolve checkout dependencies through their ancestors.
 
-The runner waits for its command to finish, removes its workspace after success or ordinary failure, and restores the pre-existing `dist/` after a delivery build. Reuse `tmp/cache/npm/` between checks while work is active. The [release cleanup procedure](releases/README.md#release-cleanup) defines when local preflight output and release copies are disposable.
+The runner waits for its command to finish, removes its workspace after success or ordinary failure, and restores the pre-existing `dist/` after a delivery build. Reuse `tmp/cache/npm/` between checks while work is active. The [release cleanup procedure](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/docs/releases/README.md#release-cleanup) defines when local preflight output and release copies are disposable.
 
 Use Ctrl+C for ordinary cancellation and wait for cleanup. If the runner is forcibly stopped, find the exact printed `run-*` directory, check its recorded `owner` and `child` PIDs, and confirm that their descendants have stopped. Recover from the same checkout with the same temporary-directory environment.
 
