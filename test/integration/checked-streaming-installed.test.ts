@@ -18,13 +18,14 @@ it('qualifies the exact installed checked-stream candidate in a strict-built rel
   const tooling = path.join(temporary, 'tooling'), project = path.join(temporary, 'project');
   const fixture = path.join(checkout, 'test/fixtures/wsdl/stream-mapping.wsdl');
   const source = path.join(project, 'stream-mapping.wsdl');
-  const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.join(checkout, 'tmp/cache/npm')};
+  const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca',
+    npm_config_cache: path.join(checkout, 'tmp/cache/npm'), npm_config_prefer_offline: 'true'};
   delete env.NODE_PATH;
   let stage = 'create external consumer';
-  async function run(label: string, args: string[], cwd = project) {
+  async function run(label: string, args: string[], cwd = project, timeoutMs = 120_000) {
     stage = label;
     console.info('[checked streaming installed] ' + label);
-    return runOwnedNode(args, {cwd, env, signal: context.signal, timeoutMs: 120_000, maxBuffer: 2 * 1024 * 1024});
+    return runOwnedNode(args, {cwd, env, signal: context.signal, timeoutMs, maxBuffer: 2 * 1024 * 1024});
   }
   try {
     await mkdir(tooling);
@@ -106,7 +107,9 @@ it('qualifies the exact installed checked-stream candidate in a strict-built rel
         app: {appDir: companionApp}})], tooling);
     await copyFile(path.join(checkout, 'test/fixtures/wsdl/stream-mapping-wire/companion.ts'), path.join(companionApp, 'qualification.ts'));
     await copyFile(path.join(project, 'ndjson/package.json'), path.join(project, 'package.json'));
-    await run('install consumer dependencies from the same archive', [npm, 'install', '--no-audit', '--no-fund', '--ignore-scripts', tarball]);
+    // @why Match the package smoke install deadline for registry-dependent work on hosted Windows.
+    await run('install consumer dependencies from the same archive',
+      [npm, 'install', '--no-audit', '--no-fund', '--ignore-scripts', tarball], project, 240_000);
     for (const format of [...formats, 'companion']) {
       await run('strict build ' + format, [path.join('node_modules', 'typescript', 'bin', 'tsc'), '-p', format]);
     }
