@@ -90,7 +90,7 @@ Scratchpads: non-project notes may live under ad-hoc folders; treat them as scra
 
 Place ordinary verification scratch in the current `tmp/verification/run-*` workspace. Use `tmp/cache/npm/` for the checkout's npm cache and `tmp/preflight/examples/` for release example regeneration while work is active. Keep manual probes in a named task-owned directory.
 
-Before finishing a task, follow the [temporary output and recovery procedure](../docs/testing.md#temporary-output-and-recovery). Remove owned output and idle checkout-local caches after their last use. Record durable evidence in its appropriate home before cleanup. Verify that `tmp/` exists and is empty in an idle checkout. Report any retained path and its active dependency or recovery reason.
+Before finishing a task, follow the [temporary output and recovery procedure](../docs/testing.md#temporary-output-and-recovery). Remove disposable verification output and idle checkout-local caches after their last use. Preserve requested deliverables and record durable evidence at their designated locations. Verify that `tmp/` exists and that only reported paths remain for active runs, recovery, or unrelated work.
 
 Do not add implicit public CLI defaults only to satisfy this internal layout. Public examples use explicit `.generated/...` paths, while repository automation alone uses `tmp/`.
 

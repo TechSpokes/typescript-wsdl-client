@@ -86,9 +86,9 @@ Manual package dispatch is a recovery path after the GitHub Release is published
 
 Keep the local preflight ZIP, checksum manifest, and any evidence still needed to verify the exact candidate through draft verification. Start final cleanup after the tag-triggered draft workflow succeeds and the draft, uploaded ZIP, checksum manifest, and uploaded-artifact install and smoke results have been verified. The hosted npm workflow builds its tarball from the released commit after the maintainer publishes.
 
-Record the verified tag, draft URL, and workflow result in the handoff. Remove task-owned preflight examples, generated projects and builds, local copies of the verified ZIP and checksum manifest, test tarballs, logs, checkout-local caches, and OS or WSL scratch. Remove disposable release worktrees and task-owned merged branches. Keep published and verified draft assets on GitHub, release tags, abandonment markers, and unrelated work.
+Record the verified tag, draft URL, and workflow result in the handoff. Remove task-owned preflight examples, disposable verification projects and builds, local copies of the verified ZIP and checksum manifest, test tarballs, logs, checkout-local caches, and OS or WSL scratch. Remove disposable release worktrees and task-owned merged branches. Keep published and verified draft assets on GitHub, release tags, abandonment markers, and unrelated work.
 
-Check the remaining checkout's `tmp/` with hidden entries included. Leave the directory present and empty when the checkout is idle. Report any path still owned by an active run or required for recovery. Complete these checks before handing the draft to the maintainer.
+Check the remaining checkout's `tmp/` with hidden entries included. Leave the directory present and follow the [task closeout verification](../testing.md#task-closeout). Complete these checks before handing the draft to the maintainer.
 
 ### npm tarball delivery
 
