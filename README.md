@@ -1,16 +1,17 @@
 # TypeScript WSDL Client
 
 [![npm version](https://img.shields.io/npm/v/@techspokes%2Ftypescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
+[![Monthly npm downloads](https://img.shields.io/npm/dm/@techspokes%2Ftypescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
 [![CI](https://github.com/TechSpokes/typescript-wsdl-client/actions/workflows/ci.yml/badge.svg)](https://github.com/TechSpokes/typescript-wsdl-client/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Generate a typed SOAP client from a WSDL. Use it directly in Node.js or generate an OpenAPI 3.1 specification and a Fastify REST gateway from the same contract.
+When a SOAP service changes, handwritten TypeScript types and XML mappings can drift from its WSDL. If you expose that service over REST, there are also HTTP schemas and handlers to keep in sync.
 
-The generated operations interface lets you test your integration with a mock client. Deterministic output makes regeneration diffs reviewable when the WSDL changes.
+TypeScript WSDL Client generates a typed SOAP client for Node.js and, when you need them, an OpenAPI 3.1 specification and a Fastify REST gateway from the same WSDL. Deterministic output makes regeneration diffs reviewable, and the generated operations interface lets you test with a mock client.
 
 ## Quick start
 
-In a Node.js 24+ project, save your WSDL as `service.wsdl` and keep its imports accessible. Install the generator as a development dependency and `soap` as a runtime dependency for the default client.
+Use Node.js 24 or later. Install the generator as a development dependency and `soap` as a runtime dependency for the default client.
 
 ```bash
 npm install --save-dev @techspokes/typescript-wsdl-client
@@ -18,18 +19,33 @@ npm install soap
 npx wsdl-tsc client --wsdl-source ./service.wsdl --client-dir ./.generated/client
 ```
 
-The client, types, and mockable operations interface are now in `.generated/client/`. [Use the generated client](docs/generated-code.md#client-construction)
+Set `--wsdl-source` to a local file or an HTTP(S) WSDL URL such as `"https://provider.example/Service.svc?wsdl"`. Keep any imported WSDL and XSD files accessible.
+
+The generated client, types, and operations interface are in `.generated/client/`. [Use the generated client](docs/generated-code.md#client-construction)
+
+On Windows, default generation can fail on relative XSD imports from a hosted WSDL. Use a local copy that preserves the import paths, or try checked generation for a supported contract. [Checked URL setup](docs/checked-generation.md#try-your-wsdl-file-or-url)
 
 ## Choose what to generate
 
-| Goal | Command | Guide |
+| Goal | Command to start with | Guide |
 | --- | --- | --- |
 | Call SOAP from TypeScript | `wsdl-tsc client` | [Client setup](docs/start-here.md#i-need-a-typed-soap-client) |
 | Describe the REST contract | `wsdl-tsc openapi` | [OpenAPI generation](docs/start-here.md#i-need-an-openapi-spec-from-a-wsdl) |
-| Run a REST API over SOAP | `wsdl-tsc pipeline --init-app` | [Generate the full stack](docs/start-here.md#i-need-a-rest-gateway-over-soap) |
-| Combine independent SOAP services | `wsdl-tsc pipeline --services-config ./services.json` | [Legacy multi-service gateway](docs/gateway-guide.md#multi-service-setup) |
+| Generate a runnable REST gateway | `wsdl-tsc pipeline --init-app` | [Generate the stack and run the app](docs/start-here.md#i-need-a-rest-gateway-over-soap) |
+| Combine independent SOAP services | `wsdl-tsc pipeline --services-config ./services.json` | [Multi-service gateway](docs/gateway-guide.md#multi-service-setup) |
 
-Legacy generation is the default. Use `--model checked-components-v1` to validate requests and responses against supported WSDL and XSD contracts. Checked responses are buffered by default. Since v1.15.0, selected credential-free SOAP 1.1 document/literal operations can yield validated records before the response ends, with NDJSON or JSON-array output through the gateway. [Try checked generation](docs/checked-generation.md) · [Configure checked streaming](docs/checked-streaming.md)
+The quick start and multi-service workflow use default generation, named `legacy` in the CLI and API. Choose `--model checked-components-v1` for runtime validation of requests and responses against supported WSDL and XSD contracts. Checked generation follows declared same-origin imports and requires permission for additional origins. [Try checked generation](docs/checked-generation.md)
+
+Selected credential-free SOAP 1.1 document/literal operations can stream validated records before the upstream response ends. Checked clients report terminal completion separately, and Fastify gateways can emit NDJSON or JSON arrays. [Configure checked streaming](docs/checked-streaming.md)
+
+## How it compares
+
+| Approach | When it fits |
+| --- | --- |
+| Runtime SOAP client such as [node-soap](https://github.com/vpulim/node-soap) | Call a SOAP service from Node.js and define the application-facing interface yourself. The default client generated here also uses node-soap. |
+| Typed SOAP client generator such as [wsdl-tsclient](https://github.com/dderevjanik/wsdl-tsclient) | Generate a TypeScript SOAP client or WSDL-derived types for direct integration. |
+| TypeScript WSDL Client | Generate a typed client on its own, or generate the client, OpenAPI specification, Fastify routes, and runnable app from the same WSDL. |
+| Managed API gateway such as [Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-usage-plans.html) | Operate a deployed API with controls such as throttling and usage quotas. This can complement a generated Fastify app. |
 
 ## Documentation
 
@@ -43,8 +59,8 @@ Legacy generation is the default. Use `--model checked-components-v1` to validat
 
 ## Releases and support
 
-[v1.15.0 release](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.15.0) · [Changelog](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CHANGELOG.md) · [Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md)
+[Latest release](https://github.com/TechSpokes/typescript-wsdl-client/releases/latest) · [Changelog](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CHANGELOG.md) · [Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md)
 
-Built and maintained by TechSpokes. Created by Serge Liatko.
+Created by Serge Liatko at TechSpokes for production SOAP integrations. TechSpokes maintains the project.
 
 [Contributing](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) · [Discussions](https://github.com/TechSpokes/typescript-wsdl-client/discussions) · [Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues) · [Security](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/SECURITY.md) · [Commercial support](https://www.techspokes.com/contact/) · [Sponsor](https://github.com/sponsors/TechSpokes)
