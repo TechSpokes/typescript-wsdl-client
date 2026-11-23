@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(readme): clarify the SOAP integration problem, tool fit and WSDL URL setup.
 - docs(repo): refocus the README and reconcile checked streaming guidance.
 
 ## [1.15.0] - 2026-11-23
