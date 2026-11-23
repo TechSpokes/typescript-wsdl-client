@@ -55,7 +55,7 @@ Exit 0 establishes conformance only within the report's assessment scope; 1 repo
 
 ## pipeline
 
-The `--model` selector defaults to `legacy`. `checked-components-v1` derives unambiguous service/port/binding selections and supported mappings from local WSDL or HTTP(S) input. Optional `--checked-config` supplies actual choices or permissions. The catalog/compiler/streaming tables below describe legacy behavior unless stated otherwise.
+The `--model` selector defaults to `legacy`. `checked-components-v1` derives unambiguous service, port and binding selections from the original WSDL. Use `--checked-config` for explicit selections and permissions, including the `streams` field for supported SOAP 1.1 document/literal operations. The catalog, compiler and `--stream-config` tables below apply to legacy generation. [Checked streaming](checked-streaming.md)
 
 ### Checked generation flags
 
@@ -419,7 +419,7 @@ These flags are mutually exclusive.
 
 ### Response Envelope
 
-Buffered legacy success responses use the standard envelope. Legacy streams emit NDJSON or a JSON array directly; checked component routes use checked values/faults. Errors after stream commitment truncate output.
+Buffered legacy success responses use the standard envelope. Checked buffered routes use checked values and faults. Configured legacy and checked streams emit NDJSON or JSON arrays directly. A late stream failure aborts delivery. [Checked stream completion](checked-streaming.md#consume-records-and-completion)
 
 Base structure:
 

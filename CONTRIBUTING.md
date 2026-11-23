@@ -177,7 +177,7 @@ Every release commit must include `docs/releases/vX.Y.Z.md`. Run `npm run releas
 
 Changes approved to ship immediately can carry their release metadata in the same PR. Use a separate PR when qualification, review or release sequencing needs a separate candidate. Both paths require independent review and release verification.
 
-Include release notes, versions, changelog, and the root documentation link before pushing the release PR. After merging, verify that main's tree matches the preflight-validated tree before tagging the merged commit. Follow the [release delivery procedure](docs/releases/README.md#candidate-publication).
+Include release notes, versions, changelog, and the link in the [documentation index](docs/README.md) before pushing the release PR. After merging, verify that main's tree matches the preflight-validated tree before tagging the merged commit. Follow the [release delivery procedure](docs/releases/README.md#candidate-publication).
 
 Set the release version before preflight. Preflight verifies release metadata, writes only ignored build and temporary outputs, and fails if it changes tracked content.
 

@@ -32,7 +32,7 @@ Before upgrading a 1.1.x consumer, read [migration](docs/migration.md#from-11x-t
 
 Use legacy pipeline for one source, or pipeline --services-config services.json for independent legacy sources. The aggregate typed createClients binds each runtime WSDL, endpoint and security separately; no checked/app/test aggregate mode is available. See [composition](docs/gateway-guide.md#multi-service-setup).
 
-Use pipeline --model checked-components-v1 for the bounded document/literal or SOAP 1.1 RPC/encoded string profile. Checked replies remain buffered checked values. Legacy buffered success uses envelopes; opt-in legacy NDJSON/JSON-array streams deliver generated DTO records directly through node-soap requestStream. See [migration](docs/migration.md#from-11x-to-120).
+Use `pipeline --model checked-components-v1` for supported document/literal or bounded SOAP 1.1 RPC/encoded generation. Checked replies are buffered by default. Since v1.15.0, use `checkedComponents.streams` or `streams` in `--checked-config` for eligible SOAP 1.1 document/literal responses. Checked clients expose terminal completion separately from records. Legacy streams use `--stream-config` and emit mapped DTO records. [Checked streaming](docs/checked-streaming.md)
 
 ## Output inventory
 

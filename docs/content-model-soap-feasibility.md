@@ -2,11 +2,11 @@
 
 Executed local SOAP evidence for S02, #169, and the adapter consumers #190/#192/#193. See the root [README](../README.md).
 
-## Current buffered interface and streaming handoff
+## Buffered interface and checked streaming
 
 The current checked buffered path retains the established SOAP dependency for envelope/security construction and HTTP execution. Native source qualification, typed mappings and input validation complete before dispatch. The dependency receives a private transport descriptor and the exact native encoded body; its name-keyed response parser never owns checked values. The sections below retain earlier seam evidence and narrower historical profiles.
 
-| Shared boundary for #192 | Existing typed owner | Required ordering |
+| Buffered boundary | Existing typed owner | Required ordering |
 |---|---|---|
 | Binding and endpoint | `DirectOperationContract`, `ComponentSoapOptions` | Pin version/action/service/port; authorize exact endpoint before I/O |
 | Body serialization | `createComponentValueMapping`, `encodeComponentXml` | Native value, order and scalar checks precede envelope construction |
@@ -18,7 +18,7 @@ The current checked buffered path retains the established SOAP dependency for en
 
 Buffered runtime options expose per-call cancellation, explicit deadlines and capacities. SOAP header values and processors are invocation-owned; exact declaration IDs cannot grant unknown security semantics. Original response bytes remain available after decoding, and incoming signature/encryption requirements without an implemented verifier remain unsupported. Outbound signing evidence does not establish incoming authentication.
 
-#192 must reuse the native body inverse, scalar/occurrence owners, binding selection and declared header identities. Its dedicated incremental HTTP transport remains separate; copying a configured security object does not implement that security protocol. #193 owns incremental completion, late faults, cancellation and cleanup. No record may be yielded as authenticated before required verification completes. This buffered completion introduces no streaming implementation or default switch.
+The checked streaming profile shipped in v1.15.0. It reuses the native body encoder and validates records and declared response scope over a dedicated incremental HTTP transport. #192 retains wider transport and security qualification. #193 retains completion, cancellation and resource qualification beyond the shipped scope. Required incoming authentication must complete before authenticated records can be yielded. [Checked streaming profile](checked-streaming.md)
 
 ## P3.5 original-byte qualification
 

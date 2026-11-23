@@ -238,7 +238,7 @@ One generation invocation may reuse its source-owned native handles, closed SOAP
 
 Concise companion associations explicitly acknowledge `records-with-declared-wrapper-scope`. Native mapping owners derive unique paths and fixed exclusions, retain `recordPath` when ambiguous and pass through `createComponentRecordProjection` as the final gate. The companion interpretation does not establish full response validity in the outer strict-wildcard universe. Required schema metadata and invalid scalar/wildcard refusals remain mandatory; no automatic companion discovery or new response mode is introduced.
 
-Legacy remains the 1.x default, and `admitted:false` remains the full-profile marker. Preview availability does not admit the full faithful profile, establish universal research completeness, qualify production providers/security or activate checked streaming. Wider owners and full-profile S17/S18 evidence remain open; a default public-shape activation still requires the separately approved 2.0.0 major-release gate.
+Legacy remains the 1.x default, and `admitted:false` remains the full-profile marker. The bounded v1.15.0 streaming profile shipped under the checked model with its own transport and completion rules. Wider owners and full-profile S17/S18 evidence remain open. A default public-shape activation still requires the separately approved 2.0.0 major-release gate. [Checked streaming](../checked-streaming.md)
 
 ### Legacy and faithful routing
 

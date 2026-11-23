@@ -1,6 +1,6 @@
 # ADR 004: Product Delivery and Research Boundaries
 
-Separate exploratory work from product validation while retaining the correctness contracts in [ADR-003](003-content-model-contracts.md). See the root [README](../../README.md) for the documentation index.
+Separate exploratory work from product validation while retaining the correctness contracts in [ADR-003](003-content-model-contracts.md). See the [documentation index](../README.md) for related records.
 
 ## Status and context
 

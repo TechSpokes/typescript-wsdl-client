@@ -1,6 +1,6 @@
 # ADR-005: Checked protocol fault compatibility
 
-Preserve generated runtime contracts while adding protocol-only fault results. See the root [README](../../README.md) for the documentation index.
+Preserve generated runtime contracts while adding protocol-only fault results. See the [documentation index](../README.md) for related records.
 
 ## Status
 

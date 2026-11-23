@@ -4,7 +4,7 @@ A step-by-step guide for modernizing a SOAP API into a typed TypeScript client a
 
 For CLI flag details, see [CLI Reference](cli-reference.md). For gateway integration, see [Gateway Guide](gateway-guide.md).
 
-See the root [README](../README.md) and [1.1.x-to-1.2.0 migration](migration.md#from-11x-to-120) before regenerating. Native legacy composition retains per-client ownership; checked/RPC generation has a separate buffered validation contract.
+Read the [version migration guide](migration.md) before regenerating. Native legacy composition retains per-client ownership. Checked generation uses source-backed validation for supported bindings. [Checked generation](checked-generation.md)
 
 This playbook describes adopting a SOAP-to-REST integration. Updating an existing generated gateway is a separate package-upgrade task: keep its profile first, review matched regenerated artifacts and preserved scaffolds, and use the version migration guide's verification and rollback steps. Adopting checked generation or composition should be a deliberate follow-up rather than an incidental upgrade effect.
 

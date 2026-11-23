@@ -6,6 +6,17 @@ Versions are listed newest first. Find your current version and follow the steps
 
 See the root [README](../README.md). Historical version sections below describe their original releases; 1.2.0 compatibility guidance supersedes earlier unchanged-output statements for this upgrade.
 
+## From 1.14.x to 1.15.0
+
+Existing buffered clients can upgrade without changing their generated code or runtime configuration. To opt an eligible checked SOAP 1.1 document/literal operation into streaming, add a source-qualified selection to `streams` in `--checked-config` or `checkedComponents.streams` in the API.
+
+1. Regenerate the client, capsule, OpenAPI document and gateway together from that configuration.
+2. Use `createStreamClient(checkedComponentStreamRuntimeV1)` for direct callers and authorize the SOAP URL with `allowEndpoint`. For the generated app, provide the equivalent `allowedEndpoints`.
+3. Consume the records and observe the terminal `completion` result. Cancel if you stop consuming early.
+4. Test HTTP consumers for both successful completion and a late abort. Earlier NDJSON records may already have arrived when the upstream exchange fails.
+
+Legacy stream configuration uses `--stream-config` and its DTO mapping. When migrating a stream, map the operation and path to the checked source declarations and compare the native record shape. The checked profile uses UTF-8, identity encoding and a credential-free SOAP 1.1 document/literal endpoint. [Checked streaming contract](checked-streaming.md) · [Release notes](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.15.0)
+
 ## From 1.7.0 to 1.8.0
 
 To adopt checked atomic unions or lists of those unions, update the generator and runtime together and regenerate matching clients, capsules, OpenAPI documents and gateways from your WSDL. Review the generated types and run your consumer build and tests before deployment.
@@ -197,7 +208,7 @@ The compiled catalog format remains unchanged. Old catalogs remain readable as s
 
 Native composition emits one aggregate plugin and OpenAPI document for legacy services; it does not supply an aggregate app/test scaffold or compose checked routes. See the [multi-service guide](gateway-guide.md#multi-service-setup). Check downstream tooling when adopting service-qualified OpenAPI components and operation identifiers.
 
-Checked generation is a bounded buffered preview, not an automatic replacement for a legacy gateway. Its JSON values, validation and fault contracts differ from legacy DTO/envelope behavior, and unsupported contracts refuse. Checked hosts import this package at runtime, so retain it as a production dependency according to the emitted app manifest; a generator-only development dependency is insufficient for that deployment. Keep runtime version, source snapshots and generated checked artifacts matched. Checked streaming remains outside this profile.
+The checked preview in 1.2.0 covered buffered delivery. Checked JSON values, validation and fault contracts differ from legacy DTO and envelope behavior. Checked hosts import this package at runtime. Retain it as a production dependency according to the emitted app manifest and keep the runtime, source snapshots and generated artifacts matched. See the [v1.15.0 migration](#from-114x-to-1150) for checked streaming.
 
 Existing published 1.1.5-issued direct clients retain `checkedDirectRuntimeV1` and its original owned-loopback restrictions; installed compatibility fixtures exercise that specific binding. A deployed host importing that retained binding also needs this package as a production dependency, even when its generator tooling lives elsewhere. The unchanged direct protocol allows those retained artifacts to use the newer compatible package binding; it does not grant component-runtime capabilities.
 

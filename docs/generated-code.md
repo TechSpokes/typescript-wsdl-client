@@ -159,6 +159,10 @@ console.log(info.response.GetWeatherInformationResult?.WeatherDescription);
 
 ## Calling Stream Operations
 
+A checked stream uses `createStreamClient(checkedComponentStreamRuntimeV1)`. Consume `records`, then observe `completion`. Cancel if you abandon the stream. [Checked stream consumption](checked-streaming.md#consume-records-and-completion)
+
+The examples below use legacy generation.
+
 Operations opted into streaming with `--stream-config` accept `(args, {signal, timeoutMs}?)` and return `StreamOperationResponse<RecordType>`. The single-pass `records` iterable maps complete records into generated DTOs. Memory depends on record size and transport/parser buffering; there is no constant-memory or byte-cap guarantee.
 
 ```typescript

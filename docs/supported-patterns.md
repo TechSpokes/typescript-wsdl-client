@@ -52,7 +52,7 @@ Metadata HTTP charset context survives original-byte snapshots, capsule comparis
 
 ## Checked streaming
 
-The [checked streaming profile](checked-gateway.md#checked-streaming) qualifies explicit SOAP 1.1 record paths for native client iteration and gateway NDJSON or JSON arrays. The checked Read fixture and synthetic Fetch controls distinguish record validation from completion of the declared scope.
+The [checked streaming profile](checked-streaming.md) qualifies explicit SOAP 1.1 record paths for native client iteration and gateway NDJSON or JSON arrays. The checked Read fixture and synthetic Fetch controls distinguish record validation from completion of the declared scope.
 
 ## Checked one-way document literal
 

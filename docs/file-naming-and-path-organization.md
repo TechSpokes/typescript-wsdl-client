@@ -1,6 +1,6 @@
 # File Naming And Path Organization
 
-Contributor guide for naming files and organizing fixture paths. See the root [README.md](../README.md) for the authoritative documentation index.
+Contributor guide for naming files and organizing fixture paths. See the [documentation index](README.md) for contributor guides.
 
 For conceptual names, internal identifiers, mapping keys and OpenAPI terminology, use [mapping terminology and naming](concepts.md#mapping-terminology-and-naming). This document governs filesystem organization, not alternative JSON key spellings.
 
